@@ -5,7 +5,7 @@ import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure } from './bodymap.j
 import { TERMS_VERSION, TERMS_HTML } from './terms.js';
 import { EXPLAIN } from './explain.js';
 import { openEditor } from './editor.js';
-import { t, has, setLang, resolveLang, applyI18n, LANGS } from './i18n.js';
+import { t, t as tx, tmap, localeOf, has, setLang, resolveLang, applyI18n, LANGS } from './i18n.js';
 import { askConfirm, askText } from './dialogs.js';
 
 // taal vóór het inloggen: die van de browser; na het laden van de instellingen die van de gebruiker (zie load)
@@ -13,12 +13,12 @@ setLang(resolveLang('', navigator.languages || [navigator.language]));
 applyI18n();
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-const GOAL = { spieropbouw: 'Spieropbouw', combinatie: 'Combinatie', afvallen: 'Afvallen', gemengd: 'Gemengde week', circuit: 'Cardio-circuit', buiten: 'Cardio buiten' };
-const DAY_TYPES = { spieropbouw: 'Kracht (spieropbouw)', combinatie: 'Combinatie (kracht + afvallen)', afvallen: 'Afvallen (kracht, hoge dichtheid)', circuit: 'Cardio-circuit op de Gym Monster', buiten: 'Cardio buiten (wandelen/fietsen)' };
+const GOAL = tmap({ spieropbouw: '§app.goal.spieropbouw', combinatie: '§app.goal.combinatie', afvallen: '§app.goal.afvallen', gemengd: '§app.goal.gemengd', circuit: '§app.goal.circuit', buiten: '§app.goal.buiten' });
+const DAY_TYPES = tmap({ spieropbouw: '§app.daytypes.spieropbouw', combinatie: '§app.daytypes.combinatie', afvallen: '§app.daytypes.afvallen', circuit: '§app.daytypes.circuit', buiten: '§app.daytypes.buiten' });
 // categorieën van activiteiten uit Apple Health (de soort zelf, bijv. "Voetbal" of "Padel", staat in a.label)
-const ACT = { wandelen: ['Wandelen', '#6c9cff', '🚶'], fietsen: ['Fietsen', '#e5b84b', '🚴'], hardlopen: ['Hardlopen', '#ff6b9a', '🏃'], zwemmen: ['Zwemmen', '#4cc9e5', '🏊'], roeien: ['Roeien', '#9b8cff', '🚣'],
-  racket: ['Racketsport', '#d6e04b', '🎾'], teamsport: ['Teamsport', '#3fd29a', '⚽'], water: ['Watersport', '#3f8fe0', '🏄'], wintersport: ['Wintersport', '#a9dcff', '⛷️'], vechtsport: ['Vechtsport', '#e0705a', '🥊'], dans: ['Dansen', '#ff8fd0', '💃'],
-  kracht: ['Kracht (overig)', '#4cc26a', '🏋️'], hiit: ['HIIT / cardio', '#ff9f43', '⚡'], yoga: ['Yoga / stretch', '#c77dff', '🧘'], elliptical: ['Crosstrainer / trap', '#7fd1ae', '🏃'], overig: ['Overig', '#9a9ca1', '•'] };
+const ACT = tmap({ wandelen: ['§app.act.wandelen', '#6c9cff', '🚶'], fietsen: ['§app.act.fietsen', '#e5b84b', '🚴'], hardlopen: ['§app.act.hardlopen', '#ff6b9a', '🏃'], zwemmen: ['§app.act.zwemmen', '#4cc9e5', '🏊'], roeien: ['§app.act.roeien', '#9b8cff', '🚣'],
+  racket: ['§app.act.racket', '#d6e04b', '🎾'], teamsport: ['§app.act.teamsport', '#3fd29a', '⚽'], water: ['§app.act.water', '#3f8fe0', '🏄'], wintersport: ['§app.act.wintersport', '#a9dcff', '⛷️'], vechtsport: ['§app.act.vechtsport', '#e0705a', '🥊'], dans: ['§app.act.dans', '#ff8fd0', '💃'],
+  kracht: ['§app.act.kracht', '#4cc26a', '🏋️'], hiit: ['§app.act.hiit', '#ff9f43', '⚡'], yoga: ['§app.act.yoga', '#c77dff', '🧘'], elliptical: ['§app.act.elliptical', '#7fd1ae', '🏃'], overig: ['§app.act.overig', '#9a9ca1', '•'] });
 const actLabel = (t) => (ACT[t] || ACT.overig)[0], actColor = (t) => (ACT[t] || ACT.overig)[1];
 // kalenderweek van het plan, zoals in de programmanaam op het toestel ("GC 2026-W45 Full Body A")
 function isoWeekOf(d) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y = t.getUTCFullYear(); return { y, w: Math.ceil(((t - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7) }; }
@@ -26,8 +26,8 @@ const planIso = (p) => isoWeekOf(new Date(p?.generatedAt || Date.now()));
 const planLabel = (p) => { const { y, w } = planIso(p); return `${y}-W${String(w).padStart(2, '0')}`; };
 const progName = (p, s) => `GC ${planLabel(p)} ${s.name}`;
 const actName = (a) => a.label || actLabel(a.type);
-const actLine = (a) => `${actName(a)}${a.km ? ` ${(Math.round(a.km * 10) / 10).toLocaleString('nl-NL')} km` : ''}${a.minutes ? ` · ${a.minutes} min` : ''}`;
-const DAY_SHORT = { spieropbouw: 'kracht', combinatie: 'combinatie', afvallen: 'afvallen', circuit: 'cardio-circuit', buiten: 'cardio buiten' };
+const actLine = (a) => `${actName(a)}${a.km ? ` ${(Math.round(a.km * 10) / 10).toLocaleString(localeOf())} km` : ''}${a.minutes ? ` · ${a.minutes} min` : ''}`;
+const DAY_SHORT = tmap({ spieropbouw: '§app.dayshort.spieropbouw', combinatie: '§app.dayshort.combinatie', afvallen: '§app.dayshort.afvallen', circuit: '§app.dayshort.circuit', buiten: '§app.dayshort.buiten' });
 
 let state = null;
 
@@ -35,9 +35,9 @@ let state = null;
 async function api(method, url, data) {
   const r = await fetch(url, { method, headers: data ? { 'content-type': 'application/json' } : {}, body: data ? JSON.stringify(data) : undefined });
   const j = await r.json().catch(() => ({}));
-  if (r.status === 401 && j.login) { showAuth('login'); throw new Error('Log opnieuw in'); }
+  if (r.status === 401 && j.login) { showAuth('login'); throw new Error(t('app.logOpnieuwIn')); }
   // fout met een code uit het woordenboek: in de taal van de browserkant tonen
-  if (!r.ok) throw new Error(j.code && has(j.code) ? t(j.code, j.vars || {}) : j.error || `HTTP ${r.status}`);
+  if (!r.ok) throw new Error(j.code && has(j.code) ? t(j.code, j.vars || {}) : j.error || t('app.http', { status: r.status }));
   return j;
 }
 
@@ -56,14 +56,14 @@ async function busy(btn, fn) {
 }
 
 // ---------- thema ----------
-const THEMES = { dark: ['🌙', 'Donker'], light: ['☀️', 'Licht'], auto: ['🖥️', 'Automatisch (systeem)'] };
+const THEMES = tmap({ dark: ['🌙', '§app.themes.dark'], light: ['☀️', '§app.themes.light'], auto: ['🖥️', '§app.themes.auto'] });
 // Licht of donker thema toepassen en onthouden.
 function applyTheme(t) {
   const root = document.documentElement;
   if (t === 'auto') delete root.dataset.theme; else root.dataset.theme = t;
   try { localStorage.setItem('gc-theme', t); } catch {}
   const [icon, label] = THEMES[t];
-  $('#themeBtn').textContent = icon; $('#themeBtn').title = `Thema: ${label} — klik om te wisselen`;
+  $('#themeBtn').textContent = icon; $('#themeBtn').title = tx('app.themaKlikOmTe', { label });
   const dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.querySelector('meta[name=theme-color]').content = dark ? '#0f1012' : '#f4f3ef';
 }
@@ -73,7 +73,7 @@ applyTheme(theme);
 $('#themeBtn').addEventListener('click', () => {
   const order = ['dark', 'light', 'auto'];
   theme = order[(order.indexOf(theme) + 1) % 3];
-  applyTheme(theme); toast(`Thema: ${THEMES[theme][1]}`);
+  applyTheme(theme); toast(t('app.thema', { a: THEMES[theme][1] }));
   if (state) { renderHome(); if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); }
 });
 
@@ -90,15 +90,15 @@ document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () 
 
 // ---------- charts (SVG, geen dependencies) ----------
 // series: [{ cls, label, unit, points: [{x: 'YYYY-MM-DD', y}] }]
-const fmtDate = (x) => { const d = new Date(String(x).slice(0, 10) + 'T12:00:00'); if (isNaN(d)) return String(x); const t = d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }); return t.charAt(0).toUpperCase() + t.slice(1); };
+const fmtDate = (x) => { const d = new Date(String(x).slice(0, 10) + 'T12:00:00'); if (isNaN(d)) return String(x); const t = d.toLocaleDateString(localeOf(), { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }); return t.charAt(0).toUpperCase() + t.slice(1); };
 // eenheid voor de y-as: kort en leesbaar
 const axisUnit = (u) => ({ '%-punt': '%-pt' }[u] ?? u ?? '');
-const fmtTick = (v, dec, unit) => `${v.toLocaleString('nl-NL', { minimumFractionDigits: dec, maximumFractionDigits: dec })}${unit ? (/^[%×]/.test(unit) ? '' : ' ') + unit : ''}`;
+const fmtTick = (v, dec, unit) => `${v.toLocaleString(localeOf(), { minimumFractionDigits: dec, maximumFractionDigits: dec })}${unit ? (/^[%×]/.test(unit) ? '' : ' ') + unit : ''}`;
 
 // Lijngrafiek (SVG) met een of meer reeksen, as-labels en tooltip.
 function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, zoneColor = null } = {}) {
   const pts = series.flatMap((s) => s.points);
-  if (pts.length < 1) { el.innerHTML = '<div class="empty">Nog geen data</div>'; return; }
+  if (pts.length < 1) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   // eenheid op de y-as: expliciet, of de gemeenschappelijke eenheid van alle reeksen
   const units = [...new Set(series.map((s) => s.unit || ''))];
   const unit = axisUnit(yUnit ?? (units.length === 1 ? units[0] : ''));
@@ -193,13 +193,13 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
       rows += `<div class="trow"><span class="dot ${s.cls === 'lb' ? 'b' : 'a'}"${s.color ? ` style="background:${s.color}"` : ''}></span>${esc(s.label || yLabel || 'Waarde')}: <b>${q.y}${s.unit ? ' ' + esc(s.unit) : ''}</b>${q.note ? ` <span class="muted">${esc(q.note)}</span>` : ''}</div>`;
     });
     const tr = markDays.filter((m) => m.x === best);
-    if (tr.length) rows += tr.map((m) => `<div class="trow"><span class="dot tm"${m.color ? ` style="background:${m.color}"` : ''}></span>${m.color ? '' : 'Getraind: '}<b>${esc(m.label)}</b></div>`).join('');
+    if (tr.length) rows += tr.map((m) => `<div class="trow"><span class="dot tm"${m.color ? ` style="background:${m.color}"` : ''}></span>${m.color ? '' : t('app.getraind')}<b>${esc(m.label)}</b></div>`).join('');
     tip.dataset.x = best;
     // gekleurde lijn bovenaan: de band (goed/let op/niet goed) of zone waar de waarde van de eerste reeks in valt
     const q0 = series[0]?.points.find((p) => p.x === best);
     const zc = q0 ? (zoneColor ? zoneColor(q0.y) : BAND_COLORS[bandOf(bands, q0.y)]) : null;
     tip.classList.toggle('zoned', !!zc); if (zc) tip.style.setProperty('--zc', zc); else tip.style.removeProperty('--zc');
-    tip.innerHTML = `<div class="tdate">${esc(fmtDate(best))}</div>${rows}${tr.length && onPick ? '<div class="small muted">klik voor details</div>' : ''}`;
+    tip.innerHTML = `<div class="tdate">${esc(fmtDate(best))}</div>${rows}${tr.length && onPick ? '<div class="small muted">' + t('app.klikVoorDetails') + '</div>' : ''}`;
     tip.classList.remove('hidden');
     const px = (cx / W) * r.width, py = (topY / H) * r.height;
     const tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -226,7 +226,7 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
 
 // Staafgrafiek (SVG) voor een reeks waarden.
 function barChart(el, items, { unit = '' } = {}) {
-  if (!items.length) { el.innerHTML = '<div class="empty">Nog geen data</div>'; return; }
+  if (!items.length) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   const W = el.clientWidth || 600, H = el.clientHeight || 200, R = 10, T = 10, B = 26;
   const raw = Math.max(...items.map((i) => i.y), 1);
   const L = Math.max(44, fmtTick(raw, 0, unit).length * 6.4 + 12);
@@ -256,17 +256,17 @@ function barChart(el, items, { unit = '' } = {}) {
 function renderSyncStatus() {
   const m = state.meta || {};
   const s = $('#syncStatus');
-  if (state.setup && !state.setup.speediance) { s.textContent = 'Speediance nog niet gekoppeld'; s.title = 'Instellingen → Speediance-account'; s.style.color = ''; return; }
-  if (m.lastSyncError) { s.textContent = 'Sync-fout'; s.title = m.lastSyncError; s.style.color = 'var(--warn)'; }
-  else if (m.lastSync) { s.textContent = 'Gesynct ' + new Date(m.lastSync).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' }); s.style.color = ''; s.title = ''; }
-  else s.textContent = 'Nog niet gesynct';
+  if (state.setup && !state.setup.speediance) { s.textContent = t('app.speedianceNogNietGekoppeld'); s.title = t('app.instellingenSpeedianceAccount'); s.style.color = ''; return; }
+  if (m.lastSyncError) { s.textContent = t('app.syncFout'); s.title = m.lastSyncError; s.style.color = 'var(--warn)'; }
+  else if (m.lastSync) { s.textContent = t('app.gesynct') + new Date(m.lastSync).toLocaleString(localeOf(), { dateStyle: 'short', timeStyle: 'short' }); s.style.color = ''; s.title = ''; }
+  else s.textContent = t('app.nogNietGesynct');
 }
 
 const pushMob = () => state?.settings?.pushMobility === 'on';
 // Kleur van een advies: omhoog, omlaag of neutraal.
 function noteClass(n = '') { return n.startsWith('↑') ? 'up' : n.startsWith('↓') ? 'down' : ''; }
 
-const FOCUS_LABELS = { armen: 'Armen', borst: 'Borst', schouders: 'Schouders', bovenrug: 'Bovenrug', onderrug: 'Onderrug', core: 'Buik / core', billen: 'Billen', benen: 'Benen' };
+const FOCUS_LABELS = tmap({ armen: '§app.focuslabels.armen', borst: '§app.focuslabels.borst', schouders: '§app.focuslabels.schouders', bovenrug: '§app.focuslabels.bovenrug', onderrug: '§app.focuslabels.onderrug', core: '§app.focuslabels.core', billen: '§app.focuslabels.billen', benen: '§app.focuslabels.benen' });
 const FOCUS_WORDS = {
   armen: ['arm', 'biceps', 'triceps'], borst: ['borst', 'pecs', 'chest'], schouders: ['schouder', 'delt'],
   bovenrug: ['bovenrug', 'rug', 'lats', 'trapez'], onderrug: ['onderrug', 'lage rug'], core: ['buik', 'core', 'abs', 'romp'],
@@ -277,7 +277,7 @@ const MAX_MUSCLE = () => Math.max(1, ...Object.values(state.plan?.muscles || {})
 
 // ---------- vorige weken ----------
 // Het tabblad Plan kan terugbladeren naar bewaarde weekplannen: per training gepland tegenover gedaan, per oefening.
-const nlNum = (n) => Number(n || 0).toLocaleString('nl-NL', { maximumFractionDigits: 1 });
+const nlNum = (n) => Number(n || 0).toLocaleString(localeOf(), { maximumFractionDigits: 1 });
 let pastWeek = null;       // null = deze week, anders "2026-W44"
 let weekList = null;       // [{ week, planned, done, … }] uit het archief, nieuwste eerst
 let pastData = null;       // het rapport van de bekeken week
@@ -301,7 +301,7 @@ async function gotoWeek(week) {
   pastWeek = week && week !== cur ? week : null;
   document.querySelectorAll('#tab-plan .cur-only').forEach((el) => el.classList.toggle('hidden', !!pastWeek));
   $('#pastWeek').classList.toggle('hidden', !pastWeek);
-  if (pastWeek) { $('#coachPanel').classList.add('hidden'); $('#pastWeek').innerHTML = '<div class="card muted">Laden …</div>'; try { pastData = await api('GET', '/api/plan/week?w=' + pastWeek); } catch (e) { pastData = null; toast(e.message, true); } }
+  if (pastWeek) { $('#coachPanel').classList.add('hidden'); $('#pastWeek').innerHTML = '<div class="card muted">' + t('pk.loading') + '</div>'; try { pastData = await api('GET', '/api/plan/week?w=' + pastWeek); } catch (e) { pastData = null; toast(e.message, true); } }
   else { pastData = null; renderCoach(state.meta?.coach || null); }
   renderPlan();
 }
@@ -323,41 +323,41 @@ function setsShort(sets) {
   const kg = (w) => nlNum(w);
   return same ? `${sets.length} × ${sets[0].reps} × ${kg(sets[0].weight)} kg` : sets.map((x) => `${x.reps}×${kg(x.weight)}`).join(' · ') + ' kg';
 }
-const PW_STATUS = { ok: ['ok', '✓', 'gehaald'], less: ['less', '↓', 'minder dan gepland'], more: ['more', '↑', 'meer dan gepland'], missed: ['missed', '–', 'niet gedaan'] };
+const PW_STATUS = tmap({ ok: ['ok', '✓', '§app.pwstatus.ok'], less: ['less', '↓', '§app.pwstatus.less'], more: ['more', '↑', '§app.pwstatus.more'], missed: ['missed', '–', '§app.pwstatus.missed'] });
 
 // Toont een vorige week: samenvatting en per training de oefeningen, gepland tegenover gedaan.
 function renderPastWeek() {
   const [y, w] = pastWeek.split('-W');
-  $('#planTitle').textContent = `Week ${+w} · ${y}`;
+  $('#planTitle').textContent = t('app.week2', { a: +w, y });
   updateWeekNav();
   const d = pastData;
-  if (!d) { $('#planMeta').textContent = ''; $('#pastWeek').innerHTML = '<div class="card muted">Geen plan bewaard voor deze week.</div>'; return; }
+  if (!d) { $('#planMeta').textContent = ''; $('#pastWeek').innerHTML = '<div class="card muted">' + t('app.geenPlanBewaardVoor') + '</div>'; return; }
   const sm = d.summary;
-  $('#planMeta').innerHTML = `Terugkijken · <span class="badge">alleen bekijken</span> · <a href="#" id="pwBack">naar deze week</a>`;
+  $('#planMeta').innerHTML = `${t('app.terugkijken')} <span class="badge">${t('app.alleenBekijken')}</span> · <a href="#" id="pwBack">${t('app.naarDezeWeek')}</a>`;
   const card = (s) => {
     const dn = s.done;
-    const when = dn ? new Date(dn.date + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+    const when = dn ? new Date(dn.date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'short', day: 'numeric', month: 'short' }) : '';
     const rows = s.exercises.map((e) => {
-      const [cls, ico, tip] = dn ? PW_STATUS[e.status] : ['none', '', 'niet gedaan'];
+      const [cls, ico, tip] = dn ? PW_STATUS[e.status] : ['none', '', t('app.nietGedaan')];
       return `<tr class="pw-${cls}"><td>${e.group ? `<span class="badge ss">${esc(e.group)}</span> ` : ''}${esc(e.title)}</td><td class="pw-n">${setsShort(e.planned)}</td><td class="pw-n">${dn ? setsShort(e.done) : ''}</td><td class="pw-st" title="${tip}" data-tip="${tip}">${ico}</td></tr>`;
-    }).join('') + s.extra.map((e) => `<tr class="pw-extra"><td>${esc(e.title)} <span class="muted small">niet gepland</span></td><td class="pw-n">—</td><td class="pw-n">${setsShort(e.done)}</td><td class="pw-st" data-tip="extra gedaan">+</td></tr>`).join('');
+    }).join('') + s.extra.map((e) => `<tr class="pw-extra"><td>${esc(e.title)} <span class="muted small">${t('app.nietGepland')}</span></td><td class="pw-n">—</td><td class="pw-n">${setsShort(e.done)}</td><td class="pw-st" data-tip="${t('app.extraGedaan')}">+</td></tr>`).join('');
     return `<article class="card pw-card ${dn ? 'pw-done' : 'pw-skip'}" data-key="${esc(s.key)}">
       <header class="row between wrap gap"><div><h3 style="margin:0">${esc(s.name)}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}</h3>
-        <div class="small ${dn ? '' : 'muted'}">${dn ? `<span class="badge ok">gedaan · ${esc(when)}</span> ${dn.minutes ? `${dn.minutes} min · ` : ''}${dn.volume ? `${nlNum(dn.volume)} kg` : ''}` : '<span class="badge warn">niet gedaan</span>'}</div></div>
-        <div class="row gap wrap">${dn ? '<button type="button" class="btn ghost small" data-pw="view">Rapport</button>' : ''}
-          <button type="button" class="btn ghost small" data-pw="copy">Kopieer naar deze week</button>
-          <button type="button" class="btn ghost small" data-pw="tpl">Opslaan als sjabloon</button></div></header>
-      ${s.exercises.length || s.extra.length ? `<table class="pw-tbl"><thead><tr><td>Oefening</td><td class="pw-n">Gepland</td><td class="pw-n">Gedaan</td><td></td></tr></thead><tbody>${rows}</tbody></table>` : '<p class="muted small">Geen oefeningen.</p>'}
+        <div class="small ${dn ? '' : 'muted'}">${dn ? `<span class="badge ok">${t('app.gedaan', { a: esc(when) })}</span> ${dn.minutes ? t('app.min6', { minutes: dn.minutes }) : ''}${dn.volume ? `${nlNum(dn.volume)} kg` : ''}` : '<span class="badge warn">' + t('app.nietGedaan') + '</span>'}</div></div>
+        <div class="row gap wrap">${dn ? '<button type="button" class="btn ghost small" data-pw="view">' + t('app.rapport') + '</button>' : ''}
+          <button type="button" class="btn ghost small" data-pw="copy">${t('app.kopieerNaarDezeWeek')}</button>
+          <button type="button" class="btn ghost small" data-pw="tpl">${t('ed.asTemplate')}</button></div></header>
+      ${s.exercises.length || s.extra.length ? `<table class="pw-tbl"><thead><tr><td>${t('app.oefening')}</td><td class="pw-n">${t('app.gepland')}</td><td class="pw-n">${t('app.gedaan2')}</td><td></td></tr></thead><tbody>${rows}</tbody></table>` : '<p class="muted small">' + t('app.geenOefeningen') + '</p>'}
     </article>`;
   };
   $('#pastWeek').innerHTML = `<div class="card pw-sum">
       <div class="pw-tiles">
-        <div><span class="eyebrow">Trainingen</span><b>${sm.done} van ${sm.planned}</b></div>
-        <div><span class="eyebrow">Sets gehaald</span><b>${sm.doneSets} van ${sm.plannedSets}</b></div>
-        <div><span class="eyebrow">Volume</span><b>${nlNum(sm.volume)} kg</b></div>
-        <div><span class="eyebrow">Tijd</span><b>${sm.minutes} min</b></div>
+        <div><span class="eyebrow">${t('tp.title')}</span><b>${t('app.van', { done: sm.done, planned: sm.planned })}</b></div>
+        <div><span class="eyebrow">${t('app.setsGehaald')}</span><b>${t('app.van2', { doneSets: sm.doneSets, plannedSets: sm.plannedSets })}</b></div>
+        <div><span class="eyebrow">${t('ed.volume')}</span><b>${nlNum(sm.volume)} kg</b></div>
+        <div><span class="eyebrow">${t('app.tijd')}</span><b>${sm.minutes} min</b></div>
       </div>
-      <div class="muted small pw-legend"><span class="pw-ok">✓ gehaald</span><span class="pw-less">↓ minder dan gepland</span><span class="pw-more">↑ meer</span><span class="pw-missed">– niet gedaan</span></div>
+      <div class="muted small pw-legend"><span class="pw-ok">${t('app.gehaald')}</span><span class="pw-less">${t('app.minderDanGepland')}</span><span class="pw-more">${t('app.meer')}</span><span class="pw-missed">${t('app.nietGedaan2')}</span></div>
     </div>
     <div class="pw-grid">${d.sessions.map(card).join('')}</div>`;
   $('#pwBack')?.addEventListener('click', (ev) => { ev.preventDefault(); gotoWeek(null); });
@@ -368,7 +368,7 @@ function renderPastWeek() {
     c.querySelector('[data-pw=copy]').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
       try {
         const r = await api('POST', '/api/plan/session', { mode: 'copy', week: pastWeek, from: s.key, name: s.name });
-        state.plan = r.plan; toast(`“${s.name}” staat nu ook in deze week`); gotoWeek(null);
+        state.plan = r.plan; toast(t('app.staatNuOokIn', { name: s.name })); gotoWeek(null);
       } catch (e) { toast(e.message, true); }
     }));
     c.querySelector('[data-pw=tpl]').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
@@ -383,53 +383,53 @@ function renderPlan() {
   const plan = state.plan;
   const wrap = $('#sessions');
   if (!plan || state.setup?.needed) {
-    $('#planTitle').textContent = 'Weekplan';
-    $('#planMeta').innerHTML = state.setup?.needed ? 'Nog geen plan. Doorloop eerst de stappen op <a href="#" onclick="document.querySelector(\'.tab[data-tab=home]\').click();return false">Overzicht</a>: Speediance-account, je voorkeuren, en dan je eerste plan.' : 'Nog geen plan. Klik op “Nieuw voorstel”.';
+    $('#planTitle').textContent = t('ui.plan.weekplan');
+    $('#planMeta').innerHTML = state.setup?.needed ? '' + t('app.nogGeenPlanDoorloop') + ' <a href="#" onclick="document.querySelector(\'.tab[data-tab=home]\').click();return false">' + t('ui.tabs.overzicht') + '</a>' + t('app.speedianceAccountJeVoorkeuren') + '' : t('app.nogGeenPlanKlik');
     $('#planOverview').innerHTML = ''; wrap.innerHTML = ''; return;
   }
   if (pastWeek) return renderPastWeek();
-  $('#planTitle').textContent = `Week ${planIso(plan).w} · ${planIso(plan).y}`;
+  $('#planTitle').textContent = t('app.week3', { w: planIso(plan).w, y: planIso(plan).y });
   updateWeekNav();
   const nDone = plan.sessions.filter((x) => !x.outdoor && doneOf(x)).length, nGym = plan.sessions.filter((x) => !x.outdoor).length;
-  $('#planMeta').innerHTML = `${GOAL[plan.goal] || plan.goal} · ${plan.daysPerWeek}× per week · bron: ${esc(plan.source)}` + (plan.deload ? ' · <span class="badge warn">deload-week</span>' : '')
-    + (nDone ? ` · <span class="badge ok">${nDone} van ${nGym} gedaan${nDone >= nGym ? ' — week compleet 💪' : ''}</span>` : '');
+  $('#planMeta').innerHTML = t('app.perWeekBron', { a: GOAL[plan.goal] || plan.goal, daysPerWeek: plan.daysPerWeek, b: esc(plan.source) }) + (plan.deload ? ' · <span class="badge warn">' + t('app.deloadWeek') + '</span>' : '')
+    + (nDone ? ` · <span class="badge ok">${t('app.vanGedaan', { nDone, nGym, a: nDone >= nGym ? t('app.weekCompleet') : '' })}</span>` : '');
 
   renderWeekMap();
 
   wrap.innerHTML = plan.sessions.map((s) => s.outdoor ? `
     <article class="card session outdoor" data-key="${esc(s.key)}">
-      <header><div><h3>${esc(s.name)}</h3><div class="muted small">~${s.estMinutes} min · <span class="badge">${esc(DAY_SHORT.buiten)}</span></div></div>
+      <header><div><h3>${esc(s.name)}</h3><div class="muted small">${t('app.min', { estMinutes: s.estMinutes })} <span class="badge">${esc(DAY_SHORT.buiten)}</span></div></div>
         <div class="out-ico" aria-hidden="true">🚶‍♂️🚴</div></header>
       <p class="small">${esc(s.advice || '')}</p>
       ${outdoorDone(s)}
-      <p class="muted small">Geen programma voor de Gym Monster. Je wandel- of fietsrit komt binnen via Apple Health (Instellingen → Apple Health).</p>
+      <p class="muted small">${t('app.geenProgrammaVoorDe')}</p>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
-      <header><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}</h3><div class="muted small">~${s.estMinutes} min · ${s.exercises.length} oefeningen${s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">cardio-circuit</span>' : ''} ${doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">op toestel</span>' : s.changedAfterPush ? '· <span class="badge warn">gewijzigd, opnieuw op toestel zetten</span>' : ''}</div></div>
+      <header><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div></header>
-      ${s.warmup && (s.warmup.mobility.length + s.warmup.cable.length) ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">Warming-up</span><span class="ri-sum">${s.warmup.mobility.length + s.warmup.cable.length} oef. · ~6 min</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
+      ${s.warmup && (s.warmup.mobility.length + s.warmup.cable.length) ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: s.warmup.mobility.length + s.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
       ${s.exercises.map((e, i) => `
         <button class="row-item${exDone(s, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
-          ${exDone(s, e) ? '<span class="ri-check" title="gedaan">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}" title="${e.focus ? 'focus deze week' : ''}"></span>`}
+          ${exDone(s, e) ? '<span class="ri-check" title="' + t('app.gedaan3') + '">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}" title="${e.focus ? t('app.focusDezeWeek') : ''}"></span>`}
           <span class="ri-name">${e.group ? `<span class="badge ss">${e.group}${s.exercises.slice(0, i + 1).filter((x) => x.group === e.group).length}</span> ` : ''}${esc(e.title)}</span>
           <span class="ri-sum">${setsSummary(e)}${/^↑/.test(e.note || '') ? ' <span class="up">↑</span>' : /^↓/.test(e.note || '') ? ' <span class="down">↓</span>' : ''}</span>
           <span class="ri-chev" aria-hidden="true">›</span>
         </button>`).join('')}
-      ${s.cooldown?.length ? `<button class="row-item wc" data-open="cool"><span class="ri-dot cool"></span><span class="ri-name">Cooldown</span><span class="ri-sum">${s.cooldown.length} stretches · ~${coolMin(s.cooldown)} min</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
+      ${s.cooldown?.length ? `<button class="row-item wc" data-open="cool"><span class="ri-dot cool"></span><span class="ri-name">${t('ed.cooldown')}</span><span class="ri-sum">${t('app.stretchesMin', { n: s.cooldown.length, a: coolMin(s.cooldown) })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
       ${doneBanner(s)}
       <footer>${doneOf(s) ? `
-        <button class="btn accent" data-act="view">Bekijk training</button>
+        <button class="btn accent" data-act="view">${t('app.bekijkTraining')}</button>
         <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
         <button class="btn ghost" data-act="lock" title="${s.locked ? t('ed.unlockHint') : t('ed.lockHint')}">${s.locked ? t('ed.unlock') : t('ed.lock')}</button>
         ${s.edited ? `<button class="btn ghost" data-act="revert">${t('ed.reset')}</button>` : ''}
-        <button class="btn ghost" data-act="push">Opnieuw op toestel</button>` : `
+        <button class="btn ghost" data-act="push">${t('app.opnieuwOpToestel')}</button>` : `
         <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
         <button class="btn ghost" data-act="lock" title="${s.locked ? t('ed.unlockHint') : t('ed.lockHint')}">${s.locked ? t('ed.unlock') : t('ed.lock')}</button>
         ${s.edited ? `<button class="btn ghost" data-act="revert">${t('ed.reset')}</button>` : ''}
         ${s.custom ? `<button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>` : ''}
-        ${state.settings.ai?.provider && state.settings.ai.provider !== 'none' ? `<button class="btn ghost" data-act="coach" title="Laat de AI-coach naar deze training kijken; jij kiest wat je overneemt">AI-advies</button>` : ''}
-        <button class="btn ghost" data-act="dry">Controleer</button>
-        <button class="btn accent" data-act="push">Zet op Gym Monster</button>`}
+        ${state.settings.ai?.provider && state.settings.ai.provider !== 'none' ? `<button class="btn ghost" data-act="coach" title="${t('app.laatDeAiCoach')}">${t('app.aiAdvies')}</button>` : ''}
+        <button class="btn ghost" data-act="dry">${t('app.controleer')}</button>
+        <button class="btn accent" data-act="push">${t('app.zetOpGymMonster')}</button>`}
       </footer>
     </article>`).join('');
   highlightSessions();
@@ -442,17 +442,17 @@ const exDone = (s, e) => { const d = doneOf(s); return !!(d && (d.exercises ? d.
 // Groene balk "Gedaan" bij een training die deze week al is gedaan.
 function doneBanner(s) {
   const d = doneOf(s); if (!d) return '';
-  const day = new Date(d.date + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
-  const facts = [d.minutes ? `${d.minutes} min` : null, d.volume ? `${d.volume.toLocaleString('nl-NL')} kg` : null, d.kcal ? `${d.kcal} kcal` : null].filter(Boolean).join(' · ');
-  return `<div class="done-banner"><span class="done-check">✓</span><div><b>Gedaan op ${esc(day)}</b>${facts ? `<div class="small">${esc(facts)}</div>` : ''}</div></div>`;
+  const day = new Date(d.date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'short', day: 'numeric', month: 'short' });
+  const facts = [d.minutes ? `${d.minutes} min` : null, d.volume ? `${d.volume.toLocaleString(localeOf())} kg` : null, d.kcal ? `${d.kcal} kcal` : null].filter(Boolean).join(' · ');
+  return `<div class="done-banner"><span class="done-check">✓</span><div><b>${t('app.gedaanOp', { a: esc(day) })}</b>${facts ? `<div class="small">${esc(facts)}</div>` : ''}</div></div>`;
 }
 
 // cardio buiten: laat zien wat er deze week al via Apple Health binnenkwam
 function outdoorDone() {
   const acts = (state.activities || []).filter((a) => a.date >= periodStart('week') && ['wandelen', 'fietsen', 'hardlopen', 'wandeltocht'].includes(a.type));
-  if (!acts.length) return '<p class="muted small">Deze week nog geen wandel- of fietsactiviteit binnengekomen.</p>';
+  if (!acts.length) return '<p class="muted small">' + t('app.dezeWeekNogGeen') + '</p>';
   const min = acts.reduce((t, a) => t + (a.minutes || 0), 0), km = acts.reduce((t, a) => t + (a.km || 0), 0);
-  return `<p class="small"><span class="badge ok">deze week</span> ${acts.length}× · ${min} min${km ? ` · ${(Math.round(km * 10) / 10).toLocaleString('nl-NL')} km` : ''}</p>`;
+  return `<p class="small"><span class="badge ok">${t('app.dezeWeek')}</span> ${t('app.min2', { n: acts.length, min, a: km ? t('app.km', { a: (Math.round(km * 10) / 10).toLocaleString(localeOf()) }) : '' })}</p>`;
 }
 
 let selMuscle = null;
@@ -467,21 +467,21 @@ function renderWeekMap() {
     const rows = [];
     for (const s of plan.sessions) s.exercises.forEach((e, i) => {
       const w = e.muscles?.[selMuscle];
-      if (w) rows.push(`<li><button class="linklike" data-jump="${esc(s.key)}|${i}"><b>${esc(s.name)}</b> · ${esc(e.title)}</button> <span class="muted">(${e.sets.length} sets${w < 1 ? ', secundair' : ''})</span></li>`);
+      if (w) rows.push(`<li><button class="linklike" data-jump="${esc(s.key)}|${i}"><b>${esc(s.name)}</b> · ${esc(e.title)}</button> <span class="muted">${t('app.sets', { n: e.sets.length, a: w < 1 ? t('app.secundair') : '' })}</span></li>`);
     });
-    detail = `<div class="msel"><div class="row between"><b>${esc(MUSCLE_LABELS[selMuscle])}: ${Math.round(plan.muscles[selMuscle] * 10) / 10} sets deze week</b><button class="btn small ghost" data-clear>Alles tonen</button></div><ul>${rows.join('')}</ul></div>`;
+    detail = `<div class="msel"><div class="row between"><b>${t('app.setsDezeWeek', { a: esc(MUSCLE_LABELS[selMuscle]), b: Math.round(plan.muscles[selMuscle] * 10) / 10 })}</b><button class="btn small ghost" data-clear>${t('app.allesTonen')}</button></div><ul>${rows.join('')}</ul></div>`;
   }
   $('#planOverview').innerHTML = `<div class="card week-map">
-    <div class="wm-fig">${bodyMap(plan.muscles || {}, { height: 340, title: 'Spiergroepen deze week', selected: selMuscle })}
-      <div class="muted small" style="text-align:center">Klik op een spiergroep in de lijst of het figuur</div></div>
+    <div class="wm-fig">${bodyMap(plan.muscles || {}, { height: 340, title: t('app.spiergroepenDezeWeek'), selected: selMuscle })}
+      <div class="muted small" style="text-align:center">${t('app.klikOpEenSpiergroep')}</div></div>
     <div class="wm-info">
-      <div class="eyebrow">Deze week</div>
-      ${plan.focus?.length ? `<div class="chips-inline">${plan.focus.map((f) => `<span class="chip on">${esc(FOCUS_LABELS[f] || f)}</span>`).join('')}</div>` : '<div class="muted small">Geen focus gekozen: evenwichtig schema.</div>'}
+      <div class="eyebrow">${t('ui.stats.dezeWeek')}</div>
+      ${plan.focus?.length ? `<div class="chips-inline">${plan.focus.map((f) => `<span class="chip on">${esc(FOCUS_LABELS[f] || f)}</span>`).join('')}</div>` : '<div class="muted small">' + t('app.geenFocusGekozenEvenwichtig') + '</div>'}
       ${plan.wish ? `<div class="wish">“${esc(plan.wish)}”</div>` : ''}
-      <div class="eyebrow" style="margin-top:.8rem">Sets per spiergroep (incl. secundair)</div>
+      <div class="eyebrow" style="margin-top:.8rem">${t('app.setsPerSpiergroepIncl')}</div>
       <div class="mbars">${top.map(([k, v]) => `<button class="mbar ${selMuscle === k ? 'on' : selMuscle ? 'off' : ''}" data-m="${k}" aria-pressed="${selMuscle === k}"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / top[0][1]) * 100}%"></div></div><b>${Math.round(v * 10) / 10}</b></button>`).join('')}</div>
       ${detail}
-      <div class="legend"><span class="sq m1"></span>licht <span class="sq m2"></span>gemiddeld <span class="sq m3"></span>veel</div>
+      <div class="legend"><span class="sq m1"></span>${t('app.licht')} <span class="sq m2"></span>${t('app.gemiddeld')} <span class="sq m3"></span>${t('app.veel')}</div>
     </div></div>`;
   highlightSessions();
 }
@@ -531,23 +531,23 @@ let programs = null;
 // Haalt de programma's op het toestel op.
 async function loadPrograms(btn) {
   const box = $('#programsBox');
-  box.innerHTML = '<span class="muted">Programma’s ophalen bij Speediance…</span>';
+  box.innerHTML = '<span class="muted">' + t('app.programmaSOphalenBij') + '</span>';
   try { programs = (await api('GET', '/api/programs')).programs; renderPrograms(); }
   catch (e) { box.innerHTML = `<span class="down">${esc(e.message)}</span>`; }
 }
 // Lijst met programma's op het toestel, met opruimen van oude GymCoach-programma's.
 function renderPrograms() {
   const box = $('#programsBox');
-  if (!programs.length) { box.innerHTML = '<span class="muted">Geen eigen programma’s gevonden op je account.</span>'; return; }
+  if (!programs.length) { box.innerHTML = '<span class="muted">' + t('app.geenEigenProgrammaS') + '</span>'; return; }
   const cur = state.plan ? `GC ${planLabel(state.plan)} ` : null;
-  box.innerHTML = `<div class="row between wrap gap"><span class="muted">${programs.length} programma’s · ${programs.filter((p) => p.gymcoach).length} van GymCoach</span>
-    <div class="row gap wrap"><button class="btn small ghost" data-p="old">Selecteer oude GymCoach-programma’s</button><button class="btn small ghost" data-p="none">Niets selecteren</button></div></div>
-    <div class="tablewrap"><table class="progtable"><thead><tr><th></th><th>Naam</th><th>Aangemaakt</th><th class="num">Oefeningen</th></tr></thead><tbody>
+  box.innerHTML = `<div class="row between wrap gap"><span class="muted">${t('app.programmaSVanGymcoach', { n: programs.length, a: programs.filter((p) => p.gymcoach).length })}</span>
+    <div class="row gap wrap"><button class="btn small ghost" data-p="old">${t('app.selecteerOudeGymcoachProgramma')}</button><button class="btn small ghost" data-p="none">${t('app.nietsSelecteren')}</button></div></div>
+    <div class="tablewrap"><table class="progtable"><thead><tr><th></th><th>${t('nt.name')}</th><th>${t('app.aangemaakt')}</th><th class="num">${t('ed.exercises')}</th></tr></thead><tbody>
     ${programs.map((p) => `<tr><td><input type="checkbox" class="pchk" value="${esc(p.id)}" aria-label="Selecteer ${esc(p.name)}"></td>
-      <td>${esc(p.name)} ${p.gymcoach ? `<span class="badge ${cur && p.name.startsWith(cur) ? 'ok' : ''}">${cur && p.name.startsWith(cur) ? 'huidige week' : 'GymCoach'}</span>` : ''}</td>
-      <td class="muted">${p.created ? esc(new Date(p.created).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' })) : '—'}</td>
+      <td>${esc(p.name)} ${p.gymcoach ? `<span class="badge ${cur && p.name.startsWith(cur) ? 'ok' : ''}">${cur && p.name.startsWith(cur) ? t('app.huidigeWeek') : 'GymCoach'}</span>` : ''}</td>
+      <td class="muted">${p.created ? esc(new Date(p.created).toLocaleString(localeOf(), { dateStyle: 'short', timeStyle: 'short' })) : '—'}</td>
       <td class="num">${p.exercises ?? '—'}</td></tr>`).join('')}</tbody></table></div>
-    <div class="row gap end" style="margin-top:.6rem"><button class="btn danger" data-p="del">Verwijder geselecteerde</button></div>`;
+    <div class="row gap end" style="margin-top:.6rem"><button class="btn danger" data-p="del">${t('app.verwijderGeselecteerde')}</button></div>`;
 }
 $('#programsBox').addEventListener('click', async (ev) => {
   const b = ev.target.closest('[data-p]'); if (!b) return;
@@ -557,12 +557,12 @@ $('#programsBox').addEventListener('click', async (ev) => {
   if (b.dataset.p === 'none') boxes.forEach((c) => { c.checked = false; });
   if (b.dataset.p === 'del') {
     const ids = boxes.filter((c) => c.checked).map((c) => c.value);
-    if (!ids.length) { toast('Selecteer eerst één of meer programma’s', true); return; }
+    if (!ids.length) { toast(t('app.selecteerEerstEenOf'), true); return; }
     const names = programs.filter((p) => ids.includes(String(p.id))).map((p) => '• ' + p.name);
-    if (!await askConfirm(`Deze ${ids.length} programma’s definitief van je Speediance-account verwijderen?\n\n${names.slice(0, 15).join('\n')}${names.length > 15 ? `\n… en nog ${names.length - 15}` : ''}\n\nDit kan niet ongedaan worden gemaakt.`, { danger: true, okText: 'Verwijderen' })) return;
+    if (!await askConfirm(t('app.dezeProgrammaSDefinitief', { n: ids.length, a: names.slice(0, 15).join('\n'), b: names.length > 15 ? t('app.enNog', { a: names.length - 15 }) : '' }), { danger: true, okText: t('tp.delete') })) return;
     await busy(b, async () => {
       const r = await api('POST', '/api/programs/delete', { ids });
-      toast(`${r.done.length} verwijderd${r.failed.length ? `, ${r.failed.length} mislukt: ${r.failed[0].error}` : ''}`, r.failed.length > 0);
+      toast(t('app.verwijderd', { n: r.done.length, a: r.failed.length ? t('app.mislukt', { n: r.failed.length, error: r.failed[0].error }) : '' }), r.failed.length > 0);
       await loadPrograms();
     });
   }
@@ -574,7 +574,7 @@ let saveTimer;
 function savePlanSoon() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
-    try { state.plan = (await api('PUT', '/api/plan', state.plan)).plan; renderPlan(); toast('Opgeslagen'); } catch (e) { toast(e.message, true); }
+    try { state.plan = (await api('PUT', '/api/plan', state.plan)).plan; renderPlan(); toast(t('app.opgeslagen')); } catch (e) { toast(e.message, true); }
   }, 300);
 }
 
@@ -615,11 +615,11 @@ $('#sessions').addEventListener('click', async (ev) => {
     openEditor(session.key, edCtx());
     return;
   }
-  if (act === 'push' && !await askConfirm(`“${progName(state.plan, session)}” als programma op je Gym Monster zetten?`, { okText: 'Zet op toestel' })) return;
+  if (act === 'push' && !await askConfirm(t('app.alsProgrammaOpJe', { a: progName(state.plan, session) }), { okText: t('app.zetOpToestel') })) return;
   await busy(btn, async () => {
     const r = await api('POST', '/api/plan/push', { sessionKey: session.key, dryRun: act === 'dry' });
-    if (act === 'dry') toast(`Controle ok: ${r.plan.exercises.length} oefeningen, ${r.plan.exercises.reduce((n, e) => n + e.sets.length, 0)} sets`);
-    else { toast(`Op je Gym Monster gezet: ${r.plan.name}`); await load(); }
+    if (act === 'dry') toast(t('app.controleOkOefeningenSets', { n: r.plan.exercises.length, a: r.plan.exercises.reduce((n, e) => n + e.sets.length, 0) }));
+    else { toast(t('app.opJeGymMonster', { name: r.plan.name })); await load(); }
   });
 });
 
@@ -635,33 +635,33 @@ function openExercise(session, i) {
   const ramp = e.rampUp ? Math.max(0.5, Math.round(e.sets[0]?.weight || 0) / 2) : null;
   dlg.innerHTML = `<form method="dialog" class="exd">
     <div class="exd-head">
-      <div><div class="eyebrow">${esc(session.name)} · ${esc(e.patternLabel)}${e.focus ? ' · <span class="accent-text">focus</span>' : ''}</div><h2>${esc(e.title)}</h2>
-        <div class="muted small">${esc(e.muscle || '')} · ${e.type === 'compound' ? 'samengestelde oefening' : 'isolatieoefening'} · doel ${e.repRange[0]}–${e.repRange[1]} herhalingen</div></div>
-      <button value="close" class="btn ghost small" aria-label="Sluiten">✕</button>
+      <div><div class="eyebrow">${esc(session.name)} · ${esc(e.patternLabel)}${e.focus ? ' · <span class="accent-text">' + t('app.focus') + '</span>' : ''}</div><h2>${esc(e.title)}</h2>
+        <div class="muted small">${t('app.doelHerhalingen', { a: esc(e.muscle || ''), b: e.type === 'compound' ? t('app.samengesteldeOefening') : 'isolatieoefening', c: e.repRange[0], d: e.repRange[1] })}</div></div>
+      <button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button>
     </div>
     <div class="exd-body">
-      <div class="exd-map">${bodyMap(sc, { height: 170, title: 'Spieren in deze oefening' })}<div class="muted small" style="text-align:center">${Object.keys(sc).map((k) => esc(MUSCLE_LABELS[k] || k)).join(' · ')}</div></div>
+      <div class="exd-map">${bodyMap(sc, { height: 170, title: t('app.spierenInDezeOefening') })}<div class="muted small" style="text-align:center">${Object.keys(sc).map((k) => esc(MUSCLE_LABELS[k] || k)).join(' · ')}</div></div>
       <div class="exd-main">
-        <div class="note ${noteClass(e.note)}"><b>Advies:</b> ${esc(e.note || '—')}</div>
-        ${e.basis ? `<div class="muted small">Vorige keer: ${esc(e.basis)}</div>` : '<div class="muted small">Nog geen historie voor deze oefening.</div>'}
-        ${ramp ? `<div class="small">Begint met een opwarmset: 8 × ${ramp} kg</div>` : ''}
+        <div class="note ${noteClass(e.note)}"><b>${t('ed.advice')}</b> ${esc(e.note || '—')}</div>
+        ${e.basis ? `<div class="muted small">${t('app.vorigeKeer', { a: esc(e.basis) })}</div>` : '<div class="muted small">' + t('ed.noHistory') + '</div>'}
+        ${ramp ? `<div class="small">${t('app.begintMetEenOpwarmset', { ramp })}</div>` : ''}
         ${e.restNote ? `<div class="muted small">${esc(e.restNote)}</div>` : ''}${e.volumeNote ? `<div class="muted small">${esc(e.volumeNote)}</div>` : ''}
         <div class="rx" style="margin-top:.6rem">
-          <label>Sets<input type="number" min="1" max="6" data-f="sets" value="${e.sets.length}"></label>
-          <label>Herh.<input type="number" min="1" max="30" data-f="reps" value="${e.sets[0]?.reps}"></label>
+          <label>${t('ed.sets')}<input type="number" min="1" max="6" data-f="sets" value="${e.sets.length}"></label>
+          <label>${t('ed.reps')}<input type="number" min="1" max="30" data-f="reps" value="${e.sets[0]?.reps}"></label>
           <label>kg<input type="number" min="0.5" step="0.5" data-f="weight" value="${e.sets[0]?.weight}"></label>
-          <label>Rust s<input type="number" min="10" step="5" data-f="rest" value="${e.sets[0]?.rest}"></label>
+          <label>${t('app.rustS')}<input type="number" min="10" step="5" data-f="rest" value="${e.sets[0]?.rest}"></label>
         </div>
-        <table class="settable"><thead><tr><th>Set</th><th class="num">Herh.</th><th class="num">kg</th><th class="num">Rust</th></tr></thead><tbody>
-          ${ramp ? `<tr class="muted"><td>opwarm</td><td class="num">8</td><td class="num">${ramp}</td><td class="num">45 s</td></tr>` : ''}
+        <table class="settable"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ed.reps')}</th><th class="num">kg</th><th class="num">${t('app.rust')}</th></tr></thead><tbody>
+          ${ramp ? `<tr class="muted"><td>${t('ed.warmSet')}</td><td class="num">8</td><td class="num">${ramp}</td><td class="num">45 s</td></tr>` : ''}
           ${e.sets.map((x, n) => `<tr><td>${n + 1}</td><td class="num">${x.reps}</td><td class="num">${x.weight}</td><td class="num">${x.rest} s</td></tr>`).join('')}
         </tbody></table>
       </div>
     </div>
     <div class="row gap wrap end">
-      <button type="button" class="btn ghost" data-x="avoid">Niet meer voorstellen</button>
-      <button type="button" class="btn ghost" data-x="swap">Wissel oefening</button>
-      <button value="close" class="btn accent">Klaar</button>
+      <button type="button" class="btn ghost" data-x="avoid">${t('pk.avoid')}</button>
+      <button type="button" class="btn ghost" data-x="swap">${t('app.wisselOefening')}</button>
+      <button value="close" class="btn accent">${t('app.klaar')}</button>
     </div></form>`;
   dlg.querySelectorAll('input[data-f]').forEach((inp) => inp.addEventListener('change', () => {
     const f = inp.dataset.f, v = +inp.value, tmpl = e.sets[0];
@@ -673,7 +673,7 @@ function openExercise(session, i) {
   }));
   dlg.querySelector('[data-x=swap]').addEventListener('click', () => { dlg.close(); openSwap(e); });
   dlg.querySelector('[data-x=avoid]').addEventListener('click', async () => {
-    if (!await askConfirm(`“${e.title}” niet meer voorstellen?`)) return;
+    if (!await askConfirm(t('app.nietMeerVoorstellen', { title: e.title }))) return;
     dlg.close();
     try { state.plan = (await api('POST', '/api/avoid', { id: e.id })).plan; renderPlan(); } catch (er) { toast(er.message, true); }
   });
@@ -692,12 +692,12 @@ function openWarmCool(session, which) {
     ? [...session.warmup.mobility.map((m) => ({ t: m.title, d: m.dose, dev: pushMob() })), ...session.warmup.cable.map((c) => ({ t: c.title, d: `2 × ${c.reps} @ ${c.weight} kg`, dev: true }))]
     : session.cooldown.map((c) => ({ t: c.title, d: c.dose, dev: pushMob() }));
   dlg.innerHTML = `<form method="dialog" class="exd">
-    <div class="exd-head"><div><div class="eyebrow">${esc(session.name)}</div><h2>${which === 'warm' ? 'Warming-up (~6 min)' : `Cooldown (~${coolMin(session.cooldown)} min)`}</h2></div><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
-    <table class="settable"><thead><tr><th>Oefening</th><th>Dosering</th><th>Op toestel</th></tr></thead><tbody>
-      ${items.map((x) => `<tr><td>${esc(x.t)}</td><td>${esc(x.d)}</td><td>${x.dev ? (/per (kant|been|arm)/i.test(x.d || '') ? 'ja, 2 sets (links + rechts)' : 'ja') : '<span class="muted">alleen dashboard</span>'}</td></tr>`).join('')}
+    <div class="exd-head"><div><div class="eyebrow">${esc(session.name)}</div><h2>${which === 'warm' ? t('app.warmingUp6Min') : t('app.cooldownMin', { a: coolMin(session.cooldown) })}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
+    <table class="settable"><thead><tr><th>${t('app.oefening')}</th><th>${t('app.dosering')}</th><th>${t('app.opToestel2')}</th></tr></thead><tbody>
+      ${items.map((x) => `<tr><td>${esc(x.t)}</td><td>${esc(x.d)}</td><td>${x.dev ? (/per (kant|been|arm)/i.test(x.d || '') ? t('app.ja2SetsLinks') : 'ja') : '<span class="muted">' + t('app.alleenDashboard') + '</span>'}</td></tr>`).join('')}
     </tbody></table>
-    ${which === 'warm' ? '<p class="muted small">Daarna start de eerste zware oefening met een opwarmset op ~50%.</p>' : '<p class="muted small">Rustig ademen, niet verend stretchen.</p>'}
-    <div class="row end"><button value="close" class="btn accent">Klaar</button></div></form>`;
+    ${which === 'warm' ? '<p class="muted small">' + t('app.daarnaStartDeEerste') + '</p>' : '<p class="muted small">' + t('app.rustigAdemenNietVerend') + '</p>'}
+    <div class="row end"><button value="close" class="btn accent">${t('app.klaar')}</button></div></form>`;
   dlg.showModal();
 }
 
@@ -714,7 +714,7 @@ async function openSwap(ex) {
       try {
         const id = dlg.returnValue === 'reset' ? null : $('#swapSelect').value;
         state.plan = (await api('POST', '/api/swap', { pattern: ex.pattern, variant: ex.variant, id })).plan;
-        renderPlan(); toast('Plan bijgewerkt');
+        renderPlan(); toast(t('app.planBijgewerkt'));
       } catch (e) { toast(e.message, true); }
     }
   };
@@ -726,38 +726,38 @@ function openGenerate() {
   const cur = new Set(state.plan?.focus || []);
   const aiOn = state.settings.ai?.provider && state.settings.ai.provider !== 'none';
   dlg.innerHTML = `<form method="dialog" class="exd" id="genForm">
-    <div class="exd-head"><div><div class="eyebrow">Nieuw weekplan</div><h2>Hoe ziet je week eruit?</h2></div><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
-    ${(() => { const l = (state.plan?.sessions || []).filter((x) => x.locked); return l.length ? `<div class="note">🔒 Vastgezet en blijft staan: <b>${l.map((x) => esc(x.name)).join(', ')}</b>. Gewichten schuiven mee met je progressie (behalve bij vast gewicht).</div>` : ''; })()}
-    <div class="eyebrow" style="margin:0">Trainingsdagen</div>
+    <div class="exd-head"><div><div class="eyebrow">${t('app.nieuwWeekplan')}</div><h2>${t('app.hoeZietJeWeek')}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
+    ${(() => { const l = (state.plan?.sessions || []).filter((x) => x.locked); return l.length ? `<div class="note">${t('app.vastgezetEnBlijftStaan')} <b>${l.map((x) => esc(x.name)).join(', ')}</b>${t('app.gewichtenSchuivenMeeMet')}</div>` : ''; })()}
+    <div class="eyebrow" style="margin:0">${t('app.trainingsdagen')}</div>
     <div class="presets row gap wrap">
-      <button type="button" class="btn small ghost" data-pre="same">Alles ${esc(DAY_SHORT[state.settings.goal] || 'combinatie')}</button>
-      <button type="button" class="btn small ghost" data-pre="2k1c">2× kracht + 1× cardio-circuit</button>
-      <button type="button" class="btn small ghost" data-pre="2k1b">2× kracht + 1× buiten</button>
-      <button type="button" class="btn small ghost" data-pre="3k1b">3× kracht + 1× buiten</button>
+      <button type="button" class="btn small ghost" data-pre="same">${t('app.alles', { a: esc(DAY_SHORT[state.settings.goal] || 'combinatie') })}</button>
+      <button type="button" class="btn small ghost" data-pre="2k1c">${t('app.2Kracht1Cardio')}</button>
+      <button type="button" class="btn small ghost" data-pre="2k1b">${t('app.2Kracht1Buiten')}</button>
+      <button type="button" class="btn small ghost" data-pre="3k1b">${t('app.3Kracht1Buiten')}</button>
     </div>
     <div id="dayList" class="day-list"></div>
-    <div class="row gap"><button type="button" class="btn small ghost" data-x="addday">+ Dag</button><span class="muted small" id="dayNote"></span></div>
-    <div class="eyebrow" style="margin:.4rem 0 0">Focus deze week</div>
+    <div class="row gap"><button type="button" class="btn small ghost" data-x="addday">${t('app.dag')}</button><span class="muted small" id="dayNote"></span></div>
+    <div class="eyebrow" style="margin:.4rem 0 0">${t('app.focusDezeWeek')}</div>
     <div class="focus-chips">${Object.entries(FOCUS_LABELS).map(([k, l]) => `<label class="chip-check"><input type="checkbox" name="focus" value="${k}" ${cur.has(k) ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
-    <label>Je wens in eigen woorden (optioneel)
-      <textarea name="wish" rows="3" placeholder="Bijv. Ik wil komende week meer focussen op armen, borst, schouders en bovenrug">${esc(state.plan?.wish || '')}</textarea>
-      <span class="muted small">Herkende spiergroepen worden hierboven automatisch aangevinkt.</span>
+    <label>${t('app.jeWensInEigen')}
+      <textarea name="wish" rows="3" placeholder="${t('app.bijvIkWilKomende')}">${esc(state.plan?.wish || '')}</textarea>
+      <span class="muted small">${t('app.herkendeSpiergroepenWordenHierboven')}</span>
     </label>
-    ${aiOn ? '<label class="chip-check wide"><input type="checkbox" name="coach" checked><span>Laat de AI-coach het plan daarna nog nalopen</span></label>' : ''}
-    <p class="muted small">Focusgebieden krijgen voorrang, een extra set en zo nodig een extra oefening. Andere spiergroepen worden licht onderhouden.</p>
+    ${aiOn ? '<label class="chip-check wide"><input type="checkbox" name="coach" checked><span>' + t('app.laatDeAiCoach2') + '</span></label>' : ''}
+    <p class="muted small">${t('app.focusgebiedenKrijgenVoorrangEen')}</p>
     <div class="row gap end">
-      <button type="button" class="btn ghost" data-x="clear">Geen focus</button>
-      <button value="ok" class="btn accent">Maak plan</button>
+      <button type="button" class="btn ghost" data-x="clear">${t('app.geenFocus')}</button>
+      <button value="ok" class="btn accent">${t('app.maakPlan')}</button>
     </div></form>`;
   const f = dlg.querySelector('#genForm');
   // dagen: start met het vorige plan, anders met de instellingen
   let days = (state.plan?.dayTypes?.length ? [...state.plan.dayTypes] : Array.from({ length: +state.settings.daysPerWeek || 3 }, () => state.settings.goal || 'combinatie'));
   const drawDays = () => {
-    $('#dayList').innerHTML = days.map((t, i) => `<div class="day-row"><span class="day-n">Dag ${i + 1}</span>
+    $('#dayList').innerHTML = days.map((t, i) => `<div class="day-row"><span class="day-n">${tx('app.dag2', { a: i + 1 })}</span>
       <select data-d="${i}" aria-label="Soort training dag ${i + 1}">${Object.entries(DAY_TYPES).map(([k, l]) => `<option value="${k}" ${k === t ? 'selected' : ''}>${l}</option>`).join('')}</select>
       <button type="button" class="btn small ghost" data-del="${i}" aria-label="Dag ${i + 1} verwijderen" ${days.length <= 1 ? 'disabled' : ''}>✕</button></div>`).join('');
     const nK = days.filter((t) => !['circuit', 'buiten'].includes(t)).length;
-    $('#dayNote').textContent = `${nK}× kracht${days.length - nK ? ` · ${days.length - nK}× cardio` : ''}${nK ? ` → ${nK === 1 ? 'full body' : nK <= 3 ? 'full body A/B' + (nK === 3 ? '/C' : '') : 'upper/lower'}` : ''}`;
+    $('#dayNote').textContent = t('app.kracht', { nK, a: days.length - nK ? t('app.cardio', { a: days.length - nK }) : '', b: nK ? ` → ${nK === 1 ? 'full body' : nK <= 3 ? 'full body A/B' + (nK === 3 ? '/C' : '') : 'upper/lower'}` : '' });
   };
   drawDays();
   $('#dayList').addEventListener('change', (ev) => { const sel = ev.target.closest('[data-d]'); if (sel) { days[+sel.dataset.d] = sel.value; drawDays(); } });
@@ -782,14 +782,14 @@ function openGenerate() {
     try {
       state.plan = (await api('POST', '/api/plan/generate', { focus, wish: f.wish.value.trim(), dayTypes: days })).plan;
       if (state.meta) state.meta.coach = null; renderCoach(null);
-      renderPlan(); toast(focus.length ? `Plan gemaakt met focus op ${focus.map((x) => FOCUS_LABELS[x]).join(', ')}` : 'Nieuw evenwichtig plan gemaakt');
+      renderPlan(); toast(focus.length ? t('app.planGemaaktMetFocus', { a: focus.map((x) => FOCUS_LABELS[x]).join(', ') }) : t('app.nieuwEvenwichtigPlanGemaakt'));
       if (f.coach?.checked) $('#coachBtn').click();
     } catch (e) { toast(e.message, true); } finally { btn.disabled = false; }
   };
   dlg.showModal();
 }
 $('#genBtn').addEventListener('click', async () => {
-  if (state.plan?.source?.includes('AI') && !await askConfirm('Huidig plan (met AI-aanpassingen) vervangen door een nieuw voorstel?')) return;
+  if (state.plan?.source?.includes('AI') && !await askConfirm(t('app.huidigPlanMetAi'))) return;
   openGenerate();
 });
 
@@ -797,7 +797,7 @@ $('#genBtn').addEventListener('click', async () => {
 function coachRequest(btn, payload = {}) {
   return busy(btn, async () => {
     const p = $('#coachPanel');
-    p.classList.remove('hidden'); p.innerHTML = '<span class="muted">Coach denkt na…</span>';
+    p.classList.remove('hidden'); p.innerHTML = '<span class="muted">' + t('app.coachDenktNa') + '</span>';
     p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     try { const c = await api('POST', '/api/coach', payload); if (state.meta) state.meta.coach = c; renderCoach(c); }
     catch (e) { p.innerHTML = `<span class="muted">${esc(e.message)}</span>`; throw e; }
@@ -812,26 +812,26 @@ function renderCoach(c) {
   p.classList.remove('hidden');
   // al afgehandeld: alleen een korte regel, het advies is nog terug te lezen
   if (c.done) {
-    const when = new Date(c.doneAt || c.at).toLocaleString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    p.innerHTML = `<div class="row between wrap gap"><div class="small"><b>AI-coach</b> · ${c.done === 'applied' ? `advies toegepast (${c.applied} ${c.applied === 1 ? 'aanpassing' : 'aanpassingen'})` : 'advies genegeerd'} op ${esc(when)}</div>
-      <button type="button" class="btn ghost small" id="coachShow">Toon advies</button></div><div class="advice hidden" id="coachText" style="margin-top:.6rem">${esc(c.advice)}</div>`;
+    const when = new Date(c.doneAt || c.at).toLocaleString(localeOf(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    p.innerHTML = `<div class="row between wrap gap"><div class="small"><b>${t('ui.settings.aiCoach')}</b> ${t('app.op', { a: c.done === 'applied' ? t('app.adviesToegepast', { n: c.applied }) : t('app.adviesGenegeerd'), b: esc(when) })}</div>
+      <button type="button" class="btn ghost small" id="coachShow">${t('app.toonAdvies')}</button></div><div class="advice hidden" id="coachText" style="margin-top:.6rem">${esc(c.advice)}</div>`;
     p.classList.add('coach-done');
-    $('#coachShow').addEventListener('click', (ev) => { const t = $('#coachText'); t.classList.toggle('hidden'); ev.currentTarget.textContent = t.classList.contains('hidden') ? 'Toon advies' : 'Verberg advies'; });
+    $('#coachShow').addEventListener('click', (ev) => { const t = $('#coachText'); t.classList.toggle('hidden'); ev.currentTarget.textContent = t.classList.contains('hidden') ? tx('app.toonAdvies') : tx('app.verbergAdvies'); });
     return;
   }
   p.classList.remove('coach-done');
   // voorstellen voor je eigen (bewerkte, vastgezette of zelf gemaakte) trainingen staan standaard uit: jij kiest
-  p.innerHTML = `<h2>AI-coach${c.sessionName ? ` · ${esc(c.sessionName)}` : ''} <span class="muted">(${esc(c.provider)} · ${esc(c.model)})</span></h2>
+  p.innerHTML = `<h2>${t('app.aiCoach', { a: c.sessionName ? ` · ${esc(c.sessionName)}` : '' })} <span class="muted">(${esc(c.provider)} · ${esc(c.model)})</span></h2>
     <div class="advice">${esc(c.advice)}</div>
-    ${c.adjustments?.some((a) => a.own) ? '<p class="muted small" style="margin:.5rem 0 0">Voorstellen voor je eigen trainingen staan uit; vink aan wat je wilt overnemen. De opbouw (volgorde, supersets, modi, rust) blijft staan.</p>' : ''}
+    ${c.adjustments?.some((a) => a.own) ? '<p class="muted small" style="margin:.5rem 0 0">' + t('app.voorstellenVoorJeEigen') + '</p>' : ''}
     ${c.adjustments?.length ? `<div style="margin-top:.75rem">${c.adjustments.map((a, i) => `
       <label class="adj"><input type="checkbox" data-i="${i}"${a.own ? '' : ' checked'}>
-        <span><b>${esc(a.sessionName || a.session)} · ${esc(a.title)}</b>${a.own ? ' <span class="badge custom">eigen opbouw</span>' : ''}: ${[a.swapToId && 'wissel oefening', a.sets && a.sets + ' sets', a.reps && a.reps + ' herh.', a.weight && a.weight + ' kg'].filter(Boolean).join(', ')}<br><span class="muted">${esc(a.reason)}</span></span></label>`).join('')}
-      <div class="row gap" style="margin-top:.6rem"><button class="btn accent" id="applyBtn">Geselecteerde toepassen</button><button class="btn ghost" id="dismissBtn">Negeren</button></div></div>` : '<p class="muted">Geen aanpassingen voorgesteld.</p><button class="btn ghost small" id="dismissBtn">Sluiten</button>'}`;
+        <span><b>${esc(a.sessionName || a.session)} · ${esc(a.title)}</b>${a.own ? ' <span class="badge custom">' + t('app.eigenOpbouw') + '</span>' : ''}: ${[a.swapToId && 'wissel oefening', a.sets && a.sets + ' sets', a.reps && a.reps + ' herh.', a.weight && a.weight + ' kg'].filter(Boolean).join(', ')}<br><span class="muted">${esc(a.reason)}</span></span></label>`).join('')}
+      <div class="row gap" style="margin-top:.6rem"><button class="btn accent" id="applyBtn">${t('app.geselecteerdeToepassen')}</button><button class="btn ghost" id="dismissBtn">${t('app.negeren')}</button></div></div>` : '<p class="muted">' + t('app.geenAanpassingenVoorgesteld') + '</p><button class="btn ghost small" id="dismissBtn">' + t('pk.close') + '</button>'}`;
   $('#applyBtn')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
     const chosen = [...p.querySelectorAll('input[type=checkbox]:checked')].map((x) => c.adjustments[+x.dataset.i]);
     const r = await api('POST', '/api/coach/apply', { adjustments: chosen });
-    state.plan = r.plan; state.meta.coach = r.coach; renderPlan(); renderCoach(r.coach); toast(`${r.applied} aanpassing(en) toegepast`);
+    state.plan = r.plan; state.meta.coach = r.coach; renderPlan(); renderCoach(r.coach); toast(t('app.aanpassingEnToegepast', { applied: r.applied }));
   }));
   $('#dismissBtn')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
     const r = await api('POST', '/api/coach/dismiss'); state.meta.coach = r.coach; renderCoach(r.coach);
@@ -850,28 +850,28 @@ function spark(values, { w = 120, h = 32, cls = 'sp' } = {}) {
 // Voortgangsring (SVG), bijv. trainingen deze week.
 function ring(done, target) {
   const R = 52, C = 2 * Math.PI * R, f = Math.min(1, target ? done / target : 0);
-  return `<svg viewBox="0 0 130 130" class="ring" role="img" aria-label="${done} van ${target}">
+  return `<svg viewBox="0 0 130 130" class="ring" role="img" aria-label="${t('app.ringLabel', { done, target })}">
     <circle cx="65" cy="65" r="${R}" class="ring-bg"/>
     <circle cx="65" cy="65" r="${R}" class="ring-fg" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - f)}" transform="rotate(-90 65 65)"/>
     <text x="65" y="63" text-anchor="middle" class="ring-num">${done}<tspan class="ring-of">/${target}</tspan></text>
-    <text x="65" y="84" text-anchor="middle" class="ring-lbl">deze week</text></svg>`;
+    <text x="65" y="84" text-anchor="middle" class="ring-lbl">${t('app.dezeWeek')}</text></svg>`;
 }
-const fmt = (n) => Number(n || 0).toLocaleString('nl-NL');
+const fmt = (n) => Number(n || 0).toLocaleString(localeOf());
 // Verschil met vorige week als gekleurd percentage.
 function delta(cur, prev, unit = '%') {
-  if (!prev) return '<span class="muted">geen vergelijking</span>';
-  if (!cur) return `<span class="muted">vorige week ${fmt(prev)} kg</span>`;
+  if (!prev) return '<span class="muted">' + t('app.geenVergelijking') + '</span>';
+  if (!cur) return `<span class="muted">${t('app.vorigeWeekKg', { a: fmt(prev) })}</span>`;
   const d = Math.round(((cur - prev) / prev) * 100);
-  return `<span class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d)}${unit}</span> <span class="muted">t.o.v. vorige week</span>`;
+  return `<span class="${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d)}${unit}</span> <span class="muted">${t('app.tOVVorige')}</span>`;
 }
 
 // Tabblad Overzicht: deze week, volgende training, trends, kalender en activiteiten.
 function renderHome() {
   const o = state.overview; if (!o) return;
   const now = new Date();
-  $('#today').textContent = now.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+  $('#today').textContent = now.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long' });
   const h = now.getHours();
-  $('#greet').textContent = (h < 12 ? 'Goedemorgen' : h < 18 ? 'Goedemiddag' : 'Goedenavond') + ', ' + (state.me?.name || '');
+  $('#greet').textContent = (h < 12 ? t('app.goedemorgen') : h < 18 ? t('app.goedemiddag') : t('app.goedenavond')) + ', ' + (state.me?.name || '');
   $('#tip').textContent = o.tip;
 
   const n = o.next;
@@ -881,45 +881,45 @@ function renderHome() {
   // cardio buiten: geen programma voor het toestel, wel het advies
   const nOut = n && (state.plan?.sessions || []).find((x) => x.name === n.name && x.outdoor);
   $('#nextCard').innerHTML = nOut ? `
-    <div class="eyebrow">Volgende training</div>
+    <div class="eyebrow">${t('app.volgendeTraining')}</div>
     <div class="hero-title">${esc(n.name)}</div>
-    <div class="hero-meta"><span>~${n.estMinutes} min</span><span>wandelen of fietsen</span></div>
+    <div class="hero-meta"><span>${t('app.min3', { estMinutes: n.estMinutes })}</span><span>${t('app.wandelenOfFietsen')}</span></div>
     <p class="muted" style="margin:.4rem 0 .8rem">${esc(nOut.advice || '')}</p>
-    <div class="row gap wrap"><button class="btn ghost" id="heroView">Bekijk in plan</button></div>` : n ? `
-    <div class="eyebrow">Volgende training</div>
+    <div class="row gap wrap"><button class="btn ghost" id="heroView">${t('app.bekijkInPlan')}</button></div>` : n ? `
+    <div class="eyebrow">${t('app.volgendeTraining')}</div>
     <div class="hero-title">${esc(n.name)}</div>
-    <div class="hero-meta"><span>~${n.estMinutes} min</span><span>${n.count} oefeningen</span><span>${esc(GOAL[o.goal] || '')}</span>${n.pushedAt ? '<span class="badge ok">op toestel</span>' : ''}</div>
+    <div class="hero-meta"><span>${t('app.min3', { estMinutes: n.estMinutes })}</span><span>${t('app.oefeningen', { count: n.count })}</span><span>${esc(GOAL[o.goal] || '')}</span>${n.pushedAt ? '<span class="badge ok">' + t('app.opToestel') + '</span>' : ''}</div>
     <ol class="hero-list">${n.exercises.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>
     <div class="row gap wrap">
-      <button class="btn accent" id="heroPush">${n.pushedAt ? 'Opnieuw op toestel zetten' : 'Zet op Gym Monster'}</button>
-      <button class="btn ghost" id="heroView">Bekijk in plan</button>
-    </div>` : `<div class="eyebrow">Volgende training</div><div class="hero-title">Nog geen plan</div><button class="btn accent" id="heroGen">Maak een voorstel</button>`;
+      <button class="btn accent" id="heroPush">${n.pushedAt ? t('app.opnieuwOpToestelZetten') : t('app.zetOpGymMonster')}</button>
+      <button class="btn ghost" id="heroView">${t('app.bekijkInPlan')}</button>
+    </div>` : `<div class="eyebrow">${t('app.volgendeTraining')}</div><div class="hero-title">${t('app.nogGeenPlan')}</div><button class="btn accent" id="heroGen">${t('app.maakEenVoorstel')}</button>`;
   $('#heroPush')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    if (!await askConfirm(`“${progName(state.plan, n)}” op je Gym Monster zetten?`, { okText: 'Zet op toestel' })) return;
+    if (!await askConfirm(t('app.opJeGymMonster2', { a: progName(state.plan, n) }), { okText: t('app.zetOpToestel') })) return;
     const r = await api('POST', '/api/plan/push', { sessionKey: n.key, dryRun: false });
-    toast(`Op je Gym Monster gezet: ${r.plan.name}`); await load();
+    toast(t('app.opJeGymMonster', { name: r.plan.name })); await load();
   }));
   $('#heroView')?.addEventListener('click', () => document.querySelector('.tab[data-tab=plan]').click());
   $('#heroGen')?.addEventListener('click', () => $('#genBtn').click());
 
-  $('#weekRing').innerHTML = `<div class="eyebrow">Weekdoel</div>${ring(o.week.done, o.week.target)}`;
-  $('#tStreak').innerHTML = `<div class="eyebrow">Streak</div><div class="big">${o.streak}<small> ${o.streak === 1 ? 'week' : 'weken'}</small></div><div class="muted">op rij je weekdoel gehaald</div>`;
-  $('#tVolume').innerHTML = `<div class="eyebrow">Volume deze week</div><div class="big">${fmt(o.week.volume)}<small> kg</small></div><div class="small">${delta(o.week.volume, o.week.prevVolume)}</div>`;
-  $('#tMinutes').innerHTML = `<div class="eyebrow">Trainingstijd</div><div class="big">${o.week.minutes}<small> min</small></div><div class="muted">${fmt(o.week.calories)} kcal deze week</div>`;
+  $('#weekRing').innerHTML = `<div class="eyebrow">${t('app.weekdoel')}</div>${ring(o.week.done, o.week.target)}`;
+  $('#tStreak').innerHTML = `<div class="eyebrow">${t('app.streak')}</div><div class="big">${o.streak}<small> ${o.streak === 1 ? t('app.week') : t('app.weken')}</small></div><div class="muted">${t('app.opRijJeWeekdoel')}</div>`;
+  $('#tVolume').innerHTML = `<div class="eyebrow">${t('app.volumeDezeWeek')}</div><div class="big">${fmt(o.week.volume)}<small> kg</small></div><div class="small">${delta(o.week.volume, o.week.prevVolume)}</div>`;
+  $('#tMinutes').innerHTML = `<div class="eyebrow">${t('app.trainingstijd')}</div><div class="big">${o.week.minutes}<small> min</small></div><div class="muted">${t('app.kcalDezeWeek', { a: fmt(o.week.calories) })}</div>`;
   const b = o.body;
-  $('#tBody').innerHTML = `<div class="eyebrow">Lichaamsgewicht</div>` + (b
-    ? `<div class="big">${b.kg}<small> kg</small>${b.fat ? `<small> · ${b.fat}% vet</small>` : ''}</div><div class="row between"><div class="small">${b.slope == null ? '<span class="muted">te weinig metingen</span>' : `<span class="${(o.goal === 'spieropbouw' ? b.slope >= 0 : b.slope <= 0) ? 'up' : 'down'}">${b.slope > 0 ? '+' : ''}${b.slope} kg/week</span>`}</div>${spark(b.spark, { w: 90, h: 28, cls: 'sp b' })}</div>`
-    : `<div class="muted" style="margin-top:.5rem">Nog geen metingen.</div><button class="btn small ghost" style="margin-top:.5rem" onclick="document.querySelector('.tab[data-tab=body]').click()">Gewicht invoeren</button>`);
+  $('#tBody').innerHTML = `<div class="eyebrow">${t('ui.body.lichaamsgewicht')}</div>` + (b
+    ? `<div class="big">${b.kg}<small> kg</small>${b.fat ? `<small> ${t('app.vet', { fat: b.fat })}</small>` : ''}</div><div class="row between"><div class="small">${b.slope == null ? '<span class="muted">' + t('app.teWeinigMetingen') + '</span>' : `<span class="${(o.goal === 'spieropbouw' ? b.slope >= 0 : b.slope <= 0) ? 'up' : 'down'}">${t('app.kgWeek', { a: b.slope > 0 ? '+' : '', slope: b.slope })}</span>`}</div>${spark(b.spark, { w: 90, h: 28, cls: 'sp b' })}</div>`
+    : `<div class="muted" style="margin-top:.5rem">${t('app.nogGeenMetingen')}</div><button class="btn small ghost" style="margin-top:.5rem" onclick="document.querySelector('.tab[data-tab=body]').click()">${t('app.gewichtInvoeren')}</button>`);
 
-  $('#strength').innerHTML = `<div class="eyebrow">Kracht · geschat 1RM, laatste 4 weken</div>` + (o.strength.length
+  $('#strength').innerHTML = `<div class="eyebrow">${t('app.krachtGeschat1rmLaatste')}</div>` + (o.strength.length
     ? `<div class="str-grid">${o.strength.map((x) => `<div class="str"><div class="str-name">${esc(x.name)}</div><div class="row between"><div><span class="mid">${x.e1rm}</span> <span class="muted">kg</span><div class="small"><span class="${x.deltaPct >= 0 ? 'up' : 'down'}">${x.deltaPct >= 0 ? '▲' : '▼'} ${Math.abs(x.deltaPct)}%</span></div></div>${spark(x.spark)}</div></div>`).join('')}</div>`
-    : '<div class="empty">Na een paar trainingen zie je hier je krachtontwikkeling.</div>');
+    : '<div class="empty">' + t('app.naEenPaarTrainingen') + '</div>');
 
   // trainingskalender: laatste 8 weken, nieuwste bovenaan
   const today = new Date(); today.setHours(12, 0, 0, 0);
   const keyOf = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const monday = new Date(today); monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-  const short = (d) => d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }).replace('.', '');
+  const short = (d) => d.toLocaleDateString(localeOf(), { day: 'numeric', month: 'short' }).replace('.', '');
   let rows = '', trainedDays = 0;
   for (let wk = 0; wk < 8; wk++) {
     const ws = new Date(monday); ws.setDate(monday.getDate() - wk * 7);
@@ -932,20 +932,20 @@ function renderHome() {
       const lvl = !info ? '' : info.min < 25 ? 'l1' : info.min < 45 ? 'l2' : 'l3';
       if (info) { count += Math.max(1, info.titles.length); trainedDays++; }
       const dayActs = (state.activities || []).filter((a) => a.date === keyOf(dt));
-      const tip = `${dt.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}${info ? ` — ${info.titles.join(', ') || 'training'}${info.min ? ` (${info.min} min)` : ''}` : future || dayActs.length ? '' : ' — rustdag'}${dayActs.length ? ' — ' + dayActs.map(actLine).join(', ') : ''}`;
+      const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long' })}${info ? ` — ${info.titles.join(', ') || 'training'}${info.min ? ` (${info.min} min)` : ''}` : future || dayActs.length ? '' : ' — rustdag'}${dayActs.length ? ' — ' + dayActs.map(actLine).join(', ') : ''}`;
       const acts = (state.activities || []).filter((a) => a.date === keyOf(dt));
       const actDots = acts.length ? `<span class="cd-acts">${acts.slice(0, 3).map((a) => `<i style="background:${actColor(a.type)}"></i>`).join('')}</span>` : '';
       cells += `<div class="cd ${lvl} ${future ? 'fut' : ''} ${isToday ? 'today' : ''}${info || acts.length ? ' click" data-date="' + keyOf(dt) + '" tabindex="0" role="button' : ''}" data-day="${keyOf(dt)}" title="${esc(tip)}"><span class="dn">${dt.getDate()}</span>${info?.min ? `<span class="dm">${info.min}′</span>` : ''}${actDots}</div>`;
     }
     const hit = count >= o.week.target;
-    rows += `<div class="cw">${wk === 0 ? 'Deze week' : `${short(ws)} – ${short(we)}`}</div>${cells}<div class="cs ${hit ? 'hit' : ''}">${count}/${o.week.target}</div>`;
+    rows += `<div class="cw">${wk === 0 ? t('ui.stats.dezeWeek') : `${short(ws)} – ${short(we)}`}</div>${cells}<div class="cs ${hit ? 'hit' : ''}">${count}/${o.week.target}</div>`;
   }
-  $('#heat').innerHTML = `<div class="row between wrap gap"><div class="eyebrow">Trainingskalender · laatste 8 weken</div><div class="muted">${trainedDays} trainingsdagen</div></div>
+  $('#heat').innerHTML = `<div class="row between wrap gap"><div class="eyebrow">${t('app.trainingskalenderLaatste8Weken')}</div><div class="muted">${t('app.trainingsdagen2', { trainedDays })}</div></div>
     <div class="cal">
-      <div></div>${['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'].map((d) => `<div class="ch">${d}</div>`).join('')}<div class="ch">doel</div>
+      <div></div>${weekdaysShort().map((d) => `<div class="ch">${d}</div>`).join('')}<div class="ch">${t('app.doel')}</div>
       ${rows}
     </div>
-    <div class="legend">Gekleurd = getraind (43′ = 43 minuten) · <span class="sq l1"></span>&lt;25 <span class="sq l2"></span>25–45 <span class="sq l3"></span>&gt;45 min · omrand = vandaag · klik op een dag voor de oefeningen</div>`;
+    <div class="legend">${t('app.gekleurdGetraind4343')} <span class="sq l1"></span>&lt;25 <span class="sq l2"></span>25–45 <span class="sq l3"></span>${t('app.gt45MinOmrand')}</div>`;
   $('#heat').querySelectorAll('.cd[data-date]').forEach((c) => {
     const go = () => openDay(c.dataset.date);
     c.addEventListener('click', go);
@@ -954,7 +954,7 @@ function renderHome() {
 
   // plan deze week
   const pl = state.plan;
-  if (!pl) $('#weekPlan').innerHTML = '<div class="eyebrow">Plan deze week</div><div class="empty">Nog geen plan.</div>';
+  if (!pl) $('#weekPlan').innerHTML = '<div class="eyebrow">' + t('app.planDezeWeek') + '</div><div class="empty">' + t('app.nogGeenPlan2') + '</div>';
   else {
     const all = pl.sessions.flatMap((x) => x.exercises);
     const sets = all.reduce((n, e) => n + e.sets.length, 0);
@@ -963,18 +963,18 @@ function renderHome() {
     const ups = all.filter((e) => /^↑/.test(e.note || '')).length;
     const top = Object.entries(pl.muscles || {}).sort((a, b) => b[1] - a[1]).slice(0, 4);
     const done = new Set(state.recent.filter((w) => w.date && new Date(w.date) >= (() => { const m = new Date(); m.setHours(0, 0, 0, 0); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return m; })()).map((w) => String(w.title || '')));
-    $('#weekPlan').innerHTML = `<div class="row between wrap gap"><div class="eyebrow" style="margin:0">Plan deze week · week ${planIso(pl).w}</div>
-        <button class="btn small ghost" id="wpOpen">Open plan ›</button></div>
-      ${pl.deload ? '<span class="badge warn" style="margin-top:.4rem;display:inline-block">deload-week</span>' : ''}
+    $('#weekPlan').innerHTML = `<div class="row between wrap gap"><div class="eyebrow" style="margin:0">${t('app.planDezeWeekWeek', { w: planIso(pl).w })}</div>
+        <button class="btn small ghost" id="wpOpen">${t('app.openPlan')}</button></div>
+      ${pl.deload ? '<span class="badge warn" style="margin-top:.4rem;display:inline-block">' + t('app.deloadWeek') + '</span>' : ''}
       <div class="wp">
-        <div>${bodyMap(pl.muscles || {}, { height: 190, title: 'Spiergroepen deze week' })}</div>
+        <div>${bodyMap(pl.muscles || {}, { height: 190, title: t('app.spiergroepenDezeWeek') })}</div>
         <div>
           ${pl.focus?.length ? `<div class="chips-inline" style="margin-bottom:.5rem">${pl.focus.map((f) => `<span class="chip on">${esc(FOCUS_LABELS[f] || f)}</span>`).join('')}</div>` : ''}
           <div class="wp-stats">
-            <div class="wp-stat"><div class="eyebrow">Trainingen</div><div class="mid">${pl.sessions.length}<small> × ~${Math.round(mins / pl.sessions.length)} min</small></div></div>
-            <div class="wp-stat"><div class="eyebrow">Werksets</div><div class="mid">${sets}<small> · ${all.length} oef.</small></div></div>
-            <div class="wp-stat"><div class="eyebrow">Gepland volume</div><div class="mid">${vol >= 10000 ? (vol / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 }) + '<small> t</small>' : fmt(Math.round(vol)) + '<small> kg</small>'}</div></div>
-            <div class="wp-stat"><div class="eyebrow">Zwaarder</div><div class="mid ${ups ? 'up' : ''}">${ups}<small> oefeningen ↑</small></div></div>
+            <div class="wp-stat"><div class="eyebrow">${t('tp.title')}</div><div class="mid">${pl.sessions.length}<small> ${t('app.min4', { a: Math.round(mins / pl.sessions.length) })}</small></div></div>
+            <div class="wp-stat"><div class="eyebrow">${t('app.werksets')}</div><div class="mid">${sets}<small> ${t('app.oef', { n: all.length })}</small></div></div>
+            <div class="wp-stat"><div class="eyebrow">${t('app.geplandVolume')}</div><div class="mid">${vol >= 10000 ? (vol / 1000).toLocaleString(localeOf(), { maximumFractionDigits: 1 }) + '<small> t</small>' : fmt(Math.round(vol)) + '<small> kg</small>'}</div></div>
+            <div class="wp-stat"><div class="eyebrow">${t('app.zwaarder')}</div><div class="mid ${ups ? 'up' : ''}">${ups}<small> ${t('app.oefeningen2')}</small></div></div>
           </div>
           <div class="wp-top">${top.map(([k, v]) => `<div class="mbar"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / top[0][1]) * 100}%"></div></div><b>${Math.round(v * 10) / 10}</b></div>`).join('')}</div>
           <div class="wp-sess">${pl.sessions.map((x) => `<span class="${[...done].some((t) => t.endsWith(x.name)) ? 'done' : ''}">${[...done].some((t) => t.endsWith(x.name)) ? '✓ ' : ''}${esc(x.name)}</span>`).join('')}</div>
@@ -983,16 +983,16 @@ function renderHome() {
     $('#wpOpen').addEventListener('click', () => document.querySelector('.tab[data-tab=plan]').click());
   }
 
-  $('#prs').innerHTML = `<div class="eyebrow">Records · 14 dagen</div>` + (o.prs.length
-    ? o.prs.slice(0, 3).map((p) => `<div class="pr"><span class="medal">★</span><div class="pr-body"><div class="str-name">${esc(p.name)}</div><div class="muted">${esc(p.date)} · ${p.top} kg · ~${p.e1rm} kg 1RM</div></div></div>`).join('')
-    : '<div class="empty small-empty">Nog geen nieuwe records. Komt vanzelf met de progressie.</div>');
+  $('#prs').innerHTML = `<div class="eyebrow">${t('app.records14Dagen')}</div>` + (o.prs.length
+    ? o.prs.slice(0, 3).map((p) => `<div class="pr"><span class="medal">★</span><div class="pr-body"><div class="str-name">${esc(p.name)}</div><div class="muted">${t('app.kgKg1rm', { a: esc(p.date), top: p.top, e1rm: p.e1rm })}</div></div></div>`).join('')
+    : '<div class="empty small-empty">' + t('app.nogGeenNieuweRecords') + '</div>');
 }
 
 
 // ---------- statistieken ----------
 let stats = null, statDays = '84', statMetric = 'volume';
 const statSort = { muscleTable: { k: 'volume', d: -1 }, exTable: { k: 'volume', d: -1 } };
-const kg = (v) => (v >= 10000 ? `${(v / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 })} t` : `${fmt(v)} kg`);
+const kg = (v) => (v >= 10000 ? `${(v / 1000).toLocaleString(localeOf(), { maximumFractionDigits: 1 })} t` : `${fmt(v)} kg`);
 
 // begin van de lopende kalenderperiode (lokale tijd) als JJJJ-MM-DD
 function periodStart(kind) {
@@ -1029,7 +1029,7 @@ function renderStats() {
   const t = stats.totals;
   const tile = (label, val, sub = '') => `<div class="card tile"><div class="eyebrow">${label}</div><div class="big">${val}</div><div class="muted small">${sub}</div></div>`;
   const x = stats.extra || {};
-  const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString('nl-NL');
+  const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString(localeOf());
   const KIND_NL = { program: 'programma', course: 'les', free: 'vrij', custom: 'eigen', overig: 'overig' };
   const kindTxt = Object.entries(x.kinds || {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${v} ${KIND_NL[k] || k}`).join(' · ');
   const vol = t.volume || x.summaryVolume || 0;
@@ -1039,7 +1039,7 @@ function renderStats() {
     tile('Per week', n1(x.perWeek || 0), x.firstDate ? `sinds ${esc(fmtDate(x.firstDate))}` : '') +
     tile('Trainingstijd', `${Math.floor(t.minutes / 60)}<small>u</small> ${t.minutes % 60}<small>m</small>`, `gem. ${x.avgMinutes || 0} min per training`) +
     tile('Calorieën', fmt(t.calories), `gem. ${fmt(x.avgKcal || 0)} kcal per training`) +
-    tile('Weekreeks', `${x.streak || 0}<small> wk</small>`, `langste: ${x.longestStreak || 0} weken`) +
+    tile('Weekreeks', `${x.streak || 0}<small> ${tx('app.wk')}</small>`, `langste: ${x.longestStreak || 0} weken`) +
     tile('Favoriete dag', x.favDay ? esc(x.favDay.day.charAt(0).toUpperCase() + x.favDay.day.slice(1)) : '—', x.favDay ? `${x.favDay.n}× · ${x.activeDays} actieve dagen` : '') +
     // kracht en volume
     tile('Totaal volume', kg(vol), t.volume ? `gem. ${kg(t.avgVolume)} per training` : vol ? 'volgens Speediance' : '') +
@@ -1050,15 +1050,15 @@ function renderStats() {
     tile('Spiergroepen', stats.muscles.filter((m) => m.sets).length, `${stats.exercises.length} oefeningen`);
   renderCardio();
   renderStatsExtra();
-  $('#statNote').innerHTML = x.missingDetails ? `<div class="note">Van ${x.missingDetails} training${x.missingDetails === 1 ? '' : 'en'} in deze periode zijn de details (sets en gewichten) nog niet opgehaald. Bij een lange eerste sync gebeurt dat op de achtergrond; ververs de pagina straks. Lessen en vrije trainingen hebben vaak geen setdata.</div>` : '';
+  $('#statNote').innerHTML = x.missingDetails ? `<div class="note">${tx('app.vanTrainingInDeze', { n: x.missingDetails })}</div>` : '';
   renderMuscleBars();
 
   // weekmatrix
   const wk = stats.weekKeys;
-  $('#weekMatrix').innerHTML = stats.muscles.length ? `<thead><tr><th>Spiergroep</th>${wk.map((w) => `<th class="num">wk ${+w.slice(-2)}</th>`).join('')}</tr></thead><tbody>${stats.muscles.map((m) => `<tr><td>${esc(m.label)}</td>${wk.map((w) => {
+  $('#weekMatrix').innerHTML = stats.muscles.length ? `<thead><tr><th>${tx('pk.muscle')}</th>${wk.map((w) => `<th class="num">${tx('app.wk2', { a: +w.slice(-2) })}</th>`).join('')}</tr></thead><tbody>${stats.muscles.map((m) => `<tr><td>${esc(m.label)}</td>${wk.map((w) => {
     const v = m.weekly[w] || 0, c = v === 0 ? 'z' : v < 6 ? 'lo' : v <= 12 ? 'ok' : 'hi';
     return `<td class="num mx ${c}">${v || '·'}</td>`;
-  }).join('')}</tr>`).join('')}</tbody>` : '<tbody><tr><td class="empty">Nog geen data</td></tr></tbody>';
+  }).join('')}</tr>`).join('')}</tbody>` : '<tbody><tr><td class="empty">' + tx('app.nogGeenData') + '</td></tr></tbody>';
 
   renderSortable('muscleTable', stats.muscles, [
     ['label', 'Spiergroep'], ['sessions', 'Trainingen', 'n'], ['exercises', 'Oefeningen', 'n'], ['sets', 'Sets', 'n'], ['setsPerWeek', 'Sets/week', 'n'],
@@ -1079,7 +1079,7 @@ function renderMuscleBars() {
     <div class="hbar"><div class="hl">${esc(m.label)}</div>
       <div class="ht"><div class="hf" style="width:${(m[statMetric] / max) * 100}%"></div></div>
       <div class="hv">${statMetric === 'volume' ? kg(m.volume) : fmt(m[statMetric])}<span class="muted"> · ${Math.round((m[statMetric] / total) * 100)}%</span></div></div>`).join('')
-    : '<div class="empty">Nog geen trainingen met setdata in deze periode</div>';
+    : '<div class="empty">' + t('app.nogGeenTrainingenMet') + '</div>';
 }
 
 // Sorteerbare tabel.
@@ -1098,7 +1098,7 @@ function renderSortable(id, rows, cols) {
     return `<td>${esc(v ?? '—')}</td>`;
   };
   $('#' + id).innerHTML = `<thead><tr>${cols.map(([k, l, t]) => `<th data-k="${k}" class="${t ? 'num' : ''} ${st.k === k ? 'sorted' : ''}">${l}${st.k === k ? (st.d < 0 ? ' ▾' : ' ▴') : ''}</th>`).join('')}</tr></thead>
-    <tbody>${sorted.length ? sorted.map((r) => `<tr>${cols.map((c) => cell(r, c)).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length}" class="empty">Nog geen data</td></tr>`}</tbody>`;
+    <tbody>${sorted.length ? sorted.map((r) => `<tr>${cols.map((c) => cell(r, c)).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length}" class="empty">${t('app.nogGeenData')}</td></tr>`}</tbody>`;
   $('#' + id).querySelector('thead').onclick = (ev) => {
     const k = ev.target.closest('th')?.dataset.k; if (!k) return;
     st.d = st.k === k ? -st.d : -1; st.k = k;
@@ -1112,7 +1112,7 @@ function renderProgress() {
   barChart($('#chartVolume'), state.weekly.map((w) => ({ x: w.week, y: Math.round(w.volume) })), { unit: 'kg' });
   const sel = $('#exSelect');
   if (!sel.options.length || sel.dataset.n !== String(state.progress.length)) {
-    sel.innerHTML = state.progress.length ? state.progress.map((p, i) => `<option value="${i}">${esc(p.name)} (${p.points.length}×)</option>`).join('') : '<option>Nog geen oefeningen</option>';
+    sel.innerHTML = state.progress.length ? state.progress.map((p, i) => `<option value="${i}">${esc(p.name)} (${p.points.length}×)</option>`).join('') : '<option>' + t('app.nogGeenOefeningen') + '</option>';
     sel.dataset.n = state.progress.length;
   }
   drawExercise();
@@ -1124,13 +1124,13 @@ function renderCardio() {
   const c = stats.cardio, box = $('#cardioCard');
   if (!c || (!c.count && !c.avgSteps)) {
     box.classList.toggle('hidden', !!(state.activities || []).length);
-    box.innerHTML = '<h2>Cardio en activiteit</h2><div class="empty">Geen activiteiten uit Apple Health in deze periode.</div>';
+    box.innerHTML = '<h2>' + tx('app.cardioEnActiviteit') + '</h2><div class="empty">' + tx('app.geenActiviteitenUitApple') + '</div>';
     return;
   }
   box.classList.remove('hidden');
-  const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString('nl-NL');
+  const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString(localeOf());
   const t = (l, v, sub = '') => `<div class="ctile static"><div class="eyebrow">${l}</div><div class="mid">${v}</div><div class="small muted">${sub}</div></div>`;
-  box.innerHTML = `<div class="row between wrap gap"><h2>Cardio en activiteit</h2><span class="muted small">uit Apple Health · Gym Monster-trainingen niet dubbel geteld</span></div>
+  box.innerHTML = `<div class="row between wrap gap"><h2>${tx('app.cardioEnActiviteit')}</h2><span class="muted small">${tx('app.uitAppleHealthGym')}</span></div>
     <div class="ctiles">
       ${t('Activiteiten', c.count, `${Math.floor(c.minutes / 60)} u ${c.minutes % 60} m in totaal`)}
       ${t('Actief per week', `${c.minutesPerWeek}<small> min</small>`, 'richtlijn: 150 min matig intensief')}
@@ -1138,7 +1138,7 @@ function renderCardio() {
       ${t('Calorieën', fmt(c.kcal), 'actieve energie')}
       ${c.avgSteps != null ? t('Stappen per dag', fmt(c.avgSteps), `gemiddeld over ${c.stepDays} dagen`) : ''}
     </div>
-    <div class="tablewrap" style="margin-top:.8rem"><table><thead><tr><th>Soort</th><th class="num">Keer</th><th class="num">Tijd</th><th class="num">Afstand</th><th class="num">Langste</th><th class="num">kcal</th><th class="num">Gem. hartslag</th></tr></thead><tbody>
+    <div class="tablewrap" style="margin-top:.8rem"><table><thead><tr><th>${tx('app.soort')}</th><th class="num">${tx('app.keer')}</th><th class="num">${tx('app.tijd')}</th><th class="num">${tx('app.afstand')}</th><th class="num">${tx('app.langste')}</th><th class="num">kcal</th><th class="num">${tx('app.gemHartslag')}</th></tr></thead><tbody>
       ${c.types.map((x) => `<tr><td><span class="segdot" style="background:${actColor(x.type)}"></span>${esc(actLabel(x.type))}</td><td class="num">${x.count}</td><td class="num">${Math.floor(x.minutes / 60)}u ${x.minutes % 60}m</td><td class="num">${x.km ? n1(x.km) + ' km' : '—'}</td><td class="num">${x.longestKm ? n1(x.longestKm) + ' km' : '—'}</td><td class="num">${x.kcal ? fmt(x.kcal) : '—'}</td><td class="num">${x.hrAvg ? x.hrAvg + ' bpm' : '—'}</td></tr>`).join('')}
     </tbody></table></div>`;
 }
@@ -1147,41 +1147,41 @@ function renderCardio() {
 async function loadHealth(newLink) {
   const box = $('#healthCard');
   let st;
-  try { st = await api('GET', '/api/health/status'); } catch (e) { box.innerHTML = `<h2>Apple Health</h2><div class="empty">${esc(e.message)}</div>`; return; }
-  const when = (x) => x ? new Date(x).toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
-  box.innerHTML = `<h2>Apple Health <span class="muted small">via de app GymCoach Sync (of Health Auto Export)</span></h2>
-    <p class="muted small" style="margin-top:-.3rem">Wandelen, fietsen en andere activiteiten van je iPhone en Apple Watch. Gym Monster-trainingen die Speediance ook naar Health schrijft, worden niet dubbel geteld.</p>
-    <div class="row between wrap gap"><div>${st.linked ? `<span class="badge ok">gekoppeld</span> <span class="muted small">sleutel …${esc(st.tokenHint || '')} · laatste zending: ${esc(when(st.lastPush))}${st.lastCounts ? ` (${st.lastCounts.activities} activiteiten, ${st.lastCounts.days} dagen)` : ''} · ${st.activities} activiteiten opgeslagen</span>` : '<span class="muted small">Nog niet gekoppeld.</span>'}</div>
-      <div class="row gap">${st.linked ? '<button class="btn small ghost" id="hNew">Nieuwe sleutel</button><button class="btn small ghost" id="hOff">Ontkoppelen</button>' : '<button class="btn small accent" id="hNew">Koppelsleutel maken</button>'}</div></div>
-    ${newLink ? `<div class="note" style="border-left-color:var(--ok)"><b>Bewaar dit nu:</b> de sleutel wordt maar één keer getoond.
-      <div class="kv"><span>URL</span><code id="hUrl">${esc(newLink.url)}</code><button class="btn small ghost" data-copy="hUrl">Kopieer</button></div>
-      <div class="kv"><span>Header</span><code id="hHdr">Authorization: Bearer ${esc(newLink.token)}</code><button class="btn small ghost" data-copy="hTok">Kopieer sleutel</button><code id="hTok" class="hidden">Bearer ${esc(newLink.token)}</code></div></div>` : ''}
-    <details class="howto"><summary>Zo stel je de GymCoach Sync-app in</summary><ol class="small">
-      <li>Installeer <b>GymCoach Sync</b> via TestFlight en open de app.</li>
-      <li>Vul het adres in waarop je GymCoach opent (bijv. <code>http://192.168.1.50:8765</code>) en de koppelsleutel hierboven.</li>
-      <li>Tik op <b>Test verbinding</b>, sta de toegang tot Gezondheid toe en tik één keer op <b>Volledige historie versturen</b>.</li>
-      <li>Daarna gaan nieuwe workouts vanzelf, ook op de achtergrond.</li>
+  try { st = await api('GET', '/api/health/status'); } catch (e) { box.innerHTML = `<h2>${t('ui.settings.appleHealth')}</h2><div class="empty">${esc(e.message)}</div>`; return; }
+  const when = (x) => x ? new Date(x).toLocaleString(localeOf(), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  box.innerHTML = `<h2>${t('ui.settings.appleHealth')} <span class="muted small">${t('app.viaDeAppGymcoach')}</span></h2>
+    <p class="muted small" style="margin-top:-.3rem">${t('app.wandelenFietsenEnAndere')}</p>
+    <div class="row between wrap gap"><div>${st.linked ? `<span class="badge ok">${t('app.gekoppeld')}</span> <span class="muted small">${t('app.sleutelLaatsteZendingActiviteiten', { a: esc(st.tokenHint || ''), b: esc(when(st.lastPush)), c: st.lastCounts ? t('app.activiteitenDagen', { activities: st.lastCounts.activities, days: st.lastCounts.days }) : '', activities: st.activities })}</span>` : '<span class="muted small">' + t('app.nogNietGekoppeld') + '</span>'}</div>
+      <div class="row gap">${st.linked ? '<button class="btn small ghost" id="hNew">' + t('app.nieuweSleutel') + '</button><button class="btn small ghost" id="hOff">' + t('app.ontkoppelen') + '</button>' : '<button class="btn small accent" id="hNew">' + t('app.koppelsleutelMaken') + '</button>'}</div></div>
+    ${newLink ? `<div class="note" style="border-left-color:var(--ok)"><b>${t('app.bewaarDitNu')}</b> ${t('app.deSleutelWordtMaar')}
+      <div class="kv"><span>${t('app.url')}</span><code id="hUrl">${esc(newLink.url)}</code><button class="btn small ghost" data-copy="hUrl">${t('ui.setWithings.kopieer')}</button></div>
+      <div class="kv"><span>${t('app.header')}</span><code id="hHdr">${t('app.authorizationBearer', { a: esc(newLink.token) })}</code><button class="btn small ghost" data-copy="hTok">${t('app.kopieerSleutel')}</button><code id="hTok" class="hidden">${t('app.bearer', { a: esc(newLink.token) })}</code></div></div>` : ''}
+    <details class="howto"><summary>${t('app.zoStelJeDe')}</summary><ol class="small">
+      <li>${t('app.installeer')} <b>${t('app.gymcoachSync')}</b> ${t('app.viaTestflightEnOpen')}</li>
+      <li>${t('app.vulHetAdresIn')} <code>${t('app.http1921681')}</code>${t('app.enDeKoppelsleutelHierboven')}</li>
+      <li>${t('app.tikOp')} <b>${t('app.testVerbinding')}</b>${t('app.staDeToegangTot')} <b>${t('app.volledigeHistorieVersturen')}</b>.</li>
+      <li>${t('app.daarnaGaanNieuweWorkouts')}</li>
     </ol></details>
-    <details class="howto"><summary>Of: Health Auto Export instellen</summary><ol class="small">
-      <li>Installeer <b>Health Auto Export – JSON+CSV</b> op je iPhone (voor automatisch versturen is het betaalde abonnement nodig) en geef toegang tot Gezondheid.</li>
-      <li>Ga naar <b>Automations → nieuwe automatisering → REST API</b>.</li>
-      <li><b>URL</b>: de URL hierboven. Voeg bij <b>Headers</b> toe: sleutel <code>Authorization</code>, waarde <code>Bearer …</code> (je sleutel).</li>
-      <li><b>Data type</b>: Workouts. Maak eventueel een tweede automatisering voor Health Metrics met <i>Step Count</i>, <i>Active Energy</i> en <i>Walking + Running Distance</i>.</li>
-      <li><b>Export format</b>: JSON · <b>Date range</b>: laatste 7 dagen · <b>Aggregation</b> (bij metrics): per dag · zet route- en hartslagdetails uit, dat scheelt veel data.</li>
-      <li>Kies een interval (bijv. elk uur) en tik op <b>Manual export</b> om het meteen te testen. Hierboven zie je dan "laatste zending".</li>
-      <li>Je oude historie: doe één keer een handmatige export met een lange periode.</li>
-    </ol><p class="muted small">Je iPhone moet de server kunnen bereiken: thuis via wifi, onderweg via je VPS of bijvoorbeeld Tailscale. iOS stuurt alleen als de telefoon ontgrendeld is geweest.</p></details>`;
+    <details class="howto"><summary>${t('app.ofHealthAutoExport')}</summary><ol class="small">
+      <li>${t('app.installeer')} <b>${t('app.healthAutoExportJson')}</b> ${t('app.opJeIphoneVoor')}</li>
+      <li>${t('app.gaNaar')} <b>${t('app.automationsNieuweAutomatiseringRest')}</b>.</li>
+      <li><b>${t('app.url')}</b>${t('app.deUrlHierbovenVoeg')} <b>${t('app.headers')}</b> ${t('app.toeSleutel')} <code>${t('app.authorization')}</code>${t('app.waarde')} <code>${t('app.bearer2')}</code> ${t('app.jeSleutel')}</li>
+      <li><b>${t('app.dataType')}</b>${t('app.workoutsMaakEventueelEen')} <i>${t('app.stepCount')}</i>, <i>${t('app.activeEnergy')}</i> ${t('app.en')} <i>${t('app.walkingRunningDistance')}</i>.</li>
+      <li><b>${t('app.exportFormat')}</b>${t('app.json')} <b>${t('app.dateRange')}</b>${t('app.laatste7Dagen')} <b>${t('app.aggregation')}</b> ${t('app.bijMetricsPerDag')}</li>
+      <li>${t('app.kiesEenIntervalBijv')} <b>${t('app.manualExport')}</b> ${t('app.omHetMeteenTe')}</li>
+      <li>${t('app.jeOudeHistorieDoe')}</li>
+    </ol><p class="muted small">${t('app.jeIphoneMoetDe')}</p></details>`;
   $('#hNew').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    if (st.linked && !await askConfirm('Een nieuwe sleutel maken? De oude werkt dan niet meer; pas hem ook aan in Health Auto Export.')) return;
+    if (st.linked && !await askConfirm(t('app.eenNieuweSleutelMaken'))) return;
     loadHealth(await api('POST', '/api/health/token'));
   }));
   $('#hOff')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    if (!await askConfirm('Apple Health ontkoppelen? Opgeslagen activiteiten blijven bewaard.')) return;
+    if (!await askConfirm(t('app.appleHealthOntkoppelenOpgeslagen'))) return;
     await api('DELETE', '/api/health/token'); loadHealth();
   }));
   box.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
     const txt = $('#' + b.dataset.copy).textContent;
-    try { await navigator.clipboard.writeText(txt); toast('Gekopieerd'); } catch { toast(txt); }
+    try { await navigator.clipboard.writeText(txt); toast(t('app.gekopieerd')); } catch { toast(txt); }
   }));
 }
 
@@ -1196,19 +1196,19 @@ async function loadWorkouts() {
 function renderWorkouts() {
   const q = ($('#woSearch').value || '').trim().toLowerCase();
   const list = (woList || []).filter((w) => !q || w.title.toLowerCase().includes(q) || w.date.includes(q) || fmtDate(w.date).toLowerCase().includes(q));
-  if (!list.length) { $('#recent').innerHTML = `<div class="empty">${woList?.length ? 'Geen trainingen gevonden' : 'Nog geen trainingen gesynct'}</div>`; return; }
-  const nf = (v) => Math.round(v).toLocaleString('nl-NL');
-  $('#recent').innerHTML = `<div class="tablewrap"><table class="wotable"><thead><tr><th>Datum</th><th>Training</th><th class="num">Oef.</th><th class="num">Min</th><th class="num">kcal</th><th class="num">♥ gem.</th><th class="num">Volume</th><th></th></tr></thead><tbody>
+  if (!list.length) { $('#recent').innerHTML = `<div class="empty">${woList?.length ? t('app.geenTrainingenGevonden') : t('app.nogGeenTrainingenGesynct')}</div>`; return; }
+  const nf = (v) => Math.round(v).toLocaleString(localeOf());
+  $('#recent').innerHTML = `<div class="tablewrap"><table class="wotable"><thead><tr><th>${t('app.datum')}</th><th>${t('ui.settings.training')}</th><th class="num">${t('app.oef2')}</th><th class="num">Min</th><th class="num">kcal</th><th class="num">${t('app.gem')}</th><th class="num">${t('ed.volume')}</th><th></th></tr></thead><tbody>
     ${list.slice(0, woShown).map((w) => `<tr class="click" data-id="${esc(w.id)}" tabindex="0"><td>${esc(fmtDate(w.date))}</td><td>${esc(w.title)}${w.kind && w.kind !== 'program' ? ` <span class="muted small">${esc(w.kind)}</span>` : ''}</td><td class="num">${w.exercises ?? '—'}</td><td class="num">${w.minutes ?? '—'}</td><td class="num">${w.calories ?? '—'}</td><td class="num">${w.hrAvg ?? '—'}</td><td class="num">${w.volume ? nf(w.volume) + ' kg' : '—'}</td><td class="num muted">›</td></tr>`).join('')}
     </tbody></table></div>
-    ${list.length > woShown ? `<div class="row center" style="margin-top:.6rem"><button class="btn ghost small" id="woMore">Meer tonen (${list.length - woShown} over)</button></div>` : `<p class="muted small" style="margin:.5rem 0 0">${list.length} trainingen</p>`}`;
+    ${list.length > woShown ? `<div class="row center" style="margin-top:.6rem"><button class="btn ghost small" id="woMore">${t('app.meerTonenOver', { a: list.length - woShown })}</button></div>` : `<p class="muted small" style="margin:.5rem 0 0">${t('app.trainingen', { n: list.length })}</p>`}`;
   $('#woMore')?.addEventListener('click', () => { woShown += 50; renderWorkouts(); });
 }
 $('#woSearch').addEventListener('input', () => { woShown = 25; renderWorkouts(); });
 $('#recent').addEventListener('click', (ev) => { const tr = ev.target.closest('tr[data-id]'); if (tr) openWorkouts([tr.dataset.id]); });
 $('#recent').addEventListener('keydown', (ev) => { const tr = ev.target.closest('tr[data-id]'); if (tr && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openWorkouts([tr.dataset.id]); } });
 
-const nl1 = (v) => (Math.round(v * 10) / 10).toLocaleString('nl-NL');
+const nl1 = (v) => (Math.round(v * 10) / 10).toLocaleString(localeOf());
 // Korte samenvatting van gedane sets, bijv. "3 × 10 @ 20 kg".
 function doneSetsSummary(sets) {
   if (!sets?.length) return '—';
@@ -1217,7 +1217,7 @@ function doneSetsSummary(sets) {
 }
 // Kerncijfers van een training (duur, oefeningen, volume, kcal, hartslag).
 function woTiles(d) {
-  const tiles = [['Duur', d.minutes != null ? `${d.minutes} min` : '—'], ['Oefeningen', d.exercises.length || '—'], ['Volume', d.volume ? `${d.volume.toLocaleString('nl-NL')} kg` : '—'], ['kcal', d.calories ?? '—']];
+  const tiles = [['Duur', d.minutes != null ? `${d.minutes} min` : '—'], ['Oefeningen', d.exercises.length || '—'], ['Volume', d.volume ? `${d.volume.toLocaleString(localeOf())} kg` : '—'], ['kcal', d.calories ?? '—']];
   if (d.calories == null && d.healthKcal != null) tiles[3] = ['kcal', d.healthKcal];
   if (d.hrAvg || d.hrMax) tiles.push(hrTile(d.hrAvg, d.hrMax));
   if (d.completion != null) tiles.push(['Voltooid', `${d.completion}%`]);
@@ -1226,24 +1226,24 @@ function woTiles(d) {
 // Trainingsrapport in de app: oefeningen, vergelijking, hartslag, tijd en spierkaart.
 function workoutHtml(d) {
   const exs = d.exercises.map((e, i) => {
-    const delta = e.prev ? (e.prev.topDelta > 0 ? `<span class="up">+${nl1(e.prev.topDelta)} kg</span>` : e.prev.topDelta < 0 ? `<span class="down">${nl1(e.prev.topDelta)} kg</span>` : '<span class="muted">gelijk</span>') : '<span class="muted">eerste keer</span>';
+    const delta = e.prev ? (e.prev.topDelta > 0 ? `<span class="up">${t('app.kg', { a: nl1(e.prev.topDelta) })}</span>` : e.prev.topDelta < 0 ? `<span class="down">${nl1(e.prev.topDelta)} kg</span>` : '<span class="muted">' + t('app.gelijk') + '</span>') : '<span class="muted">' + t('app.eersteKeer') + '</span>';
     if (!e.top) {
       // zonder gewicht (warming-up, mobiliteit, stretches): één compacte regel
       const reps = e.sets.reduce((t, x) => t + (x.reps || 0), 0);
-      return `<div class="wo-ex light"><div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small muted">zonder gewicht${e.sets.length ? ` · ${e.sets.length} ${e.sets.length === 1 ? 'set' : 'sets'}${reps ? ` · ${reps} herh./s` : ''}` : ''}</div></div></div>`;
+      return `<div class="wo-ex light"><div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small muted">${t('app.zonderGewicht', { a: e.sets.length ? ` · ${t('app.setsN', { n: e.sets.length })}${reps ? ` · ${t('app.repsTotal', { reps })}` : ''}` : '' })}</div></div></div>`;
     }
     return `<div class="wo-ex">
-      <div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small">zwaarste set ${nl1(e.top)} kg · ${delta}</div></div>
-      <table class="wo-sets"><thead><tr><th>Set</th><th class="num">Herhalingen</th><th class="num">Doel</th><th class="num">Gewicht</th></tr></thead><tbody>
+      <div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small">${t('app.zwaarsteSetKg', { a: nl1(e.top), delta })}</div></div>
+      <table class="wo-sets"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ui.stats.herhalingen')}</th><th class="num">${t('ui.setTraining.doel')}</th><th class="num">${t('app.gewicht')}</th></tr></thead><tbody>
         ${e.sets.map((x, j) => `<tr><td>${j + 1}</td><td class="num ${x.target && x.reps < x.target ? 'down' : x.target && x.reps >= x.target ? 'up' : ''}">${x.reps}</td><td class="num muted">${x.target ?? '—'}</td><td class="num">${nl1(x.weight)} kg${x.min != null && x.max !== x.min ? ` <span class="muted small">(${nl1(x.min)}–${nl1(x.max)})</span>` : ''}</td></tr>`).join('')}
       </tbody></table>
-      <div class="small muted">Volume ${e.volume.toLocaleString('nl-NL')} kg · geschat 1RM ${nl1(e.e1rm)} kg${e.prev ? ` · vorige keer (${esc(fmtDate(e.prev.date))}): ${esc(doneSetsSummary(e.prev.sets))}` : ''}</div>
+      <div class="small muted">${t('app.volumeKgGeschat1rm', { a: e.volume.toLocaleString(localeOf()), b: nl1(e.e1rm), c: e.prev ? t('app.vorigeKeer2', { a: esc(fmtDate(e.prev.date)), b: esc(doneSetsSummary(e.prev.sets)) }) : '' })}</div>
     </div>`;
   }).join('');
-  return `${d.hrSource ? `<p class="muted small" style="margin:0">Hartslag (gemiddeld / maximaal) uit ${esc(d.hrSource)}.</p>` : ''}
-    ${Object.keys(d.muscles || {}).length ? `<div class="wo-map"><div>${bodyMap(d.muscles, { height: 170, title: 'Getrainde spiergroepen' })}</div><div class="mbars">${Object.entries(d.muscles).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v], i, arr) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / arr[0][1]) * 100}%"></div></div><b>${String(v).replace('.', ',')}</b></div>`).join('')}</div></div>` : ''}
+  return `${d.hrSource ? `<p class="muted small" style="margin:0">${t('app.hartslagGemiddeldMaximaalUit', { a: esc(d.hrSource) })}</p>` : ''}
+    ${Object.keys(d.muscles || {}).length ? `<div class="wo-map"><div>${bodyMap(d.muscles, { height: 170, title: t('app.getraindeSpiergroepen') })}</div><div class="mbars">${Object.entries(d.muscles).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v], i, arr) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / arr[0][1]) * 100}%"></div></div><b>${String(v).replace('.', ',')}</b></div>`).join('')}</div></div>` : ''}
     ${insightsHtml(d)}
-    ${d.hasDetail ? exs : '<div class="empty">Geen details voor deze training (bijvoorbeeld een les of vrije training). Probeer eventueel een sync.</div>'}`;
+    ${d.hasDetail ? exs : '<div class="empty">' + t('app.geenDetailsVoorDeze') + '</div>'}`;
 }
 // alles van één dag: Gym Monster-trainingen én activiteiten uit Apple Health
 async function openDay(date) {
@@ -1254,42 +1254,42 @@ async function openDay(date) {
 }
 // Een activiteit uit Apple Health (soort, duur, afstand, tempo, hartslag).
 function activityHtml(a, first) {
-  const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString('nl-NL');
-  const start = a.start ? new Date(a.start).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : null;
+  const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString(localeOf());
+  const start = a.start ? new Date(a.start).toLocaleTimeString(localeOf(), { hour: '2-digit', minute: '2-digit' }) : null;
   const mmss = (m) => `${Math.floor(m)}:${String(Math.round((m % 1) * 60)).padStart(2, '0')}`;
   // tempo zoals gebruikelijk per sport: fietsen in km/u, zwemmen per 100 m, lopen per km; balsporten zonder tempo
   const pace = !(a.km && a.minutes) ? null : a.type === 'fietsen' ? `${n1(a.km / (a.minutes / 60))} km/u`
     : a.type === 'zwemmen' ? `${mmss(a.minutes / (a.km * 10))} /100 m`
     : ['wandelen', 'hardlopen', 'roeien'].includes(a.type) ? `${mmss(a.minutes / a.km)} /km` : null;
   const tiles = [['Duur', a.minutes != null ? `${a.minutes} min` : '—']];
-  if (a.km) tiles.push(['Afstand', a.type === 'zwemmen' && a.km < 10 ? `${Math.round(a.km * 1000).toLocaleString('nl-NL')} m` : `${n1(a.km)} km`]);
+  if (a.km) tiles.push(['Afstand', a.type === 'zwemmen' && a.km < 10 ? `${Math.round(a.km * 1000).toLocaleString(localeOf())} m` : `${n1(a.km)} km`]);
   if (pace) tiles.push([a.type === 'fietsen' ? 'Snelheid' : 'Tempo', pace]);
   tiles.push(['kcal', a.kcal ?? '—']);
   if (a.hrAvg || a.hrMax) tiles.push(hrTile(a.hrAvg, a.hrMax));
-  return `<div class="wo-sticky"><div class="exd-head"><div><div class="eyebrow">${esc(new Date(a.date + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}${start ? ` · ${start}` : ''}</div>
-      <h2><span class="segdot" style="background:${actColor(a.type)}"></span>${esc(actName(a))}</h2>${actName(a) !== actLabel(a.type) ? `<div class="muted small">${esc(actLabel(a.type))}</div>` : ''}</div>${first ? '<button value="close" class="btn ghost small" aria-label="Sluiten">✕</button>' : ''}</div>
+  return `<div class="wo-sticky"><div class="exd-head"><div><div class="eyebrow">${esc(new Date(a.date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}${start ? ` · ${start}` : ''}</div>
+      <h2><span class="segdot" style="background:${actColor(a.type)}"></span>${esc(actName(a))}</h2>${actName(a) !== actLabel(a.type) ? `<div class="muted small">${esc(actLabel(a.type))}</div>` : ''}</div>${first ? '<button value="close" class="btn ghost small" aria-label="' + t('pk.close') + '">✕</button>' : ''}</div>
     <div class="wo-tiles">${tiles.map(([l, v, zc]) => `<div class="zoned"${zoneStyle(zc)}><div class="eyebrow">${l}</div><div class="mid">${esc(String(v))}</div></div>`).join('')}</div></div>
     ${Array.isArray(a.hrSeries) && a.hrSeries.length >= 3 ? (() => { const ref = hrRefClient(); return heartHtml({ source: 'Apple Health', series: a.hrSeries, ref, zones: zonesFor(a.hrSeries, ref) }); })() : ''}
-    <p class="muted small" style="margin:0">Uit Apple Health${a.name && a.name !== actName(a) && !/^other/i.test(a.name) ? ` · ${esc(a.name)}` : ''}${a.source ? ` · bron: ${esc(a.source)}` : ''}</p>`;
+    <p class="muted small" style="margin:0">${t('app.uitAppleHealth', { a: a.name && a.name !== actName(a) && !/^other/i.test(a.name) ? ` · ${esc(a.name)}` : '', b: a.source ? t('app.bron2', { a: esc(a.source) }) : '' })}</p>`;
 }
 // Venster met de trainingen en activiteiten van een dag.
 async function openWorkouts(ids, acts = [], date = null) {
   const dlg = $('#woDlg');
-  dlg.innerHTML = '<div class="exd"><div class="empty">Laden…</div></div>';
+  dlg.innerHTML = '<div class="exd"><div class="empty">' + t('app.laden') + '</div></div>';
   if (!dlg.open) dlg.showModal();
   try {
     const all = await Promise.all(ids.map((id) => api('GET', '/api/workout?id=' + encodeURIComponent(id))));
     const actHtml = acts.map((a, i) => activityHtml(a, !all.length && i === 0)).join('<hr class="wo-sep">');
     dlg.innerHTML = `<form method="dialog" class="exd">${actHtml && !all.length ? actHtml : ''}${all.map((d, i) => `
-      <div class="wo-sticky"><div class="exd-head"><div><div class="eyebrow">${esc(new Date(d.date + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}</div><h2>${esc(d.title)}</h2></div><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
+      <div class="wo-sticky"><div class="exd-head"><div><div class="eyebrow">${esc(new Date(d.date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}</div><h2>${esc(d.title)}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
       ${woTiles(d)}
-      <div class="row gap"><a class="btn small ghost" href="/api/workout/pdf?id=${encodeURIComponent(d.id)}" target="_blank" rel="noopener">PDF</a><button type="button" class="btn small ghost" data-mail="${esc(d.id)}">Mail naar mij</button></div></div>
+      <div class="row gap"><a class="btn small ghost" href="/api/workout/pdf?id=${encodeURIComponent(d.id)}" target="_blank" rel="noopener">PDF</a><button type="button" class="btn small ghost" data-mail="${esc(d.id)}">${t('app.mailNaarMij')}</button></div></div>
       ${workoutHtml(d)}`).join('<hr class="wo-sep">')}${actHtml && all.length ? '<hr class="wo-sep">' + actHtml : ''}</form>`;
     dlg.querySelectorAll('[data-mail]').forEach((b) => b.addEventListener('click', () => busy(b, async () => {
-      if (!state.settings.email) { toast('Vul eerst je e-mailadres in bij Instellingen → E-mail', true); return; }
-      try { const r = await api('POST', '/api/workout/mail', { id: b.dataset.mail }); toast(`Samenvatting gemaild naar ${r.to}`); } catch (er) { toast(er.message, true); }
+      if (!state.settings.email) { toast(t('app.vulEerstJeE'), true); return; }
+      try { const r = await api('POST', '/api/workout/mail', { id: b.dataset.mail }); toast(t('app.samenvattingGemaildNaar', { to: r.to })); } catch (er) { toast(er.message, true); }
     })));
-  } catch (e) { dlg.innerHTML = `<form method="dialog" class="exd"><div class="exd-head"><h2>Training</h2><button value="close" class="btn ghost small">✕</button></div><div class="empty">${esc(e.message)}</div></form>`; }
+  } catch (e) { dlg.innerHTML = `<form method="dialog" class="exd"><div class="exd-head"><h2>${t('ui.settings.training')}</h2><button value="close" class="btn ghost small">✕</button></div><div class="empty">${esc(e.message)}</div></form>`; }
 }
 const idsOnDate = (date) => (state.trainingDays || []).filter((w) => w.date === date).map((w) => w.id);
 // Grafiek van de gekozen oefening in Voortgang (geschat 1RM en topgewicht).
@@ -1297,23 +1297,23 @@ function drawExercise() {
   const p = state.progress[+$('#exSelect').value];
   if (!p) { lineChart($('#chartExercise'), []); return; }
   lineChart($('#chartExercise'), [
-    { cls: 'la', label: 'Geschat 1RM', unit: 'kg', points: p.points.map((q) => ({ x: String(q.date).slice(0, 10), y: q.e1rm })) },
-    { cls: 'lb', label: 'Zwaarste set', unit: 'kg', points: p.points.map((q) => ({ x: String(q.date).slice(0, 10), y: q.topWeight })) },
+    { cls: 'la', label: t('app.geschat1rm'), unit: 'kg', points: p.points.map((q) => ({ x: String(q.date).slice(0, 10), y: q.e1rm })) },
+    { cls: 'lb', label: t('app.zwaarsteSet'), unit: 'kg', points: p.points.map((q) => ({ x: String(q.date).slice(0, 10), y: q.topWeight })) },
   ], { yLabel: 'kg' });
 }
 $('#exSelect').addEventListener('change', drawExercise);
 
 
 // ---------- lichaamssamenstelling ----------
-const COMP = [
-  ['kg', 'Gewicht', 'kg', 'down'], ['fat', 'Vetpercentage', '%', 'down'], ['fatMass', 'Vetmassa', 'kg', 'down'],
-  ['muscle', 'Spiermassa', 'kg', 'up'], ['fatFree', 'Vetvrije massa', 'kg', 'up'], ['bone', 'Botmassa', 'kg', 'up'],
-  ['water', 'Lichaamswater', 'kg', null], ['ecw', 'Extracellulair water', 'kg', null], ['icw', 'Intracellulair water', 'kg', null],
-  ['visceral', 'Visceraal vet', '', 'down'], ['bmr', 'Rustverbranding (BMR)', 'kcal', 'up'], ['metAge', 'Metabole leeftijd', 'jr', 'down'],
-  ['bmi', 'BMI', '', null], ['ffmi', 'FFMI', '', 'up'], ['musclePct', 'Spiermassa %', '%', 'up'],
-  ['restHr', 'Hartslag in rust', 'bpm', 'down'], ['pwv', 'Polsgolfsnelheid', 'm/s', 'down'], ['vascAge', 'Vasculaire leeftijd', 'jr', 'down'],
-  ['nerve', 'Zenuwgezondheid', 'µS', 'up'],
-];
+const COMP = tmap([
+  ['kg', '§app.comp.kg', 'kg', 'down'], ['fat', '§app.comp.fat', '%', 'down'], ['fatMass', '§app.comp.fatMass', 'kg', 'down'],
+  ['muscle', '§app.comp.muscle', 'kg', 'up'], ['fatFree', '§app.comp.fatFree', 'kg', 'up'], ['bone', '§app.comp.bone', 'kg', 'up'],
+  ['water', '§app.comp.water', 'kg', null], ['ecw', '§app.comp.ecw', 'kg', null], ['icw', '§app.comp.icw', 'kg', null],
+  ['visceral', '§app.comp.visceral', '', 'down'], ['bmr', '§app.comp.bmr', 'kcal', 'up'], ['metAge', '§app.comp.metAge', 'jr', 'down'],
+  ['bmi', '§app.comp.bmi', '', null], ['ffmi', '§app.comp.ffmi', '', 'up'], ['musclePct', '§app.comp.musclePct', '%', 'up'],
+  ['restHr', '§app.comp.restHr', 'bpm', 'down'], ['pwv', '§app.comp.pwv', 'm/s', 'down'], ['vascAge', '§app.comp.vascAge', 'jr', 'down'],
+  ['nerve', '§app.comp.nerve', 'µS', 'up'],
+]);
 
 // Kleur van de lijn boven een tegel: dezelfde kleuren als de achtergrondbanden in de grafieken.
 // Gepland gewicht → echt volume: bij twee handgrepen telt Speediance beide kanten (factor uit je eigen trainingen).
@@ -1342,19 +1342,19 @@ function healthBands(metric) {
   const B = (...r) => r.map(([from, to, cls]) => ({ from, to, cls }));
   const ageBands = (a) => a ? B([-Infinity, a + 0.5, 'ok'], [a + 0.5, a + 5.5, 'warn'], [a + 5.5, Infinity, 'bad']) : null;
   switch (metric) {
-    case 'bmi': return { bands: B([-Infinity, 18.5, 'warn'], [18.5, 25, 'ok'], [25, 30, 'warn'], [30, Infinity, 'bad']), note: 'BMI 18,5–25 gezond (WHO)' };
-    case 'kg': return h ? { bands: B([-Infinity, 18.5 * h * h, 'warn'], [18.5 * h * h, 25 * h * h, 'ok'], [25 * h * h, 30 * h * h, 'warn'], [30 * h * h, Infinity, 'bad']), note: `gezond gewicht bij ${Math.round(h * 100)} cm: ${Math.round(18.5 * h * h)}–${Math.round(25 * h * h)} kg (BMI 18,5–25)` } : null;
+    case 'bmi': return { bands: B([-Infinity, 18.5, 'warn'], [18.5, 25, 'ok'], [25, 30, 'warn'], [30, Infinity, 'bad']), note: t('app.bmi18525') };
+    case 'kg': return h ? { bands: B([-Infinity, 18.5 * h * h, 'warn'], [18.5 * h * h, 25 * h * h, 'ok'], [25 * h * h, 30 * h * h, 'warn'], [30 * h * h, Infinity, 'bad']), note: t('app.gezondGewichtBijCm', { a: Math.round(h * 100), b: Math.round(18.5 * h * h), c: Math.round(25 * h * h) }) } : null;
     case 'fat': {
-      if (!sex || !age) return { bands: null, note: 'vul geslacht (of de tabel voor richtwaarden) en geboortejaar in bij Instellingen' };
+      if (!sex || !age) return { bands: null, note: tx('app.vulGeslachtOfDe') };
       const t = sex === 'm' ? (age < 40 ? [8, 20, 25] : age < 60 ? [11, 22, 28] : [13, 25, 30]) : (age < 40 ? [21, 33, 39] : age < 60 ? [23, 34, 40] : [24, 36, 42]);
-      return { bands: B([-Infinity, t[0], 'warn'], [t[0], t[1], 'ok'], [t[1], t[2], 'warn'], [t[2], Infinity, 'bad']), note: `gezond voor jouw leeftijd: ${t[0]}–${t[1]}% (Gallagher)` };
+      return { bands: B([-Infinity, t[0], 'warn'], [t[0], t[1], 'ok'], [t[1], t[2], 'warn'], [t[2], Infinity, 'bad']), note: tx('app.gezondVoorJouwLeeftijd', { a: t[0], b: t[1] }) };
     }
-    case 'visceral': return { bands: B([-Infinity, 12.5, 'ok'], [12.5, 14.5, 'warn'], [14.5, Infinity, 'bad']), note: 'richtwaarde: onder 13 gezond' };
-    case 'ffmi': return sex ? { bands: sex === 'm' ? B([-Infinity, 17, 'warn'], [17, Infinity, 'ok']) : B([-Infinity, 14, 'warn'], [14, Infinity, 'ok']), note: `richtwaarde: vanaf ${sex === 'm' ? 17 : 14} goed` } : { bands: null, note: 'vul geslacht (of de tabel voor richtwaarden) in bij Instellingen' };
-    case 'restHr': return { bands: B([-Infinity, 75, 'ok'], [75, 90, 'warn'], [90, Infinity, 'bad']), note: 'richtwaarde: onder 75 goed' };
-    case 'pwv': return { bands: B([-Infinity, 8, 'ok'], [8, 10, 'warn'], [10, Infinity, 'bad']), note: 'richtwaarde: onder 8 m/s goed, boven 10 verhoogd' };
-    case 'nerve': return { bands: B([-Infinity, 40, 'bad'], [40, 60, 'warn'], [60, Infinity, 'ok']), note: 'richtwaarde: vanaf 60 µS normaal' };
-    case 'metAge': case 'vascAge': return age ? { bands: ageBands(age), note: `groen = gelijk aan of jonger dan je leeftijd (${age})` } : { bands: null, note: 'vul je geboortejaar in voor richtwaarden' };
+    case 'visceral': return { bands: B([-Infinity, 12.5, 'ok'], [12.5, 14.5, 'warn'], [14.5, Infinity, 'bad']), note: t('app.richtwaardeOnder13Gezond') };
+    case 'ffmi': return sex ? { bands: sex === 'm' ? B([-Infinity, 17, 'warn'], [17, Infinity, 'ok']) : B([-Infinity, 14, 'warn'], [14, Infinity, 'ok']), note: t('app.richtwaardeVanafGoed', { a: sex === 'm' ? 17 : 14 }) } : { bands: null, note: t('app.vulGeslachtOfDe2') };
+    case 'restHr': return { bands: B([-Infinity, 75, 'ok'], [75, 90, 'warn'], [90, Infinity, 'bad']), note: t('app.richtwaardeOnder75Goed') };
+    case 'pwv': return { bands: B([-Infinity, 8, 'ok'], [8, 10, 'warn'], [10, Infinity, 'bad']), note: t('app.richtwaardeOnder8M') };
+    case 'nerve': return { bands: B([-Infinity, 40, 'bad'], [40, 60, 'warn'], [60, Infinity, 'ok']), note: t('app.richtwaardeVanaf60S') };
+    case 'metAge': case 'vascAge': return age ? { bands: ageBands(age), note: t('app.groenGelijkAanOf', { age }) } : { bands: null, note: t('app.vulJeGeboortejaarIn') };
     default: return null;
   }
 }
@@ -1377,8 +1377,8 @@ let compTrain = true;
 try { compTrain = localStorage.getItem('gc-comp-train') !== 'off'; } catch {}
 // tijdsperiode voor de grafieken op de lichaamspagina (gerekend vanaf de laatste meting)
 // kalenderperiodes (vanaf maandag / de 1e / 1 januari) en terugkijkperiodes (t/m de laatste meting)
-const BODY_RANGES = [['wk', 'Deze week', 'week'], ['mo', 'Deze maand', 'month'], ['ytd', 'Dit jaar', 'year'],
-  ['1m', 'Laatste maand', 30], ['3m', 'Laatste 3 maanden', 91], ['6m', 'Laatste 6 maanden', 182], ['1y', 'Laatste jaar', 365], ['all', 'Alles', null]];
+const BODY_RANGES = tmap([['wk', '§app.bodyranges.wk', 'week'], ['mo', '§app.bodyranges.mo', 'month'], ['ytd', '§app.bodyranges.ytd', 'year'],
+  ['1m', '§app.bodyranges.1m', 30], ['3m', '§app.bodyranges.3m', 91], ['6m', '§app.bodyranges.6m', 182], ['1y', '§app.bodyranges.1y', 365], ['all', '§app.bodyranges.all', null]]);
 let bodyRange = 'all';
 try { bodyRange = localStorage.getItem('gc-body-range') || 'all'; } catch {}
 const rangeStart = (lastDate) => {
@@ -1386,7 +1386,7 @@ const rangeStart = (lastDate) => {
   if (typeof r?.[2] === 'string') return periodStart(r[2]); // kalenderperiode, niet t.o.v. de laatste meting
   return r?.[2] && lastDate ? daysBefore(lastDate, r[2]) : '';
 };
-const rangeChips = (id) => `<select id="${id}" class="period-sel" aria-label="Periode" title="Kalenderperiodes tellen vanaf maandag, de 1e of 1 januari; de andere tot en met je laatste meting">
+const rangeChips = (id) => `<select id="${id}" class="period-sel" aria-label="${t('ui.stats.periode')}" title="${t('app.kalenderperiodesTellenVanafMaandag')}">
   <optgroup label="Kalender">${BODY_RANGES.filter((r) => typeof r[2] === 'string').map(([k, l]) => `<option value="${k}" ${k === bodyRange ? 'selected' : ''}>${l}</option>`).join('')}</optgroup>
   <optgroup label="Terugkijken">${BODY_RANGES.filter((r) => typeof r[2] !== 'string').map(([k, l]) => `<option value="${k}" ${k === bodyRange ? 'selected' : ''}>${l}</option>`).join('')}</optgroup></select>`;
 // Koppelt de periodekeuze van een kaart in Lichaam (en onthoudt de keuze).
@@ -1408,6 +1408,8 @@ function smoothTrend(points, days = 14) {
     return { x: p.x, y: Math.round((sum / (i - start + 1)) * 100) / 100 };
   });
 }
+// Namen van segmenten worden in het Nederlands bewaard (instelling); voor het tonen vertaald.
+const segName = (n) => (has('app.seg.' + n) ? t('app.seg.' + n) : n);
 const SEG_GUESS = ['Linkerarm', 'Rechterarm', 'Romp', 'Linkerbeen', 'Rechterbeen'];
 const SEG_DEFAULT = { 2: 'Linkerarm', 3: 'Rechterarm', 10: 'Linkerbeen', 11: 'Rechterbeen', 12: 'Romp' };
 const SEG_COLORS = ['#ff7a2e', '#6c9cff', '#4cc26a', '#e5b84b', '#c77dff', '#ff6b9a'];
@@ -1438,7 +1440,7 @@ function renderComposition() {
   const log = withBmi(state.bodyLog);
   const avail = COMP.filter(([k]) => log.some((b) => b[k] != null));
   const card = $('#compCard');
-  if (!avail.length) { card.innerHTML = '<h2>Lichaamssamenstelling</h2><div class="empty">Nog geen metingen. Koppel je Withings-weegschaal bij Instellingen of voeg een meting toe.</div>'; $('#segCard').classList.add('hidden'); return; }
+  if (!avail.length) { card.innerHTML = '<h2>' + t('app.lichaamssamenstelling') + '</h2><div class="empty">' + t('app.nogGeenMetingenKoppel') + '</div>'; $('#segCard').classList.add('hidden'); return; }
   if (!avail.some(([k]) => k === compMetric)) compMetric = avail[0][0];
   const tiles = avail.map(([k, label, unit, good]) => {
     const cur = lastWith(log, k);
@@ -1456,31 +1458,31 @@ function renderComposition() {
   if (tr) {
     const goodDir = compMetric === 'kg' ? (state.settings.goal === 'spieropbouw' ? 'up' : 'down') : mGood;
     const cls = !goodDir || Math.abs(tr.slope) < 0.005 ? '' : (tr.slope > 0) === (goodDir === 'up') ? 'up' : 'down';
-    trendTxt = `Trend 4 weken t/m ${esc(tr.to.slice(5))}: <b class="${cls}">${tr.slope >= 0 ? '+' : ''}${tr.slope.toFixed(2)} ${compMetric === 'fat' ? '%-punt/week' : mUnit ? esc(mUnit) + '/week' : 'per week'}</b>`;
-    if (compMetric === 'kg') trendTxt += ` (${tr.pct.toFixed(2)}%)${state.settings.goal !== 'spieropbouw' ? ' <span class="muted">· richtwaarde bij afvallen: ca. 0,25–0,75% per week</span>' : ''}`;
+    trendTxt = `${t('app.trend4WekenT', { a: esc(tr.to.slice(5)) })} <b class="${cls}">${tr.slope >= 0 ? '+' : ''}${tr.slope.toFixed(2)} ${compMetric === 'fat' ? t('app.puntWeek') : mUnit ? esc(mUnit) + t('app.week4') : t('app.perWeek')}</b>`;
+    if (compMetric === 'kg') trendTxt += ` (${tr.pct.toFixed(2)}%)${state.settings.goal !== 'spieropbouw' ? ' <span class="muted">' + t('app.richtwaardeBijAfvallenCa') + '</span>' : ''}`;
   }
-  card.innerHTML = `<div class="row between wrap gap"><h2>Lichaamssamenstelling</h2><span class="muted">laatste meting: ${esc(lastWith(log, 'kg')?.date || '')}</span></div>
+  card.innerHTML = `<div class="row between wrap gap"><h2>${t('app.lichaamssamenstelling')}</h2><span class="muted">${t('app.laatsteMeting', { a: esc(lastWith(log, 'kg')?.date || '') })}</span></div>
     <div class="ctiles">${tiles}</div>
-    <div class="row between wrap gap" style="margin-top:1rem"><div class="eyebrow" style="margin:0">${mLabel} over tijd${mUnit ? ` (${mUnit})` : ''}</div><div class="row gap wrap"><span class="small">${trendTxt}</span>${rangeChips('compRange')}<button class="chip ${compTrain ? 'on' : ''}" id="trainToggle" aria-pressed="${compTrain}" title="Toon de dagen waarop je getraind hebt (Gym Monster en Apple Health)"><span class="dot tm"></span> Activiteiten</button><button class="chip ${compTrend ? 'on' : ''}" id="trendToggle" aria-pressed="${compTrend}" title="Gemiddelde over 14 dagen"><span class="dot b"></span> Trendlijn</button></div></div>
+    <div class="row between wrap gap" style="margin-top:1rem"><div class="eyebrow" style="margin:0">${t('app.overTijd', { mLabel, a: mUnit ? ` (${mUnit})` : '' })}</div><div class="row gap wrap"><span class="small">${trendTxt}</span>${rangeChips('compRange')}<button class="chip ${compTrain ? 'on' : ''}" id="trainToggle" aria-pressed="${compTrain}" title="${t('app.toonDeDagenWaarop')}"><span class="dot tm"></span> ${t('app.activiteiten')}</button><button class="chip ${compTrend ? 'on' : ''}" id="trendToggle" aria-pressed="${compTrend}" title="${t('app.gemiddeldeOver14Dagen')}"><span class="dot b"></span> ${t('app.trendlijn')}</button></div></div>
     <div id="chartComp" class="chart tall"></div>`;
   const pts = log.filter((b) => b[compMetric] != null).map((b) => ({ x: b.date, y: b[compMetric] }));
   const series = [{ cls: 'la', label: mLabel, unit: mUnit, points: pts }];
-  if (compTrend && pts.length > 2) series.push({ cls: 'lb', label: 'Trend (14 d)', unit: mUnit, points: smoothTrend(pts) });
+  if (compTrend && pts.length > 2) series.push({ cls: 'lb', label: t('app.trend14D'), unit: mUnit, points: smoothTrend(pts) });
   const from = rangeStart(pts[pts.length - 1]?.x);
   if (from) series.forEach((sr) => { sr.points = sr.points.filter((q) => q.x >= from); });
   const marks = compTrain ? [
-    ...(state.trainingDays || []).map((w) => ({ x: w.date, label: w.title + (w.min ? ` (${w.min} min)` : '') })),
+    ...(state.trainingDays || []).map((w) => ({ x: w.date, label: w.title + (w.min ? t('app.min5', { min: w.min }) : '') })),
     ...(state.activities || []).map((a) => ({ x: a.date, label: actLine(a), color: actColor(a.type) })),
   ] : [];
   if (compTrain && marks.length) {
     const from2 = series[0].points[0]?.x || '';
     const types = [...new Set((state.activities || []).filter((x) => x.date >= from2).map((x) => x.type))];
     const hasGm = (state.trainingDays || []).some((w) => w.date >= from2);
-    if (hasGm || types.length) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">Streepjes onder de grafiek: ${hasGm ? '<span class="sw" style="background:var(--ok);opacity:.8"></span>Gym Monster ' : ''}${types.map((t) => `<span class="sw" style="background:${actColor(t)};opacity:.8"></span>${esc(actLabel(t).toLowerCase())}`).join(' ')}</div>`);
+    if (hasGm || types.length) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${t('app.streepjesOnderDeGrafiek', { a: hasGm ? '<span class="sw" style="background:var(--ok);opacity:.8"></span>' + t('app.gymMonster') + ' ' : '', b: types.map((t) => `<span class="sw" style="background:${actColor(t)};opacity:.8"></span>${esc(actLabel(t).toLowerCase())}`).join(' ') })}</div>`);
   }
   const hb = healthBands(compMetric);
-  if (hb?.note) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${hb.bands ? '<span class="sw ok"></span>goed <span class="sw warn"></span>let op <span class="sw bad"></span>niet goed · ' : ''}${esc(hb.note)}</div>`);
-  if (!series[0].points.length) $('#chartComp').innerHTML = '<div class="empty">Geen metingen in deze periode. Kies een langere periode.</div>';
+  if (hb?.note) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${hb.bands ? '<span class="sw ok"></span>' + t('app.goed') + ' <span class="sw warn"></span>' + t('app.letOp') + ' <span class="sw bad"></span>' + t('app.nietGoed') + ' ' : ''}${esc(hb.note)}</div>`);
+  if (!series[0].points.length) $('#chartComp').innerHTML = '<div class="empty">' + t('app.geenMetingenInDeze') + '</div>';
   else lineChart($('#chartComp'), series, { bands: hb?.bands, marks, onPick: (d) => openDay(d) });
   $('#trainToggle').addEventListener('click', () => { compTrain = !compTrain; try { localStorage.setItem('gc-comp-train', compTrain ? 'on' : 'off'); } catch {} renderComposition(); });
   bindRange(card, 'compRange');
@@ -1497,7 +1499,7 @@ try { segTrend = localStorage.getItem('gc-seg-trend') !== 'off'; } catch {}
 let segHidden = new Set();
 try { segHidden = new Set(JSON.parse(localStorage.getItem('gc-seg-hidden') || '[]').map(Number)); } catch {}
 const saveSegHidden = () => { try { localStorage.setItem('gc-seg-hidden', JSON.stringify([...segHidden])); } catch {} };
-const SEG_METRICS = { muscle: ['Spiermassa', 'kg', 'up'], fatMass: ['Vetmassa', 'kg', 'down'], fatFree: ['Vetvrije massa', 'kg', 'up'], pct: ['Vet %', '%', 'down'] };
+const SEG_METRICS = tmap({ muscle: ['§app.segmetrics.muscle', 'kg', 'up'], fatMass: ['§app.segmetrics.fatMass', 'kg', 'down'], fatFree: ['§app.segmetrics.fatFree', 'kg', 'up'], pct: ['§app.segmetrics.pct', '%', 'down'] });
 const segVal = (s, m) => m === 'pct' ? (s?.fatMass != null && s?.fatFree != null ? Math.round((s.fatMass / (s.fatMass + s.fatFree)) * 1000) / 10 : null) : s?.[m] ?? null;
 
 // Segmenten per arm, been en romp, met links/rechts-balans.
@@ -1508,7 +1510,7 @@ function renderSegments() {
   if (!log.length) {
     if (w.connected && w.extended === false) {
       card.classList.remove('hidden');
-      card.innerHTML = `<h2>Per segment</h2><p class="muted">Withings geeft voor jouw API-app geen segment-, visceraal-vet- of BMR-waarden terug. Waarschijnlijk vallen die onder een betaald Withings API-pakket. De totaalwaarden hierboven werken wel.</p>`;
+      card.innerHTML = `<h2>${t('app.perSegment')}</h2><p class="muted">${t('app.withingsGeeftVoorJouw')}</p>`;
     } else card.classList.add('hidden');
     return;
   }
@@ -1540,27 +1542,27 @@ function renderSegments() {
   const vLast = lastWith(state.bodyLog, 'visceral');
   const vOld = vLast && (lastWith(state.bodyLog, 'visceral', daysBefore(vLast.date, 30)) || null);
   const vD = vLast && vOld && vOld !== vLast ? Math.round((vLast.visceral - vOld.visceral) * 10) / 10 : null;
-  const viscRow = vLast ? `<tr class="click" id="viscRow" title="Toon visceraal vet in de grafiek hierboven"><td><span class="segdot" style="background:#ff6b9a"></span>Visceraal vet <span class="muted small">(buikholte, index)</span></td>
-    <td class="num muted">—</td><td class="num">${Number(vLast.visceral).toFixed(1)} index${vD ? ` <span class="${vD < 0 ? 'up' : 'down'} small">${vD > 0 ? '+' : ''}${vD}</span>` : ''}</td><td colspan="2" class="muted small">meting ${esc(vLast.date)} · richtwaarde: onder 13 · index zonder eenheid</td></tr>` : '';
+  const viscRow = vLast ? `<tr class="click" id="viscRow" title="${t('app.toonVisceraalVetIn')}"><td><span class="segdot" style="background:#ff6b9a"></span>${t('app.visceraalVet')} <span class="muted small">${t('app.buikholteIndex')}</span></td>
+    <td class="num muted">—</td><td class="num">${t('app.index', { a: Number(vLast.visceral).toFixed(1), b: vD ? ` <span class="${vD < 0 ? 'up' : 'down'} small">${vD > 0 ? '+' : ''}${vD}</span>` : '' })}</td><td colspan="2" class="muted small">${t('app.metingRichtwaardeOnder13', { a: esc(vLast.date) })}</td></tr>` : '';
   const balTiles = pairs.length ? `<div class="bal-tiles">${pairs.map((pr) => {
     const v = balOf(last, pr), o = old !== last ? balOf(old, pr) : null;
     const L = segVal(last.segments[pr.l], segMetric), R = segVal(last.segments[pr.r], segMetric);
     const d = v != null && o != null ? Math.round((Math.abs(v) - Math.abs(o)) * 10) / 10 : null;
-    return `<div class="bal-tile"><div class="eyebrow">Balans ${pr.label.toLowerCase()} · ${esc(SEG_METRICS[segMetric][0].toLowerCase())}</div>
+    return `<div class="bal-tile"><div class="eyebrow">${t('app.balans', { a: pr.label.toLowerCase(), b: esc(SEG_METRICS[segMetric][0].toLowerCase()) })}</div>
       <div class="mid ${balCls(v)}">${esc(balTxt(v))}</div>
-      <div class="small muted">L ${L ?? '—'} · R ${R ?? '—'} ${esc(SEG_METRICS[segMetric][1])}${d ? ` · <span class="${d < 0 ? 'up' : 'down'}">${d < 0 ? 'meer' : 'minder'} in balans</span> dan ${esc(old.date.slice(5))}` : ''}</div></div>`;
+      <div class="small muted">L ${L ?? '—'} · R ${R ?? '—'} ${esc(SEG_METRICS[segMetric][1])}${d ? ` · <span class="${d < 0 ? 'up' : 'down'}">${t(d < 0 ? 'app.inBalansMeer' : 'app.inBalansMinder')}</span> ${t('app.dan', { a: esc(old.date.slice(5)) })}` : ''}</div></div>`;
   }).join('')}</div>` : '';
   const [mLabel, mUnit] = SEG_METRICS[segMetric];
   const segFrom = rangeStart(last.date);
   const chartLog = segFrom ? log.filter((b) => b.date >= segFrom) : log;
-  card.innerHTML = `<div class="row between wrap gap"><h2>Per segment</h2><span class="muted">${esc(last.date)}${old !== last ? ` · verschil t.o.v. ${esc(old.date)}` : ''}</span></div>
-    ${guessed ? '<p class="small muted" style="margin-top:-.3rem">Namen met (?) zijn een inschatting. Vergelijk één keer met de Withings-app en kies zo nodig de juiste naam.</p>' : ''}
-    <div class="tablewrap"><table><thead><tr><th>Segment</th><th class="num">Spiermassa</th><th class="num">Vetmassa</th><th class="num">Vetvrije massa</th><th class="num">Vet %</th></tr></thead><tbody>
+  card.innerHTML = `<div class="row between wrap gap"><h2>${t('app.perSegment')}</h2><span class="muted">${esc(last.date)}${old !== last ? t('app.verschilTOV', { a: esc(old.date) }) : ''}</span></div>
+    ${guessed ? '<p class="small muted" style="margin-top:-.3rem">' + t('app.namenMetZijnEen') + '</p>' : ''}
+    <div class="tablewrap"><table><thead><tr><th>${t('app.segment')}</th><th class="num">${t('app.spiermassa')}</th><th class="num">${t('app.vetmassa')}</th><th class="num">${t('app.vetvrijeMassa')}</th><th class="num">${t('app.vet2')}</th></tr></thead><tbody>
     ${positions.map((p, i) => {
       const s = last.segments[p] || {}, o = old.segments?.[p] || {};
       const pct = segVal(s, 'pct');
       const cur = saved[p] || '';
-      return `<tr><td><span class="segdot" style="background:${SEG_COLORS[i % SEG_COLORS.length]}"></span><select class="segname" data-p="${p}" aria-label="Naam voor positie ${p}"><option value="">${esc(SEG_DEFAULT[p] ? SEG_DEFAULT[p] + ' (?)' : 'Positie ' + p)}</option>${SEG_GUESS.map((g) => `<option ${cur === g ? 'selected' : ''}>${g}</option>`).join('')}</select></td>
+      return `<tr><td><span class="segdot" style="background:${SEG_COLORS[i % SEG_COLORS.length]}"></span><select class="segname" data-p="${p}" aria-label="${t('app.segNameFor', { p })}"><option value="">${esc(SEG_DEFAULT[p] ? segName(SEG_DEFAULT[p]) + ' (?)' : t('app.segPosition', { p }))}</option>${SEG_GUESS.map((g) => `<option value="${g}" ${cur === g ? 'selected' : ''}>${segName(g)}</option>`).join('')}</select></td>
         <td class="num">${s.muscle ?? '—'}${s.muscle != null ? ' kg' : ''}${fmtD(s.muscle, o.muscle, 'up')}</td>
         <td class="num">${s.fatMass ?? '—'}${s.fatMass != null ? ' kg' : ''}${fmtD(s.fatMass, o.fatMass, 'down')}</td>
         <td class="num">${s.fatFree ?? '—'}${s.fatFree != null ? ' kg' : ''}${fmtD(s.fatFree, o.fatFree, 'up')}</td>
@@ -1568,34 +1570,34 @@ function renderSegments() {
     }).join('')}${viscRow}</tbody></table></div>
     ${balTiles}
     <div class="row between wrap gap" style="margin-top:1rem">
-      <div class="eyebrow" style="margin:0">${mLabel} ${segMode === 'bal' ? `— verschil links/rechts (${balUnit}, 0 = in balans)` : `per segment — ${segMode === 'delta' ? `verandering sinds ${esc(chartLog[0]?.date || '—')} (${segMetric === 'pct' ? '%-punt' : mUnit})` : `absoluut (${mUnit})`}`}</div>
+      <div class="eyebrow" style="margin:0">${mLabel} ${segMode === 'bal' ? t('app.verschilLinksRechts0', { balUnit }) : t('app.perSegment2', { a: segMode === 'delta' ? `verandering sinds ${esc(chartLog[0]?.date || '—')} (${segMetric === 'pct' ? '%-punt' : mUnit})` : `absoluut (${mUnit})` })}</div>
       <div class="row gap wrap">
         <div class="chips small" id="segSwitch">${Object.entries(SEG_METRICS).map(([k, [l]]) => `<button data-m="${k}" class="${k === segMetric ? 'on' : ''}">${l}</button>`).join('')}</div>
         ${rangeChips('segRange')}
-        <button class="chip ${segTrend ? 'on' : ''}" id="segTrendToggle" aria-pressed="${segTrend}" title="Gemiddelde over 14 dagen, per segment"><span class="dot b"></span> Trendlijn</button>
-        <div class="chips small" id="segMode"><button data-v="delta" class="${segMode === 'delta' ? 'on' : ''}">Verandering</button><button data-v="abs" class="${segMode === 'abs' ? 'on' : ''}">Absoluut</button>${pairs.length ? `<button data-v="bal" class="${segMode === 'bal' ? 'on' : ''}">Balans L/R</button>` : ''}</div>
+        <button class="chip ${segTrend ? 'on' : ''}" id="segTrendToggle" aria-pressed="${segTrend}" title="${t('app.gemiddeldeOver14Dagen2')}"><span class="dot b"></span> ${t('app.trendlijn')}</button>
+        <div class="chips small" id="segMode"><button data-v="delta" class="${segMode === 'delta' ? 'on' : ''}">${t('app.verandering')}</button><button data-v="abs" class="${segMode === 'abs' ? 'on' : ''}">${t('app.absoluut')}</button>${pairs.length ? `<button data-v="bal" class="${segMode === 'bal' ? 'on' : ''}">${t('app.balansLR')}</button>` : ''}</div>
       </div>
     </div>
     <div id="chartSeg" class="chart tall"></div>
     ${segMode === 'bal' ? `<div class="seg-toggles bal-toggles">${pairs.map((pr) => `<button class="seg-tg ${balHidden.has(pr.label) ? 'off' : ''}" data-b="${esc(pr.label)}" aria-pressed="${!balHidden.has(pr.label)}"><span class="segdot" style="background:${pr.color}"></span>${esc(pr.label)}</button>`).join('')}</div>` : ''}
     <div class="seg-toggles${segMode === 'bal' ? ' hidden' : ''}">${positions.map((p, i) => `<button class="seg-tg ${segHidden.has(p) ? 'off' : ''}" data-p="${p}" aria-pressed="${!segHidden.has(p)}"><span class="segdot" style="background:${SEG_COLORS[i % SEG_COLORS.length]}"></span>${esc(nameOf(p))}</button>`).join('')}
-      <button class="seg-tg all" data-p="all">${segHidden.size ? 'Alles tonen' : 'Alles verbergen'}</button></div>`;
+      <button class="seg-tg all" data-p="all">${segHidden.size ? t('app.allesTonen') : t('app.allesVerbergen')}</button></div>`;
   bindRange(card, 'segRange');
   const visible = positions.map((p, i) => [p, i]).filter(([p]) => !segHidden.has(p));
   if (segMode === 'bal' && !pairs.length) segMode = 'delta';
-  if (!chartLog.length) $('#chartSeg').innerHTML = '<div class="empty">Geen metingen in deze periode. Kies een langere periode.</div>';
+  if (!chartLog.length) $('#chartSeg').innerHTML = '<div class="empty">' + t('app.geenMetingenInDeze') + '</div>';
   else if (segMode === 'bal') {
     const shown = pairs.filter((pr) => !balHidden.has(pr.label));
-    if (!shown.length) $('#chartSeg').innerHTML = '<div class="empty">Zet armen of benen aan.</div>';
+    if (!shown.length) $('#chartSeg').innerHTML = '<div class="empty">' + t('app.zetArmenOfBenen') + '</div>';
     else lineChart($('#chartSeg'), shown.flatMap((pr) => {
       // grootte van het verschil (altijd positief); welke kant zwaarder is staat in de tooltip
-      const all = log.map((b) => { const v = balOf(b, pr); return v == null ? null : { x: b.date, y: Math.abs(v), note: v > 0 ? 'rechts meer' : v < 0 ? 'links meer' : 'gelijk' }; }).filter(Boolean);
+      const all = log.map((b) => { const v = balOf(b, pr); return v == null ? null : { x: b.date, y: Math.abs(v), note: v > 0 ? t('app.rechtsMeer') : v < 0 ? t('app.linksMeer') : t('app.gelijk') }; }).filter(Boolean);
       const inRange = (q) => !segFrom || q.x >= segFrom;
       const out = [{ color: pr.color, label: `${pr.label}`, unit: balUnit, points: all.filter(inRange) }];
-      if (segTrend && all.length > 2) out.push({ color: pr.color, dash: true, label: `${pr.label} trend`, unit: balUnit, points: smoothTrend(all).filter(inRange) });
+      if (segTrend && all.length > 2) out.push({ color: pr.color, dash: true, label: t('app.trend', { label: pr.label }), unit: balUnit, points: smoothTrend(all).filter(inRange) });
       return out;
     }), { fromZero: true, bands: [{ from: 0, to: 3, cls: 'ok' }, { from: 3, to: 8, cls: 'warn' }, { from: 8, to: Infinity, cls: 'bad' }] });
-  } else if (!visible.length) { $('#chartSeg').innerHTML = '<div class="empty">Zet minstens één segment aan.</div>'; }
+  } else if (!visible.length) { $('#chartSeg').innerHTML = '<div class="empty">' + t('app.zetMinstensEenSegment') + '</div>'; }
   else lineChart($('#chartSeg'), visible.flatMap(([p, i]) => {
     // trend over de volledige historie berekenen, daarna pas de periode tonen
     const all = log.map((b) => ({ x: b.date, y: segVal(b.segments[p], segMetric) })).filter((q) => q.y != null);
@@ -1605,7 +1607,7 @@ function renderSegments() {
     const rel = (arr) => segMode === 'delta' ? arr.map((q) => ({ x: q.x, y: Math.round((q.y - base) * 100) / 100 })) : arr;
     const color = SEG_COLORS[i % SEG_COLORS.length], unit = segMode === 'delta' && segMetric === 'pct' ? '%-punt' : mUnit;
     const out = [{ color, label: nameOf(p) + (segMode === 'delta' ? ' (Δ)' : ''), unit, points: rel(pts).map((q) => ({ x: q.x, y: Math.round(q.y * 10) / 10 })) }];
-    if (segTrend && all.length > 2) out.push({ color, dash: true, label: nameOf(p) + ' trend', unit, points: rel(smoothTrend(all).filter(inRange)) });
+    if (segTrend && all.length > 2) out.push({ color, dash: true, label: nameOf(p) + t('app.trend2'), unit, points: rel(smoothTrend(all).filter(inRange)) });
     return out;
   }));
   card.querySelector('.bal-toggles')?.addEventListener('click', (ev) => {
@@ -1627,7 +1629,7 @@ function renderSegments() {
   card.querySelectorAll('.segname').forEach((sel) => sel.addEventListener('change', async () => {
     const n = { ...(state.settings.withings?.segmentNames || {}) };
     if (sel.value) n[sel.dataset.p] = sel.value; else delete n[sel.dataset.p];
-    try { const r = await api('PUT', '/api/withings/segments', { names: n }); state.settings.withings.segmentNames = r.segmentNames; toast('Segmentnaam opgeslagen'); renderSegments(); }
+    try { const r = await api('PUT', '/api/withings/segments', { names: n }); state.settings.withings.segmentNames = r.segmentNames; toast(t('app.segmentnaamOpgeslagen')); renderSegments(); }
     catch (e) { toast(e.message, true); }
   }));
 }
@@ -1636,14 +1638,14 @@ function renderSegments() {
 function renderWithings() {
   const w = state.withings || {};
   $('#withingsCard').innerHTML = `<div class="row between wrap gap">
-    <div><div class="eyebrow">Withings-weegschaal</div>
-      <div>${w.connected ? `<span class="badge ok">gekoppeld</span> <span class="muted">laatst opgehaald: ${w.lastSync ? new Date(w.lastSync).toLocaleString('nl-NL', { dateStyle: 'short', timeStyle: 'short' }) : 'nog niet'}</span>` : '<span class="muted">Niet gekoppeld — koppelen doe je bij Instellingen → Withings.</span>'}
+    <div><div class="eyebrow">${t('app.withingsWeegschaal')}</div>
+      <div>${w.connected ? `<span class="badge ok">${t('app.gekoppeld')}</span> <span class="muted">${t('app.laatstOpgehaald', { a: w.lastSync ? new Date(w.lastSync).toLocaleString(localeOf(), { dateStyle: 'short', timeStyle: 'short' }) : t('app.nogNiet') })}</span>` : '<span class="muted">' + t('app.nietGekoppeldKoppelenDoe') + '</span>'}
       ${w.lastError ? `<div class="down small">${esc(w.lastError)}</div>` : ''}</div></div>
     <div class="row gap wrap">
-      ${w.connected ? '<button class="btn" id="wSync">Nu ophalen</button>' : ''}
-      <button class="btn accent" id="bwAdd">Meting toevoegen</button>
+      ${w.connected ? '<button class="btn" id="wSync">' + t('app.nuOphalen') + '</button>' : ''}
+      <button class="btn accent" id="bwAdd">${t('app.metingToevoegen')}</button>
     </div></div>`;
-  $('#wSync')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => { const r = await api('POST', '/api/withings/sync'); toast(`${r.added} dag(en) bijgewerkt`); await load(); renderBody(); }));
+  $('#wSync')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => { const r = await api('POST', '/api/withings/sync'); toast(t('app.dagEnBijgewerkt', { added: r.added })); await load(); renderBody(); }));
   $('#bwAdd').addEventListener('click', openAddMeasurement);
 }
 
@@ -1652,21 +1654,21 @@ function openAddMeasurement() {
   const dlg = $('#bwDlg');
   const last = lastWith(state.bodyLog, 'kg');
   dlg.innerHTML = `<form method="dialog" class="exd" id="bwForm">
-    <div class="exd-head"><div><div class="eyebrow">Handmatig</div><h2>Meting toevoegen</h2></div><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
+    <div class="exd-head"><div><div class="eyebrow">${t('app.handmatig')}</div><h2>${t('app.metingToevoegen')}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
     <div class="row gap wrap">
-      <label style="flex:1 1 150px">Datum <input type="date" name="date" required value="${new Date().toISOString().slice(0, 10)}"></label>
-      <label style="flex:1 1 120px">Gewicht (kg) <input type="number" name="kg" step="0.1" min="20" max="400" required placeholder="${last ? last.kg : ''}"></label>
-      <label style="flex:1 1 120px">Vet % (optioneel) <input type="number" name="fat" step="0.1" min="2" max="70"></label>
+      <label style="flex:1 1 150px">${t('app.datum')} <input type="date" name="date" required value="${new Date().toISOString().slice(0, 10)}"></label>
+      <label style="flex:1 1 120px">${t('app.gewichtKg')} <input type="number" name="kg" step="0.1" min="20" max="400" required placeholder="${last ? last.kg : ''}"></label>
+      <label style="flex:1 1 120px">${t('app.vetOptioneel')} <input type="number" name="fat" step="0.1" min="2" max="70"></label>
     </div>
-    <p class="muted small" style="margin:0">Een handmatige meting op dezelfde dag als een Withings-meting vervangt die.</p>
-    <div class="row gap end"><button value="close" class="btn ghost" formnovalidate>Annuleren</button><button value="ok" class="btn accent">Opslaan</button></div></form>`;
+    <p class="muted small" style="margin:0">${t('app.eenHandmatigeMetingOp')}</p>
+    <div class="row gap end"><button value="close" class="btn ghost" formnovalidate>${t('ed.cancel')}</button><button value="ok" class="btn accent">${t('ed.save')}</button></div></form>`;
   const f = dlg.querySelector('#bwForm');
   dlg.returnValue = '';
   dlg.onclose = async () => {
     if (dlg.returnValue !== 'ok') return;
     try {
       state.bodyLog = (await api('POST', '/api/bodyweight', { date: f.date.value, kg: +f.kg.value, fat: f.fat.value ? +f.fat.value : null })).bodyLog;
-      toast('Meting opgeslagen'); renderBody();
+      toast(t('app.metingOpgeslagen')); renderBody();
     } catch (e) { toast(e.message, true); }
   };
   dlg.showModal();
@@ -1678,11 +1680,11 @@ function renderBody() {
   renderComposition();
   const log = state.bodyLog;
   $('#bwCount').textContent = `(${log.length})`;
-  $('#bwList').innerHTML = log.length ? `<div class="tablewrap"><table><thead><tr><th>Datum</th><th class="num">kg</th><th class="num">vet %</th><th class="num">spier</th><th>Bron</th><th></th></tr></thead><tbody>${log.slice().reverse().map((b) => `<tr><td>${esc(b.date)}</td><td class="num">${b.kg ?? '—'}</td><td class="num">${b.fat ?? '—'}</td><td class="num">${b.muscle ?? '—'}</td><td class="muted">${b.source === 'withings' ? 'Withings' : 'handmatig'}</td><td style="text-align:right"><button class="btn small ghost" data-del="${esc(b.date)}">Verwijder</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Nog geen metingen</div>';
+  $('#bwList').innerHTML = log.length ? `<div class="tablewrap"><table><thead><tr><th>${t('app.datum')}</th><th class="num">kg</th><th class="num">${t('app.vet3')}</th><th class="num">${t('app.spier')}</th><th>${t('app.bron')}</th><th></th></tr></thead><tbody>${log.slice().reverse().map((b) => `<tr><td>${esc(b.date)}</td><td class="num">${b.kg ?? '—'}</td><td class="num">${b.fat ?? '—'}</td><td class="num">${b.muscle ?? '—'}</td><td class="muted">${b.source === 'withings' ? t('ui.settings.withings') : 'handmatig'}</td><td style="text-align:right"><button class="btn small ghost" data-del="${esc(b.date)}">${t('app.verwijder')}</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">' + t('app.nogGeenMetingen2') + '</div>';
 }
 $('#bwList').addEventListener('click', async (ev) => {
   const d = ev.target.dataset.del;
-  if (!d || !await askConfirm(`Meting van ${d} verwijderen?`, { danger: true, okText: 'Verwijderen' })) return;
+  if (!d || !await askConfirm(t('app.metingVanVerwijderen', { d }), { danger: true, okText: t('tp.delete') })) return;
   state.bodyLog = (await api('DELETE', '/api/bodyweight?date=' + encodeURIComponent(d))).bodyLog; renderBody();
 });
 
@@ -1691,10 +1693,10 @@ function renderWithingsSettings() {
   const w = state.withings || {}, cfg = state.settings.withings || {};
   const box = $('#wsStatus'); if (!box) return;
   const configured = cfg.clientId && cfg.redirectUri;
-  box.innerHTML = `<div class="row between wrap gap"><div>${w.connected ? `<span class="badge ok">gekoppeld</span> <span class="muted small">sinds ${w.connectedAt ? new Date(w.connectedAt).toLocaleDateString('nl-NL') : '—'}</span>` : `<span class="muted small">${configured ? 'Niet gekoppeld. Klik op Koppel Withings en log in met je eigen Withings-account.' : state.me?.role === 'admin' ? 'Vul eerst hieronder de Withings-app in (Callback-URL, Client ID, Client secret) en klik op Opslaan.' : 'De beheerder heeft de Withings-koppeling nog niet ingesteld.'}</span>`}</div>
-    <div class="row gap">${w.connected ? '<button type="button" class="btn ghost small" id="wOff">Ontkoppelen</button>' : configured ? '<a class="btn accent small" href="/api/withings/connect" target="_blank" id="wConnect">Koppel Withings</a>' : ''}</div></div>`;
+  box.innerHTML = `<div class="row between wrap gap"><div>${w.connected ? `<span class="badge ok">${t('app.gekoppeld')}</span> <span class="muted small">${t('app.sinds', { a: w.connectedAt ? new Date(w.connectedAt).toLocaleDateString(localeOf()) : '—' })}</span>` : `<span class="muted small">${configured ? t('app.nietGekoppeldKlikOp') : state.me?.role === 'admin' ? t('app.vulEerstHieronderDe') : t('app.deBeheerderHeeftDe')}</span>`}</div>
+    <div class="row gap">${w.connected ? '<button type="button" class="btn ghost small" id="wOff">' + t('app.ontkoppelen') + '</button>' : configured ? '<a class="btn accent small" href="/api/withings/connect" target="_blank" id="wConnect">' + t('app.koppelWithings') + '</a>' : ''}</div></div>`;
   $('#wOff')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    if (!await askConfirm('Withings ontkoppelen? Opgehaalde metingen blijven bewaard.')) return;
+    if (!await askConfirm(t('app.withingsOntkoppelenOpgehaaldeMetingen'))) return;
     await api('POST', '/api/withings/disconnect'); await load(); renderWithingsSettings();
   }));
 }
@@ -1707,15 +1709,15 @@ function fillSettings() {
     if (!el.name) continue;
     const [grp, key] = el.name.includes('.') ? el.name.split('.') : [null, el.name];
     const v = grp ? s[grp]?.[key] : s[key];
-    if (el.name === 'ai.apiKey' || el.name === 'withings.clientSecret' || el.name === 'smtp.pass') { el.value = ''; el.placeholder = v ? `ingesteld (${v}) — leeg = ongewijzigd` : 'nog niet ingesteld'; continue; }
+    if (el.name === 'ai.apiKey' || el.name === 'withings.clientSecret' || el.name === 'smtp.pass') { el.value = ''; el.placeholder = v ? t('app.ingesteldLeegOngewijzigd', { v }) : t('app.nogNietIngesteld'); continue; }
     el.value = v ?? '';
   }
   if (!f['withings.redirectUri'].value) f['withings.redirectUri'].value = cbDefault();
   // accessoires die je niet gebruikt: vinkjes zonder name, zodat de algemene formulierlus ze overslaat
   const no = new Set(s.noAccessories || []);
-  $('#accBox').innerHTML = (state.accessories || []).map((a) => `<label class="chip-check"><input type="checkbox" data-acc="${esc(a.key)}"${no.has(a.key) ? ' checked' : ''}><span>${esc(a.label)}<i class="acc-n" title="oefeningen met dit accessoire">${a.count}</i></span></label>`).join('');
+  $('#accBox').innerHTML = (state.accessories || []).map((a) => `<label class="chip-check"><input type="checkbox" data-acc="${esc(a.key)}"${no.has(a.key) ? ' checked' : ''}><span>${esc(a.label)}<i class="acc-n" title="${t('app.oefeningenMetDitAccessoire')}">${a.count}</i></span></label>`).join('');
   const mc = s.smtp && (s.smtp.configured ?? !!(s.smtp.host && s.smtp.from));
-  $('#mailNote').textContent = mc ? '' : 'Let op: de beheerder heeft de mailserver nog niet ingesteld; er wordt nog niets verstuurd.';
+  $('#mailNote').textContent = mc ? '' : t('app.letOpDeBeheerder');
   // taalkeuze: pas zichtbaar als er meer dan één taal te kiezen is
   $('#langWrap').classList.toggle('hidden', LANGS.length < 2);
   f.lang.innerHTML = `<option value="">${esc(t('lang.auto'))}</option>` + LANGS.map((l) => `<option value="${l.code}">${esc(l.name)}</option>`).join('');
@@ -1725,9 +1727,9 @@ function fillSettings() {
   syncOutputs();
   const lb = state.library || {};
   const MODEL = { 1: 'Gym Monster 1', 2: 'Gym Monster 2' };
-  $('#libInfo').textContent = !lb.source ? (lb.deviceType ? 'Nog geen oefeningencatalogus voor dit toestel. Klik op "Oefeningencatalogus verversen".' : 'De oefeningencatalogus wordt opgehaald zodra je je Speediance-account koppelt.')
-    : lb.source === 'account' ? `${lb.count} oefeningen voor ${MODEL[lb.deviceType] || 'toestel ' + lb.deviceType}, opgehaald van je Speediance-account${lb.updatedAt ? ` op ${new Date(lb.updatedAt.replace(' ', 'T') + 'Z').toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}.`
-    : `${lb.count} oefeningen uit de ingebouwde standaardlijst (Gym Monster 1). Klik op "Oefeningencatalogus verversen" voor de lijst van je eigen account.`;
+  $('#libInfo').textContent = !lb.source ? (lb.deviceType ? t('app.nogGeenOefeningencatalogusVoor') : t('app.deOefeningencatalogusWordtOpgehaald'))
+    : lb.source === 'account' ? t('app.oefeningenVoorOpgehaaldVan', { count: lb.count, a: MODEL[lb.deviceType] || 'toestel ' + lb.deviceType, b: lb.updatedAt ? ` op ${new Date(lb.updatedAt.replace(' ', 'T') + 'Z').toLocaleDateString(localeOf(), { day: 'numeric', month: 'long', year: 'numeric' })}` : '' })
+    : t('app.oefeningenUitDeIngebouwde', { count: lb.count });
 }
 // Toont de waarden van de schuifjes (dagen, minuten) in Instellingen.
 function syncOutputs() {
@@ -1736,9 +1738,9 @@ function syncOutputs() {
   $('#minOut').textContent = f.minutesPerSession.value + ' min';
   document.querySelector('.ai-local').classList.toggle('hidden', f['ai.provider'].value !== 'openai');
   const ai = state.settings?.ai || {};
-  if ($('#aiStatus')) $('#aiStatus').innerHTML = ai.provider === 'anthropic' && ai.apiKey ? `<span class="badge ok">actief</span> <span class="small">Claude API · model ${esc(ai.model || 'claude-sonnet-5-5')} · sleutel ${esc(ai.apiKey)}</span>`
-    : ai.provider === 'openai' ? `<span class="badge ok">actief</span> <span class="small">lokaal model via ${esc(ai.baseUrl || '')}</span>`
-    : `<span class="badge warn">uit</span> <span class="small muted">${ai.apiKey ? 'Er is wel een sleutel opgeslagen: kies hieronder "Claude API" en sla op.' : 'Kies een provider en vul de sleutel in.'}</span>`;
+  if ($('#aiStatus')) $('#aiStatus').innerHTML = ai.provider === 'anthropic' && ai.apiKey ? `<span class="badge ok">${t('app.actief')}</span> <span class="small">${t('app.claudeApiModelSleutel', { a: esc(ai.model || 'claude-sonnet-5-5'), b: esc(ai.apiKey) })}</span>`
+    : ai.provider === 'openai' ? `<span class="badge ok">${t('app.actief')}</span> <span class="small">${t('app.lokaalModelVia', { a: esc(ai.baseUrl || '') })}</span>`
+    : `<span class="badge warn">${t('app.uit')}</span> <span class="small muted">${ai.apiKey ? t('app.erIsWelEen') : t('app.kiesEenProviderEn')}</span>`;
 }
 $('#settingsForm').addEventListener('input', syncOutputs);
 $('#settingsForm').addEventListener('submit', async (ev) => {
@@ -1763,30 +1765,30 @@ $('#settingsForm').addEventListener('submit', async (ev) => {
       || [...(before.noAccessories || [])].sort().join() !== [...(state.settings.noAccessories || [])].sort().join();
     if ((before.lang || '') !== (state.settings.lang || '')) { location.reload(); return; } // andere taal: alles opnieuw opbouwen
     if (figureFor(before) !== figureFor(state.settings)) { renderPlan(); if ($('#tab-home').classList.contains('active')) renderHome(); }
-    if (state.setup?.needed) { await load(); toast('Opgeslagen'); }
-    else if (changed) { state.plan = (await api('POST', '/api/plan/generate')).plan; if (state.meta) state.meta.coach = null; renderCoach(null); renderPlan(); toast('Opgeslagen — nieuw plan gemaakt'); }
-    else toast('Opgeslagen');
+    if (state.setup?.needed) { await load(); toast(t('app.opgeslagen')); }
+    else if (changed) { state.plan = (await api('POST', '/api/plan/generate')).plan; if (state.meta) state.meta.coach = null; renderCoach(null); renderPlan(); toast(t('app.opgeslagenNieuwPlanGemaakt')); }
+    else toast(t('app.opgeslagen'));
   } catch (e) { toast(e.message, true); }
 });
 $('#mailTest').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-  try { const r = await api('POST', '/api/mail/test'); toast(`Testmail verstuurd naar ${r.to}`); } catch (e) { toast(e.message, true); }
+  try { const r = await api('POST', '/api/mail/test'); toast(t('app.testmailVerstuurdNaar', { to: r.to })); } catch (e) { toast(e.message, true); }
 }));
 const cbDefault = () => location.origin + '/api/withings/callback';
-$('#cbFill').addEventListener('click', () => { $('#settingsForm')['withings.redirectUri'].value = cbDefault(); toast('Adres ingevuld — vergeet niet op Opslaan te klikken'); });
+$('#cbFill').addEventListener('click', () => { $('#settingsForm')['withings.redirectUri'].value = cbDefault(); toast(t('app.adresIngevuldVergeetNiet')); });
 $('#cbCopy').addEventListener('click', async () => {
   const el = $('#settingsForm')['withings.redirectUri'];
   if (!el.value) el.value = cbDefault();
-  try { await navigator.clipboard.writeText(el.value); toast('Gekopieerd: ' + el.value); }
-  catch { el.select(); document.execCommand('copy'); toast('Gekopieerd: ' + el.value); }
+  try { await navigator.clipboard.writeText(el.value); toast(t('app.gekopieerd2') + el.value); }
+  catch { el.select(); document.execCommand('copy'); toast(t('app.gekopieerd2') + el.value); }
 });
 $('#fullSyncBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-  toast('Volledige historie ophalen… dit kan even duren');
-  try { const r = await api('POST', '/api/sync?full=1'); toast(`Klaar: ${r.meta.lastSyncFetched ?? 0} nieuwe trainingen met details`); }
+  toast(t('app.volledigeHistorieOphalenDit'));
+  try { const r = await api('POST', '/api/sync?full=1'); toast(t('app.klaarNieuweTrainingenMet', { a: r.meta.lastSyncFetched ?? 0 })); }
   catch (e) { toast(e.message, true); }
   finally { await load(); }
 }));
 $('#libBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-  const r = await api('POST', '/api/library/refresh'); state.libraryCount = r.count; fillSettings(); toast(`Catalogus ververst: ${r.count} oefeningen`);
+  const r = await api('POST', '/api/library/refresh'); state.libraryCount = r.count; fillSettings(); toast(t('app.catalogusVerverstOefeningen', { count: r.count }));
 }));
 
 
@@ -1796,7 +1798,7 @@ async function loadAccount() {
     const a = await api('GET', '/api/account');
     const f = $('#accountForm');
     f.email.value = a.email; f.password.value = '';
-    f.password.placeholder = a.passwordSet ? 'ingesteld — leeg laten = ongewijzigd' : 'nog niet ingesteld';
+    f.password.placeholder = a.passwordSet ? t('app.ingesteldLeegLatenOngewijzigd') : t('app.nogNietIngesteld');
     f.region.value = a.region;
     if (a.deviceType === 1 || a.deviceType === 2) { f.deviceType.value = String(a.deviceType); $('#dtOther').classList.add('hidden'); }
     else { f.deviceType.value = 'other'; f.deviceTypeNum.value = a.deviceType; $('#dtOther').classList.remove('hidden'); }
@@ -1809,12 +1811,12 @@ $('#accountForm').addEventListener('submit', async (ev) => {
   const deviceType = f.deviceType.value === 'other' ? +f.deviceTypeNum.value : +f.deviceType.value;
   const payload = { email: f.email.value.trim(), region: f.region.value, deviceType };
   if (f.password.value) payload.password = f.password.value;
-  $('#accountInfo').innerHTML = '<span class="muted">Opslaan en inloggen bij Speediance…</span>';
+  $('#accountInfo').innerHTML = '<span class="muted">' + t('app.opslaanEnInloggenBij') + '</span>';
   await busy(btn, async () => {
     const r = await api('PUT', '/api/account', payload);
     f.password.value = '';
     $('#accountInfo').innerHTML = r.login.ok
-      ? `<span class="up">✓ Ingelogd bij Speediance.</span>${r.library ? ` <span class="muted">Catalogus: ${esc(String(r.library))}${typeof r.library === 'number' ? ' oefeningen' : ''}.</span>` : ''}`
+      ? `<span class="up">${t('app.ingelogdBijSpeediance')}</span>${r.library ? ` <span class="muted">${t('app.catalogus', { a: esc(String(r.library)), b: typeof r.library === 'number' ? ' oefeningen' : '' })}</span>` : ''}`
       : `<span class="down">${esc(r.login.error)}</span>`;
     if (r.login.ok) { await load(); loadAccount(); }
   });
@@ -1826,10 +1828,10 @@ $('#detectBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async (
     const f = $('#accountForm');
     if (r.deviceType === 1 || r.deviceType === 2) { f.deviceType.value = String(r.deviceType); $('#dtOther').classList.add('hidden'); }
     else { f.deviceType.value = 'other'; f.deviceTypeNum.value = r.deviceType; $('#dtOther').classList.remove('hidden'); }
-    box.innerHTML = `<span class="up">Gevonden in je account: toesteltype ${r.deviceType}.</span> <span class="muted">Klik op “Opslaan en testen” om het te gebruiken.</span>`;
+    box.innerHTML = `<span class="up">${t('app.gevondenInJeAccount', { deviceType: r.deviceType })}</span> <span class="muted">${t('app.klikOpOpslaanEn')}</span>`;
   } else {
-    box.innerHTML = `<span class="muted">Je account vermeldt geen toesteltype${r.error ? ` (${esc(r.error)})` : ''}. Kies je model hierboven zelf.</span>`
-      + (r.fields?.length ? `<details style="margin-top:.4rem"><summary class="muted">Gevonden toestelvelden</summary><pre class="small">${esc(r.fields.map((x) => `${x.key}: ${x.value}`).join('\n'))}</pre></details>` : '');
+    box.innerHTML = `<span class="muted">${t('app.jeAccountVermeldtGeen', { a: r.error ? ` (${esc(r.error)})` : '' })}</span>`
+      + (r.fields?.length ? `<details style="margin-top:.4rem"><summary class="muted">${t('app.gevondenToestelvelden')}</summary><pre class="small">${esc(r.fields.map((x) => `${x.key}: ${x.value}`).join('\n'))}</pre></details>` : '');
   }
 }));
 
@@ -1841,11 +1843,11 @@ function showAuth(mode) {
   authMode = mode;
   const setup = mode === 'setup';
   $('#authScreen').classList.remove('hidden');
-  $('#authTitle').textContent = setup ? 'Welkom bij GymCoach' : 'Inloggen';
-  $('#authIntro').textContent = setup ? 'Maak het eerste account aan. Dit wordt de beheerder. Bestaande gegevens van deze installatie worden aan dit account gekoppeld.' : '';
+  $('#authTitle').textContent = setup ? t('app.welkomBijGymcoach') : t('ui.auth.inloggen');
+  $('#authIntro').textContent = setup ? t('app.maakHetEersteAccount') : '';
   $('#authNameRow').classList.toggle('hidden', !setup);
   $('#authPw2Row').classList.toggle('hidden', !setup);
-  $('#authSubmit').textContent = setup ? 'Account aanmaken' : 'Inloggen';
+  $('#authSubmit').textContent = setup ? t('app.accountAanmaken') : t('ui.auth.inloggen');
   $('#authForm').password.autocomplete = setup ? 'new-password' : 'current-password';
   $('#authErr').textContent = '';
   setTimeout(() => (setup ? $('#authForm').name : $('#authForm').username).focus(), 50);
@@ -1854,16 +1856,16 @@ $('#authForm').addEventListener('submit', async (ev) => {
   ev.preventDefault();
   const f = ev.currentTarget, btn = $('#authSubmit');
   $('#authErr').textContent = '';
-  if (authMode === 'setup' && f.password.value !== f.password2.value) { $('#authErr').textContent = 'De wachtwoorden zijn niet gelijk'; return; }
+  if (authMode === 'setup' && f.password.value !== f.password2.value) { $('#authErr').textContent = t('app.deWachtwoordenZijnNiet'); return; }
   btn.disabled = true;
   try {
     const r = await fetch(authMode === 'setup' ? '/api/auth/setup' : '/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: f.username.value.trim(), password: f.password.value, name: f.name.value.trim() }) });
     const j = await r.json().catch(() => ({}));
-    if (r.status === 409 && authMode === 'setup') { showAuth('login'); $('#authErr').textContent = j.error || 'Er bestaat al een account. Log in.'; return; }
-    if (!r.ok) throw new Error(j.error || 'Inloggen mislukt');
+    if (r.status === 409 && authMode === 'setup') { showAuth('login'); $('#authErr').textContent = j.error || t('app.erBestaatAlEen'); return; }
+    if (!r.ok) throw new Error(j.error || t('app.inloggenMislukt'));
     f.password.value = ''; f.password2.value = '';
     $('#authScreen').classList.add('hidden');
-    if (j.migrated?.length) toast('Je bestaande gegevens zijn aan je account gekoppeld');
+    if (j.migrated?.length) toast(t('app.jeBestaandeGegevensZijn'));
     await load();
   } catch (e) { $('#authErr').textContent = e.message; } finally { btn.disabled = false; }
 });
@@ -1881,7 +1883,7 @@ function squareImage(file, size = 256) {
       c.getContext('2d').drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, size, size);
       URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg', 0.85));
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Kan deze afbeelding niet lezen')); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(t('app.kanDezeAfbeeldingNiet'))); };
     img.src = url;
   });
 }
@@ -1898,32 +1900,32 @@ $('#userBtn').addEventListener('click', () => {
   const me = state?.me; if (!me) return;
   const dlg = $('#userDlg');
   dlg.innerHTML = `<form method="dialog" class="exd" id="meForm">
-    <div class="exd-head"><div><div class="eyebrow">${me.role === 'admin' ? 'Beheerder' : 'Gebruiker'} · ${esc(me.username)}</div><h2>${esc(me.name)}</h2></div><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
+    <div class="exd-head"><div><div class="eyebrow">${me.role === 'admin' ? t('app.beheerder') : t('app.gebruiker')} · ${esc(me.username)}</div><h2>${esc(me.name)}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
     <div class="me-photo"><span class="avatar xl" id="meAvatar">${avatarHtml(me)}</span>
-      <div class="col"><span class="muted small">Profielfoto — zo zie je altijd wie er is ingelogd.</span>
-      <div class="row gap"><label class="btn small">Foto kiezen<input type="file" accept="image/*" id="meFile" hidden></label>${me.avatar ? '<button type="button" class="btn small ghost" data-x="nophoto">Verwijderen</button>' : ''}</div></div></div>
-    <label>Naam <input name="name" value="${esc(me.name)}" maxlength="40"></label>
-    <div class="row end"><button type="button" class="btn small" data-x="name">Naam opslaan</button></div>
-    <div class="eyebrow">Wachtwoord wijzigen</div>
-    <label>Huidig wachtwoord <input name="current" type="password" autocomplete="current-password"></label>
-    <label>Nieuw wachtwoord (min. 8 tekens) <input name="pw" type="password" autocomplete="new-password" minlength="8"></label>
-    <div class="row end"><button type="button" class="btn small" data-x="pw">Wachtwoord wijzigen</button></div>
-    <div class="row between" style="border-top:1px solid var(--line);padding-top:.8rem"><span class="muted small">Ingelogd op dit apparaat</span><button type="button" class="btn danger" data-x="logout">Uitloggen</button></div>
+      <div class="col"><span class="muted small">${t('app.profielfotoZoZieJe')}</span>
+      <div class="row gap"><label class="btn small">${t('app.fotoKiezen')}<input type="file" accept="image/*" id="meFile" hidden></label>${me.avatar ? '<button type="button" class="btn small ghost" data-x="nophoto">' + t('tp.delete') + '</button>' : ''}</div></div></div>
+    <label>${t('nt.name')} <input name="name" value="${esc(me.name)}" maxlength="40"></label>
+    <div class="row end"><button type="button" class="btn small" data-x="name">${t('app.naamOpslaan')}</button></div>
+    <div class="eyebrow">${t('app.wachtwoordWijzigen')}</div>
+    <label>${t('app.huidigWachtwoord')} <input name="current" type="password" autocomplete="current-password"></label>
+    <label>${t('app.nieuwWachtwoordMin8')} <input name="pw" type="password" autocomplete="new-password" minlength="8"></label>
+    <div class="row end"><button type="button" class="btn small" data-x="pw">${t('app.wachtwoordWijzigen')}</button></div>
+    <div class="row between" style="border-top:1px solid var(--line);padding-top:.8rem"><span class="muted small">${t('app.ingelogdOpDitApparaat')}</span><button type="button" class="btn danger" data-x="logout">${t('app.uitloggen')}</button></div>
   </form>`;
   const f = dlg.querySelector('#meForm');
   const setPhoto = (v) => { state.me = { ...state.me, avatar: v }; renderMe(); $('#userBtn').click(); };
   f.querySelector('#meFile').addEventListener('change', async (ev) => {
     const file = ev.target.files[0]; if (!file) return;
-    try { const dataUrl = await squareImage(file); const r = await api('PUT', '/api/me/avatar', { dataUrl }); dlg.close(); setPhoto(r.avatar); toast('Foto opgeslagen'); } catch (e) { toast(e.message, true); }
+    try { const dataUrl = await squareImage(file); const r = await api('PUT', '/api/me/avatar', { dataUrl }); dlg.close(); setPhoto(r.avatar); toast(t('app.fotoOpgeslagen')); } catch (e) { toast(e.message, true); }
   });
   f.querySelector('[data-x=nophoto]')?.addEventListener('click', async () => {
-    try { await api('DELETE', '/api/me/avatar'); dlg.close(); setPhoto(null); toast('Foto verwijderd'); } catch (e) { toast(e.message, true); }
+    try { await api('DELETE', '/api/me/avatar'); dlg.close(); setPhoto(null); toast(t('app.fotoVerwijderd')); } catch (e) { toast(e.message, true); }
   });
   f.querySelector('[data-x=name]').addEventListener('click', async () => {
-    try { state.me = (await api('PUT', '/api/me', { name: f.name.value.trim() })).me; renderMe(); renderHome(); toast('Naam opgeslagen'); } catch (e) { toast(e.message, true); }
+    try { state.me = (await api('PUT', '/api/me', { name: f.name.value.trim() })).me; renderMe(); renderHome(); toast(t('app.naamOpgeslagen')); } catch (e) { toast(e.message, true); }
   });
   f.querySelector('[data-x=pw]').addEventListener('click', async () => {
-    try { await api('PUT', '/api/me/password', { current: f.current.value, password: f.pw.value }); dlg.close(); toast('Wachtwoord gewijzigd — log opnieuw in'); showAuth('login'); } catch (e) { toast(e.message, true); }
+    try { await api('PUT', '/api/me/password', { current: f.current.value, password: f.pw.value }); dlg.close(); toast(t('app.wachtwoordGewijzigdLogOpnieuw')); showAuth('login'); } catch (e) { toast(e.message, true); }
   });
   f.querySelector('[data-x=logout]').addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -1939,37 +1941,37 @@ async function loadUsers() {
   const box = $('#usersCard');
   try {
     const { users } = await api('GET', '/api/users');
-    box.innerHTML = `<h2>Gebruikers <span class="badge">beheerder</span></h2>
-      <p class="muted small" style="margin-top:-.4rem">Iedere gebruiker heeft een eigen plan, historie, Speediance-account en Withings-koppeling.</p>
-      <div class="tablewrap"><table class="utable"><thead><tr><th>Naam</th><th>Gebruikersnaam</th><th>Rol</th><th></th></tr></thead><tbody>
-      ${users.map((u) => `<tr data-id="${esc(u.id)}"><td><span class="avatar sm">${avatarHtml(u)}</span> ${esc(u.name)}${u.id === state.me.id ? ' <span class="muted small">(jij)</span>' : ''}</td><td>${esc(u.username)}</td>
-        <td><select data-x="role" aria-label="Rol van ${esc(u.name)}"><option value="user" ${u.role === 'user' ? 'selected' : ''}>Gebruiker</option><option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Beheerder</option></select></td>
-        <td style="text-align:right;white-space:nowrap"><button class="btn small ghost" data-x="pw">Nieuw wachtwoord</button>${u.id === state.me.id ? '' : ' <button class="btn small ghost" data-x="del">Verwijder</button>'}</td></tr>`).join('')}
+    box.innerHTML = `<h2>${t('ui.settings.gebruikers')} <span class="badge">${t('ui.setWithings.beheerder')}</span></h2>
+      <p class="muted small" style="margin-top:-.4rem">${t('app.iedereGebruikerHeeftEen')}</p>
+      <div class="tablewrap"><table class="utable"><thead><tr><th>${t('nt.name')}</th><th>${t('ui.auth.gebruikersnaam')}</th><th>${t('app.rol')}</th><th></th></tr></thead><tbody>
+      ${users.map((u) => `<tr data-id="${esc(u.id)}"><td><span class="avatar sm">${avatarHtml(u)}</span> ${esc(u.name)}${u.id === state.me.id ? ' <span class="muted small">' + t('app.jij') + '</span>' : ''}</td><td>${esc(u.username)}</td>
+        <td><select data-x="role" aria-label="${t('app.roleOf', { name: esc(u.name) })}"><option value="user" ${u.role === 'user' ? 'selected' : ''}>${t('app.gebruiker')}</option><option value="admin" ${u.role === 'admin' ? 'selected' : ''}>${t('app.beheerder')}</option></select></td>
+        <td style="text-align:right;white-space:nowrap"><button class="btn small ghost" data-x="pw">${t('app.nieuwWachtwoord')}</button>${u.id === state.me.id ? '' : ' <button class="btn small ghost" data-x="del">' + t('app.verwijder') + '</button>'}</td></tr>`).join('')}
       </tbody></table></div>
       <form id="newUser" class="row gap wrap" style="margin-top:1rem;align-items:flex-end">
-        <label style="flex:1 1 140px">Naam <input name="name" required maxlength="40"></label>
-        <label style="flex:1 1 140px">Gebruikersnaam <input name="username" required pattern="[a-zA-Z0-9._\\-]{2,30}" autocomplete="off"></label>
-        <label style="flex:1 1 140px">Tijdelijk wachtwoord <input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
-        <label style="flex:0 1 130px">Rol <select name="role"><option value="user">Gebruiker</option><option value="admin">Beheerder</option></select></label>
-        <button class="btn accent">Toevoegen</button>
+        <label style="flex:1 1 140px">${t('nt.name')} <input name="name" required maxlength="40"></label>
+        <label style="flex:1 1 140px">${t('ui.auth.gebruikersnaam')} <input name="username" required pattern="[a-zA-Z0-9._\\-]{2,30}" autocomplete="off"></label>
+        <label style="flex:1 1 140px">${t('app.tijdelijkWachtwoord')} <input name="password" type="password" required minlength="8" autocomplete="new-password"></label>
+        <label style="flex:0 1 130px">${t('app.rol')} <select name="role"><option value="user">${t('app.gebruiker')}</option><option value="admin">${t('app.beheerder')}</option></select></label>
+        <button class="btn accent">${t('pk.add')}</button>
       </form>`;
     box.querySelector('#newUser').addEventListener('submit', async (ev) => {
       ev.preventDefault(); const f = ev.currentTarget;
-      try { await api('POST', '/api/users', { name: f.name.value.trim(), username: f.username.value.trim(), password: f.password.value, role: f.role.value }); toast(`${f.name.value} toegevoegd`); loadUsers(); }
+      try { await api('POST', '/api/users', { name: f.name.value.trim(), username: f.username.value.trim(), password: f.password.value, role: f.role.value }); toast(t('app.toegevoegd', { value: f.name.value })); loadUsers(); }
       catch (e) { toast(e.message, true); }
     });
     box.querySelectorAll('tr[data-id]').forEach((tr) => {
       const id = tr.dataset.id, name = tr.cells[0].textContent.replace(' (jij)', '');
       tr.querySelector('[data-x=role]').addEventListener('change', async (ev) => {
-        try { await api('PUT', '/api/users/role', { id, role: ev.target.value }); toast('Rol bijgewerkt'); } catch (e) { toast(e.message, true); loadUsers(); }
+        try { await api('PUT', '/api/users/role', { id, role: ev.target.value }); toast(t('app.rolBijgewerkt')); } catch (e) { toast(e.message, true); loadUsers(); }
       });
       tr.querySelector('[data-x=pw]').addEventListener('click', async () => {
-        const pw = await askText(`Nieuw wachtwoord voor ${name} (min. 8 tekens):`, '', { type: 'password', minLength: 8, okText: 'Instellen' });
+        const pw = await askText(t('app.nieuwWachtwoordVoorMin', { name }), '', { type: 'password', minLength: 8, okText: t('app.instellen') });
         if (!pw) return;
-        try { await api('PUT', '/api/users/password', { id, password: pw }); toast('Wachtwoord ingesteld; bestaande sessies zijn uitgelogd'); } catch (e) { toast(e.message, true); }
+        try { await api('PUT', '/api/users/password', { id, password: pw }); toast(t('app.wachtwoordIngesteldBestaandeSessies')); } catch (e) { toast(e.message, true); }
       });
       tr.querySelector('[data-x=del]')?.addEventListener('click', async () => {
-        if (!await askConfirm(`${name} verwijderen? Deze gebruiker kan daarna niet meer inloggen. Zijn gegevens blijven op de server bewaard.`, { danger: true, okText: 'Verwijderen' })) return;
+        if (!await askConfirm(t('app.verwijderenDezeGebruikerKan', { name }), { danger: true, okText: t('tp.delete') })) return;
         try { const r = await api('DELETE', '/api/users?id=' + encodeURIComponent(id)); toast(r.note); loadUsers(); } catch (e) { toast(e.message, true); }
       });
     });
@@ -1987,8 +1989,8 @@ async function boot() {
 
 // ---------- sync / laden ----------
 $('#syncBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-  $('#syncStatus').textContent = 'Bezig…';
-  try { const r = await api('POST', '/api/sync'); toast(`Sync klaar (${r.meta.lastSyncFetched ?? 0} nieuwe sessies)`); }
+  $('#syncStatus').textContent = t('app.bezig');
+  try { const r = await api('POST', '/api/sync'); toast(t('app.syncKlaarNieuweSessies', { a: r.meta.lastSyncFetched ?? 0 })); }
   finally { await load(); }
 }));
 
@@ -2016,16 +2018,16 @@ boot().catch((e) => toast(e.message, true));
 // ---------- extra grafieken ----------
 const ZONE_COLORS = ['#7aa2c9', '#5bb98b', '#e0c050', '#f08c3a', '#e05555'];
 const PALETTE = ['#ff7a2e', '#6c9cff', '#4cc26a', '#e5b84b', '#c77dff', '#ff6b9a', '#4cc9e5', '#9a9ca1'];
-const n1nl = (v) => (Math.round(v * 10) / 10).toLocaleString('nl-NL');
+const n1nl = (v) => (Math.round(v * 10) / 10).toLocaleString(localeOf());
 
 // maximale hartslag (zelfde regel als de server) voor zones bij activiteiten
 function hrRefClient() {
   const s = state.settings || {};
-  if (+s.hrMax > 100) return { max: +s.hrMax, how: 'ingesteld' };
+  if (+s.hrMax > 100) return { max: +s.hrMax, how: t('app.ingesteld') };
   if (+s.birthYear > 1900) {
     const age = new Date().getFullYear() - s.birthYear, sex = ['m', 'v'].includes(s.sex) ? s.sex : s.bandSex;
-    if (sex === 'v') return { max: Math.round(206 - 0.88 * age), how: `geschat: 206 − 0,88 × ${age} jaar (Gulati, voor vrouwen)` };
-    return { max: Math.round(208 - 0.7 * age), how: `geschat: 208 − 0,7 × ${age} jaar (Tanaka)` };
+    if (sex === 'v') return { max: Math.round(206 - 0.88 * age), how: t('app.geschat206088', { age }) };
+    return { max: Math.round(208 - 0.7 * age), how: t('app.geschat20807', { age }) };
   }
   return null;
 }
@@ -2070,7 +2072,7 @@ function hrChartSvg(h, { W = 640, H = 170 } = {}) {
       const tipTxt = `${Math.floor(p[0] / 60)}′${String(Math.round(p[0] % 60)).padStart(2, '0')}″\nGemiddeld: ${Math.round(p[1])} bpm${p[2] != null ? `\nMaximaal: ${Math.round(p[2])} bpm` : ''}${zi >= 0 ? `\nZone ${zones[zi].z} · ${zones[zi].label}` : ''}`;
       g += `<rect x="${x0}" y="${T}" width="${Math.max(0.5, x1 - x0)}" height="${H - T - B}" fill="transparent" data-tip="${esc(tipTxt)}"${zAttr(p[1])}/>`;
     });
-    return `<svg viewBox="0 0 ${W} ${H}" class="hrsvg" role="img" aria-label="Hartslagverloop tijdens de training">${g}</svg>`;
+    return `<svg viewBox="0 0 ${W} ${H}" class="hrsvg" role="img" aria-label="${t('app.hartslagverloopTijdensDeTraining')}">${g}</svg>`;
   }
   // per set (Gym Monster): staafjes, met een stippellijn waar een nieuwe oefening begint
   const ps = h.perSet, hi = Math.max(...ps.map((p) => p.hr)) + 8, lo = Math.min(...ps.map((p) => p.hr), h.ref ? h.ref.max * 0.5 : 999) - 8;
@@ -2083,8 +2085,8 @@ function hrChartSvg(h, { W = 640, H = 170 } = {}) {
     const zi = zones.findIndex((z) => p.hr >= z.bpmFrom && p.hr < (z.z === 5 ? Infinity : z.bpmTo));
     g += `<rect x="${L + i * bw + bw * 0.2}" y="${Y(p.hr)}" width="${bw * 0.6}" height="${H - B - Y(p.hr)}" rx="2" fill="var(--a)" opacity=".85" data-tip="${esc(`${p.ex}\nSet ${p.set}: ${p.hr} bpm${zi >= 0 ? `\nZone ${zones[zi].z} · ${zones[zi].label}` : ''}`)}"${zAttr(p.hr)}/>`;
   });
-  g += `<text x="${L}" y="${H - 5}">set 1</text><text x="${W - R}" y="${H - 5}" text-anchor="end">set ${ps.length}</text>`;
-  return `<svg viewBox="0 0 ${W} ${H}" class="hrsvg" role="img" aria-label="Maximale hartslag per set">${g}</svg>`;
+  g += `<text x="${L}" y="${H - 5}">${t('app.set1')}</text><text x="${W - R}" y="${H - 5}" text-anchor="end">${t('app.set', { n: ps.length })}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="hrsvg" role="img" aria-label="${t('app.maximaleHartslagPerSet')}">${g}</svg>`;
 }
 // Balk met de tijd per hartslagzone.
 function zoneBars(zones) {
@@ -2097,27 +2099,27 @@ function zoneBars(zones) {
 function heartHtml(h) {
   if (!h) return '';
   let out = '';
-  if (h.series) out += `<div class="ins-block"><div class="eyebrow">Hartslag tijdens de training</div>${hrChartSvg({ ...h, perSet: null })}${h.zones ? zoneBars(h.zones) : ''}<div class="muted small">Hartslag uit ${esc(h.source)}, ook tijdens de rust tussen sets${h.ref ? ` · max. ${h.ref.max} bpm (${esc(h.ref.how)})` : ' · vul je geboortejaar in voor zones'}</div></div>`;
-  if (h.perSet) out += `<div class="ins-block"><div class="eyebrow">Hartslag per set</div>${hrChartSvg({ ...h, series: null })}<div class="muted small">Maximale hartslag per set (Gym Monster)${h.ref ? ` · zones t.o.v. ${h.ref.max} bpm` : ''}. Ga over een staaf voor de oefening.</div></div>`;
+  if (h.series) out += `<div class="ins-block"><div class="eyebrow">${t('app.hartslagTijdensDeTraining')}</div>${hrChartSvg({ ...h, perSet: null })}${h.zones ? zoneBars(h.zones) : ''}<div class="muted small">${t('app.hartslagUitOokTijdens', { a: esc(h.source), b: h.ref ? t('app.maxBpm', { max: h.ref.max, a: esc(h.ref.how) }) : t('app.vulJeGeboortejaarIn2') })}</div></div>`;
+  if (h.perSet) out += `<div class="ins-block"><div class="eyebrow">${t('app.hartslagPerSet')}</div>${hrChartSvg({ ...h, series: null })}<div class="muted small">${t('app.maximaleHartslagPerSet2', { a: h.ref ? t('app.zonesTOV', { max: h.ref.max }) : '' })}</div></div>`;
   return out;
 }
 // Vergelijking met de laatste 4 keer in het rapport.
 function compareHtml(c) {
   if (!c) return '';
-  const fmtV = (r, v) => `${Math.round(v).toLocaleString('nl-NL')}${r.unit ? ' ' + r.unit : ''}`;
-  return `<div class="ins-block"><div class="eyebrow">Vergeleken met ${c.basis === 'same' ? `de laatste ${c.n} keer deze training` : `je laatste ${c.n} trainingen`}</div>
-    <table class="cmp"><tbody>${c.rows.map((r) => `<tr><td>${esc(r.label)}</td><td class="num"><b>${fmtV(r, r.cur)}</b></td><td class="num muted">gem. ${fmtV(r, r.ref)}</td><td class="num ${r.label === 'Gem. hartslag' ? 'muted' : r.pct > 2 ? 'up' : r.pct < -2 ? 'down' : 'muted'}">${r.pct > 0 ? '+' : ''}${r.pct}%</td></tr>`).join('')}</tbody></table></div>`;
+  const fmtV = (r, v) => `${Math.round(v).toLocaleString(localeOf())}${r.unit ? ' ' + r.unit : ''}`;
+  return `<div class="ins-block"><div class="eyebrow">${t('app.vergelekenMet', { a: c.basis === 'same' ? t('app.deLaatsteKeerDeze', { n: c.n }) : t('app.jeLaatsteTrainingen', { n: c.n }) })}</div>
+    <table class="cmp"><tbody>${c.rows.map((r) => `<tr><td>${esc(r.label)}</td><td class="num"><b>${fmtV(r, r.cur)}</b></td><td class="num muted">${t('app.gem2', { a: fmtV(r, r.ref) })}</td><td class="num ${r.label === 'Gem. hartslag' ? 'muted' : r.pct > 2 ? 'up' : r.pct < -2 ? 'down' : 'muted'}">${r.pct > 0 ? '+' : ''}${r.pct}%</td></tr>`).join('')}</tbody></table></div>`;
 }
 // Tijd onder spanning en rust in het rapport.
 function timeHtml(t) {
   if (!t) return '';
   const dur = t.duration || 0, rest = Math.min(t.rest || 0, Math.max(0, dur - t.tut)), other = Math.max(0, dur - t.tut - rest);
   const m = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
-  return `<div class="ins-block"><div class="eyebrow">Tijd onder spanning</div>
-    <div class="big-num">${m(t.tut)} <span class="muted small">min${dur ? ` · ${Math.round((t.tut / dur) * 100)}% van de training` : ''}</span></div>
-    ${dur ? `<div class="zbar"><span style="flex:${t.tut};background:var(--a)" title="onder spanning"></span>${rest ? `<span style="flex:${rest};background:var(--b);opacity:.7" title="rust tussen sets"></span>` : ''}${other ? `<span style="flex:${other};background:var(--line)" title="overig"></span>` : ''}</div>
-    <div class="zleg"><span><i style="background:var(--a)"></i>Onder spanning <b>${m(t.tut)}</b></span>${rest ? `<span><i style="background:var(--b)"></i>Rust tussen sets <b>${m(rest)}</b></span>` : ''}${other ? `<span><i style="background:var(--line)"></i>Wisselen, instellen <b>${m(other)}</b></span>` : ''}</div>` : ''}
-    <div class="muted small">Gem. ${n1nl(t.perRep)} s per herhaling${t.coverage < 100 ? ` · gemeten bij ${t.coverage}% van de sets` : ''}. 3–6 s per herhaling is goed voor spieropbouw.</div></div>`;
+  return `<div class="ins-block"><div class="eyebrow">${tx('app.tijdOnderSpanning')}</div>
+    <div class="big-num">${m(t.tut)} <span class="muted small">min${dur ? tx('app.vanDeTraining', { a: Math.round((t.tut / dur) * 100) }) : ''}</span></div>
+    ${dur ? `<div class="zbar"><span style="flex:${t.tut};background:var(--a)" title="${tx('app.onderSpanning')}"></span>${rest ? `<span style="flex:${rest};background:var(--b);opacity:.7" title="${tx('app.rustTussenSets')}"></span>` : ''}${other ? `<span style="flex:${other};background:var(--line)" title="${tx('app.overig')}"></span>` : ''}</div>
+    <div class="zleg"><span><i style="background:var(--a)"></i>${tx('app.onderSpanning2')} <b>${m(t.tut)}</b></span>${rest ? `<span><i style="background:var(--b)"></i>${tx('app.rustTussenSets2')} <b>${m(rest)}</b></span>` : ''}${other ? `<span><i style="background:var(--line)"></i>${tx('app.wisselenInstellen')} <b>${m(other)}</b></span>` : ''}</div>` : ''}
+    <div class="muted small">${tx('app.gemSPerHerhaling', { a: n1nl(t.perRep), b: t.coverage < 100 ? tx('app.gemetenBijVanDe', { coverage: t.coverage }) : '' })}</div></div>`;
 }
 // Alle extra blokken van het rapport samen.
 function insightsHtml(d) {
@@ -2127,7 +2129,7 @@ function insightsHtml(d) {
 
 // staafjes (eventueel gestapeld) met optioneel een lijn op een tweede as en een doellijn
 function comboChart(el, { x, stacks = [], barUnit = '', line = null, goal = null, colorOf = null, label = '', xLabel = null }) {
-  if (!x.length || (!stacks.some((s) => s.values.some((v) => v > 0)) && !line?.points.length)) { el.innerHTML = '<div class="empty">Nog geen data</div>'; return; }
+  if (!x.length || (!stacks.some((s) => s.values.some((v) => v > 0)) && !line?.points.length)) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   const W = el.clientWidth || 600, H = el.clientHeight || 200, T = 10, B = 24;
   const tot = x.map((_, i) => stacks.reduce((t, s) => t + (s.values[i] || 0), 0));
   const raw = Math.max(1, ...tot, goal?.value || 0);
@@ -2174,18 +2176,18 @@ function renderStatsExtra() {
   const balRow = (l1, v1, l2, v2, ideal) => {
     const t = v1 + v2; if (!t) return '';
     const p = Math.round((v1 / t) * 100), ratio = v2 ? v1 / v2 : null;
-    return `<div class="bal"><div class="row between small"><span><b>${l1}</b> ${fmt(v1)} sets</span><span>${ratio ? `verhouding <b>1 : ${n1nl(v2 / v1)}</b>` : ''}</span><span>${fmt(v2)} sets <b>${l2}</b></span></div>
+    return `<div class="bal"><div class="row between small"><span><b>${l1}</b> ${tx('app.sets2', { a: fmt(v1) })}</span><span>${ratio ? `${tx('app.verhouding')} <b>1 : ${n1nl(v2 / v1)}</b>` : ''}</span><span>${tx('app.sets2', { a: fmt(v2) })} <b>${l2}</b></span></div>
       <div class="balbar"><span style="width:${p}%"></span><i style="left:${ideal}%"></i></div></div>`;
   };
   const bp = b.push + b.pull ? b.pull / Math.max(1, b.push) : null, bu = b.upper + b.lower ? b.upper / Math.max(1, b.lower) : null;
   const tips = [];
-  if (bp != null && b.push && bp > 1.6) tips.push('Je doet veel meer trekken dan duwen. Een extra borst- of schouderoefening brengt het in balans.');
-  if (bp != null && bp < 0.8) tips.push('Je duwt meer dan je trekt. Meer roeien of pulldowns beschermt je schouders.');
-  if (bu != null && bu > 2.2) tips.push('Je benen krijgen relatief weinig. Een squat- of lunge-variant extra helpt.');
-  if (bu != null && bu < 0.6) tips.push('Je bovenlichaam krijgt relatief weinig sets.');
-  $('#balanceCard').innerHTML = `<h2>Balans</h2><p class="muted" style="margin-top:-.4rem">Werksets in de gekozen periode. Het streepje is de richtlijn: duwen en trekken ongeveer gelijk (trekken mag iets meer), boven en onder ook ongeveer gelijk.</p>
-    ${balRow('Duwen', b.push || 0, 'trekken', b.pull || 0, 45) || '<div class="empty">Nog geen data</div>'}${balRow('Boven', b.upper || 0, 'onder', b.lower || 0, 50)}
-    ${tips.length ? `<div class="note small">${tips.map(esc).join('<br>')}</div>` : (b.push || b.upper ? '<p class="small up" style="margin:.4rem 0 0">Mooi in balans.</p>' : '')}`;
+  if (bp != null && b.push && bp > 1.6) tips.push(t('app.jeDoetVeelMeer'));
+  if (bp != null && bp < 0.8) tips.push(t('app.jeDuwtMeerDan'));
+  if (bu != null && bu > 2.2) tips.push(t('app.jeBenenKrijgenRelatief'));
+  if (bu != null && bu < 0.6) tips.push(t('app.jeBovenlichaamKrijgtRelatief'));
+  $('#balanceCard').innerHTML = `<h2>${t('app.balans2')}</h2><p class="muted" style="margin-top:-.4rem">${t('app.werksetsInDeGekozen')}</p>
+    ${balRow(t('app.duwen'), b.push || 0, 'trekken', b.pull || 0, 45) || '<div class="empty">' + t('app.nogGeenData') + '</div>'}${balRow(t('app.boven'), b.upper || 0, 'onder', b.lower || 0, 50)}
+    ${tips.length ? `<div class="note small">${tips.map(esc).join('<br>')}</div>` : (b.push || b.upper ? '<p class="small up" style="margin:.4rem 0 0">' + t('app.mooiInBalans') + '</p>' : '')}`;
 
   // krachtindex per spiergroep
   const ser = s.strength || [];
@@ -2197,20 +2199,20 @@ function renderStatsExtra() {
 
   // spiermassa tegen volume
   const vm = s.volumeVsMass || { volume: [], mass: [] };
-  comboChart($('#chartVolMass'), { x: vm.volume.map((p) => p.x), stacks: [{ label: 'Volume', color: 'var(--a)', values: vm.volume.map((p) => p.y) }], barUnit: 'kg', line: vm.mass.length ? { label: 'Spiermassa', unit: 'kg', color: 'var(--b)', points: vm.mass } : null, label: 'Trainingsvolume en spiermassa per week' });
+  comboChart($('#chartVolMass'), { x: vm.volume.map((p) => p.x), stacks: [{ label: t('ed.volume'), color: 'var(--a)', values: vm.volume.map((p) => p.y) }], barUnit: 'kg', line: vm.mass.length ? { label: t('app.spiermassa'), unit: 'kg', color: 'var(--b)', points: vm.mass } : null, label: t('app.trainingsvolumeEnSpiermassaPer') });
   $('#volMassNote').innerHTML = vm.mass.length >= 2
-    ? (() => { const d = vm.mass[vm.mass.length - 1].y - vm.mass[0].y; return `Spiermassa ${d >= 0 ? '+' : ''}${n1nl(d)} kg in deze periode, bij gemiddeld ${kg(Math.round(vm.volume.reduce((t, p) => t + p.y, 0) / Math.max(1, vm.volume.filter((p) => p.y).length)))} per trainingsweek.`; })()
-    : 'Spiermassa komt van de Withings-weegschaal; daarvoor zijn minstens twee metingen in deze periode nodig.';
+    ? (() => { const d = vm.mass[vm.mass.length - 1].y - vm.mass[0].y; return tx('app.massVsVolume', { d: `${d >= 0 ? '+' : ''}${n1nl(d)}`, vol: kg(Math.round(vm.volume.reduce((s2, p) => s2 + p.y, 0) / Math.max(1, vm.volume.filter((p) => p.y).length))) }); })()
+    : t('app.spiermassaKomtVanDe');
 
   // cardio
   const cw = s.cardioWeeks || [];
   const types = [['wandelen', 'Wandelen'], ['fietsen', 'Fietsen'], ['hardlopen', 'Hardlopen'], ['overig', 'Overig']].filter(([k]) => cw.some((w) => w[k] > 0));
   $('#cardioKmCard').classList.toggle('hidden', !cw.length && !(s.steps || []).length);
-  comboChart($('#chartKm'), { x: cw.map((w) => w.x), stacks: types.map(([k, l]) => ({ label: l, color: actColor(k), values: cw.map((w) => w[k]) })), barUnit: 'km', label: 'Kilometers per week' });
+  comboChart($('#chartKm'), { x: cw.map((w) => w.x), stacks: types.map(([k, l]) => ({ label: l, color: actColor(k), values: cw.map((w) => w[k]) })), barUnit: 'km', label: t('ui.stats.kilometersPerWeek') });
   $('#kmLegend').innerHTML = legendHtml(types.map(([k, l]) => [actColor(k), l]));
   const st = (s.steps || []).slice(-120);
-  comboChart($('#chartSteps'), { x: st.map((p) => p.x), stacks: [{ label: 'Stappen', color: 'var(--b)', values: st.map((p) => p.y) }], goal: { value: s.stepGoal, label: `doel ${fmt(s.stepGoal)}` }, colorOf: (v) => (v >= s.stepGoal ? 'var(--ok)' : 'var(--b)'), label: 'Stappen per dag' });
-  $('#stepsNote').textContent = st.length ? `Doel gehaald op ${s.stepHit} van ${s.steps.length} dagen (${Math.round((s.stepHit / s.steps.length) * 100)}%). Het doel stel je in bij Instellingen.${s.steps.length > st.length ? ' De grafiek toont de laatste 120 dagen.' : ''}` : 'Nog geen stappen uit Apple Health.';
+  comboChart($('#chartSteps'), { x: st.map((p) => p.x), stacks: [{ label: t('app.stappen'), color: 'var(--b)', values: st.map((p) => p.y) }], goal: { value: s.stepGoal, label: t('app.doel2', { a: fmt(s.stepGoal) }) }, colorOf: (v) => (v >= s.stepGoal ? 'var(--ok)' : 'var(--b)'), label: t('ui.stats.stappenPerDag') });
+  $('#stepsNote').textContent = st.length ? t('app.doelGehaaldOpVan', { stepHit: s.stepHit, n: s.steps.length, a: Math.round((s.stepHit / s.steps.length) * 100), b: s.steps.length > st.length ? t('app.deGrafiekToontDe') : '' }) : t('app.nogGeenStappenUit');
 }
 
 // ---------- analyse ----------
@@ -2236,21 +2238,21 @@ function renderAnalysis() {
     ${a.heat.days.map((d, r) => `<span class="hd">${d}</span>${cols.map((i) => { const c = a.heat.grid[r][i], v = val(c); return `<span class="hc" style="--o:${v ? 0.18 + 0.82 * (v / max) : 0}" title="${d} ${a.heat.blocks[i]}: ${c.gym} Gym Monster${withActs ? `, ${c.act} wandel/fiets` : ''}">${v || ''}</span>`; }).join('')}`).join('')}</div>`;
   const tot = a.heat.grid.flat().reduce((t, c) => t + val(c), 0);
   const best = (() => { let b = null; a.heat.grid.forEach((row, r) => row.forEach((c, i) => { if (!b || val(c) > b.v) b = { v: val(c), d: a.heat.days[r], t: a.heat.blocks[i] }; })); return b; })();
-  $('#heatNote').innerHTML = tot ? `Meestal op <b>${best.d} ${best.t}</b> uur.${a.heat.gymUntimed ? ` ${a.heat.gymUntimed} training${a.heat.gymUntimed === 1 ? '' : 'en'} zonder bekend tijdstip niet meegeteld.` : ''}` : 'Nog geen trainingen met een tijdstip in deze periode.';
+  $('#heatNote').innerHTML = tot ? `${t('app.meestalOp')} <b>${best.d} ${best.t}</b> ${t('app.uur', { a: a.heat.gymUntimed ? t('app.trainingZonderBekendTijdstip', { n: a.heat.gymUntimed }) : '' })}` : t('app.nogGeenTrainingenMet2');
 
   // 10. herstel
   const rc = a.recovery;
-  comboChart($('#chartRecovery'), { x: rc.load.map((p) => p.x), stacks: [{ label: 'Training', color: 'var(--a)', values: rc.load.map((p) => p.y) }], barUnit: 'min', line: rc.rest.length ? { label: 'Rusthartslag', unit: 'bpm', color: 'var(--warn)', points: rc.rest } : null, label: 'Trainingsbelasting en hartslag in rust' });
-  const sig = { normaal: ['up', 'Je rusthartslag is normaal: je herstelt goed.'], 'let op': ['', 'Je rusthartslag is iets hoger dan normaal. Slaap en rust goed; een lichtere training kan geen kwaad.'], hoog: ['down', 'Je rusthartslag is duidelijk hoger dan normaal. Mogelijk ben je nog niet hersteld, of word je ziek: neem een rustdag of train licht.'] };
+  comboChart($('#chartRecovery'), { x: rc.load.map((p) => p.x), stacks: [{ label: t('ui.settings.training'), color: 'var(--a)', values: rc.load.map((p) => p.y) }], barUnit: 'min', line: rc.rest.length ? { label: t('app.rusthartslag'), unit: 'bpm', color: 'var(--warn)', points: rc.rest } : null, label: t('app.trainingsbelastingEnHartslagIn') });
+  const sig = tmap({ normaal: ['up', '§app.sig.normaal'], 'let op': ['', '§app.sig.let_op'], hoog: ['down', '§app.sig.hoog'] });
   $('#recoveryNote').innerHTML = rc.source
-    ? `<p class="small" style="margin:.4rem 0 0">Rusthartslag laatste 7 dagen <b>${n1nl(rc.recent ?? 0)}</b> bpm, de 4 weken daarvoor <b>${n1nl(rc.base ?? 0)}</b>.${rc.signal ? ` <span class="${sig[rc.signal][0]}">${sig[rc.signal][1]}</span>` : ''}</p><p class="muted small" style="margin:.2rem 0 0">Bron: ${esc(rc.source)}. Een stijging van 5 bpm of meer is een bekend teken van onvoldoende herstel.</p>`
-    : '<p class="muted small">Nog geen hartslag in rust. Die komt uit Apple Health (GymCoach Sync) of de Withings-weegschaal.</p>';
+    ? `<p class="small" style="margin:.4rem 0 0">${t('app.rusthartslagLaatste7Dagen')} <b>${n1nl(rc.recent ?? 0)}</b> ${t('app.bpmDe4Weken')} <b>${n1nl(rc.base ?? 0)}</b>.${rc.signal ? ` <span class="${sig[rc.signal][0]}">${sig[rc.signal][1]}</span>` : ''}</p><p class="muted small" style="margin:.2rem 0 0">${t('app.bronEenStijgingVan', { a: esc(rc.source) })}</p>`
+    : '<p class="muted small">' + t('app.nogGeenHartslagIn') + '</p>';
 
   // 9. calorieën en gewicht
   const en = a.energy;
-  comboChart($('#chartEnergy'), { x: en.kcal.map((p) => p.x), stacks: [{ label: 'Actieve energie', color: 'var(--a)', values: en.kcal.map((p) => p.y) }], barUnit: 'kcal', line: en.kg.length ? { label: 'Gewicht', unit: 'kg', color: 'var(--b)', points: en.kg } : null, label: 'Actieve energie per week en gewicht' });
+  comboChart($('#chartEnergy'), { x: en.kcal.map((p) => p.x), stacks: [{ label: t('app.actieveEnergie'), color: 'var(--a)', values: en.kcal.map((p) => p.y) }], barUnit: 'kcal', line: en.kg.length ? { label: t('app.gewicht'), unit: 'kg', color: 'var(--b)', points: en.kg } : null, label: t('app.actieveEnergiePerWeek') });
   const kc = en.kcal.filter((p) => p.y > 0);
-  $('#energyNote').textContent = `${kc.length ? `Gemiddeld ${fmt(Math.round(kc.reduce((t, p) => t + p.y, 0) / kc.length))} kcal actieve energie per week` : 'Nog geen calorieën'}${en.kg.length >= 2 ? `; gewicht ${en.kg[en.kg.length - 1].y - en.kg[0].y >= 0 ? '+' : ''}${n1nl(en.kg[en.kg.length - 1].y - en.kg[0].y)} kg` : ''}. ${en.fromHealth ? 'Bron: Apple Health (alles wat je verbrandt bovenop je rustverbruik).' : 'Bron: calorieën van je trainingen en activiteiten.'}`;
+  $('#energyNote').textContent = `${kc.length ? t('app.energyAvg', { kcal: fmt(Math.round(kc.reduce((s2, p) => s2 + p.y, 0) / kc.length)) }) : t('app.energyNone')}${en.kg.length >= 2 ? t('app.energyWeight', { d: `${en.kg[en.kg.length - 1].y - en.kg[0].y >= 0 ? '+' : ''}${n1nl(en.kg[en.kg.length - 1].y - en.kg[0].y)}` }) : ''}. ${en.fromHealth ? t('app.energySrcHealth') : t('app.energySrcGym')}`;
 
   // 7. records
   const byMonth = {};
@@ -2258,13 +2260,13 @@ function renderAnalysis() {
   const months = Object.keys(byMonth).sort();
   const allM = [];
   if (months.length) for (let d = new Date(months[0] + '-01T12:00:00'); d <= new Date(); d.setMonth(d.getMonth() + 1)) allM.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`);
-  comboChart($('#chartRecords'), { x: allM, stacks: [{ label: 'Records', color: 'var(--ok)', values: allM.map((m) => byMonth[m.slice(0, 7)] || 0) }], label: 'Records per maand', xLabel: (m) => `${['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][+m.slice(5, 7) - 1]}${m.slice(5, 7) === '01' || allM.length <= 7 ? '' : ''}` });
+  comboChart($('#chartRecords'), { x: allM, stacks: [{ label: t('ui.analysis.records'), color: 'var(--ok)', values: allM.map((m) => byMonth[m.slice(0, 7)] || 0) }], label: t('app.recordsPerMaand'), xLabel: (m) => `${['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][+m.slice(5, 7) - 1]}${m.slice(5, 7) === '01' || allM.length <= 7 ? '' : ''}` });
   const MND = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
   let lastM = '';
   $('#recordList').innerHTML = a.records.length ? a.records.slice(0, 60).map((r) => {
     const m = r.date.slice(0, 7), head = m !== lastM ? `<div class="rec-m">${MND[+m.slice(5) - 1]} ${m.slice(0, 4)}</div>` : ''; lastM = m;
-    return `${head}<div class="rec"><span class="rec-d">${+r.date.slice(8)}</span><div><b>${esc(r.name)}</b><div class="muted small">${esc(r.set)} · geschat 1RM ${n1nl(r.e1rm)} kg${r.muscle ? ` · ${esc(r.muscle)}` : ''}</div></div><span class="up">+${n1nl(r.pct)}%</span></div>`;
-  }).join('') + (a.recordCount > 60 ? `<p class="muted small">en nog ${a.recordCount - 60} eerdere records</p>` : '') : '<div class="empty">Nog geen records in deze periode</div>';
+    return `${head}<div class="rec"><span class="rec-d">${+r.date.slice(8)}</span><div><b>${esc(r.name)}</b><div class="muted small">${t('app.geschat1rmKg', { a: esc(r.set), b: n1nl(r.e1rm), c: r.muscle ? ` · ${esc(r.muscle)}` : '' })}</div></div><span class="up">+${n1nl(r.pct)}%</span></div>`;
+  }).join('') + (a.recordCount > 60 ? `<p class="muted small">${t('app.enNogEerdereRecords', { a: a.recordCount - 60 })}</p>` : '') : '<div class="empty">' + t('app.nogGeenRecordsIn') + '</div>';
 }
 document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'analysis') loadAnalysis(); }));
 
@@ -2290,7 +2292,10 @@ $('#settingsForm')['ai.provider'].addEventListener('change', (ev) => {
 });
 
 // ---------- volledige trainingskalender (analyse) ----------
-const MAANDEN = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+// korte dagnamen maandag t/m zondag in de taal van de gebruiker (ma di wo … / Mon Tue …)
+const weekdaysShort = () => [5, 6, 7, 8, 9, 10, 11].map((d) => new Date(2026, 0, d).toLocaleDateString(localeOf(), { weekday: 'short' }).replace('.', ''));
+// maandnamen in de taal van de gebruiker (Intl): MAANDEN[0] = januari / January …
+const MAANDEN = new Proxy([], { get: (o, k) => (/^\d+$/.test(String(k)) ? new Date(2026, Number(k), 1).toLocaleDateString(localeOf(), { month: 'long' }) : Reflect.get(o, k)) });
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 let calView = 'month', calCursor = null;
 try { calView = localStorage.getItem('gc-cal-view') || 'month'; } catch {}
@@ -2331,15 +2336,15 @@ function renderBigCal() {
         const k = ymd(dt), d = days[k], inM = dt.getMonth() === m, fut = dt > today;
         if (d) { wkCount += d.gym.length; if (inM) { mGym += d.gym.length; mMin += gymMin(d); mActs += d.acts.length; } }
         const titles = (d?.gym || []).map((w) => w.title.replace(/^GC\s+W\d+\s+/i, '')).join(' + ');
-        const tip = `${dt.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${d?.gym.length ? ' — ' + d.gym.map((w) => `${w.title}${w.min ? ` (${w.min} min)` : ''}`).join(', ') : ''}${d?.acts.length ? ' — ' + d.acts.map(actLine).join(', ') : ''}`;
+        const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${d?.gym.length ? ' — ' + d.gym.map((w) => `${w.title}${w.min ? ` (${w.min} min)` : ''}`).join(', ') : ''}${d?.acts.length ? ' — ' + d.acts.map(actLine).join(', ') : ''}`;
         cells += `<div class="bc-d ${lvl(d)}${inM ? '' : ' out'}${fut ? ' fut' : ''}${k === ymd(today) ? ' today' : ''}${d ? ' click' : ''}" data-day="${k}" ${d ? `data-date="${k}" tabindex="0" role="button"` : ''}>
           <span class="bc-n">${dt.getDate()}</span>${d?.gym.length ? `<span class="bc-t">${esc(titles)}</span><span class="bc-m">${gymMin(d) ? gymMin(d) + '′' : ''}</span>` : ''}${dots(d)}</div>`;
       }
       const thisWeek = ws <= today;
       rows += `${cells}<div class="bc-w ${wkCount >= target ? 'hit' : ''}">${thisWeek ? `${wkCount}/${target}` : ''}</div>`;
     }
-    body = `<div class="bc-grid">${['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'].map((d) => `<div class="bc-h">${d}</div>`).join('')}<div class="bc-h">week</div>${rows}</div>
-      <div class="bc-sum">${MAANDEN[m]} ${y}: <b>${mGym}</b> ${mGym === 1 ? 'training' : 'trainingen'}${mMin ? ` · <b>${Math.floor(mMin / 60)}u ${mMin % 60}m</b>` : ''}${mActs ? ` · <b>${mActs}</b> wandel-/fietsactiviteiten` : ''}</div>`;
+    body = `<div class="bc-grid">${weekdaysShort().map((d) => `<div class="bc-h">${d}</div>`).join('')}<div class="bc-h">${t('app.week')}</div>${rows}</div>
+      <div class="bc-sum">${MAANDEN[m]} ${y}: <b>${mGym}</b> ${mGym === 1 ? t('app.training') : t('app.trainingen2')}${mMin ? ` · <b>${Math.floor(mMin / 60)}u ${mMin % 60}m</b>` : ''}${mActs ? ` · <b>${mActs}</b> ${t('app.wandelFietsactiviteiten')}` : ''}</div>`;
   } else {
     const y = calCursor.getFullYear();
     let months = '';
@@ -2349,27 +2354,27 @@ function renderBigCal() {
       for (let dd = 1; dd <= n; dd++) {
         const dt = new Date(y, m, dd, 12), k = ymd(dt), d = days[k];
         if (d?.gym.length) cnt += d.gym.length;
-        cells += `<span class="ym-d ${lvl(d)}${d?.acts.length && !d.gym.length ? ' act' : ''}${k === ymd(today) ? ' today' : ''}${dt > today ? ' fut' : ''}" data-day="${k}" ${d ? `data-date="${k}"` : ''} title="${esc(dt.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }) + (d?.gym.length ? ' — ' + d.gym.map((w) => w.title).join(', ') : '') + (d?.acts.length ? ' — ' + d.acts.map(actLine).join(', ') : ''))}">${dd}</span>`;
+        cells += `<span class="ym-d ${lvl(d)}${d?.acts.length && !d.gym.length ? ' act' : ''}${k === ymd(today) ? ' today' : ''}${dt > today ? ' fut' : ''}" data-day="${k}" ${d ? `data-date="${k}"` : ''} title="${esc(dt.toLocaleDateString(localeOf(), { day: 'numeric', month: 'long' }) + (d?.gym.length ? ' — ' + d.gym.map((w) => w.title).join(', ') : '') + (d?.acts.length ? ' — ' + d.acts.map(actLine).join(', ') : ''))}">${dd}</span>`;
       }
-      months += `<div class="ym"><button type="button" class="ym-h" data-m="${m}">${MAANDEN[m]} <span class="muted">${cnt || ''}</span></button><div class="ym-g">${['m', 'd', 'w', 'd', 'v', 'z', 'z'].map((x) => `<span class="ym-l">${x}</span>`).join('')}${cells}</div></div>`;
+      months += `<div class="ym"><button type="button" class="ym-h" data-m="${m}">${MAANDEN[m]} <span class="muted">${cnt || ''}</span></button><div class="ym-g">${[5, 6, 7, 8, 9, 10, 11].map((d) => new Date(2026, 0, d).toLocaleDateString(localeOf(), { weekday: 'narrow' }).toLowerCase()).map((x) => `<span class="ym-l">${x}</span>`).join('')}${cells}</div></div>`;
     }
     const yGym = (state.trainingDays || []).filter((w) => w.date.startsWith(String(y))).length;
-    body = `<div class="ym-wrap">${months}</div><div class="bc-sum">${y}: <b>${yGym}</b> trainingen · klik op een maand voor de details</div>`;
+    body = `<div class="ym-wrap">${months}</div><div class="bc-sum">${y}: <b>${yGym}</b> ${t('app.trainingenKlikOpEen')}</div>`;
   }
   const title = calView === 'month' ? `${MAANDEN[calCursor.getMonth()]} ${calCursor.getFullYear()}` : String(calCursor.getFullYear());
   const prevOk = calView === 'month' ? calCursor > minM : calCursor.getFullYear() > minM.getFullYear();
   const nextOk = calView === 'month' ? calCursor < maxM : calCursor.getFullYear() < maxM.getFullYear();
   el.innerHTML = `<div class="row between wrap gap">
-      <div><h2 style="margin:0">Trainingskalender</h2><div class="muted small">${totalGym} trainingen op ${gymDays} dagen sinds ${esc(fmtDate(minM.toISOString().slice(0, 10)).replace(/^\w+ \d+ /, ''))}</div></div>
+      <div><h2 style="margin:0">${t('app.trainingskalender')}</h2><div class="muted small">${t('app.trainingenOpDagenSinds', { totalGym, gymDays, a: esc(fmtDate(minM.toISOString().slice(0, 10)).replace(/^\w+ \d+ /, '')) })}</div></div>
       <div class="row gap bc-nav">
-        <div class="chips small"><button data-v="month" class="${calView === 'month' ? 'on' : ''}">Maand</button><button data-v="year" class="${calView === 'year' ? 'on' : ''}">Jaar</button></div>
-        <button class="btn small ghost" data-step="-1" ${prevOk ? '' : 'disabled'} aria-label="Vorige">‹</button>
+        <div class="chips small"><button data-v="month" class="${calView === 'month' ? 'on' : ''}">${t('app.maand')}</button><button data-v="year" class="${calView === 'year' ? 'on' : ''}">${t('app.jaar')}</button></div>
+        <button class="btn small ghost" data-step="-1" ${prevOk ? '' : 'disabled'} aria-label="${t('app.vorige')}">‹</button>
         <span class="bc-title">${title}</span>
-        <button class="btn small ghost" data-step="1" ${nextOk ? '' : 'disabled'} aria-label="Volgende">›</button>
-        <button class="btn small ghost" data-step="0">Vandaag</button>
+        <button class="btn small ghost" data-step="1" ${nextOk ? '' : 'disabled'} aria-label="${t('app.volgende')}">›</button>
+        <button class="btn small ghost" data-step="0">${t('app.vandaag')}</button>
       </div></div>
     ${body}
-    <div class="legend small">Gekleurd = Gym Monster <span class="sq l1"></span>&lt;25 <span class="sq l2"></span>25–45 <span class="sq l3"></span>&gt;45 min · ${calView === 'month' ? `stipjes = wandelen, fietsen enz. · week: trainingen t.o.v. je doel van ${target}` : 'blauw streepje = alleen wandelen, fietsen enz.'} · klik op een dag voor de details</div>`;
+    <div class="legend small">${t('app.gekleurdGymMonster')} <span class="sq l1"></span>&lt;25 <span class="sq l2"></span>25–45 <span class="sq l3"></span>${t('app.gt45MinKlik', { a: calView === 'month' ? t('app.stipjesWandelenFietsenEnz', { target }) : t('app.blauwStreepjeAlleenWandelen') })}</div>`;
   el.querySelectorAll('[data-v]').forEach((b) => b.addEventListener('click', () => { calView = b.dataset.v; try { localStorage.setItem('gc-cal-view', calView); } catch {} renderBigCal(); }));
   el.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
     const st = +b.dataset.step;
@@ -2396,13 +2401,13 @@ function dayTipHtml(date) {
   const gym = (state.trainingDays || []).filter((w) => w.date === date);
   const acts = (state.activities || []).filter((a) => a.date === date);
   const d = new Date(date + 'T12:00:00'), today = new Date(); today.setHours(23, 59, 59);
-  const head = d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const head = d.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const gymHtml = gym.map((w) => `<div class="dt-row"><span class="dt-dot" style="background:var(--accent)"></span><div><b>${esc(w.title)}</b>
-    <div class="dt-meta">${[w.min ? `${w.min} min` : null, w.ex ? `${w.ex} oefeningen` : null, w.vol ? `${w.vol.toLocaleString('nl-NL')} kg` : null, w.kcal ? `${w.kcal} kcal` : null, w.hr ? `♥ ${w.hr} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
+    <div class="dt-meta">${[w.min ? `${w.min} min` : null, w.ex ? `${w.ex} oefeningen` : null, w.vol ? `${w.vol.toLocaleString(localeOf())} kg` : null, w.kcal ? `${w.kcal} kcal` : null, w.hr ? `♥ ${w.hr} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
   const actHtml = acts.map((a) => `<div class="dt-row"><span class="dt-dot" style="background:${actColor(a.type)}"></span><div><b>${esc(actName(a))}</b>
     <div class="dt-meta">${[a.km ? `${n1nl(a.km)} km` : null, a.minutes ? `${a.minutes} min` : null, a.kcal ? `${Math.round(a.kcal)} kcal` : null, a.hrAvg ? `♥ ${a.hrAvg} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
-  const empty = d > today ? 'Nog niet geweest' : 'Rustdag';
-  return `<div class="dt-head">${esc(head.charAt(0).toUpperCase() + head.slice(1))}</div>${gymHtml + actHtml || `<div class="dt-meta">${empty}</div>`}${gym.length || acts.length ? '<div class="dt-foot">klik voor details</div>' : ''}`;
+  const empty = d > today ? t('app.notYet') : t('app.restDay');
+  return `<div class="dt-head">${esc(head.charAt(0).toUpperCase() + head.slice(1))}</div>${gymHtml + actHtml || `<div class="dt-meta">${empty}</div>`}${gym.length || acts.length ? '<div class="dt-foot">' + t('app.klikVoorDetails') + '</div>' : ''}`;
 }
 // Plaatst de popup naast de dag, binnen het scherm.
 function placeDayTip(target) {
@@ -2435,13 +2440,13 @@ setTopH(); window.addEventListener('resize', setTopH);
 document.addEventListener('click', (ev) => {
   const a = ev.target.closest('#wConnect'); if (!a) return;
   const w = window.open('/api/withings/connect', 'gymcoach-withings');
-  if (w) { ev.preventDefault(); toast('Log in bij Withings in het nieuwe tabblad'); }
+  if (w) { ev.preventDefault(); toast(t('app.logInBijWithings')); }
 });
 try {
   new BroadcastChannel('gymcoach').addEventListener('message', async (ev) => {
     if (ev.data?.type !== 'withings') return;
-    if (ev.data.ok) { toast(`Withings gekoppeld: ${ev.data.added} metingen opgehaald`); await load(); }
-    else toast(`Withings koppelen mislukt: ${ev.data.error || ''}`, true);
+    if (ev.data.ok) { toast(t('app.withingsGekoppeldMetingenOpgehaald', { added: ev.data.added })); await load(); }
+    else toast(t('app.withingsKoppelenMislukt', { a: ev.data.error || '' }), true);
   });
 } catch {}
 
@@ -2454,26 +2459,26 @@ function renderSetup() {
   $('#tip').textContent = '';
   $('#nextCard').classList.add('setup');
   const onlyTerms = !st.terms && st.speediance && st.prefs && st.plan;
-  const lock = !st.terms ? ' disabled title="Accepteer eerst de voorwaarden"' : '';
+  const lock = !st.terms ? ` disabled title="${t('app.acceptTermsFirst')}"` : '';
   if (onlyTerms) {
-    $('#nextCard').innerHTML = `<div class="eyebrow">Voordat je verdergaat</div><div class="hero-title">Voorwaarden en gezondheid</div>
-      <ol class="su-list">${step('!', false, 'Lees en accepteer de voorwaarden', 'GymCoach is een hulpmiddel; jij blijft zelf verantwoordelijk voor je training en gezondheid. Lees even hoe dat zit.', '<button class="btn accent small" id="suTerms">Lezen en akkoord</button>')}</ol>`;
+    $('#nextCard').innerHTML = `<div class="eyebrow">${t('app.voordatJeVerdergaat')}</div><div class="hero-title">${t('app.voorwaardenEnGezondheid')}</div>
+      <ol class="su-list">${step('!', false, t('app.leesEnAccepteerDe'), t('app.gymcoachIsEenHulpmiddel'), '<button class="btn accent small" id="suTerms">' + t('app.lezenEnAkkoord') + '</button>')}</ol>`;
     $('#suTerms').addEventListener('click', openTerms);
     return;
   }
-  $('#nextCard').innerHTML = `<div class="eyebrow">Welkom bij GymCoach</div>
-    <div class="hero-title">In vier stappen aan de slag</div>
+  $('#nextCard').innerHTML = `<div class="eyebrow">${t('app.welkomBijGymcoach')}</div>
+    <div class="hero-title">${t('app.inVierStappenAan')}</div>
     <ol class="su-list">
-      ${step(1, st.terms, 'Lees de voorwaarden en het gezondheidsadvies', 'GymCoach is een hulpmiddel, geen arts of trainer. Je traint op eigen verantwoordelijkheid en overlegt met je huisarts voordat je begint.', st.terms ? '' : '<button class="btn accent small" id="suTerms">Lezen en akkoord</button>')}
-      ${step(2, st.speediance, 'Koppel je Speediance-account en toestel', st.speediance && state.library?.count ? `Gekoppeld. Oefeningencatalogus van jouw toestel: ${state.library.count} oefeningen${state.library.source === 'standaard' ? ' (standaardlijst)' : ''}.` : 'Met je eigen e-mailadres en wachtwoord van de Speediance-app, en welk toestel je hebt. GymCoach haalt dan de oefeningen van jouw toestel op, en straks je trainingen.', st.speediance ? '' : `<button class="btn accent small" data-go="account"${lock}>Instellen</button>`)}
-      ${step(3, st.prefs, 'Kies je doel en trainingsdagen', 'Spieropbouw, afvallen of een combinatie; hoeveel keer per week en hoe lang. Vul ook je geboortejaar in voor de hartslagzones.', `<button class="btn ${st.prefs ? 'ghost' : 'accent'} small" data-go="training"${lock}>${st.prefs ? 'Aanpassen' : 'Instellen'}</button>`)}
-      ${step(4, st.plan, 'Maak je eerste weekplan', st.terms && st.speediance && st.prefs ? 'GymCoach maakt een plan op basis van jouw voorkeuren. Daarna zet je het met één klik op de Gym Monster.' : 'Kan zodra de stappen hierboven klaar zijn.', `<button class="btn accent small" id="suPlan" ${st.terms && st.speediance && st.prefs ? '' : 'disabled'}>Maak mijn plan</button>`)}
+      ${step(1, st.terms, t('app.leesDeVoorwaardenEn'), t('app.gymcoachIsEenHulpmiddel2'), st.terms ? '' : '<button class="btn accent small" id="suTerms">' + t('app.lezenEnAkkoord') + '</button>')}
+      ${step(2, st.speediance, t('app.koppelJeSpeedianceAccount'), st.speediance && state.library?.count ? t('app.gekoppeldOefeningencatalogusVanJouw', { count: state.library.count, a: state.library.source === 'standaard' ? ' (standaardlijst)' : '' }) : t('app.metJeEigenE'), st.speediance ? '' : `<button class="btn accent small" data-go="account"${lock}>${t('app.instellen')}</button>`)}
+      ${step(3, st.prefs, t('app.kiesJeDoelEn'), t('app.spieropbouwAfvallenOfEen'), `<button class="btn ${st.prefs ? 'ghost' : 'accent'} small" data-go="training"${lock}>${st.prefs ? t('app.aanpassen') : t('app.instellen')}</button>`)}
+      ${step(4, st.plan, t('app.maakJeEersteWeekplan'), st.terms && st.speediance && st.prefs ? t('app.gymcoachMaaktEenPlan') : t('app.kanZodraDeStappen'), `<button class="btn accent small" id="suPlan" ${st.terms && st.speediance && st.prefs ? '' : 'disabled'}>${t('app.maakMijnPlan')}</button>`)}
     </ol>
-    <div class="muted small">Optioneel: koppel je <a href="#" data-go="withings">Withings-weegschaal</a> of <a href="#" data-go="health">Apple Health</a> voor gewicht, wandelen en fietsen.</div>`;
+    <div class="muted small">${t('app.optioneelKoppelJe')} <a href="#" data-go="withings">${t('app.withingsWeegschaal')}</a> ${t('app.of')} <a href="#" data-go="health">${t('ui.settings.appleHealth')}</a> ${t('app.voorGewichtWandelenEn')}</div>`;
   $('#suTerms')?.addEventListener('click', openTerms);
   $('#nextCard').querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', (ev) => { ev.preventDefault(); if (!b.disabled) goSettings(b.dataset.go); }));
   $('#suPlan')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    try { state.plan = (await api('POST', '/api/plan/generate')).plan; toast('Je eerste plan staat klaar'); await load(); document.querySelector('.tab[data-tab=plan]').click(); }
+    try { state.plan = (await api('POST', '/api/plan/generate')).plan; toast(t('app.jeEerstePlanStaat')); await load(); document.querySelector('.tab[data-tab=plan]').click(); }
     catch (e) { toast(e.message, true); }
   }));
 }
@@ -2483,17 +2488,17 @@ function openTerms() {
   let dlg = $('#termsDlg');
   if (!dlg) { dlg = document.createElement('dialog'); dlg.id = 'termsDlg'; dlg.className = 'terms-dlg'; document.body.appendChild(dlg); }
   dlg.innerHTML = `<form method="dialog" class="terms">
-      <div class="exd-head"><h2>Voorwaarden en gezondheid</h2><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
+      <div class="exd-head"><h2>${t('app.voorwaardenEnGezondheid')}</h2><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
       <div class="terms-body">${TERMS_HTML}</div>
-      <label class="inline-check"><input type="checkbox" id="tc1"> Ik heb dit gelezen en gebruik GymCoach op eigen verantwoordelijkheid.</label>
-      <label class="inline-check"><input type="checkbox" id="tc2"> Ik overleg met mijn huisarts als een van de gezondheidspunten op mij van toepassing is.</label>
-      <div class="row gap"><button type="button" class="btn accent" id="tcOk" disabled>Akkoord</button><button value="close" class="btn ghost">Later</button></div>
+      <label class="inline-check"><input type="checkbox" id="tc1"> ${t('app.ikHebDitGelezen')}</label>
+      <label class="inline-check"><input type="checkbox" id="tc2"> ${t('app.ikOverlegMetMijn')}</label>
+      <div class="row gap"><button type="button" class="btn accent" id="tcOk" disabled>${t('app.akkoord')}</button><button value="close" class="btn ghost">${t('app.later')}</button></div>
     </form>`;
   const ok = dlg.querySelector('#tcOk'), c1 = dlg.querySelector('#tc1'), c2 = dlg.querySelector('#tc2');
   const upd = () => { ok.disabled = !(c1.checked && c2.checked); };
   c1.addEventListener('change', upd); c2.addEventListener('change', upd);
   ok.addEventListener('click', () => busy(ok, async () => {
-    try { await api('POST', '/api/terms/accept', { version: TERMS_VERSION }); dlg.close(); toast('Bedankt, je kunt verder'); await load(); }
+    try { await api('POST', '/api/terms/accept', { version: TERMS_VERSION }); dlg.close(); toast(t('app.bedanktJeKuntVerder')); await load(); }
     catch (e) { toast(e.message, true); }
   }));
   dlg.showModal();
@@ -2502,10 +2507,10 @@ function openTerms() {
 function renderTermsPane() {
   const el = $('#termsPane'); if (!el) return;
   const st = state?.setup || {};
-  el.innerHTML = `<h2>Voorwaarden en gezondheid</h2>
-    <p class="muted small" style="margin-top:-.4rem">${st.terms && st.termsAt ? `Geaccepteerd op ${new Date(st.termsAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}.` : 'Nog niet geaccepteerd.'}</p>
+  el.innerHTML = `<h2>${t('app.voorwaardenEnGezondheid')}</h2>
+    <p class="muted small" style="margin-top:-.4rem">${st.terms && st.termsAt ? t('app.geaccepteerdOp', { a: new Date(st.termsAt).toLocaleDateString(localeOf(), { day: 'numeric', month: 'long', year: 'numeric' }) }) : t('app.nogNietGeaccepteerd')}</p>
     <div class="terms-body">${TERMS_HTML}</div>
-    ${st.terms ? '' : '<button type="button" class="btn accent" id="tpAccept">Lezen en akkoord</button>'}`;
+    ${st.terms ? '' : '<button type="button" class="btn accent" id="tpAccept">' + t('app.lezenEnAkkoord') + '</button>'}`;
   $('#tpAccept')?.addEventListener('click', openTerms);
 }
 document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'settings') renderTermsPane(); }));
@@ -2517,7 +2522,7 @@ function openExplain(section = 'kort') {
   if (!dlg) {
     dlg = document.createElement('dialog'); dlg.id = 'explainDlg'; dlg.className = 'terms-dlg explain-dlg'; document.body.appendChild(dlg);
     dlg.innerHTML = `<form method="dialog" class="terms">
-      <div class="exd-head"><h2>Hoe GymCoach werkt</h2><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
+      <div class="exd-head"><h2>${t('app.hoeGymcoachWerkt')}</h2><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
       <div class="explain">
         <nav class="explain-nav">${EXPLAIN.map((x) => `<button type="button" data-sec="${x.id}">${esc(x.title)}</button>`).join('')}</nav>
         <div class="terms-body explain-body">${EXPLAIN.map((x) => `<section id="ex-${x.id}"><h3>${esc(x.title)}</h3>${x.html}</section>`).join('')}</div>
@@ -2560,15 +2565,15 @@ async function renderAboutPane() {
 function aboutHtml(a) {
   const row = (k, v) => (v ? `<tr><td class="muted">${k}</td><td>${esc(String(v))}</td></tr>` : '');
   return `<div class="about">
-    <img src="logo.svg" alt="GymCoach-logo" class="about-logo" width="88" height="88">
+    <img src="logo.svg" alt="${t('app.gymcoachLogo')}" class="about-logo" width="88" height="88">
     <div>
       <h2 style="margin:0">GymCoach</h2>
-      <div class="about-ver">Versie ${esc(a.version || '—')}</div>
-      <p>Persoonlijk trainingsdashboard voor de Speediance Gym Monster. GymCoach maakt een weekplan met automatische progressie, zet het met één klik op je toestel en laat zien hoe je vooruitgaat: per training, per spiergroep, en samen met je metingen van Withings en je activiteiten uit Apple Health.</p>
-      <p><button type="button" class="btn ghost small" data-explain="kort">Hoe GymCoach werkt</button> <button type="button" class="btn ghost small" data-explain="meten">Hoe we meten</button></p>
-      <p class="muted small">© 2026 A. Stoelwinder Holding B.V. GymCoach is open source onder de MIT-licentie: je mag het vrij gebruiken, aanpassen en delen. Niet verbonden aan Speediance, Withings of Apple. <a href="#" data-go="terms">Voorwaarden en gezondheid</a></p>
+      <div class="about-ver">${t('app.versie', { a: esc(a.version || '—') })}</div>
+      <p>${t('app.persoonlijkTrainingsdashboardVoorDe')}</p>
+      <p><button type="button" class="btn ghost small" data-explain="kort">${t('app.hoeGymcoachWerkt')}</button> <button type="button" class="btn ghost small" data-explain="meten">${t('app.hoeWeMeten')}</button></p>
+      <p class="muted small">${t('app.2026AStoelwinderHolding')} <a href="#" data-go="terms">${t('app.voorwaardenEnGezondheid')}</a></p>
       <table class="about-tbl"><tbody>
-        ${row('GymCoach', a.version)}${row('Node.js', a.node)}${row('speediance-cli', a.cli)}${row('Gebruikers', a.users)}${row('Server gestart', a.started && new Date(a.started).toLocaleString('nl-NL', { dateStyle: 'medium', timeStyle: 'short' }))}
+        ${row('GymCoach', a.version)}${row('Node.js', a.node)}${row('speediance-cli', a.cli)}${row('Gebruikers', a.users)}${row('Server gestart', a.started && new Date(a.started).toLocaleString(localeOf(), { dateStyle: 'medium', timeStyle: 'short' }))}
       </tbody></table>
     </div></div>`;
 }
@@ -2618,7 +2623,7 @@ function renderTemplates() {
   const list = tplTab === 'mine' ? tplData.mine : tplData.shared;
   const item = (x) => `<div class="tpl-item" data-id="${esc(x.id)}">
     <div class="row between wrap gap"><b>${esc(x.name)}</b><span class="muted small">${x.mine ? (x.shared ? `<span class="badge custom">${t('tp.sharedBadge')}</span>` : '') : esc(t('nt.by', { name: x.owner }))}</span></div>
-    <div class="muted small">${esc(t('tp.sum', { n: x.count, sets: x.sets, min: x.estMinutes ? ` · ~${x.estMinutes} min` : '' }))}</div>
+    <div class="muted small">${esc(t('tp.sum', { n: x.count, sets: x.sets, min: x.estMinutes ? t('app.min7', { estMinutes: x.estMinutes }) : '' }))}</div>
     <div class="muted small tpl-ex">${x.exercises.slice(0, 6).map(esc).join(' · ')}${x.exercises.length > 6 ? ' …' : ''}</div>
     <div class="row gap wrap">
       <button class="btn accent small" data-tpl="use">${t('tp.inPlan')}</button>
@@ -2646,7 +2651,7 @@ $('#tplCard').addEventListener('click', async (ev) => {
     } else if (act === 'share') {
       await api('PUT', '/api/templates/share', { id, shared: !x.shared }); toast(x.shared ? t('tp.sharedOff') : t('tp.sharedOn')); await loadTemplates();
     } else if (act === 'del') {
-      if (!await askConfirm(t('tp.deleteConfirm', { name: x.name }), { danger: true, okText: 'Verwijderen' })) return;
+      if (!await askConfirm(t('tp.deleteConfirm', { name: x.name }), { danger: true, okText: t('tp.delete') })) return;
       await api('DELETE', '/api/templates?id=' + encodeURIComponent(id)); await loadTemplates();
     } else if (act === 'copy') {
       const r = await api('GET', '/api/template?id=' + encodeURIComponent(id));
@@ -2658,14 +2663,14 @@ document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () 
 
 // Venster "Nieuwe training": leeg, kopie van een training uit het plan, of uit een sjabloon.
 $('#newSessBtn').addEventListener('click', async () => {
-  if (!state.plan) { toast('Maak eerst een plan', true); return; }
+  if (!state.plan) { toast(t('app.maakEerstEenPlan'), true); return; }
   await loadTemplates();
   let dlg = $('#newSessDlg');
   if (!dlg) { dlg = document.createElement('dialog'); dlg.id = 'newSessDlg'; dlg.className = 'wide-dlg'; document.body.appendChild(dlg); }
   const copies = state.plan.sessions.filter((x) => !x.outdoor);
   const opt = (v, label, sub = '') => `<label class="ns-opt"><input type="radio" name="ns" value="${esc(v)}"> <span><b>${esc(label)}</b>${sub ? `<br><span class="muted small">${esc(sub)}</span>` : ''}</span></label>`;
   dlg.innerHTML = `<form method="dialog" class="exd">
-    <div class="exd-head"><div><div class="eyebrow">${t('nt.title')}</div><h2>${t('nt.title')}</h2></div><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
+    <div class="exd-head"><div><div class="eyebrow">${t('nt.title')}</div><h2>${t('nt.title')}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
     <label>${t('nt.name')} <input name="name" maxlength="40" placeholder="${esc(t('nt.namePh'))}"></label>
     <div class="eyebrow" style="margin:0">${t('nt.start')}</div>
     <div class="ns-list">
@@ -2674,7 +2679,7 @@ $('#newSessBtn').addEventListener('click', async () => {
       <div class="muted small">${t('nt.mine')}</div>${tplData.mine.length ? tplData.mine.map((x) => opt('template:' + x.id, x.name, t('tp.sum', { n: x.count, sets: x.sets, min: '' }))).join('') : `<div class="muted small">${t('nt.noTpl')}</div>`}
       ${tplData.shared.length ? `<div class="muted small">${t('nt.shared')}</div>${tplData.shared.map((x) => opt('template:' + x.id, x.name, t('nt.by', { name: x.owner }))).join('')}` : ''}
     </div>
-    <div class="row gap end"><button value="close" class="btn ghost">Annuleren</button><button type="button" class="btn accent" id="nsMake">${t('nt.make')}</button></div>
+    <div class="row gap end"><button value="close" class="btn ghost">${t('ed.cancel')}</button><button type="button" class="btn accent" id="nsMake">${t('nt.make')}</button></div>
   </form>`;
   dlg.querySelector('input[value="empty:"]').checked = true;
   dlg.querySelector('#nsMake').addEventListener('click', () => busy(dlg.querySelector('#nsMake'), async () => {

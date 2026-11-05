@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.15.0 — 5 november 2026
+Meertaligheid, fase 3: alle tabbladen en vensters in `public/app.js` via het woordenboek (ongeveer 650 sleutels). Voor gebruikers verandert er nog niets; alle teksten zijn voor en na vergeleken.
+- Vaste lijsten (doelen, dagsoorten, thema's, activiteiten, lichaamsmetingen, perioden) via `tmap()`, dat bij het lezen vertaalt.
+- Meervoud via de woordenboeken (bijv. "1 training" / "3 trainingen") in plaats van Nederlandse uitgangen in de code.
+- Datums, maand- en dagnamen in de taal van de gebruiker via `Intl` (`localeOf()`), ook in de editor.
+
 ## 1.14.0 — 5 november 2026
 Meertaligheid, fase 1 en 2 (zie issue #1). Voor gebruikers verandert er nog niets; de app blijft Nederlands.
 - Woordenboeken per taal in `public/locales/` (`nl.js` is de bron, `en.js` volgt). `public/i18n.js` doet het vertalen voor browser én server: plaatshouders, meervoud via `Intl.PluralRules`, terugval Engels → Nederlands, en opmaak van getallen, datums en duur met `Intl`.

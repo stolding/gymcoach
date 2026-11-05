@@ -2,7 +2,7 @@
 // met live het anatomische figuur, de kerncijfers en de sets per spiergroep voor de hele week.
 // Wijzigingen gebeuren op een kopie (concept) en worden pas bewaard bij Opslaan.
 import { bodyMap, MUSCLE_LABELS } from './bodymap.js';
-import { t } from './i18n.js';
+import { t, localeOf } from './i18n.js';
 import { askConfirm, askText } from './dialogs.js';
 
 const MODES = [1, 2, 3, 4, 5];
@@ -104,7 +104,7 @@ export function openEditor(key, ctx) {
       <div class="ed-kpis">
         ${tile(t('ed.duration'), `~${min} min`, t('ed.durationSub', { min: target }), min > target + 2)}
         ${tile(t('ed.sets'), sets, t('ed.setsSub', { n: draft.exercises.length }))}
-        ${tile(t('ed.volume'), `${Math.round(vol).toLocaleString('nl-NL')} kg`, t('ed.volumeSub'))}
+        ${tile(t('ed.volume'), `${Math.round(vol).toLocaleString(localeOf())} kg`, t('ed.volumeSub'))}
         ${tile(t('ed.pushPull'), ratio, t('ed.pushPullSub'), push >= 6 && pull * 2 < push)}
       </div>
       <div class="card ed-week"><div class="row between"><span class="eyebrow" style="margin:0">${t('ed.week')}</span><span class="muted small">${t('ed.weekHint')}</span></div>

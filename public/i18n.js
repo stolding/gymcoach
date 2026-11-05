@@ -45,6 +45,10 @@ export function t(key, vars = {}, l = lang) {
   }
   return String(s).replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? ''));
 }
+// Een vaste lijst met labels die bij het lezen vertaalt: waarden '§sleutel' worden t('sleutel'), ook in geneste lijsten.
+export function tmap(obj) {
+  return new Proxy(obj, { get(o, k) { const v = Reflect.get(o, k); return typeof v === 'string' && v[0] === '§' ? t(v.slice(1)) : v && typeof v === 'object' ? tmap(v) : v; } });
+}
 // Bestaat er een tekst voor deze sleutel (in welke taal dan ook)?
 export const has = (key) => raw(key, lang) != null;
 

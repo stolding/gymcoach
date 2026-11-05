@@ -8,7 +8,9 @@ import * as cli from './lib/cli.js';
 import * as store from './lib/store.js';
 import * as engine from './lib/engine.js';
 import { ALL_LANGS } from './public/i18n.js';
-import { tr } from './lib/lang.js';
+import { tr, userLang } from './lib/lang.js';
+// taal voor uitleg en beelden van Speediance: die van de gebruiker als Speediance hem goed levert, anders Engels
+const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'en');
 import * as insights from './lib/insights.js';
 import { TERMS_VERSION } from './public/terms.js';
 import * as ai from './lib/ai.js';
@@ -626,7 +628,8 @@ const routes = {
     const id = Number(url.searchParams.get('id'));
     if (!(id > 0)) throw Object.assign(new Error(tr('srv.ongeldigeOefening')), { status: 400 });
     if (!hasSpeediance()) throw Object.assign(new Error(tr('srv.koppelEerstJeSpeediance')), { status: 400 });
-    const info = await exinfo.getInfo(id, url.searchParams.get('lang') || 'en');
+    // uitleg in de taal van de gebruiker als Speediance die heeft (exinfo.INFO_LANGS), anders Engels
+    const info = await exinfo.getInfo(id, url.searchParams.get('lang') || infoLang());
     // verloop van het geschatte 1RM uit je eigen historie
     const ctx = await context();
     const h = Object.values(ctx.history).find((x) => Number(x.id) === id);

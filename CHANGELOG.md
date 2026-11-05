@@ -5,6 +5,14 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.17.0 — 5 november 2026
+Meertaligheid, fase 5: rapport, mail en AI-coach. Voor Nederlandse gebruikers verandert er niets; PDF-rapporten, mail en trainingsgegevens zijn voor en na vergeleken en gelijk.
+- PDF-rapport en mail na een training in de taal van de gebruiker, ook datums en getallen; meervoud via het woordenboek.
+- Vergelijking, hartslagzones en de uitleg van de maximale hartslag (rapport en analyse) uit het woordenboek.
+- Foutmeldingen van de mailserver en de AI-coach vertaald.
+- De AI-coach antwoordt in de taal van de gebruiker (advies en redenen).
+- Uitleg en beelden van oefeningen in de taal van de gebruiker als Speediance die goed levert (nu Engels en Duits), anders Engels; de kiezer toont welke taal.
+
 ## 1.16.0 — 5 november 2026
 Meertaligheid, fase 4: server en plan. Voor gebruikers verandert er nog niets; teksten en een nieuw gemaakt plan zijn voor en na vergeleken en gelijk.
 - Foutmeldingen en meldingen van de server (`server.js`, inloggen, Withings) in de taal van de gebruiker, via `tr()` uit `lib/lang.js`.

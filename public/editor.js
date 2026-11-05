@@ -461,7 +461,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
           ${info.mistake ? `<div><b class="warn-text">${t('pk.mistake')}:</b> ${esc(info.mistake)}</div>` : ''}
         </div>
         ${info.presets?.length ? `<div><div class="eyebrow">${t('pk.presets')}</div>${info.presets.filter((p) => p.name).map((p) => `<div class="small muted">${esc(t('pk.preset', { name: p.name, sets: p.sets, r1: p.reps[0], r2: p.reps[1], s1: p.rest[0], s2: p.rest[1] }))}</div>`).join('')}</div>` : ''}
-        <div class="muted small">${t('pk.source')}</div>`}
+        <div class="muted small">${t('pk.source', { lang: (() => { try { return new Intl.DisplayNames([localeOf()], { type: 'language' }).of(info.lang || 'en'); } catch { return info.lang || 'en'; } })() })}</div>`}
         <div><div class="eyebrow">${t('pk.history')}</div>${h ? `<div class="small up">${esc(t('pk.done', { date: h.last, sets: h.sets, times: h.times }))}</div>` : ''}${spark}</div>
       </div>
       <div class="pk-dfoot">${avoid.has(Number(e.id)) ? `<span class="badge warn">${t('pk.avoided')}</span>` : `<button type="button" class="btn ghost" data-pk="avoid" data-id="${e.id}">${t('pk.avoid')}</button>`}
@@ -502,7 +502,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
     const c = infoCache.get(id);
     wrap.innerHTML = detailHtml(e, c?.info, c?.trend, c?.err);
     if (c) return;
-    try { const r = await ctx.api('GET', `/api/exercise/info?id=${encodeURIComponent(id)}&lang=en`); infoCache.set(id, { info: r.info, trend: r.trend }); }
+    try { const r = await ctx.api('GET', `/api/exercise/info?id=${encodeURIComponent(id)}`); infoCache.set(id, { info: r.info, trend: r.trend }); }
     catch (err) { infoCache.set(id, { err: err.message }); }
     if (st.detail === id) { const w = pdlg.querySelector('.pk-dwrap'); const x = infoCache.get(id); if (w) w.innerHTML = detailHtml(e, x.info, x.trend, x.err); }
   }

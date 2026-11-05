@@ -4,6 +4,8 @@
 import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure } from './bodymap.js';
 import { TERMS_VERSION, TERMS_HTML } from './terms.js';
 import { EXPLAIN } from './explain.js';
+import { openEditor } from './editor.js';
+import { t } from './i18n.js';
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const GOAL = { spieropbouw: 'Spieropbouw', combinatie: 'Combinatie', afvallen: 'Afvallen', gemengd: 'Gemengde week', circuit: 'Cardio-circuit', buiten: 'Cardio buiten' };
@@ -292,7 +294,7 @@ function renderPlan() {
       <p class="muted small">Geen programma voor de Gym Monster. Je wandel- of fietsrit komt binnen via Apple Health (Instellingen → Apple Health).</p>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
-      <header><div><h3>${esc(s.name)}</h3><div class="muted small">~${s.estMinutes} min · ${s.exercises.length} oefeningen${s.type && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">cardio-circuit</span>' : ''} ${doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">op toestel</span>' : s.changedAfterPush ? '· <span class="badge warn">gewijzigd, opnieuw op toestel zetten</span>' : ''}</div></div>
+      <header><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}</h3><div class="muted small">~${s.estMinutes} min · ${s.exercises.length} oefeningen${s.type && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">cardio-circuit</span>' : ''} ${doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">op toestel</span>' : s.changedAfterPush ? '· <span class="badge warn">gewijzigd, opnieuw op toestel zetten</span>' : ''}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div></header>
       ${s.warmup ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">Warming-up</span><span class="ri-sum">${s.warmup.mobility.length + s.warmup.cable.length} oef. · ~6 min</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
       ${s.exercises.map((e, i) => `
@@ -306,7 +308,9 @@ function renderPlan() {
       ${doneBanner(s)}
       <footer>${doneOf(s) ? `
         <button class="btn accent" data-act="view">Bekijk training</button>
+        <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
         <button class="btn ghost" data-act="push">Opnieuw op toestel</button>` : `
+        <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
         <button class="btn ghost" data-act="dry">Controleer</button>
         <button class="btn accent" data-act="push">Zet op Gym Monster</button>`}
       </footer>
@@ -470,6 +474,10 @@ $('#sessions').addEventListener('click', async (ev) => {
   if (!btn) return;
   const act = btn.dataset.act;
   if (act === 'view') { const d = doneOf(session); if (d) openWorkouts([d.id]); return; }
+  if (act === 'edit') {
+    openEditor(session.key, { state, api, esc, toast, weekLabel: (p) => `week ${planIso(p).w} · ${planIso(p).y}`, onSaved: (plan) => { state.plan = plan; renderPlan(); } });
+    return;
+  }
   if (act === 'push' && !confirm(`“${progName(state.plan, session)}” als programma op je Gym Monster zetten?`)) return;
   await busy(btn, async () => {
     const r = await api('POST', '/api/plan/push', { sessionKey: session.key, dryRun: act === 'dry' });
@@ -582,6 +590,7 @@ function openGenerate() {
   const aiOn = state.settings.ai?.provider && state.settings.ai.provider !== 'none';
   dlg.innerHTML = `<form method="dialog" class="exd" id="genForm">
     <div class="exd-head"><div><div class="eyebrow">Nieuw weekplan</div><h2>Hoe ziet je week eruit?</h2></div><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
+    ${(() => { const l = (state.plan?.sessions || []).filter((x) => x.locked); return l.length ? `<div class="note">🔒 Vastgezet en blijft staan: <b>${l.map((x) => esc(x.name)).join(', ')}</b>. Gewichten schuiven mee met je progressie (behalve bij vast gewicht).</div>` : ''; })()}
     <div class="eyebrow" style="margin:0">Trainingsdagen</div>
     <div class="presets row gap wrap">
       <button type="button" class="btn small ghost" data-pre="same">Alles ${esc(DAY_SHORT[state.settings.goal] || 'combinatie')}</button>

@@ -26,6 +26,7 @@ export const EXPLAIN = [
     <p><b>Progressie</b> (dubbele progressie): haal je in alle sets de bovenkant van de bandbreedte, dan gaat het gewicht omhoog (+2 kg samengesteld, +1 kg isolatie) en begin je weer onderaan. Haal je de onderkant, dan +1 herhaling. Twee keer achter elkaar onder het doel: −10%.</p>
     <p><b>Deload.</b> Elke zoveel trainingsweken (instelbaar, standaard 6) een lichtere week: een set minder en 10% lichter. Weken zonder training tellen niet mee.</p>
     <p><b>Focus en tijd.</b> Focusgebieden komen vooraan en krijgen een extra set zolang de training binnen je ingestelde tijd blijft. GymCoach schat de duur met 4 s per herhaling plus de rust.</p>
+    <p><b>Zelf aanpassen.</b> Met <i>Bewerken</i> pas je een training aan: sets, herhalingen, gewicht, rust en modus per set (standaard, excentrisch, isokinetisch, constant, spotter), de volgorde, de warming-up en de cooldown. Het figuur en de sets per spiergroep voor de hele week rekenen direct mee. Een bewerkte training is <i>vastgezet</i>: bij een nieuw voorstel blijft hij staan en schuiven de gewichten mee met je progressie, behalve bij oefeningen met <i>vast gewicht</i>.</p>
     <p><b>Weeknummer.</b> Het plan draagt de kalenderweek waarin het is gemaakt, bijvoorbeeld <i>GC 2026-W45 Full Body A</i> op je toestel.</p>`,
   },
   {

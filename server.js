@@ -214,6 +214,13 @@ async function generatePlan(prefs) {
   const dayTypes = prefs?.dayTypes ?? prev?.dayTypes ?? null;
   const snapshot = JSON.parse(await readFile(path.join(ROOT, 'lib', 'library.snapshot.json'), 'utf8'));
   const plan = engine.buildPlan({ settings: ctx.settings, library: ctx.library, history: ctx.history, week, focus, wish, snapshot, dayTypes });
+  // vastgezette trainingen blijven staan, met progressie op basis van de historie (behalve bij vast gewicht)
+  for (const ls of (prev?.sessions || []).filter((x) => x.locked)) {
+    const kept = engine.progressSession(ls, ctx.history);
+    const i = plan.sessions.findIndex((x) => x.key === ls.key);
+    if (i >= 0) plan.sessions[i] = kept; else plan.sessions.push(kept);
+  }
+  refreshMuscles(plan);
   await store.savePlan(plan);
   // advies van de AI-coach hoorde bij het vorige plan
   const meta = await store.getMeta();
@@ -347,10 +354,23 @@ const routes = {
   'PUT /api/plan': async (req) => {
     const plan = await body(req);
     if (!plan?.sessions) throw Object.assign(new Error('Ongeldig plan'), { status: 400 });
-    for (const s of plan.sessions) for (const e of s.exercises) for (const set of e.sets) {
-      set.reps = Math.min(30, Math.max(1, Math.round(+set.reps)));
-      set.weight = Math.max(0.5, Math.round(+set.weight * 2) / 2);
-      set.rest = Math.min(300, Math.max(10, Math.round(+set.rest)));
+    const int = (v, lo, hi, d) => { const n = Math.round(+v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
+    for (const s of plan.sessions) {
+      if (!Array.isArray(s.exercises)) s.exercises = [];
+      s.name = String(s.name || 'Training').slice(0, 40);
+      s.locked = !!s.locked;
+      for (const e of s.exercises) {
+        if (!Array.isArray(e.sets) || !e.sets.length) e.sets = [{ reps: 10, weight: 5, mode: 1, rest: 60 }];
+        e.fixed = !!e.fixed;
+        for (const set of e.sets) {
+          set.reps = int(set.reps, 1, 30, 10);
+          set.weight = Math.max(0.5, Math.round(+set.weight * 2) / 2 || 0.5);
+          set.rest = int(set.rest, 10, 300, 60);
+          set.mode = int(set.mode, 1, 5, 1); // 1 standaard, 2 excentrisch, 3 isokinetisch, 4 constant, 5 spotter
+        }
+      }
+      for (const c of s.warmup?.cable || []) { c.reps = int(c.reps, 1, 30, 10); c.weight = Math.max(0, Math.round(+c.weight * 2) / 2 || 0); }
+      for (const m of s.warmup?.mobility || []) m.reps = int(m.reps, 1, 60, 10);
     }
     refreshMuscles(plan);
     await store.savePlan(plan);

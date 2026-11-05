@@ -5,6 +5,11 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.6.0 — 5 november 2026
+- Trainingseditor (stap 1): knop *Bewerken* bij elke training. Pas sets, herhalingen, gewicht, rust en modus per set aan (standaard, excentrisch, isokinetisch, constant, spotter), voeg sets toe of verwijder ze, alle sets gelijk, opwarmset, piramide, volgorde, oefeningen verwijderen, warming-up en cooldown aanpassen. Rechts live het figuur, duur, sets, volume, duwen/trekken en de sets per spiergroep voor de hele week, met waarschuwingen. Ongedaan maken, terug naar voorstel.
+- Bewerkte trainingen staan standaard vast: bij een nieuw voorstel blijven ze staan en schuiven de gewichten mee met de progressie (uit te zetten per oefening met *vast gewicht*). De modus per set gaat mee naar de Gym Monster.
+- Teksten van de editor staan in `public/i18n.js`, als begin van meertaligheid.
+
 ## 1.5.4 — 5 november 2026
 - Voorbereiding trainingseditor: `tools/oefening-info.mjs` toont wat de Speediance-API over een oefening weet (uitleg, beelden, talen); de API-aanroepen kunnen een taal meekrijgen.
 

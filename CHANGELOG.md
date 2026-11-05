@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.2.1 — 5 november 2026
+- Brochures (nl, en, de) bijgewerkt met de signalen uit 2.2.0: HRV en VO2max, herstelweek eerder als je herstel erom vraagt, vertraging per herhaling in het rapport en de herstelscore in de analyse.
+
 ## 2.2.0 — 5 november 2026
 Slimmer plannen met gecombineerde signalen (uit het onderzoek naar verborgen inzichten). Uitleg en bronnen staan in de app bij *Hoe GymCoach werkt → Signalen*.
 - HRV en VO2max-schatting van de Apple Watch: ingelezen via GymCoach Sync (iOS 1.5) en Health Auto Export, als tegels bij Lichaam.

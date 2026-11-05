@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.5.4 — 5 november 2026
+- Voorbereiding trainingseditor: `tools/oefening-info.mjs` toont wat de Speediance-API over een oefening weet (uitleg, beelden, talen); de API-aanroepen kunnen een taal meekrijgen.
+
 ## 1.5.3 — 5 november 2026
 - README in het Engels (`README.md`) en Nederlands (`README.nl.md`), met schermafbeeldingen van de app.
 - Overzicht: bij "Cardio buiten" als volgende training staat nu het advies en geen knop "Zet op Gym Monster" meer.

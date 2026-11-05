@@ -5,8 +5,12 @@ import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure } from './bodymap.j
 import { TERMS_VERSION, TERMS_HTML } from './terms.js';
 import { EXPLAIN } from './explain.js';
 import { openEditor } from './editor.js';
-import { t } from './i18n.js';
+import { t, has, setLang, resolveLang, applyI18n, LANGS } from './i18n.js';
 import { askConfirm, askText } from './dialogs.js';
+
+// taal vóór het inloggen: die van de browser; na het laden van de instellingen die van de gebruiker (zie load)
+setLang(resolveLang('', navigator.languages || [navigator.language]));
+applyI18n();
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const GOAL = { spieropbouw: 'Spieropbouw', combinatie: 'Combinatie', afvallen: 'Afvallen', gemengd: 'Gemengde week', circuit: 'Cardio-circuit', buiten: 'Cardio buiten' };
@@ -32,7 +36,8 @@ async function api(method, url, data) {
   const r = await fetch(url, { method, headers: data ? { 'content-type': 'application/json' } : {}, body: data ? JSON.stringify(data) : undefined });
   const j = await r.json().catch(() => ({}));
   if (r.status === 401 && j.login) { showAuth('login'); throw new Error('Log opnieuw in'); }
-  if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  // fout met een code uit het woordenboek: in de taal van de browserkant tonen
+  if (!r.ok) throw new Error(j.code && has(j.code) ? t(j.code, j.vars || {}) : j.error || `HTTP ${r.status}`);
   return j;
 }
 
@@ -1711,6 +1716,10 @@ function fillSettings() {
   $('#accBox').innerHTML = (state.accessories || []).map((a) => `<label class="chip-check"><input type="checkbox" data-acc="${esc(a.key)}"${no.has(a.key) ? ' checked' : ''}><span>${esc(a.label)}<i class="acc-n" title="oefeningen met dit accessoire">${a.count}</i></span></label>`).join('');
   const mc = s.smtp && (s.smtp.configured ?? !!(s.smtp.host && s.smtp.from));
   $('#mailNote').textContent = mc ? '' : 'Let op: de beheerder heeft de mailserver nog niet ingesteld; er wordt nog niets verstuurd.';
+  // taalkeuze: pas zichtbaar als er meer dan één taal te kiezen is
+  $('#langWrap').classList.toggle('hidden', LANGS.length < 2);
+  f.lang.innerHTML = `<option value="">${esc(t('lang.auto'))}</option>` + LANGS.map((l) => `<option value="${l.code}">${esc(l.name)}</option>`).join('');
+  f.lang.value = s.lang || '';
   const toggleBand = () => $('#bandSexWrap').classList.toggle('hidden', ['m', 'v'].includes(f.sex.value));
   toggleBand(); f.sex.onchange = toggleBand;
   syncOutputs();
@@ -1752,6 +1761,7 @@ $('#settingsForm').addEventListener('submit', async (ev) => {
     const cs = (x) => (['m', 'v'].includes(x.sex) ? x.sex : ['m', 'v'].includes(x.bandSex) ? x.bandSex : '');
     const changed = ['goal', 'daysPerWeek', 'minutesPerSession', 'experience', 'warmup', 'cooldown', 'pushMobility'].some((k) => before[k] !== state.settings[k]) || cs(before) !== cs(state.settings)
       || [...(before.noAccessories || [])].sort().join() !== [...(state.settings.noAccessories || [])].sort().join();
+    if ((before.lang || '') !== (state.settings.lang || '')) { location.reload(); return; } // andere taal: alles opnieuw opbouwen
     if (figureFor(before) !== figureFor(state.settings)) { renderPlan(); if ($('#tab-home').classList.contains('active')) renderHome(); }
     if (state.setup?.needed) { await load(); toast('Opgeslagen'); }
     else if (changed) { state.plan = (await api('POST', '/api/plan/generate')).plan; if (state.meta) state.meta.coach = null; renderCoach(null); renderPlan(); toast('Opgeslagen — nieuw plan gemaakt'); }
@@ -1985,6 +1995,9 @@ $('#syncBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async () 
 // Laadt de toestand van de gebruiker en tekent de app opnieuw.
 async function load() {
   state = await api('GET', '/api/state');
+  // taal: eigen keuze, anders die van de browser; daarna alle vaste teksten in de pagina vullen
+  setLang(resolveLang(state.settings?.lang, navigator.languages || [navigator.language]));
+  applyI18n();
   setDefaultFigure(figureFor(state.settings || {}));
   renderMe();
   renderSyncStatus(); renderPlan(); fillSettings(); renderWithingsSettings();

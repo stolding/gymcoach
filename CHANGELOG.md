@@ -5,6 +5,14 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.14.0 — 5 november 2026
+Meertaligheid, fase 1 en 2 (zie issue #1). Voor gebruikers verandert er nog niets; de app blijft Nederlands.
+- Woordenboeken per taal in `public/locales/` (`nl.js` is de bron, `en.js` volgt). `public/i18n.js` doet het vertalen voor browser én server: plaatshouders, meervoud via `Intl.PluralRules`, terugval Engels → Nederlands, en opmaak van getallen, datums en duur met `Intl`.
+- Vaste teksten in de pagina via `data-i18n` (ook `-html`, `-placeholder`, `-title`, `-aria-label`, `-label` en `-vars`); `index.html` heeft geen losse Nederlandse tekst meer (175 nieuwe sleutels).
+- Server: `lib/lang.js` vertaalt in de taal van de gebruiker; fouten kunnen een code uit het woordenboek meegeven.
+- Instelling `lang` per gebruiker (nog verborgen tot de Engelse vertaling compleet is).
+- `tools/i18n-check.mjs`: controleert sleutels en vertalingen en telt Nederlandse tekst buiten het woordenboek; het aantal mag niet stijgen (`tools/i18n-baseline.json`). Draait in de GitHub-workflow vóór het bouwen van het image.
+
 ## 1.13.1 — 5 november 2026
 - Afspraken voor commitberichten bijgewerkt.
 

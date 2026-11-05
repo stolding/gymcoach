@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import * as cli from './lib/cli.js';
 import * as store from './lib/store.js';
 import * as engine from './lib/engine.js';
+import { ALL_LANGS } from './public/i18n.js';
 import * as insights from './lib/insights.js';
 import { TERMS_VERSION } from './public/terms.js';
 import * as ai from './lib/ai.js';
@@ -457,6 +458,7 @@ const routes = {
     if (!['', 'm', 'v', 'x', 'o'].includes(next.sex)) next.sex = cur.sex || '';
     if (!['', 'man', 'vrouw', 'neutraal'].includes(next.figure)) next.figure = cur.figure || '';
     if (!['', 'm', 'v'].includes(next.bandSex)) next.bandSex = cur.bandSex || '';
+    if (next.lang !== '' && !ALL_LANGS.some((l) => l.code === next.lang)) next.lang = cur.lang || '';
     next.noAccessories = Array.isArray(next.noAccessories) ? [...new Set(next.noAccessories.filter((k) => engine.ACCESSORIES.some((a) => a.key === k)))] : cur.noAccessories || [];
     next.birthYear = next.birthYear === '' || next.birthYear == null ? null : Math.round(+next.birthYear);
     if (next.birthYear != null && !(next.birthYear >= 1920 && next.birthYear <= new Date().getFullYear() - 10)) throw Object.assign(new Error('Ongeldig geboortejaar'), { status: 400 });
@@ -920,7 +922,7 @@ const server = http.createServer(async (req, res) => {
   } catch (e) {
     console.error(`${req.method} ${url.pathname}: ${e.message}`);
     res.writeHead(e.status || 500, { 'content-type': 'application/json; charset=utf-8' });
-    res.end(JSON.stringify({ error: e.message, authFailure: !!e.authFailure }));
+    res.end(JSON.stringify({ error: e.message, authFailure: !!e.authFailure, ...(e.code && typeof e.code === 'string' && /^[a-z]+\./.test(e.code) ? { code: e.code, vars: e.vars || {} } : {}) }));
   }
 });
 

@@ -49,7 +49,7 @@ Hoe de code in elkaar zit, voor wie GymCoach wil aanpassen of uitbreiden. Wat de
 | `public/app.js` | De app in de browser: alle tabbladen, grafieken (eigen SVG), instellingen, wizard. |
 | `public/editor.js` | Trainingseditor en de kiezer voor oefeningen (met "Oefening bekijken"). |
 | `public/dialogs.js` | Eigen vragen en bevestigingen (`askConfirm`, `askText`) in plaats van `confirm()`/`prompt()` van de browser. |
-| `public/i18n.js` | Teksten per taal (`t('sleutel')`), begin van meertaligheid. |
+| `public/i18n.js`, `public/locales/` | Meertaligheid: woordenboek per taal (`nl.js` is de bron), `t()`, meervoud, opmaak met `Intl`, `applyI18n()` voor `data-i18n` in de pagina. Ook gebruikt door de server via `lib/lang.js`. |
 | `public/bodymap.js` | Spierkaart (SVG) met man-, vrouw- en neutraal figuur; ook gebruikt door de PDF. |
 | `public/explain.js` | Uitleg "Hoe GymCoach werkt". |
 | `public/terms.js` | Voorwaarden en gezondheidsverklaring (met versienummer). |
@@ -113,6 +113,10 @@ Groepen:
 - **Lichaam**: `/api/bodyweight`.
 - **Gebruikers en instellingen**: `/api/auth/*`, `/api/me*`, `/api/users*`, `/api/settings`, `/api/terms/accept`, `/api/avatar`.
 
+## Meertaligheid
+
+Alle tekst staat in `public/locales/<taal>.js` onder een sleutel (`plan.*`, `set.*`, `ui.<onderdeel>.*`, `err.*`, …). In de browser `t('sleutel', { n })`; in vaste HTML `data-i18n="sleutel"`. Op de server `tr()` uit `lib/lang.js`, in de taal van de huidige gebruiker (instelling `lang`, anders de browser). Een ontbrekende vertaling valt terug op Engels en daarna Nederlands. `tools/i18n-check.mjs` bewaakt dat er geen nieuwe losse Nederlandse tekst bijkomt. Het plan in fasen staat in issue #1.
+
 ## Ontwikkelen en testen
 
 Starten met een aparte datamap en een nep-CLI (zodat je geen echt toestel nodig hebt):
@@ -121,7 +125,7 @@ Starten met een aparte datamap en een nep-CLI (zodat je geen echt toestel nodig 
 GYMCOACH_DATA=/tmp/gc-test SPEEDIANCE_BIN=/pad/naar/nep-speediance-cli PORT=8799 node server.js
 ```
 
-Syntaxcontrole van alles: `for f in server.js lib/*.js public/*.js; do node --check $f; done`.
+Syntaxcontrole van alles: `for f in server.js lib/*.js public/*.js public/locales/*.js; do node --check $f; done`. Meertaligheid: `node tools/i18n-check.mjs`.
 
 ## Afspraken
 

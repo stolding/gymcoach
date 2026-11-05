@@ -1,0 +1,18 @@
+{
+  "server.js": 42,
+  "lib/ai.js": 4,
+  "lib/auth.js": 6,
+  "lib/cli.js": 1,
+  "lib/engine.js": 11,
+  "lib/insights.js": 1,
+  "lib/mail.js": 16,
+  "lib/speediance.js": 1,
+  "lib/store.js": 2,
+  "lib/summary.js": 18,
+  "lib/withings.js": 4,
+  "public/app.js": 192,
+  "public/bodymap.js": 1,
+  "public/explain.js": 45,
+  "public/index.html": 1,
+  "public/terms.js": 15
+}

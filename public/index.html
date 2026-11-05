@@ -16,11 +16,11 @@
 </head>
 <body>
 <header class="top">
-  <div class="brand"><img src="logo.svg?v=__VERSION__" alt="" class="brand-logo" width="28" height="28">GymCoach <span class="sub">voor Gym Monster</span></div>
+  <div class="brand"><img src="logo.svg?v=__VERSION__" alt="" class="brand-logo" width="28" height="28">GymCoach <span class="sub" data-i18n="ui.top.voorGymMonster">voor Gym Monster</span></div>
   <div class="sync">
     <span id="syncStatus" class="muted">—</span>
     <button id="themeBtn" class="btn ghost theme-btn" title="Thema wisselen" aria-label="Thema wisselen"></button>
-    <button id="syncBtn" class="btn ghost">Sync</button>
+    <button id="syncBtn" class="btn ghost" data-i18n="ui.top.sync">Sync</button>
     <button id="userBtn" class="btn ghost user-btn" aria-haspopup="dialog"><span class="avatar" id="avatar">?</span><span id="userName"></span></button>
   </div>
 </header>
@@ -28,32 +28,32 @@
 <div id="authScreen" class="auth hidden">
   <form id="authForm" class="auth-card">
     <div class="brand big-brand"><img src="logo.svg?v=__VERSION__" alt="" class="brand-logo big" width="44" height="44">GymCoach</div>
-    <h1 id="authTitle">Inloggen</h1>
+    <h1 id="authTitle" data-i18n="ui.auth.inloggen">Inloggen</h1>
     <p id="authIntro" class="muted"></p>
-    <label id="authNameRow">Je naam <input name="name" autocomplete="name"></label>
-    <label>Gebruikersnaam <input name="username" autocomplete="username" required></label>
-    <label>Wachtwoord <input name="password" type="password" autocomplete="current-password" required minlength="8"></label>
-    <label id="authPw2Row">Herhaal wachtwoord <input name="password2" type="password" autocomplete="new-password"></label>
+    <label id="authNameRow"><span data-i18n="ui.auth.jeNaam">Je naam</span> <input name="name" autocomplete="name"></label>
+    <label><span data-i18n="ui.auth.gebruikersnaam">Gebruikersnaam</span> <input name="username" autocomplete="username" required></label>
+    <label><span data-i18n="ui.auth.wachtwoord">Wachtwoord</span> <input name="password" type="password" autocomplete="current-password" required minlength="8"></label>
+    <label id="authPw2Row"><span data-i18n="ui.auth.herhaalWachtwoord">Herhaal wachtwoord</span> <input name="password2" type="password" autocomplete="new-password"></label>
     <div id="authErr" class="down small"></div>
-    <button class="btn accent" id="authSubmit">Inloggen</button>
-    <div class="muted small auth-ver">Versie __VERSION__ · © 2026 A. Stoelwinder Holding B.V. · MIT-licentie</div>
+    <button class="btn accent" id="authSubmit" data-i18n="ui.auth.inloggen">Inloggen</button>
+    <div class="muted small auth-ver" data-i18n="ui.auth.versionLine" data-i18n-vars='{"v":"__VERSION__"}'>Versie __VERSION__ · © 2026 A. Stoelwinder Holding B.V. · MIT-licentie</div>
   </form>
 </div>
 
 <nav class="tabs" role="tablist">
-  <button class="tab active" data-tab="home">Overzicht</button>
-  <button class="tab" data-tab="plan">Plan</button>
-  <button class="tab" data-tab="stats">Statistieken</button>
-  <button class="tab" data-tab="analysis">Analyse</button>
-  <button class="tab" data-tab="progress">Voortgang</button>
-  <button class="tab" data-tab="body">Lichaam</button>
-  <button class="tab" data-tab="settings">Instellingen</button>
+  <button class="tab active" data-tab="home" data-i18n="ui.tabs.overzicht">Overzicht</button>
+  <button class="tab" data-tab="plan" data-i18n="ui.tabs.plan">Plan</button>
+  <button class="tab" data-tab="stats" data-i18n="ui.tabs.statistieken">Statistieken</button>
+  <button class="tab" data-tab="analysis" data-i18n="ui.tabs.analyse">Analyse</button>
+  <button class="tab" data-tab="progress" data-i18n="ui.tabs.voortgang">Voortgang</button>
+  <button class="tab" data-tab="body" data-i18n="ui.tabs.lichaam">Lichaam</button>
+  <button class="tab" data-tab="settings" data-i18n="ui.tabs.instellingen">Instellingen</button>
 </nav>
 
 <main>
   <section id="tab-home" class="panel active">
     <div class="hello">
-      <div><div class="muted" id="today"></div><h1 id="greet">Overzicht</h1></div>
+      <div><div class="muted" id="today"></div><h1 id="greet" data-i18n="ui.tabs.overzicht">Overzicht</h1></div>
       <div class="tip" id="tip"></div>
     </div>
     <div class="dash">
@@ -73,13 +73,13 @@
   <section id="tab-plan" class="panel">
     <div class="row between wrap gap">
       <div>
-        <div class="week-nav"><button type="button" class="btn ghost small wk-arrow" id="wkPrev" aria-label="Vorige week" title="Vorige week" disabled>‹</button><h1 id="planTitle">Weekplan</h1><button type="button" class="btn ghost small wk-arrow" id="wkNext" aria-label="Volgende week" title="Volgende week" disabled>›</button></div>
+        <div class="week-nav"><button type="button" class="btn ghost small wk-arrow" id="wkPrev" aria-label="Vorige week" data-i18n-aria-label="ui.plan.vorigeWeek" title="Vorige week" data-i18n-title="ui.plan.vorigeWeek" disabled>‹</button><h1 id="planTitle" data-i18n="ui.plan.weekplan">Weekplan</h1><button type="button" class="btn ghost small wk-arrow" id="wkNext" aria-label="Volgende week" data-i18n-aria-label="ui.plan.volgendeWeek" title="Volgende week" data-i18n-title="ui.plan.volgendeWeek" disabled>›</button></div>
         <div id="planMeta" class="muted"></div>
       </div>
       <div class="row gap wrap cur-only">
-        <button id="newSessBtn" class="btn">+ Nieuwe training</button>
-        <button id="genBtn" class="btn">Nieuw voorstel</button>
-        <button id="coachBtn" class="btn accent">AI-coach advies</button>
+        <button id="newSessBtn" class="btn" data-i18n="ui.plan.nieuweTraining">+ Nieuwe training</button>
+        <button id="genBtn" class="btn" data-i18n="ui.plan.nieuwVoorstel">Nieuw voorstel</button>
+        <button id="coachBtn" class="btn accent" data-i18n="ui.plan.aiCoachAdvies">AI-coach advies</button>
       </div>
     </div>
     <div id="pastWeek" class="hidden"></div>
@@ -88,20 +88,20 @@
     <div id="sessions" class="sessions cur-only"></div>
     <div id="tplCard" class="card cur-only"></div>
     <div class="card cur-only">
-      <div class="row between wrap gap"><div><h2 style="margin:0">Programma’s op je Gym Monster</h2>
-        <div class="muted small">Ruim oude GymCoach-trainingen op je account en toestel op.</div></div>
-        <button class="btn" id="programsLoad">Toon programma’s</button></div>
+      <div class="row between wrap gap"><div><h2 style="margin:0" data-i18n="ui.plan.programmasOpJeGym">Programma’s op je Gym Monster</h2>
+        <div class="muted small" data-i18n="ui.plan.ruimOudeGymcoachTrainingen">Ruim oude GymCoach-trainingen op je account en toestel op.</div></div>
+        <button class="btn" id="programsLoad" data-i18n="ui.plan.toonProgrammas">Toon programma’s</button></div>
       <div id="programsBox" style="margin-top:.8rem"></div>
     </div>
   </section>
 
   <section id="tab-stats" class="panel">
     <div class="row between wrap gap">
-      <h1>Statistieken</h1>
-      <label class="period">Periode
-        <select id="statRange" aria-label="Periode voor de statistieken">
-          <optgroup label="Kalender"><option value="week">Deze week</option><option value="month">Deze maand</option><option value="year">Dit jaar</option></optgroup>
-          <optgroup label="Terugkijken"><option value="28">Laatste 4 weken</option><option value="84" selected>Laatste 12 weken</option><option value="365">Laatste jaar</option><option value="0">Alles</option></optgroup>
+      <h1 data-i18n="ui.tabs.statistieken">Statistieken</h1>
+      <label class="period"><span data-i18n="ui.stats.periode">Periode</span>
+        <select id="statRange" aria-label="Periode voor de statistieken" data-i18n-aria-label="ui.stats.periodeVoorDeStatistieken">
+          <optgroup label="Kalender" data-i18n-label="ui.stats.kalender"><option value="week" data-i18n="ui.stats.dezeWeek">Deze week</option><option value="month" data-i18n="ui.stats.dezeMaand">Deze maand</option><option value="year" data-i18n="ui.stats.ditJaar">Dit jaar</option></optgroup>
+          <optgroup label="Terugkijken" data-i18n-label="ui.stats.terugkijken"><option value="28" data-i18n="ui.stats.laatste4Weken">Laatste 4 weken</option><option value="84" selected data-i18n="ui.stats.laatste12Weken">Laatste 12 weken</option><option value="365" data-i18n="ui.stats.laatsteJaar">Laatste jaar</option><option value="0" data-i18n="pk.all">Alles</option></optgroup>
         </select>
       </label>
     </div>
@@ -110,277 +110,281 @@
     <div class="card hidden" id="cardioCard"></div>
     <div class="grid2 stat2">
       <div class="card" id="balanceCard"></div>
-      <div class="card"><h2>Spiermassa en trainingsvolume</h2>
+      <div class="card"><h2 data-i18n="ui.stats.spiermassaEnTrainingsvolume">Spiermassa en trainingsvolume</h2>
         <div id="chartVolMass" class="chart"></div>
         <div class="legend"><span class="lg"><i style="background:var(--a)"></i>Volume per week</span><span class="lg"><i style="background:var(--b);height:3px;border-radius:2px"></i>Spiermassa (Withings)</span></div>
         <p class="muted small" id="volMassNote" style="margin:.3rem 0 0"></p></div>
     </div>
     <div class="card">
-      <h2>Krachtontwikkeling per spiergroep</h2>
-      <p class="muted" style="margin-top:-.4rem">Geschat 1RM per oefening, gemiddeld per spiergroep. Het begin van de periode is 100: 110 betekent 10% sterker. Klik een spiergroep aan of uit.</p>
+      <h2 data-i18n="ui.stats.krachtontwikkelingPerSpiergroep">Krachtontwikkeling per spiergroep</h2>
+      <p class="muted" style="margin-top:-.4rem" data-i18n="ui.stats.geschat1rmPerOefening">Geschat 1RM per oefening, gemiddeld per spiergroep. Het begin van de periode is 100: 110 betekent 10% sterker. Klik een spiergroep aan of uit.</p>
       <div class="chips small sgchips" id="strengthChips"></div>
       <div id="chartStrength" class="chart tall"></div>
     </div>
     <div class="card hidden" id="cardioKmCard">
       <div class="grid2" style="gap:1.5rem">
-        <div><h2>Kilometers per week</h2><div id="chartKm" class="chart"></div><div id="kmLegend"></div></div>
-        <div><h2>Stappen per dag</h2><div id="chartSteps" class="chart"></div><p class="muted small" id="stepsNote" style="margin:.3rem 0 0"></p></div>
+        <div><h2 data-i18n="ui.stats.kilometersPerWeek">Kilometers per week</h2><div id="chartKm" class="chart"></div><div id="kmLegend"></div></div>
+        <div><h2 data-i18n="ui.stats.stappenPerDag">Stappen per dag</h2><div id="chartSteps" class="chart"></div><p class="muted small" id="stepsNote" style="margin:.3rem 0 0"></p></div>
       </div>
     </div>
     <div class="card">
-      <div class="row between wrap gap"><h2>Per spiergroep</h2>
-        <div class="chips small" id="muscleMetric"><button data-m="volume" class="on">Volume</button><button data-m="sets">Sets</button><button data-m="reps">Herhalingen</button><button data-m="sessions">Trainingen</button></div>
+      <div class="row between wrap gap"><h2 data-i18n="ui.stats.perSpiergroep">Per spiergroep</h2>
+        <div class="chips small" id="muscleMetric"><button data-m="volume" class="on" data-i18n="ed.volume">Volume</button><button data-m="sets" data-i18n="ed.sets">Sets</button><button data-m="reps" data-i18n="ui.stats.herhalingen">Herhalingen</button><button data-m="sessions" data-i18n="tp.title">Trainingen</button></div>
       </div>
       <div id="muscleBars" class="hbars"></div>
     </div>
     <div class="card">
-      <h2>Sets per spiergroep per week</h2>
-      <p class="muted" style="margin-top:-.4rem">Richtlijn voor beginners: ca. 6–12 werksets per spiergroep per week. Groen = binnen de richtlijn.</p>
+      <h2 data-i18n="ui.stats.setsPerSpiergroepPer">Sets per spiergroep per week</h2>
+      <p class="muted" style="margin-top:-.4rem" data-i18n="ui.stats.richtlijnVoorBeginnersCa">Richtlijn voor beginners: ca. 6–12 werksets per spiergroep per week. Groen = binnen de richtlijn.</p>
       <div class="tablewrap"><table id="weekMatrix" class="matrix"></table></div>
     </div>
     <div class="card">
-      <h2>Spiergroepen in detail</h2>
+      <h2 data-i18n="ui.stats.spiergroepenInDetail">Spiergroepen in detail</h2>
       <div class="tablewrap"><table id="muscleTable" class="sortable"></table></div>
     </div>
     <div class="card">
-      <h2>Per oefening</h2>
+      <h2 data-i18n="ui.stats.perOefening">Per oefening</h2>
       <div class="tablewrap"><table id="exTable" class="sortable"></table></div>
     </div>
   </section>
 
   <section id="tab-analysis" class="panel">
     <div class="row between wrap gap">
-      <h1>Analyse</h1>
-      <label class="period">Periode
-        <select id="anRange" aria-label="Periode voor de analyse">
-          <optgroup label="Kalender"><option value="month">Deze maand</option><option value="year">Dit jaar</option></optgroup>
-          <optgroup label="Terugkijken"><option value="84">Laatste 12 weken</option><option value="182">Laatste half jaar</option><option value="365" selected>Laatste jaar</option><option value="0">Alles</option></optgroup>
+      <h1 data-i18n="ui.tabs.analyse">Analyse</h1>
+      <label class="period"><span data-i18n="ui.stats.periode">Periode</span>
+        <select id="anRange" aria-label="Periode voor de analyse" data-i18n-aria-label="ui.analysis.periodeVoorDeAnalyse">
+          <optgroup label="Kalender" data-i18n-label="ui.stats.kalender"><option value="month" data-i18n="ui.stats.dezeMaand">Deze maand</option><option value="year" data-i18n="ui.stats.ditJaar">Dit jaar</option></optgroup>
+          <optgroup label="Terugkijken" data-i18n-label="ui.stats.terugkijken"><option value="84" data-i18n="ui.stats.laatste12Weken">Laatste 12 weken</option><option value="182" data-i18n="ui.analysis.laatsteHalfJaar">Laatste half jaar</option><option value="365" selected data-i18n="ui.stats.laatsteJaar">Laatste jaar</option><option value="0" data-i18n="pk.all">Alles</option></optgroup>
         </select>
       </label>
     </div>
     <div class="card" id="bigCal"></div>
     <div class="grid2">
-      <div class="card"><div class="row between wrap gap"><h2>Wanneer train je?</h2>
-        <label class="small inline-check"><input type="checkbox" id="heatActs" checked> wandelen en fietsen meetellen</label></div>
+      <div class="card"><div class="row between wrap gap"><h2 data-i18n="ui.analysis.wanneerTrainJe">Wanneer train je?</h2>
+        <label class="small inline-check"><input type="checkbox" id="heatActs" checked> <span data-i18n="ui.analysis.wandelenEnFietsenMeetellen">wandelen en fietsen meetellen</span></label></div>
         <div id="heatmap"></div><p class="muted small" id="heatNote" style="margin:.4rem 0 0"></p></div>
-      <div class="card"><h2>Herstel</h2>
+      <div class="card"><h2 data-i18n="ui.analysis.herstel">Herstel</h2>
         <div id="chartRecovery" class="chart"></div>
         <div class="legend"><span class="lg"><i style="background:var(--a)"></i>Trainingsminuten per week</span><span class="lg"><i style="background:var(--warn);height:3px;border-radius:2px"></i>Hartslag in rust</span></div>
         <div id="recoveryNote"></div></div>
     </div>
     <div class="grid2">
-      <div class="card"><h2>Calorieën en gewicht</h2>
+      <div class="card"><h2 data-i18n="ui.analysis.calorieenEnGewicht">Calorieën en gewicht</h2>
         <div id="chartEnergy" class="chart"></div>
         <div class="legend"><span class="lg"><i style="background:var(--a)"></i>Actieve energie per week</span><span class="lg"><i style="background:var(--b);height:3px;border-radius:2px"></i>Gewicht</span></div>
         <p class="muted small" id="energyNote" style="margin:.3rem 0 0"></p></div>
-      <div class="card"><h2>Records</h2>
+      <div class="card"><h2 data-i18n="ui.analysis.records">Records</h2>
         <div id="chartRecords" class="chart" style="height:140px"></div>
         <div id="recordList" class="reclist"></div></div>
     </div>
   </section>
 
   <section id="tab-progress" class="panel">
-    <h1>Voortgang</h1>
+    <h1 data-i18n="ui.tabs.voortgang">Voortgang</h1>
     <div class="grid2">
-      <div class="card"><h2>Trainingen per week</h2><div id="chartSessions" class="chart"></div></div>
-      <div class="card"><h2>Volume per week (kg)</h2><div id="chartVolume" class="chart"></div></div>
+      <div class="card"><h2 data-i18n="ui.progress.trainingenPerWeek">Trainingen per week</h2><div id="chartSessions" class="chart"></div></div>
+      <div class="card"><h2 data-i18n="ui.progress.volumePerWeekKg">Volume per week (kg)</h2><div id="chartVolume" class="chart"></div></div>
     </div>
     <div class="card">
-      <div class="row between wrap gap"><h2>Per oefening</h2><select id="exSelect"></select></div>
+      <div class="row between wrap gap"><h2 data-i18n="ui.stats.perOefening">Per oefening</h2><select id="exSelect"></select></div>
       <div id="chartExercise" class="chart tall"></div>
       <div class="legend"><span class="dot a"></span>Geschat 1RM <span class="dot b"></span>Zwaarste set</div>
     </div>
-    <div class="card"><div class="row between wrap gap"><h2>Trainingen</h2><input type="search" id="woSearch" placeholder="Zoek op naam of datum…" aria-label="Zoek trainingen" style="max-width:240px"></div>
-      <p class="muted small" style="margin-top:-.4rem">Klik op een training voor de oefeningen, sets en gewichten.</p>
+    <div class="card"><div class="row between wrap gap"><h2 data-i18n="tp.title">Trainingen</h2><input type="search" id="woSearch" placeholder="Zoek op naam of datum…" data-i18n-placeholder="ui.progress.zoekOpNaamOf" aria-label="Zoek trainingen" data-i18n-aria-label="ui.progress.zoekTrainingen" style="max-width:240px"></div>
+      <p class="muted small" style="margin-top:-.4rem" data-i18n="ui.progress.klikOpEenTraining">Klik op een training voor de oefeningen, sets en gewichten.</p>
       <div id="recent"></div></div>
   </section>
 
   <section id="tab-body" class="panel">
-    <h1>Lichaamsgewicht</h1>
+    <h1 data-i18n="ui.body.lichaamsgewicht">Lichaamsgewicht</h1>
     <div class="card withings" id="withingsCard"></div>
     <div class="card" id="compCard"></div>
     <div class="card hidden" id="segCard"></div>
-    <details class="card collapse"><summary><span>Alle metingen</span> <span class="muted" id="bwCount"></span></summary><div id="bwList" style="margin-top:.6rem"></div></details>
+    <details class="card collapse"><summary><span data-i18n="ui.body.alleMetingen">Alle metingen</span> <span class="muted" id="bwCount"></span></summary><div id="bwList" style="margin-top:.6rem"></div></details>
   </section>
 
   <section id="tab-settings" class="panel">
-    <h1>Instellingen</h1>
+    <h1 data-i18n="ui.tabs.instellingen">Instellingen</h1>
     <div class="set-layout">
-      <nav class="set-nav" id="setNav" aria-label="Onderdelen van de instellingen">
-        <button type="button" data-pane="account">Speediance-account</button>
-        <button type="button" data-pane="training">Training</button>
-        <button type="button" data-pane="body">Lichaam en doelen</button>
-        <button type="button" data-pane="health">Apple Health</button>
-        <button type="button" data-pane="withings">Withings</button>
-        <button type="button" data-pane="mail">E-mail</button>
-        <button type="button" data-pane="ai" class="admin-only">AI-coach</button>
-        <button type="button" data-pane="sync">Sync en catalogus</button>
-        <button type="button" data-pane="users" class="admin-only">Gebruikers</button>
-        <button type="button" data-pane="terms">Voorwaarden</button>
-        <button type="button" data-pane="about">Over GymCoach</button>
+      <nav class="set-nav" id="setNav" aria-label="Onderdelen van de instellingen" data-i18n-aria-label="ui.settings.onderdelenVanDeInstellingen">
+        <button type="button" data-pane="account" data-i18n="ui.settings.speedianceAccount">Speediance-account</button>
+        <button type="button" data-pane="training" data-i18n="ui.settings.training">Training</button>
+        <button type="button" data-pane="body" data-i18n="ui.settings.lichaamEnDoelen">Lichaam en doelen</button>
+        <button type="button" data-pane="health" data-i18n="ui.settings.appleHealth">Apple Health</button>
+        <button type="button" data-pane="withings" data-i18n="ui.settings.withings">Withings</button>
+        <button type="button" data-pane="mail" data-i18n="ui.settings.eMail">E-mail</button>
+        <button type="button" data-pane="ai" class="admin-only" data-i18n="ui.settings.aiCoach">AI-coach</button>
+        <button type="button" data-pane="sync" data-i18n="ui.settings.syncEnCatalogus">Sync en catalogus</button>
+        <button type="button" data-pane="users" class="admin-only" data-i18n="ui.settings.gebruikers">Gebruikers</button>
+        <button type="button" data-pane="terms" data-i18n="ui.settings.voorwaarden">Voorwaarden</button>
+        <button type="button" data-pane="about" data-i18n="ui.settings.overGymcoach">Over GymCoach</button>
       </nav>
       <div class="set-main">
     <form id="accountForm" class="card form set-pane" data-pane="account">
-      <h2>Speediance-account en toestel</h2>
-      <label>E-mailadres van je Speediance-account <input name="email" type="email" autocomplete="off" data-1p-ignore data-lpignore="true"></label>
-      <label>Wachtwoord van je Speediance-account <input name="password" type="password" autocomplete="new-password" data-1p-ignore data-lpignore="true" placeholder="leeg laten = ongewijzigd"></label>
-      <label>Regio
-        <select name="region"><option value="EU">EU (meestal voor Europa)</option><option value="Global">Global</option></select>
+      <h2 data-i18n="ui.settings.speedianceAccountEnToestel">Speediance-account en toestel</h2>
+      <label><span data-i18n="ui.app.eMailadresVanJe">E-mailadres van je Speediance-account</span> <input name="email" type="email" autocomplete="off" data-1p-ignore data-lpignore="true"></label>
+      <label><span data-i18n="ui.app.wachtwoordVanJeSpeediance">Wachtwoord van je Speediance-account</span> <input name="password" type="password" autocomplete="new-password" data-1p-ignore data-lpignore="true" placeholder="leeg laten = ongewijzigd" data-i18n-placeholder="ui.app.leegLatenOngewijzigd"></label>
+      <label><span data-i18n="ui.app.regio">Regio</span>
+        <select name="region"><option value="EU" data-i18n="ui.app.euMeestalVoorEuropa">EU (meestal voor Europa)</option><option value="Global" data-i18n="ui.app.global">Global</option></select>
       </label>
-      <label>Gym Monster-model
+      <label><span data-i18n="ui.app.gymMonsterModel">Gym Monster-model</span>
         <select name="deviceType">
-          <option value="1">Gym Monster 1 (getest)</option>
-          <option value="2">Gym Monster 2 (niet getest)</option>
-          <option value="other">Ander model / eigen nummer…</option>
+          <option value="1" data-i18n="ui.app.gymMonster1Getest">Gym Monster 1 (getest)</option>
+          <option value="2" data-i18n="ui.app.gymMonster2Niet">Gym Monster 2 (niet getest)</option>
+          <option value="other" data-i18n="ui.app.anderModelEigenNummer">Ander model / eigen nummer…</option>
         </select>
       </label>
-      <label class="hidden" id="dtOther">Toesteltype-nummer <input name="deviceTypeNum" type="number" min="1" max="20"></label>
+      <label class="hidden" id="dtOther"><span data-i18n="ui.app.toesteltypeNummer">Toesteltype-nummer</span> <input name="deviceTypeNum" type="number" min="1" max="20"></label>
       <div class="row gap wrap">
-        <button class="btn accent">Opslaan en testen</button>
-        <button type="button" class="btn ghost" id="detectBtn">Detecteer mijn toestel</button>
+        <button class="btn accent" data-i18n="ui.app.opslaanEnTesten">Opslaan en testen</button>
+        <button type="button" class="btn ghost" id="detectBtn" data-i18n="ui.app.detecteerMijnToestel">Detecteer mijn toestel</button>
       </div>
       <div id="accountInfo" class="small"></div>
-      <p class="muted small" style="margin:0">Je gegevens worden alleen op deze server opgeslagen (in de configuratie van speediance-cli). Wijzig je model of regio, dan wordt de oefeningencatalogus van dat toestel opgehaald.</p>
+      <p class="muted small" style="margin:0" data-i18n="ui.app.jeGegevensWordenAlleen">Je gegevens worden alleen op deze server opgeslagen (in de configuratie van speediance-cli). Wijzig je model of regio, dan wordt de oefeningencatalogus van dat toestel opgehaald.</p>
     </form>
     <form id="settingsForm" class="set-form">
       <div class="card set-pane" data-pane="training">
-        <h2>Training</h2>
+        <h2 data-i18n="ui.settings.training">Training</h2>
         <div class="fgrid">
-      <label>Doel
+      <label id="langWrap" class="span2 hidden"><span data-i18n="lang.label">Taal</span>
+        <select name="lang"></select>
+        <span class="muted" data-i18n="lang.hint"></span>
+      </label>
+      <label><span data-i18n="ui.setTraining.doel">Doel</span>
         <select name="goal">
-          <option value="spieropbouw">Spieropbouw</option>
-          <option value="combinatie">Combinatie (afvallen + spier behouden/opbouwen)</option>
-          <option value="afvallen">Afvallen (hogere dichtheid, korte rust)</option>
+          <option value="spieropbouw" data-i18n="ui.setTraining.spieropbouw">Spieropbouw</option>
+          <option value="combinatie" data-i18n="ui.setTraining.combinatieAfvallenSpierBehouden">Combinatie (afvallen + spier behouden/opbouwen)</option>
+          <option value="afvallen" data-i18n="ui.setTraining.afvallenHogereDichtheidKorte">Afvallen (hogere dichtheid, korte rust)</option>
         </select>
       </label>
-      <label>Trainingen per week <output id="daysOut"></output>
+      <label><span data-i18n="ui.progress.trainingenPerWeek">Trainingen per week</span> <output id="daysOut"></output>
         <input type="range" name="daysPerWeek" min="2" max="5" step="1">
       </label>
-      <label>Minuten per training <output id="minOut"></output>
+      <label><span data-i18n="ui.setTraining.minutenPerTraining">Minuten per training</span> <output id="minOut"></output>
         <input type="range" name="minutesPerSession" min="20" max="90" step="5">
       </label>
-      <label>Ervaring
-        <select name="experience"><option value="beginner">Beginner</option><option value="gevorderd">Gevorderd</option></select>
+      <label><span data-i18n="ui.setTraining.ervaring">Ervaring</span>
+        <select name="experience"><option value="beginner" data-i18n="ui.setTraining.beginner">Beginner</option><option value="gevorderd" data-i18n="ui.setTraining.gevorderd">Gevorderd</option></select>
       </label>
-      <label>Deload-week elke … weken (0 = uit)
+      <label><span data-i18n="ui.setTraining.deloadWeekElkeWeken">Deload-week elke … weken (0 = uit)</span>
         <input type="number" name="deloadEveryWeeks" min="0" max="12">
       </label>
-      <label>Warming-up
-        <select name="warmup"><option value="on">Aan</option><option value="off">Uit</option></select>
+      <label><span data-i18n="ed.warmup">Warming-up</span>
+        <select name="warmup"><option value="on" data-i18n="ui.setTraining.aan">Aan</option><option value="off" data-i18n="ui.setTraining.uit">Uit</option></select>
       </label>
-      <label>Cooldown (stretches)
-        <select name="cooldown"><option value="on">Aan</option><option value="off">Uit</option></select>
+      <label><span data-i18n="ui.setTraining.cooldownStretches">Cooldown (stretches)</span>
+        <select name="cooldown"><option value="on" data-i18n="ui.setTraining.aan">Aan</option><option value="off" data-i18n="ui.setTraining.uit">Uit</option></select>
       </label>
-      <label class="span2">Mobiliteit en stretches ook op het toestel zetten
-        <select name="pushMobility"><option value="on">Ja</option><option value="off">Nee, alleen in het dashboard</option></select>
-        <span class="muted">Warming-up en stretches komen dan ook in het programma op de Gym Monster, als oefeningen zonder kabel.</span>
+      <label class="span2"><span data-i18n="ui.setTraining.mobiliteitEnStretchesOok">Mobiliteit en stretches ook op het toestel zetten</span>
+        <select name="pushMobility"><option value="on" data-i18n="ui.setTraining.ja">Ja</option><option value="off" data-i18n="ui.setTraining.neeAlleenInHet">Nee, alleen in het dashboard</option></select>
+        <span class="muted" data-i18n="ui.setTraining.warmingUpEnStretches">Warming-up en stretches komen dan ook in het programma op de Gym Monster, als oefeningen zonder kabel.</span>
       </label>
-      <div class="span2 acc-wrap"><span class="acc-title">Accessoires die ik niet gebruik</span>
+      <div class="span2 acc-wrap"><span class="acc-title" data-i18n="ui.setTraining.accessoiresDieIkNiet">Accessoires die ik niet gebruik</span>
         <div id="accBox" class="acc-box"></div>
-        <span class="muted">Oefeningen die zo'n accessoire nodig hebben, stelt GymCoach niet meer voor, net als in de Speediance-app. Zelf toevoegen in de editor kan nog wel.</span>
+        <span class="muted" data-i18n="ui.setTraining.oefeningenDieZoN">Oefeningen die zo'n accessoire nodig hebben, stelt GymCoach niet meer voor, net als in de Speediance-app. Zelf toevoegen in de editor kan nog wel.</span>
       </div>
-      <label class="span2">Notities voor de coach (blessures, voorkeuren)
-        <textarea name="notes" rows="3" placeholder="Bijv. lage rug gevoelig, geen overhead drukken"></textarea>
+      <label class="span2"><span data-i18n="ui.setTraining.notitiesVoorDeCoach">Notities voor de coach (blessures, voorkeuren)</span>
+        <textarea name="notes" rows="3" placeholder="Bijv. lage rug gevoelig, geen overhead drukken" data-i18n-placeholder="ui.setTraining.bijvLageRugGevoelig"></textarea>
       </label>
 
         </div>
-      <div class="savebar"><button class="btn accent">Opslaan</button></div>
+      <div class="savebar"><button class="btn accent" data-i18n="ed.save">Opslaan</button></div>
       </div>
       <div class="card set-pane" data-pane="body">
-        <h2>Lichaam en doelen</h2>
-        <p class="muted" style="margin-top:-.4rem">Voor de richtwaarden in de grafieken, BMI, hartslagzones, rust en volume in je plan en je stappendoel. <a href="#" data-explain="persoonlijk">Waarom?</a></p>
+        <h2 data-i18n="ui.settings.lichaamEnDoelen">Lichaam en doelen</h2>
+        <p class="muted" style="margin-top:-.4rem" data-i18n-html="ui.setBody.voorDeRichtwaardenIn">Voor de richtwaarden in de grafieken, BMI, hartslagzones, rust en volume in je plan en je stappendoel. <a href="#" data-explain="persoonlijk">Waarom?</a></p>
         <div class="fgrid">
-        <label>Geslacht <select name="sex"><option value="">Zeg ik liever niet</option><option value="m">Man</option><option value="v">Vrouw</option><option value="x">Non-binair</option><option value="o">Anders</option></select></label>
-        <label>Geboortejaar <input type="number" name="birthYear" min="1920" max="2016" placeholder="bijv. 1970"></label>
-        <label>Maximale hartslag (bpm) <input type="number" name="hrMax" min="120" max="230" placeholder="leeg = schatten uit geboortejaar">
-          <span class="muted">Voor de hartslagzones. Weet je hem uit een test, vul hem dan in.</span></label>
-        <label>Stappendoel per dag <input type="number" name="stepGoal" min="1000" max="40000" step="500" placeholder="8000"></label>
-      <label id="bandSexWrap">Richtwaarden en berekeningen <select name="bandSex"><option value="">Algemeen (geen tabel)</option><option value="m">Tabel voor mannen</option><option value="v">Tabel voor vrouwen</option></select>
-          <span class="muted">Onderzoekstabellen (vet%, FFMI, maximale hartslag, rust en volume) bestaan alleen per man/vrouw; kies wat het best bij je lichaam past.</span></label>
-        <label>Lichaamsfiguur <select name="figure"><option value="">Automatisch (volgens geslacht)</option><option value="man">Man</option><option value="vrouw">Vrouw</option><option value="neutraal">Neutraal</option></select>
-          <span class="muted">Het figuur in de spierkaarten. Alleen de vorm verschilt; de spiergroepen zijn gelijk.</span></label>
-      <label>Lengte (cm), voor BMI <input type="number" name="heightCm" min="100" max="250" placeholder="uit Withings, of vul zelf in">
-        <span class="muted">Leeg laten: de lengte uit je Withings-profiel wordt gebruikt.</span></label>
+        <label><span data-i18n="ui.setBody.geslacht">Geslacht</span> <select name="sex"><option value="" data-i18n="ui.setBody.zegIkLieverNiet">Zeg ik liever niet</option><option value="m" data-i18n="ui.setBody.man">Man</option><option value="v" data-i18n="ui.setBody.vrouw">Vrouw</option><option value="x" data-i18n="ui.setBody.nonBinair">Non-binair</option><option value="o" data-i18n="ui.setBody.anders">Anders</option></select></label>
+        <label><span data-i18n="ui.setBody.geboortejaar">Geboortejaar</span> <input type="number" name="birthYear" min="1920" max="2016" placeholder="bijv. 1970" data-i18n-placeholder="ui.setBody.bijv1970"></label>
+        <label><span data-i18n="ui.setBody.maximaleHartslagBpm">Maximale hartslag (bpm)</span> <input type="number" name="hrMax" min="120" max="230" placeholder="leeg = schatten uit geboortejaar" data-i18n-placeholder="ui.setBody.leegSchattenUitGeboortejaar">
+          <span class="muted" data-i18n="ui.setBody.voorDeHartslagzonesWeet">Voor de hartslagzones. Weet je hem uit een test, vul hem dan in.</span></label>
+        <label><span data-i18n="ui.setBody.stappendoelPerDag">Stappendoel per dag</span> <input type="number" name="stepGoal" min="1000" max="40000" step="500" placeholder="8000"></label>
+      <label id="bandSexWrap"><span data-i18n="ui.setBody.richtwaardenEnBerekeningen">Richtwaarden en berekeningen</span> <select name="bandSex"><option value="" data-i18n="ui.setBody.algemeenGeenTabel">Algemeen (geen tabel)</option><option value="m" data-i18n="ui.setBody.tabelVoorMannen">Tabel voor mannen</option><option value="v" data-i18n="ui.setBody.tabelVoorVrouwen">Tabel voor vrouwen</option></select>
+          <span class="muted" data-i18n="ui.setBody.onderzoekstabellenVetFfmiMaximale">Onderzoekstabellen (vet%, FFMI, maximale hartslag, rust en volume) bestaan alleen per man/vrouw; kies wat het best bij je lichaam past.</span></label>
+        <label><span data-i18n="ui.setBody.lichaamsfiguur">Lichaamsfiguur</span> <select name="figure"><option value="" data-i18n="ui.setBody.automatischVolgensGeslacht">Automatisch (volgens geslacht)</option><option value="man" data-i18n="ui.setBody.man">Man</option><option value="vrouw" data-i18n="ui.setBody.vrouw">Vrouw</option><option value="neutraal" data-i18n="ui.setBody.neutraal">Neutraal</option></select>
+          <span class="muted" data-i18n="ui.setBody.hetFiguurInDe">Het figuur in de spierkaarten. Alleen de vorm verschilt; de spiergroepen zijn gelijk.</span></label>
+      <label><span data-i18n="ui.setBody.lengteCmVoorBmi">Lengte (cm), voor BMI</span> <input type="number" name="heightCm" min="100" max="250" placeholder="uit Withings, of vul zelf in" data-i18n-placeholder="ui.setBody.uitWithingsOfVul">
+        <span class="muted" data-i18n="ui.setBody.leegLatenDeLengte">Leeg laten: de lengte uit je Withings-profiel wordt gebruikt.</span></label>
 
         </div>
-      <div class="savebar"><button class="btn accent">Opslaan</button></div>
+      <div class="savebar"><button class="btn accent" data-i18n="ed.save">Opslaan</button></div>
       </div>
       <div class="card set-pane" data-pane="withings">
-        <h2>Withings (weegschaal)</h2>
+        <h2 data-i18n="ui.setWithings.withingsWeegschaal">Withings (weegschaal)</h2>
         <div class="fgrid">
       <div id="wsStatus" class="span2"></div>
       <div class="admin-only form-sub span2">
-      <div class="eyebrow" style="margin-top:.4rem">Withings-app (gedeeld) <span class="badge">beheerder</span></div>
-      <p class="muted" style="margin:-.3rem 0 0">Maak eenmalig een gratis app aan op developer.withings.com (Dashboard → Create an application, type “Public API”). Vul als Callback-URL het adres hieronder in, en neem daarna Client ID en Client secret over.</p>
-      <label>Callback-URL <input name="withings.redirectUri" placeholder="http://ip-van-je-server:8765/api/withings/callback"></label>
-      <div class="row gap wrap"><button type="button" class="btn small ghost" id="cbFill">Vul adres van deze pagina in</button><button type="button" class="btn small ghost" id="cbCopy">Kopieer</button></div>
-      <label>Client ID <input name="withings.clientId" autocomplete="off"></label>
-      <label>Client secret <input name="withings.clientSecret" type="password" autocomplete="off" placeholder="leeg laten = ongewijzigd"></label>
+      <div class="eyebrow" style="margin-top:.4rem"><span data-i18n="ui.setWithings.withingsAppGedeeld">Withings-app (gedeeld)</span> <span class="badge" data-i18n="ui.setWithings.beheerder">beheerder</span></div>
+      <p class="muted" style="margin:-.3rem 0 0" data-i18n="ui.setWithings.maakEenmaligEenGratis">Maak eenmalig een gratis app aan op developer.withings.com (Dashboard → Create an application, type “Public API”). Vul als Callback-URL het adres hieronder in, en neem daarna Client ID en Client secret over.</p>
+      <label><span data-i18n="ui.setWithings.callbackUrl">Callback-URL</span> <input name="withings.redirectUri" placeholder="http://ip-van-je-server:8765/api/withings/callback"></label>
+      <div class="row gap wrap"><button type="button" class="btn small ghost" id="cbFill" data-i18n="ui.setWithings.vulAdresVanDeze">Vul adres van deze pagina in</button><button type="button" class="btn small ghost" id="cbCopy" data-i18n="ui.setWithings.kopieer">Kopieer</button></div>
+      <label><span data-i18n="ui.setWithings.clientId">Client ID</span> <input name="withings.clientId" autocomplete="off"></label>
+      <label><span data-i18n="ui.setWithings.clientSecret">Client secret</span> <input name="withings.clientSecret" type="password" autocomplete="off" placeholder="leeg laten = ongewijzigd" data-i18n-placeholder="ui.app.leegLatenOngewijzigd"></label>
 
       </div>
 
         </div>
-      <div class="savebar"><button class="btn accent">Opslaan</button></div>
+      <div class="savebar"><button class="btn accent" data-i18n="ed.save">Opslaan</button></div>
       </div>
       <div class="card set-pane" data-pane="mail">
-        <h2>E-mail</h2>
+        <h2 data-i18n="ui.settings.eMail">E-mail</h2>
         <div class="fgrid">
-      <label>Je e-mailadres <input name="email" type="email" autocomplete="email" placeholder="naam@voorbeeld.nl"></label>
-      <label>Na elke training een samenvatting (PDF) mailen
-        <select name="mailSummary"><option value="off">Nee</option><option value="on">Ja</option></select>
-        <span class="muted">Na de sync gaat er per nieuwe training een mail met de samenvatting als PDF naar je adres. Oude trainingen worden niet gemaild.</span>
+      <label><span data-i18n="ui.setMail.jeEMailadres">Je e-mailadres</span> <input name="email" type="email" autocomplete="email" placeholder="naam@voorbeeld.nl"></label>
+      <label><span data-i18n="ui.setMail.naElkeTrainingEen">Na elke training een samenvatting (PDF) mailen</span>
+        <select name="mailSummary"><option value="off" data-i18n="ui.setMail.nee">Nee</option><option value="on" data-i18n="ui.setTraining.ja">Ja</option></select>
+        <span class="muted" data-i18n="ui.setMail.naDeSyncGaat">Na de sync gaat er per nieuwe training een mail met de samenvatting als PDF naar je adres. Oude trainingen worden niet gemaild.</span>
       </label>
       <p class="muted small" id="mailNote"></p>
       <div class="admin-only form-sub span2">
-      <div class="eyebrow" style="margin-top:.4rem">Mailserver (gedeeld) <span class="badge">beheerder</span></div>
-      <p class="muted" style="margin:-.3rem 0 0">Bijvoorbeeld een mailbox uit Plesk: server <code>mail.jouwdomein.nl</code>, poort 587 met STARTTLS (of 465 met TLS).</p>
-      <label>SMTP-server <input name="smtp.host" placeholder="mail.example.nl" autocomplete="off"></label>
+      <div class="eyebrow" style="margin-top:.4rem"><span data-i18n="ui.setMail.mailserverGedeeld">Mailserver (gedeeld)</span> <span class="badge" data-i18n="ui.setWithings.beheerder">beheerder</span></div>
+      <p class="muted" style="margin:-.3rem 0 0" data-i18n-html="ui.setMail.bijvoorbeeldEenMailboxUit">Bijvoorbeeld een mailbox uit Plesk: server <code>mail.jouwdomein.nl</code>, poort 587 met STARTTLS (of 465 met TLS).</p>
+      <label><span data-i18n="ui.setMail.smtpServer">SMTP-server</span> <input name="smtp.host" placeholder="mail.example.nl" autocomplete="off"></label>
       <div class="row gap wrap">
-        <label style="flex:1">Poort <input name="smtp.port" type="number" min="1" max="65535" placeholder="587"></label>
-        <label style="flex:2">Beveiliging <select name="smtp.security"><option value="starttls">STARTTLS (meestal poort 587)</option><option value="tls">TLS (meestal poort 465)</option><option value="none">Geen (alleen lokaal)</option></select></label>
+        <label style="flex:1"><span data-i18n="ui.setMail.poort">Poort</span> <input name="smtp.port" type="number" min="1" max="65535" placeholder="587"></label>
+        <label style="flex:2"><span data-i18n="ui.setMail.beveiliging">Beveiliging</span> <select name="smtp.security"><option value="starttls" data-i18n="ui.setMail.starttlsMeestalPoort587">STARTTLS (meestal poort 587)</option><option value="tls" data-i18n="ui.setMail.tlsMeestalPoort465">TLS (meestal poort 465)</option><option value="none" data-i18n="ui.setMail.geenAlleenLokaal">Geen (alleen lokaal)</option></select></label>
       </div>
-      <label>Certificaat controleren <select name="smtp.verify"><option value="on">Ja (aanbevolen)</option><option value="off">Nee, ook een verlopen of zelfondertekend certificaat accepteren</option></select>
-        <span class="muted">Zet dit alleen uit als tijdelijke oplossing. De verbinding blijft versleuteld, maar je controleert niet meer met welke server je praat.</span></label>
-      <label>Gebruikersnaam <input name="smtp.user" autocomplete="off"></label>
-      <label>Wachtwoord <input name="smtp.pass" type="password" autocomplete="new-password" placeholder="leeg laten = ongewijzigd"></label>
-      <label>Afzender <input name="smtp.from" placeholder="GymCoach &lt;gymcoach@example.nl&gt;"></label>
-      <label>Adres van GymCoach (voor de knop in de mail, optioneel) <input name="smtp.appUrl" placeholder="https://gymcoach.example.nl"></label>
-      <div class="row gap"><button type="button" class="btn small ghost" id="mailTest">Testmail naar mijn adres</button><span class="muted small">Sla eerst op.</span></div>
+      <label><span data-i18n="ui.setMail.certificaatControleren">Certificaat controleren</span> <select name="smtp.verify"><option value="on" data-i18n="ui.setMail.jaAanbevolen">Ja (aanbevolen)</option><option value="off" data-i18n="ui.setMail.neeOokEenVerlopen">Nee, ook een verlopen of zelfondertekend certificaat accepteren</option></select>
+        <span class="muted" data-i18n="ui.setMail.zetDitAlleenUit">Zet dit alleen uit als tijdelijke oplossing. De verbinding blijft versleuteld, maar je controleert niet meer met welke server je praat.</span></label>
+      <label><span data-i18n="ui.auth.gebruikersnaam">Gebruikersnaam</span> <input name="smtp.user" autocomplete="off"></label>
+      <label><span data-i18n="ui.auth.wachtwoord">Wachtwoord</span> <input name="smtp.pass" type="password" autocomplete="new-password" placeholder="leeg laten = ongewijzigd" data-i18n-placeholder="ui.app.leegLatenOngewijzigd"></label>
+      <label><span data-i18n="ui.setMail.afzender">Afzender</span> <input name="smtp.from" placeholder="GymCoach &lt;gymcoach@example.nl&gt;"></label>
+      <label><span data-i18n="ui.setMail.adresVanGymcoachVoor">Adres van GymCoach (voor de knop in de mail, optioneel)</span> <input name="smtp.appUrl" placeholder="https://gymcoach.example.nl"></label>
+      <div class="row gap"><button type="button" class="btn small ghost" id="mailTest" data-i18n="ui.setMail.testmailNaarMijnAdres">Testmail naar mijn adres</button><span class="muted small" data-i18n="ui.setMail.slaEerstOp">Sla eerst op.</span></div>
       </div>
 
         </div>
-      <div class="savebar"><button class="btn accent">Opslaan</button></div>
+      <div class="savebar"><button class="btn accent" data-i18n="ed.save">Opslaan</button></div>
       </div>
       <div class="card set-pane admin-only" data-pane="ai">
-        <h2>AI-coach <span class="badge">beheerder</span></h2>
-        <p class="muted" style="margin-top:-.4rem">Met een AI-coach krijg je op de tab Plan persoonlijk advies. Uit: GymCoach werkt met vaste regels.</p>
+        <h2><span data-i18n="ui.settings.aiCoach">AI-coach</span> <span class="badge" data-i18n="ui.setWithings.beheerder">beheerder</span></h2>
+        <p class="muted" style="margin-top:-.4rem" data-i18n="ui.app.metEenAiCoach">Met een AI-coach krijg je op de tab Plan persoonlijk advies. Uit: GymCoach werkt met vaste regels.</p>
         <div class="fgrid">
       <div id="aiStatus" class="span2"></div>
-      <label>Provider
+      <label><span data-i18n="ui.app.provider">Provider</span>
         <select name="ai.provider">
-          <option value="none">Uit (alleen regels)</option>
-          <option value="anthropic">Claude API</option>
-          <option value="openai">Lokaal (llama.cpp / OpenAI-compatibel)</option>
+          <option value="none" data-i18n="ui.app.uitAlleenRegels">Uit (alleen regels)</option>
+          <option value="anthropic" data-i18n="ui.app.claudeApi">Claude API</option>
+          <option value="openai" data-i18n="ui.app.lokaalLlamaCppOpenai">Lokaal (llama.cpp / OpenAI-compatibel)</option>
         </select>
       </label>
-      <label>Model <input name="ai.model" placeholder="claude-sonnet-5-5"></label>
-      <label class="ai-local">Base URL <input name="ai.baseUrl" placeholder="http://localhost:8080/v1"></label>
-      <label>API-key <input name="ai.apiKey" type="password" autocomplete="off" placeholder="leeg laten = ongewijzigd"></label>
+      <label><span data-i18n="ui.app.model">Model</span> <input name="ai.model" placeholder="claude-sonnet-5-5"></label>
+      <label class="ai-local"><span data-i18n="ui.app.baseUrl">Base URL</span> <input name="ai.baseUrl" placeholder="http://localhost:8080/v1"></label>
+      <label><span data-i18n="ui.app.apiKey">API-key</span> <input name="ai.apiKey" type="password" autocomplete="off" placeholder="leeg laten = ongewijzigd" data-i18n-placeholder="ui.app.leegLatenOngewijzigd"></label>
 
         </div>
-      <div class="savebar"><button class="btn accent">Opslaan</button></div>
+      <div class="savebar"><button class="btn accent" data-i18n="ed.save">Opslaan</button></div>
       </div>
       <div class="card set-pane" data-pane="sync">
-        <h2>Synchronisatie en catalogus</h2>
+        <h2 data-i18n="ui.setSync.synchronisatieEnCatalogus">Synchronisatie en catalogus</h2>
         <div class="fgrid">
-      <label class="admin-only">Automatisch syncen elke … uur, voor alle gebruikers (0 = uit) <input type="number" name="autoSyncHours" min="0" max="48"></label>
-      <p class="muted small">Bij de eerste sync haalt GymCoach je volledige trainingshistorie van Speediance op; daarna alleen nieuwe trainingen.</p>
+      <label class="admin-only"><span data-i18n="ui.setSync.automatischSyncenElkeUur">Automatisch syncen elke … uur, voor alle gebruikers (0 = uit)</span> <input type="number" name="autoSyncHours" min="0" max="48"></label>
+      <p class="muted small" data-i18n="ui.setSync.bijDeEersteSync">Bij de eerste sync haalt GymCoach je volledige trainingshistorie van Speediance op; daarna alleen nieuwe trainingen.</p>
 
         </div>
         <div class="row gap wrap" style="margin-top:.8rem">
-          <button class="btn accent">Opslaan</button>
-          <button type="button" id="libBtn" class="btn ghost">Oefeningencatalogus verversen</button>
-          <button type="button" id="fullSyncBtn" class="btn ghost">Volledige trainingshistorie opnieuw ophalen</button>
+          <button class="btn accent" data-i18n="ed.save">Opslaan</button>
+          <button type="button" id="libBtn" class="btn ghost" data-i18n="ui.setSync.oefeningencatalogusVerversen">Oefeningencatalogus verversen</button>
+          <button type="button" id="fullSyncBtn" class="btn ghost" data-i18n="ui.setSync.volledigeTrainingshistorieOpnieuwOphalen">Volledige trainingshistorie opnieuw ophalen</button>
         </div>
         <p id="libInfo" class="muted"></p>
       </div>
@@ -402,12 +406,12 @@
 <dialog id="woDlg" class="wide-dlg"></dialog>
 <dialog id="swapDlg">
   <form method="dialog">
-    <h2 id="swapTitle">Oefening wisselen</h2>
+    <h2 id="swapTitle" data-i18n="ui.swap.oefeningWisselen">Oefening wisselen</h2>
     <select id="swapSelect" size="10"></select>
     <div class="row gap end">
-      <button value="reset" class="btn ghost">Standaard</button>
-      <button value="cancel" class="btn ghost">Annuleren</button>
-      <button value="ok" class="btn accent">Wisselen</button>
+      <button value="reset" class="btn ghost" data-i18n="ed.mode1">Standaard</button>
+      <button value="cancel" class="btn ghost" data-i18n="ed.cancel">Annuleren</button>
+      <button value="ok" class="btn accent" data-i18n="pk.swap">Wisselen</button>
     </div>
   </form>
 </dialog>

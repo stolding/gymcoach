@@ -1,201 +1,78 @@
-// Teksten per taal. Nieuwe schermen (zoals de trainingseditor) halen hun teksten hier op met t('sleutel').
-// Een ontbrekende vertaling valt terug op Nederlands, en daarna op de sleutel zelf.
+// Meertaligheid: één woordenboek per taal (public/locales/<taal>.js), gedeeld door browser en server.
+// t('sleutel', { n: 3 }) geeft de tekst in de gekozen taal; ontbreekt hij, dan Engels, dan Nederlands, dan de sleutel.
+import nl from './locales/nl.js';
+import en from './locales/en.js';
 
-const DICT = {
-  nl: {
-    'ed.eyebrow': 'Training bewerken · {week}',
-    'ed.nameLabel': 'Naam van de training',
-    'ed.locked': 'Vastgezet: blijft bij een nieuw voorstel',
-    'ed.unlocked': 'Niet vastgezet: wordt vervangen bij een nieuw voorstel',
-    'ed.lockToggle': 'Vastzetten aan/uit',
-    'ed.changes': '{n} aanpassingen',
-    'ed.changes1': '1 aanpassing',
-    'ed.noChanges': 'nog niets gewijzigd',
-    'ed.undo': 'Ongedaan maken',
-    'ed.reset': 'Terug naar voorstel',
-    'ed.resetConfirm': 'Alle wijzigingen aan deze training terugdraaien naar het voorstel van GymCoach?',
-    'ed.cancel': 'Annuleren',
-    'ed.cancelConfirm': 'Je wijzigingen zijn nog niet opgeslagen. Toch sluiten?',
-    'ed.save': 'Opslaan',
-    'ed.saved': 'Training opgeslagen',
-    'ed.savedPushed': 'Opgeslagen. Zet de training opnieuw op je Gym Monster.',
-    'ed.warmup': 'Warming-up',
-    'ed.cooldown': 'Cooldown',
-    'ed.exercises': 'Oefeningen',
-    'ed.blockSum': '{n} oefeningen · ~{min} min',
-    'ed.exSum': '{n} oefeningen · {sets} sets',
-    'ed.empty': 'Leeg. Een blok mag leeg blijven.',
-    'ed.restoreBlock': 'Voorstel terugzetten',
-    'ed.addExercise': '+ Oefening toevoegen',
-    'ed.addSoon': 'Oefeningen toevoegen komt in de volgende stap.',
-    'ed.up': 'Omhoog',
-    'ed.down': 'Omlaag',
-    'ed.remove': 'Verwijderen',
-    'ed.swap': 'Wissel',
-    'ed.compound': 'samengesteld',
-    'ed.isolation': 'isolatie',
-    'ed.secondary': 'meewerkend: {list}',
-    'ed.advice': 'Advies:',
-    'ed.last': 'Vorige keer: {basis}',
-    'ed.noHistory': 'Nog geen historie voor deze oefening.',
-    'ed.progression': 'Automatische progressie',
-    'ed.fixed': 'vast gewicht',
-    'ed.set': 'Set',
-    'ed.reps': 'Herh.',
-    'ed.kg': 'kg',
-    'ed.rest': 'Rust (s)',
-    'ed.mode': 'Modus',
-    'ed.secs': 'Seconden',
-    'ed.warmSet': 'opwarm',
-    'ed.removeSet': 'Set verwijderen',
-    'ed.addSet': '+ set',
-    'ed.allEqual': 'Alle sets gelijk',
-    'ed.rampOn': 'Opwarmset ervoor',
-    'ed.rampOff': 'Geen opwarmset',
-    'ed.pyramid': 'Piramide',
-    'ed.lastRemoved': 'Een oefening heeft minstens één set nodig.',
-    'ed.mode1': 'Standaard',
-    'ed.mode2': 'Excentrisch',
-    'ed.mode3': 'Isokinetisch',
-    'ed.mode4': 'Constant',
-    'ed.mode5': 'Spotter',
-    'ed.impact': 'Impact van deze training',
-    'ed.clickMuscle': 'klik op een spier om de oefeningen te zien',
-    'ed.legend': 'licht · gemiddeld · veel',
-    'ed.duration': 'Duur',
-    'ed.durationSub': 'je doel: {min} min',
-    'ed.sets': 'Sets',
-    'ed.setsSub': '{n} oefeningen',
-    'ed.volume': 'Volume',
-    'ed.volumeSub': 'herh. × kg, alle handgrepen',
-    'ed.pushPull': 'Duwen : trekken',
-    'ed.pushPullSub': 'in deze training (sets)',
-    'ed.week': 'Sets per spiergroep · hele week',
-    'ed.weekHint': 'oranje = deze training',
-    'ed.weekNorm': 'Richtlijn: 6–20 sets per spiergroep per week. Geel: daaronder of daarboven.',
-    'ed.warnLong': 'Deze training duurt ~{over} min langer dan je ingestelde {min} min.',
-    'ed.warnLow': '{muscle} komt deze week op {n} sets (richtlijn minstens 6).',
-    'ed.warnHigh': '{muscle} komt deze week op {n} sets (richtlijn hooguit 20).',
-    'ed.warnPull': 'Weinig trekken in deze training: duwen en trekken zijn uit balans.',
-    'ed.edit': 'Bewerken',
-    'ed.badgeLocked': 'vastgezet',
-    'ed.badgeEdited': 'bewerkt',
-    'ed.eyebrowTpl': 'Sjabloon bewerken · Mijn trainingen',
-    'ed.asTemplate': 'Opslaan als sjabloon',
-    'ed.tplName': 'Naam van het sjabloon',
-    'ed.tplSaved': 'Sjabloon "{name}" bewaard in Mijn trainingen',
-    'ed.badgeCustom': 'eigen training',
-    'ed.removeFromPlan': 'Uit plan halen',
-    'ed.removeFromPlanConfirm': '"{name}" uit dit plan halen? Een sjabloon blijft bewaard.',
-    'ed.lock': 'Vastzetten',
-    'ss.head': 'Superset {g} · {n} rondes · {rest} s rust na elke ronde',
-    'ss.hint': 'Om en om per ronde, zonder rust ertussen. De rust van de laatste oefening geldt na elke ronde.',
-    'ss.off': 'Superset opheffen',
-    'ss.link': '+ Superset',
-    'ss.linkHint': 'Superset maken met de volgende oefening',
-    'ss.badge': 'superset',
-    'nt.title': 'Nieuwe training',
-    'nt.name': 'Naam',
-    'nt.namePh': 'bijv. Armen en schouders',
-    'nt.start': 'Beginnen met',
-    'nt.empty': 'Lege training',
-    'nt.emptySub': 'zelf warming-up, oefeningen en cooldown kiezen',
-    'nt.copy': 'Kopie van een training uit dit plan',
-    'nt.tpl': 'Sjabloon',
-    'nt.mine': 'Mijn trainingen',
-    'nt.shared': 'Gedeeld door anderen',
-    'nt.by': 'van {name}',
-    'nt.make': 'Maken en bewerken',
-    'nt.noTpl': 'Nog geen sjablonen. Bewaar een training met "Opslaan als sjabloon" in de editor.',
-    'tp.title': 'Trainingen',
-    'tp.mine': 'Mijn · {n}',
-    'tp.shared': 'Gedeeld op deze server · {n}',
-    'tp.sum': '{n} oefeningen · {sets} sets{min}',
-    'tp.inPlan': 'In dit plan zetten',
-    'tp.edit': 'Bewerken',
-    'tp.share': 'Delen met iedereen',
-    'tp.unshare': 'Niet meer delen',
-    'tp.delete': 'Verwijderen',
-    'tp.deleteConfirm': 'Sjabloon "{name}" verwijderen? Trainingen die al in een plan staan blijven bestaan.',
-    'tp.copyMine': 'Kopiëren naar mijn trainingen',
-    'tp.sharedBadge': 'gedeeld',
-    'tp.emptyMine': 'Nog geen eigen trainingen. Maak er een met "+ Nieuwe training", of bewaar een training met "Opslaan als sjabloon" in de editor.',
-    'tp.emptyShared': 'Niemand op deze server deelt nog trainingen.',
-    'tp.added': '"{name}" staat in je plan',
-    'tp.sharedOn': 'Gedeeld met iedereen op deze server',
-    'tp.sharedOff': 'Niet meer gedeeld',
-    'tp.weightsNote': 'Gewichten passen zich aan jou aan: uit je eigen historie, of een startgewicht als je de oefening nog niet deed.',
-    'ed.unlock': 'Losmaken',
-    'ed.lockHint': 'Blijft staan bij een nieuw voorstel',
-    'ed.unlockHint': 'Wordt vervangen bij een nieuw voorstel',
-    'ed.lockedToast': 'Vastgezet: deze training blijft bij een nieuw voorstel',
-    'ed.unlockedToast': 'Losgemaakt: deze training wordt vervangen bij een nieuw voorstel',
-    'ed.revertedToast': 'Terug naar het voorstel van GymCoach',
-    'ed.add': '+ Toevoegen',
-    'pk.title': 'Oefening toevoegen',
-    'pk.titleSwap': 'Wisselen: {name}',
-    'pk.target': 'Toevoegen aan:',
-    'pk.swap': 'Wisselen',
-    'pk.avoid': 'Niet meer voorstellen',
-    'pk.avoidedToast': 'GymCoach stelt deze oefening niet meer voor',
-    'pk.close': 'Sluiten',
-    'pk.muscle': 'Spiergroep',
-    'pk.anyMuscle': 'Alle spiergroepen',
-    'pk.upper': 'Bovenlichaam',
-    'pk.lower': 'Onderlichaam',
-    'pk.trunk': 'Romp',
-    'pk.filters': 'Filters',
-    'pk.onlyDone': 'Alleen oefeningen die ik eerder deed',
-    'pk.hideAvoid': '"Niet meer voorstellen" verbergen',
-    'pk.search': 'Zoek op naam, bijv. row, curl, plank',
-    'pk.all': 'Alles',
-    'pk.done': 'Eerder gedaan · {date} · {sets} · {times}×',
-    'pk.new': 'Nieuw voor jou',
-    'pk.avoided': 'niet meer voorstellen',
-    'pk.hideAcc': 'Accessoires die ik niet gebruik verbergen',
-    'pk.accBlocked': 'accessoire niet gebruikt',
-    'pk.inSession': 'al in deze training',
-    'pk.none': 'Geen oefeningen gevonden. Kies een andere spiergroep of soort.',
-    'pk.more': 'en nog {n} … verfijn de zoekopdracht',
-    'pk.selected': '{n} geselecteerd',
-    'pk.add': 'Toevoegen',
-    'pk.adding': 'Toevoegen …',
-    'pk.loading': 'Laden …',
-    'pk.back': '‹ Terug naar de lijst',
-    'pk.prev': 'Vorige oefening',
-    'pk.next': 'Volgende oefening',
-    'pk.select': 'Selecteren',
-    'pk.deselect': 'Niet selecteren',
-    'pk.muscles': 'Spieren',
-    'pk.main': 'hoofdspier',
-    'pk.aux': 'meewerkend',
-    'pk.steps': 'Uitvoering',
-    'pk.keyPoints': 'Aandachtspunten',
-    'pk.breathing': 'Ademhaling',
-    'pk.feeling': 'Voelen',
-    'pk.mistake': 'Let op',
-    'pk.coach': 'Video: coach {name}',
-    'pk.history': 'Jouw historie (geschat 1RM)',
-    'pk.noHistory': 'Deze oefening heb je nog niet gedaan.',
-    'pk.perSide': 'per arm/been: het toestel wisselt per set links en rechts',
-    'pk.barbell': 'met stang',
-    'pk.presets': 'Speediance-voorinstellingen',
-    'pk.preset': '{name}: {sets} sets · {r1}–{r2} herh. · {s1}–{s2} s rust',
-    'pk.infoError': 'Geen uitleg beschikbaar: {msg}',
-    'pk.source': 'Uitleg en beelden: Speediance (Engels)',
-    'tab.Training': 'Kracht', 'tab.Bodyweight': 'Eigen gewicht', 'tab.Warmup': 'Warming-up', 'tab.Stretch': 'Stretch', 'tab.Recovery': 'Herstel', 'tab.HIIT': 'HIIT', 'tab.Pilates-Mat': 'Pilates', 'tab.Row & Ski': 'Roeien en ski',
-    'mus.Pecs': 'Borst', 'mus.Lats': 'Rug (lats)', 'mus.Traps': 'Trapezius', 'mus.Front Delts': 'Voorkant schouder', 'mus.Side Delts': 'Zijkant schouder', 'mus.Rear Delts': 'Achterkant schouder',
-    'mus.Biceps': 'Biceps', 'mus.Triceps': 'Triceps', 'mus.Forearms': 'Onderarmen', 'mus.Quads': 'Quadriceps', 'mus.Hamstrings': 'Hamstrings', 'mus.Glutes': 'Bilspieren',
-    'mus.Adductors': 'Adductoren', 'mus.Calves': 'Kuiten', 'mus.Abs': 'Buik / core', 'mus.Back Extensors': 'Onderrug', 'mus.Full Body': 'Hele lichaam',
-  },
-};
+export const DICTS = { nl, en };
+// Talen die gebruikers kunnen kiezen. Engels komt erbij zodra de vertaling compleet is (fase 6 van het plan).
+export const LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }];
+// Alle talen met een woordenboek, ook die nog niet te kiezen zijn (voor het controlescript en tests).
+export const ALL_LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }];
+const LOCALE = Object.fromEntries(ALL_LANGS.map((l) => [l.code, l.locale]));
+const FALLBACK = ['en', 'nl'];
 
 let lang = 'nl';
-// Kies de taal (onbekende talen vallen terug op Nederlands).
-export const setLang = (l) => { lang = DICT[l] ? l : 'nl'; };
+// Kies de taal van de browserkant (onbekende of nog niet te kiezen talen: Nederlands).
+export const setLang = (l) => { lang = LANGS.some((x) => x.code === l) ? l : 'nl'; if (typeof document !== 'undefined') document.documentElement.lang = lang; };
 export const getLang = () => lang;
-// Vertaalde tekst bij een sleutel, met {naam}-plaatshouders ingevuld.
-export function t(key, vars = {}) {
-  const s = DICT[lang]?.[key] ?? DICT.nl[key] ?? key;
-  return s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? ''));
+// De locale voor Intl (datums, getallen) bij een taal.
+export const localeOf = (l = lang) => LOCALE[l] || 'nl-NL';
+
+// Welke taal een gebruiker krijgt: zijn eigen keuze, anders de taal van de browser als die er is, anders Engels
+// (zolang alleen Nederlands te kiezen is: Nederlands).
+export function resolveLang(pref, browser = []) {
+  const ok = (c) => LANGS.some((x) => x.code === c);
+  if (ok(pref)) return pref;
+  for (const b of browser) { const c = String(b || '').slice(0, 2).toLowerCase(); if (ok(c)) return c; }
+  return ok('en') ? 'en' : 'nl';
+}
+
+// De ruwe waarde bij een sleutel: eerst de gevraagde taal, dan Engels, dan Nederlands.
+function raw(key, l) {
+  for (const c of [l, ...FALLBACK]) { const v = DICTS[c]?.[key]; if (v != null) return { v, c }; }
+  return null;
+}
+
+// Vertaalde tekst bij een sleutel, met {naam}-plaatshouders ingevuld. Meervoud: een object { one, other, … }
+// gekozen met vars.n. Met een derde argument een andere taal dan de gekozen (de server, per gebruiker).
+export function t(key, vars = {}, l = lang) {
+  const hit = raw(key, l);
+  if (!hit) return key;
+  let s = hit.v;
+  if (typeof s === 'object') {
+    const form = new Intl.PluralRules(localeOf(hit.c)).select(Number(vars.n ?? 0));
+    s = s[form] ?? s.other ?? '';
+  }
+  return String(s).replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? ''));
+}
+// Bestaat er een tekst voor deze sleutel (in welke taal dan ook)?
+export const has = (key) => raw(key, lang) != null;
+
+// ---------- opmaak met Intl, in de taal van de gebruiker ----------
+// Getal, bijv. fmtNum(1234.5) → "1.234,5" (nl) of "1,234.5" (en).
+export const fmtNum = (n, opts = { maximumFractionDigits: 1 }, l = lang) => Number(n ?? 0).toLocaleString(localeOf(l), opts);
+// Datum (Date of "2026-11-05"), standaard "5 nov. 2026"; opts zoals bij toLocaleDateString.
+export function fmtDate(d, opts = { day: 'numeric', month: 'short', year: 'numeric' }, l = lang) {
+  const x = d instanceof Date ? d : new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? d + 'T12:00:00' : d);
+  return Number.isNaN(x.getTime()) ? '' : x.toLocaleDateString(localeOf(l), opts);
+}
+// Korte dag, bijv. "wo 4 nov".
+export const fmtDay = (d, l = lang) => fmtDate(d, { weekday: 'short', day: 'numeric', month: 'short' }, l);
+// Duur in minuten, bijv. fmtDuration(95) → "1 u 35 min" (de woorden komen uit het woordenboek).
+export function fmtDuration(min, l = lang) {
+  const m = Math.round(Number(min) || 0), h = Math.floor(m / 60), r = m % 60;
+  return h ? t('fmt.hoursMinutes', { h, m: r }, l) : t('fmt.minutes', { m }, l);
+}
+
+// ---------- vaste HTML ----------
+// Vult elementen met data-i18n (tekst), data-i18n-html (opmaak), data-i18n-placeholder, -title, -aria-label en -label.
+// data-i18n-vars='{"v":"1.0"}' geeft waarden voor de {plaatshouders}.
+export function applyI18n(root = typeof document !== 'undefined' ? document : null) {
+  if (!root) return;
+  const vars = (el) => { try { return el.dataset.i18nVars ? JSON.parse(el.dataset.i18nVars) : {}; } catch { return {}; } };
+  for (const el of root.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n, vars(el));
+  for (const el of root.querySelectorAll('[data-i18n-html]')) el.innerHTML = t(el.dataset.i18nHtml);
+  for (const [attr, ds] of [['placeholder', 'i18nPlaceholder'], ['title', 'i18nTitle'], ['aria-label', 'i18nAriaLabel'], ['label', 'i18nLabel']]) {
+    for (const el of root.querySelectorAll(`[data-i18n-${attr}]`)) el.setAttribute(attr, t(el.dataset[ds]));
+  }
 }

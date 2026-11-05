@@ -79,7 +79,8 @@ Gedeelde instellingen (AI, Withings-app, SMTP, automatisch syncen) staan in `glo
 | `activities` | Activiteiten uit Apple Health. |
 | `health_daily` | Dagwaarden: stappen, actieve energie, afstand, rusthartslag. |
 | `exercise_library` | Oefeningencatalogus per toesteltype. |
-| `exercise_info` | Gedeelde cache: uitleg en beelden per oefening en taal (30 dagen). |
+| `exercise_info` | Gedeelde cache: uitleg en beelden per oefening en taal (30 dagen). Foto's en video's staan in `data/media/`. |
+| `templates` | Sjablonen voor trainingen: eigenaar, naam, de training als JSON en of hij gedeeld is met alle gebruikers op de server. |
 | `avatars` | Profielfoto's. |
 
 Nieuwe kolommen worden bij het opstarten toegevoegd (zie "kolommen die later zijn toegevoegd" in `lib/store.js`).
@@ -89,9 +90,12 @@ Nieuwe kolommen worden bij het opstarten toegevoegd (zie "kolommen die later zij
 1. **Sync** (`server.js` → `sync`): nieuwe trainingen ophalen, details per set opslaan, rapport mailen.
 2. **Historie** (`engine.buildHistory`): per oefening een log met sets per training.
 3. **Plan** (`engine.buildPlan`): schema kiezen → per bewegingspatroon een oefening uit de catalogus (`pickExercise`) → voorschrift per doel → progressie (`progress`) → rust (`restFor`, met geslacht en eigen herstel) → deload → focus en tijdbudget.
-4. **AI-coach** (optioneel, `lib/ai.js`): advies en aanpassingen, begrensd door `validateAdjustments`.
-5. **Naar het toestel** (`engine.toPushPlan` → `cli.push`): programma `GC <jaar>-W<week> <training>` met warming-up en cooldown.
-6. **Gedaan** (`engine.planStatus`): trainingen van deze kalenderweek worden aan het plan gekoppeld.
+4. **Zelf aanpassen** (`public/editor.js`, `PUT /api/plan`): een bewerkte training krijgt `locked`; bij een nieuw plan houdt `engine.progressSession` de opbouw en schuift alleen het gewicht mee met de progressie (behalve sets met `fixed`). Eigen trainingen (`custom`, sleutel `X<n>`) maak je leeg, als kopie of uit een sjabloon (`POST /api/plan/session`); `engine.adaptSession` geeft een gedeeld sjabloon gewichten uit de eigen historie.
+5. **AI-coach** (optioneel, `lib/ai.js`): advies en aanpassingen, begrensd door `validateAdjustments`. De coach ziet welke trainingen eigen, bewerkt of vastgezet zijn, met hun opbouw; voorstellen daarvoor staan in de app standaard uit, en `applyAdjustments` laat de opbouw per set intact. Met `{ session }` vraag je advies voor één training.
+6. **Naar het toestel** (`engine.toPushPlan` → `cli.push`): programma `GC <jaar>-W<week> <training>` met warming-up en cooldown. Een superset (oefeningen met dezelfde `group`) wordt om en om gezet: per ronde één set van elke oefening, 5 s rust ertussen en de ingestelde rust na de laatste.
+7. **Gedaan** (`engine.planStatus`): trainingen van deze kalenderweek worden aan het plan gekoppeld. `engine.buildHistory` voegt de stappen van een superset weer samen tot één oefening met al zijn sets.
+
+**Volume.** Per set neemt GymCoach de `capacity` die Speediance opslaat (alle handgrepen samen; bij twee handgrepen 2 × het gewicht per handgreep), anders herhalingen × gewicht (`engine.setVolume`). Gewicht en geschat 1RM zijn per handgreep. Voor geplande trainingen schat `engine.volumeFactors` per oefening de verhouding uit je eigen historie.
 
 ## API
 
@@ -99,7 +103,8 @@ Alle routes staan in het object `routes` in `server.js`, als `'METHODE /pad': as
 
 Groepen:
 - **Toestand en weergave**: `/api/state`, `/api/stats`, `/api/analysis`, `/api/workouts`, `/api/workout`, `/api/workout/pdf`, `/api/activities`, `/api/about`.
-- **Plan**: `/api/plan/generate`, `/api/plan` (PUT), `/api/plan/push`, `/api/focus`, `/api/swap`, `/api/avoid`, `/api/alternatives`, `/api/coach`, `/api/coach/apply`, `/api/coach/dismiss`.
+- **Plan**: `/api/plan/generate`, `/api/plan` (PUT), `/api/plan/session` (POST: nieuwe eigen training; DELETE), `/api/plan/push`, `/api/focus`, `/api/swap`, `/api/avoid`, `/api/alternatives`, `/api/coach`, `/api/coach/apply`, `/api/coach/dismiss`.
+- **Oefeningen en sjablonen**: `/api/library` (catalogus met je historie), `/api/exercise/info` (uitleg en beelden, gecachet), `/api/exercise/template`, `/api/media` (foto's en video's uit de cache, met Range), `/api/templates` (GET, POST, DELETE), `/api/template`, `/api/templates/share`.
 - **Toestel**: `/api/sync`, `/api/account`, `/api/account/detect`, `/api/programs`, `/api/programs/delete`, `/api/library/refresh`.
 - **Koppelingen**: `/api/withings/*`, `/api/health/*` (de ingest-route gebruikt de koppelsleutel in plaats van een sessie), `/api/mail/test`, `/api/workout/mail`.
 - **Lichaam**: `/api/bodyweight`.

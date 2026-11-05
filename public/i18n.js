@@ -67,7 +67,7 @@ const DICT = {
     'ed.sets': 'Sets',
     'ed.setsSub': '{n} oefeningen',
     'ed.volume': 'Volume',
-    'ed.volumeSub': 'sets × herhalingen × kg',
+    'ed.volumeSub': 'herh. × kg, alle handgrepen',
     'ed.pushPull': 'Duwen : trekken',
     'ed.pushPullSub': 'in deze training (sets)',
     'ed.week': 'Sets per spiergroep · hele week',

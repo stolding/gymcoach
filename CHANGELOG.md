@@ -5,6 +5,11 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.11.1 — 5 november 2026
+- Brochure: nieuwe pagina *Zelf samenstellen* over de editor, supersets, sjablonen en de AI-coach (nu 9 pagina's); afbeeldingen in `documentatie/afbeeldingen/` en de README's bijgewerkt, met schermafbeeldingen van de editor en de kiezer.
+- `documentatie/ARCHITECTUUR.md`: editor, eigen trainingen, sjablonen, supersets, volume en de nieuwe routes.
+- Editor: bij Volume staat nu "herh. × kg, alle handgrepen".
+
 ## 1.11.0 — 5 november 2026
 - AI-coach voor eigen trainingen: de coach weet welke trainingen je zelf hebt gemaakt, bewerkt of vastgezet, en ziet de opbouw (supersets, modi, rust, piramides en vast gewicht). Hij respecteert die opbouw en stelt alleen iets voor met een reden. Zijn voorstellen voor eigen trainingen staan standaard uit: je vinkt zelf aan wat je overneemt. Overnemen houdt de opbouw per set intact; vast gewicht verandert nooit.
 - Nieuwe knop *AI-advies* op elke training in het plan: advies voor alleen die training, in de context van je week.

@@ -11,3 +11,4 @@
 - UI is Nederlands; donker thema is de standaard.
 - Copyright: © A. Stoelwinder Holding B.V., open source onder de MIT-licentie (zie LICENSE).
 - README in twee talen: `README.md` (Engels) en `README.nl.md` (Nederlands) samen bijwerken. Brochure-PDF en `documentatie/afbeeldingen/` samen bijwerken.
+- Commits: geen `Co-Authored-By`- of `Claude-Session`-regels; commits staan alleen op naam van de eigenaar.

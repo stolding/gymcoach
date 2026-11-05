@@ -1450,4 +1450,8 @@ export default {
   "ui.setMail.emailPh": "name@example.com",
   "app.hrAvgMax": "Heart rate avg/max",
   "app.hUnit": "h",
+  "app.weekLbl": "week {w} \u00b7 {y}",
+  "app.me.prefs": "Preferences",
+  "app.me.theme": "Theme",
+  "app.me.allSettings": "All settings ›",
 };

@@ -1451,4 +1451,8 @@ export default {
   "ui.setMail.emailPh": "naam@voorbeeld.nl",
   "app.hrAvgMax": "Hartslag gem/max",
   "app.hUnit": "u",
+  "app.weekLbl": "week {w} \u00b7 {y}",
+  "app.me.prefs": "Voorkeuren",
+  "app.me.theme": "Thema",
+  "app.me.allSettings": "Alle instellingen ›",
 };

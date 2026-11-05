@@ -5,11 +5,12 @@ import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure } from './bodymap.j
 import { TERMS_VERSION, termsHtml } from './terms.js';
 import { explain } from './explain.js';
 import { openEditor } from './editor.js';
-import { t, t as tx, tmap, localeOf, has, setLang, resolveLang, applyI18n, LANGS, fmtNum, doseText } from './i18n.js';
+import { t, t as tx, tmap, localeOf, has, setLang, resolveLang, applyI18n, LANGS, fmtNum, doseText, getLang } from './i18n.js';
 import { askConfirm, askText } from './dialogs.js';
+import { langPicker, storedLang, storeLang } from './langpick.js';
 
-// taal vóór het inloggen: die van de browser; na het laden van de instellingen die van de gebruiker (zie load)
-setLang(resolveLang('', navigator.languages || [navigator.language]));
+// taal vóór het inloggen: de keuze op het inlogscherm, anders die van de browser; na het laden die van de gebruiker (zie load)
+setLang(resolveLang(storedLang(), navigator.languages || [navigator.language]));
 applyI18n();
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -33,7 +34,9 @@ let state = null;
 
 // Roept de GymCoach-API aan (JSON); gooit een fout met de melding van de server.
 async function api(method, url, data) {
-  const r = await fetch(url, { method, headers: data ? { 'content-type': 'application/json' } : {}, body: data ? JSON.stringify(data) : undefined });
+  const headers = data ? { 'content-type': 'application/json' } : {};
+  if (storedLang()) headers['accept-language'] = storedLang(); // gekozen taal ook voor meldingen en mails van de server
+  const r = await fetch(url, { method, headers, body: data ? JSON.stringify(data) : undefined });
   const j = await r.json().catch(() => ({}));
   if (r.status === 401 && j.login) { showAuth('login'); throw new Error(t('app.logOpnieuwIn')); }
   // fout met een code uit het woordenboek: in de taal van de browserkant tonen
@@ -70,12 +73,13 @@ function applyTheme(t) {
 let theme = 'dark';
 try { theme = localStorage.getItem('gc-theme') || 'dark'; } catch {}
 applyTheme(theme);
-$('#themeBtn').addEventListener('click', () => {
-  const order = ['dark', 'light', 'auto'];
-  theme = order[(order.indexOf(theme) + 1) % 3];
+// Thema kiezen (knop in de menubalk of het gebruikersvenster); grafieken opnieuw tekenen in de nieuwe kleuren.
+function setTheme(next) {
+  theme = next;
   applyTheme(theme); toast(t('app.thema', { a: THEMES[theme][1] }));
   if (state) { renderHome(); if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); }
-});
+}
+$('#themeBtn').addEventListener('click', () => { const order = ['dark', 'light', 'auto']; setTheme(order[(order.indexOf(theme) + 1) % 3]); });
 
 // ---------- tabs ----------
 document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => {
@@ -507,7 +511,7 @@ function highlightSessions() {
     if (mm) mm.innerHTML = bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name, selected: selMuscle });
     card.querySelector('.mh-sum')?.remove();
     card.classList.toggle('mh-none', !!selMuscle && sets === 0);
-    if (selMuscle) card.querySelector('header > div').insertAdjacentHTML('beforeend', `<div class="mh-sum small">${sets ? t('app.mhSets', { n: fmtNum(sets), m: esc((MUSCLE_LABELS[selMuscle] || selMuscle).toLowerCase()) }) : t('app.mhNone', { m: esc((MUSCLE_LABELS[selMuscle] || selMuscle).toLowerCase()) })}</div>`);
+    if (selMuscle) card.querySelector('header > div').insertAdjacentHTML('beforeend', `<div class="mh-sum small">${sets ? t('app.mhSets', { n: fmtNum(sets), m: esc(lc(MUSCLE_LABELS[selMuscle] || selMuscle)) }) : t('app.mhNone', { m: esc(lc(MUSCLE_LABELS[selMuscle] || selMuscle)) })}</div>`);
   });
 }
 $('#planOverview').addEventListener('click', (ev) => {
@@ -1409,6 +1413,8 @@ function smoothTrend(points, days = 14) {
   });
 }
 // Namen van segmenten worden in het Nederlands bewaard (instelling); voor het tonen vertaald.
+// Labels midden in een zin: klein, behalve in het Duits (zelfstandige naamwoorden met hoofdletter).
+const lc = (x) => (getLang() === 'de' ? String(x) : String(x).toLowerCase());
 const segName = (n) => (has('app.seg.' + n) ? t('app.seg.' + n) : n);
 const SEG_GUESS = ['Linkerarm', 'Rechterarm', 'Romp', 'Linkerbeen', 'Rechterbeen'];
 const SEG_DEFAULT = { 2: 'Linkerarm', 3: 'Rechterarm', 10: 'Linkerbeen', 11: 'Rechterbeen', 12: 'Romp' };
@@ -1478,7 +1484,7 @@ function renderComposition() {
     const from2 = series[0].points[0]?.x || '';
     const types = [...new Set((state.activities || []).filter((x) => x.date >= from2).map((x) => x.type))];
     const hasGm = (state.trainingDays || []).some((w) => w.date >= from2);
-    if (hasGm || types.length) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${t('app.streepjesOnderDeGrafiek', { a: hasGm ? '<span class="sw" style="background:var(--ok);opacity:.8"></span>' + t('app.gymMonster') + ' ' : '', b: types.map((t) => `<span class="sw" style="background:${actColor(t)};opacity:.8"></span>${esc(actLabel(t).toLowerCase())}`).join(' ') })}</div>`);
+    if (hasGm || types.length) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${t('app.streepjesOnderDeGrafiek', { a: hasGm ? '<span class="sw" style="background:var(--ok);opacity:.8"></span>' + t('app.gymMonster') + ' ' : '', b: types.map((t) => `<span class="sw" style="background:${actColor(t)};opacity:.8"></span>${esc(lc(actLabel(t)))}`).join(' ') })}</div>`);
   }
   const hb = healthBands(compMetric);
   if (hb?.note) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${hb.bands ? '<span class="sw ok"></span>' + t('app.goed') + ' <span class="sw warn"></span>' + t('app.letOp') + ' <span class="sw bad"></span>' + t('app.nietGoed') + ' ' : ''}${esc(hb.note)}</div>`);
@@ -1549,7 +1555,7 @@ function renderSegments() {
     const v = balOf(last, pr), o = old !== last ? balOf(old, pr) : null;
     const L = segVal(last.segments[pr.l], segMetric), R = segVal(last.segments[pr.r], segMetric);
     const d = v != null && o != null ? Math.round((Math.abs(v) - Math.abs(o)) * 10) / 10 : null;
-    return `<div class="bal-tile"><div class="eyebrow">${t('app.balans', { a: pr.label.toLowerCase(), b: esc(SEG_METRICS[segMetric][0].toLowerCase()) })}</div>
+    return `<div class="bal-tile"><div class="eyebrow">${t('app.balans', { a: lc(pr.label), b: esc(lc(SEG_METRICS[segMetric][0])) })}</div>
       <div class="mid ${balCls(v)}">${esc(balTxt(v))}</div>
       <div class="small muted">L ${L ?? '—'} · R ${R ?? '—'} ${esc(SEG_METRICS[segMetric][1])}${d ? ` · <span class="${d < 0 ? 'up' : 'down'}">${t(d < 0 ? 'app.inBalansMeer' : 'app.inBalansMinder')}</span> ${t('app.dan', { a: esc(old.date.slice(5)) })}` : ''}</div></div>`;
   }).join('')}</div>` : '';
@@ -1764,7 +1770,7 @@ $('#settingsForm').addEventListener('submit', async (ev) => {
     const cs = (x) => (['m', 'v'].includes(x.sex) ? x.sex : ['m', 'v'].includes(x.bandSex) ? x.bandSex : '');
     const changed = ['goal', 'daysPerWeek', 'minutesPerSession', 'experience', 'warmup', 'cooldown', 'pushMobility'].some((k) => before[k] !== state.settings[k]) || cs(before) !== cs(state.settings)
       || [...(before.noAccessories || [])].sort().join() !== [...(state.settings.noAccessories || [])].sort().join();
-    if ((before.lang || '') !== (state.settings.lang || '')) { location.reload(); return; } // andere taal: alles opnieuw opbouwen
+    if ((before.lang || '') !== (state.settings.lang || '')) { storeLang(state.settings.lang || ''); location.reload(); return; } // andere taal: alles opnieuw opbouwen
     if (figureFor(before) !== figureFor(state.settings)) { renderPlan(); if ($('#tab-home').classList.contains('active')) renderHome(); }
     if (state.setup?.needed) { await load(); toast(t('app.opgeslagen')); }
     else if (changed) { state.plan = (await api('POST', '/api/plan/generate')).plan; if (state.meta) state.meta.coach = null; renderCoach(null); renderPlan(); toast(t('app.opgeslagenNieuwPlanGemaakt')); }
@@ -1851,6 +1857,7 @@ function showAuth(mode) {
   $('#authSubmit').textContent = setup ? t('app.accountAanmaken') : t('ui.auth.inloggen');
   $('#authForm').password.autocomplete = setup ? 'new-password' : 'current-password';
   $('#authErr').textContent = '';
+  langPicker($('#authLang'), { value: getLang(), onPick: (c) => { storeLang(c); setLang(c); applyI18n(); showAuth(mode); } });
   setTimeout(() => (setup ? $('#authForm').name : $('#authForm').username).focus(), 50);
 }
 $('#authForm').addEventListener('submit', async (ev) => {
@@ -1897,6 +1904,13 @@ function renderMe() {
   document.body.classList.toggle('is-admin', me.role === 'admin');
 }
 
+// Taal van de gebruiker wijzigen (menubalk, gebruikersvenster): bewaren en de app opnieuw opbouwen.
+async function pickLang(c) {
+  storeLang(c);
+  try { await api('PUT', '/api/settings', { lang: c }); } catch (e) { toast(e.message, true); return; }
+  location.reload();
+}
+
 $('#userBtn').addEventListener('click', () => {
   const me = state?.me; if (!me) return;
   const dlg = $('#userDlg');
@@ -1911,9 +1925,19 @@ $('#userBtn').addEventListener('click', () => {
     <label>${t('app.huidigWachtwoord')} <input name="current" type="password" autocomplete="current-password"></label>
     <label>${t('app.nieuwWachtwoordMin8')} <input name="pw" type="password" autocomplete="new-password" minlength="8"></label>
     <div class="row end"><button type="button" class="btn small" data-x="pw">${t('app.wachtwoordWijzigen')}</button></div>
+    <div class="eyebrow">${t('app.me.prefs')}</div>
+    <div class="me-pref"><span>${t('lang.label')}</span><div id="meLang"></div></div>
+    <div class="me-pref"><span>${t('app.me.theme')}</span><div class="seg" role="group" aria-label="${t('app.me.theme')}">${Object.keys(THEMES).map((k) => `<button type="button" class="${k === theme ? 'on' : ''}" data-theme="${k}" aria-pressed="${k === theme}">${THEMES[k][0]} ${esc(THEMES[k][1])}</button>`).join('')}</div></div>
+    <div class="row end"><button type="button" class="btn small ghost" data-x="settings">${t('app.me.allSettings')}</button></div>
     <div class="row between" style="border-top:1px solid var(--line);padding-top:.8rem"><span class="muted small">${t('app.ingelogdOpDitApparaat')}</span><button type="button" class="btn danger" data-x="logout">${t('app.uitloggen')}</button></div>
   </form>`;
   const f = dlg.querySelector('#meForm');
+  langPicker(f.querySelector('#meLang'), { auto: true, value: state.settings?.lang || '', onPick: pickLang });
+  f.querySelectorAll('[data-theme]').forEach((b) => b.addEventListener('click', () => {
+    setTheme(b.dataset.theme);
+    f.querySelectorAll('[data-theme]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); });
+  }));
+  f.querySelector('[data-x=settings]').addEventListener('click', () => { dlg.close(); document.querySelector('[data-tab=settings]')?.click(); });
   const setPhoto = (v) => { state.me = { ...state.me, avatar: v }; renderMe(); $('#userBtn').click(); };
   f.querySelector('#meFile').addEventListener('change', async (ev) => {
     const file = ev.target.files[0]; if (!file) return;
@@ -1931,7 +1955,7 @@ $('#userBtn').addEventListener('click', () => {
   f.querySelector('[data-x=logout]').addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     // volledig opnieuw laden: geen gegevens van deze gebruiker in formulieren of geheugen laten staan
-    try { for (const k of Object.keys(localStorage)) if (k.startsWith('gc-') && k !== 'gc-theme') localStorage.removeItem(k); } catch {}
+    try { for (const k of Object.keys(localStorage)) if (k.startsWith('gc-') && k !== 'gc-theme' && k !== 'gc-lang') localStorage.removeItem(k); } catch {}
     location.replace('/');
   });
   dlg.showModal();
@@ -1999,8 +2023,10 @@ $('#syncBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async () 
 async function load() {
   state = await api('GET', '/api/state');
   // taal: eigen keuze, anders die van de browser; daarna alle vaste teksten in de pagina vullen
-  setLang(resolveLang(state.settings?.lang, navigator.languages || [navigator.language]));
+  setLang(resolveLang(state.settings?.lang || storedLang(), navigator.languages || [navigator.language]));
   applyI18n();
+  // vlaggetjes in de menubalk: zelfde keuze als Instellingen → Training → Taal
+  langPicker($('#topLang'), { auto: true, value: state.settings?.lang || '', onPick: pickLang });
   setDefaultFigure(figureFor(state.settings || {}));
   renderMe();
   renderSyncStatus(); renderPlan(); fillSettings(); renderWithingsSettings();
@@ -2611,7 +2637,7 @@ $('#setNav').addEventListener('click', (ev) => { if (ev.target.closest('[data-pa
 
 // ---------- eigen trainingen en sjablonen (Mijn trainingen / gedeeld) ----------
 // Context voor de editor (zie editor.js).
-const edCtx = (extra = {}) => ({ state, api, esc, toast, weekLabel: (p) => `week ${planIso(p).w} · ${planIso(p).y}`, onSaved: (plan) => { state.plan = plan; renderPlan(); }, onTemplates: loadTemplates, ...extra });
+const edCtx = (extra = {}) => ({ state, api, esc, toast, weekLabel: (p) => t('app.weekLbl', { w: planIso(p).w, y: planIso(p).y }), onSaved: (plan) => { state.plan = plan; renderPlan(); }, onTemplates: loadTemplates, ...extra });
 let tplTab = 'mine', tplData = { mine: [], shared: [] };
 // Haalt de sjablonen op en tekent het paneel Trainingen.
 async function loadTemplates() {

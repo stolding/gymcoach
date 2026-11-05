@@ -8,7 +8,7 @@ GymCoach is een trainingsdashboard dat je zelf host. Het leest je trainingen uit
 
 ![GymCoach](public/icon-192.png)
 
-- **Brochure:** [documentatie/GymCoach-brochure.pdf](documentatie/GymCoach-brochure.pdf)
+- **Brochure:** [Nederlands](documentatie/GymCoach-brochure.pdf) · [English](documentatie/GymCoach-brochure-en.pdf) · [Deutsch](documentatie/GymCoach-brochure-de.pdf)
 - **Hoe de code in elkaar zit:** [documentatie/ARCHITECTUUR.md](documentatie/ARCHITECTUUR.md)
 - **Wijzigingen per versie:** [CHANGELOG.md](CHANGELOG.md)
 - **iPhone-app (GymCoach Sync):** [ios/README.md](ios/README.md)
@@ -59,7 +59,7 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal.
 
 **Gebruik**
-- **Nederlands en Engels**: kies per gebruiker, of laat de app de taal van je browser volgen. Rapporten, mails en de AI-coach gebruiken dezelfde taal. Uitleg en video's van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels. Een taal toevoegen kan met één woordenboekbestand (`public/locales/`).
+- **Nederlands, Engels en Duits**: kies per gebruiker met de vlaggetjes (inlogscherm, menubalk of je gebruikersmenu), of laat de app de taal van je browser volgen. Rapporten, mails en de AI-coach gebruiken dezelfde taal. Uitleg en video's van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels. Een taal toevoegen vraagt een woordenboek (`public/locales/`) en een vertaling van de uitleg en de voorwaarden.
 - **Meerdere gebruikers**, elk met eigen account, Speediance-account, plan en koppelingen; een wizard begeleidt nieuwe gebruikers.
 - **Uitleg in de app**: Instellingen → Over GymCoach → *Hoe GymCoach werkt* legt het plan en alle berekeningen uit, met bronnen.
 - Donker en licht thema; werkt op pc, tablet en telefoon.

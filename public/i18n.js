@@ -2,12 +2,13 @@
 // t('sleutel', { n: 3 }) geeft de tekst in de gekozen taal; ontbreekt hij, dan Engels, dan Nederlands, dan de sleutel.
 import nl from './locales/nl.js';
 import en from './locales/en.js';
+import de from './locales/de.js';
 
-export const DICTS = { nl, en };
+export const DICTS = { nl, en, de };
 // Talen die gebruikers kunnen kiezen. Een nieuwe taal komt hier pas bij als zijn woordenboek compleet is.
-export const LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }];
+export const LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }, { code: 'de', name: 'Deutsch', locale: 'de-DE' }];
 // Alle talen met een woordenboek, ook die nog niet te kiezen zijn (voor het controlescript en tests).
-export const ALL_LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }];
+export const ALL_LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }, { code: 'de', name: 'Deutsch', locale: 'de-DE' }];
 const LOCALE = Object.fromEntries(ALL_LANGS.map((l) => [l.code, l.locale]));
 const FALLBACK = ['en', 'nl'];
 

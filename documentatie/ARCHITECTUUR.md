@@ -49,7 +49,8 @@ Hoe de code in elkaar zit, voor wie GymCoach wil aanpassen of uitbreiden. Wat de
 | `public/app.js` | De app in de browser: alle tabbladen, grafieken (eigen SVG), instellingen, wizard. |
 | `public/editor.js` | Trainingseditor en de kiezer voor oefeningen (met "Oefening bekijken"). |
 | `public/dialogs.js` | Eigen vragen en bevestigingen (`askConfirm`, `askText`) in plaats van `confirm()`/`prompt()` van de browser. |
-| `public/i18n.js`, `public/locales/` | Meertaligheid: woordenboek per taal (`nl.js` is de bron), `t()`, meervoud, opmaak met `Intl`, `applyI18n()` voor `data-i18n` in de pagina. Ook gebruikt door de server via `lib/lang.js`. |
+| `public/langpick.js` | Taalkeuze met vlaggetjes (SVG) voor inlogscherm, menubalk en gebruikersvenster; de keuze op het inlogscherm staat in `localStorage` (`gc-lang`) en gaat als `Accept-Language` mee naar de server. |
+| `public/i18n.js`, `public/locales/` | Meertaligheid: woordenboek per taal (`nl.js` is de bron; `en.js`, `de.js`), `t()`, meervoud, opmaak met `Intl`, `applyI18n()` voor `data-i18n` in de pagina. Ook gebruikt door de server via `lib/lang.js`. |
 | `public/bodymap.js` | Spierkaart (SVG) met man-, vrouw- en neutraal figuur; ook gebruikt door de PDF. |
 | `public/explain.js` | Uitleg "Hoe GymCoach werkt". |
 | `public/terms.js` | Voorwaarden en gezondheidsverklaring (met versienummer). |

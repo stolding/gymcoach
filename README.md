@@ -6,25 +6,25 @@
 
 GymCoach is a self-hosted training dashboard. It reads your workouts through the unofficial [`speediance-cli`](https://github.com/stozo04/speediance-cli), builds a personal plan every week and puts it on your Gym Monster as a program with one click. Measurements from a Withings scale and activities from Apple Health are added automatically.
 
-> **Language:** the app is available in **English** and **Dutch** (Settings → Training → Language; *Automatic* follows your browser). Reports, emails and the AI coach use the same language. Exercise videos and instructions come from Speediance in your language when Speediance has it, otherwise in English. The brochure is in Dutch.
+> **Language:** the app is available in **English**, **Dutch** and **German**: pick a flag on the login screen, in the menu bar or in your user menu (*Automatic* follows your browser). Reports, emails and the AI coach use the same language. Exercise videos and instructions come from Speediance in your language when Speediance has it, otherwise in English. The brochure is available in English, Dutch and German.
 
 ![GymCoach](public/icon-192.png)
 
-- **Brochure (Dutch):** [documentatie/GymCoach-brochure.pdf](documentatie/GymCoach-brochure.pdf)
+- **Brochure:** [English](documentatie/GymCoach-brochure-en.pdf) · [Nederlands](documentatie/GymCoach-brochure.pdf) · [Deutsch](documentatie/GymCoach-brochure-de.pdf)
 - **How the code is organised (Dutch):** [documentatie/ARCHITECTUUR.md](documentatie/ARCHITECTUUR.md)
 - **Changes per version:** [CHANGELOG.md](CHANGELOG.md)
 - **iPhone app (GymCoach Sync):** [ios/README.md](ios/README.md)
 
 ## What it looks like
 
-Pages from the [brochure](documentatie/GymCoach-brochure.pdf) (Dutch); click a page to enlarge. All figures are sample data.
+Pages from the [brochure](documentatie/GymCoach-brochure-en.pdf); click a page to enlarge. All figures are sample data.
 
 <table>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-1-voorkant.png"><img src="documentatie/afbeeldingen/brochure-1-voorkant.png" alt="Cover" width="380"></a><br><sub>Cover</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-2-wat-gymcoach-doet.png"><img src="documentatie/afbeeldingen/brochure-2-wat-gymcoach-doet.png" alt="What GymCoach does" width="380"></a><br><sub>What GymCoach does</sub></td></tr>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-3-weekplan.png"><img src="documentatie/afbeeldingen/brochure-3-weekplan.png" alt="Your weekly plan" width="380"></a><br><sub>Your weekly plan</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-4-zelf-samenstellen.png"><img src="documentatie/afbeeldingen/brochure-4-zelf-samenstellen.png" alt="Build your own" width="380"></a><br><sub>Build your own</sub></td></tr>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-5-lichaam.png"><img src="documentatie/afbeeldingen/brochure-5-lichaam.png" alt="Body measurements" width="380"></a><br><sub>Body measurements</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-6-inzicht.png"><img src="documentatie/afbeeldingen/brochure-6-inzicht.png" alt="Insights" width="380"></a><br><sub>Insights</sub></td></tr>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-7-trainingsrapport.png"><img src="documentatie/afbeeldingen/brochure-7-trainingsrapport.png" alt="Workout report" width="380"></a><br><sub>Workout report</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-8-afgestemd-op-jou.png"><img src="documentatie/afbeeldingen/brochure-8-afgestemd-op-jou.png" alt="Tailored to you" width="380"></a><br><sub>Tailored to you</sub></td></tr>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-9-techniek.png"><img src="documentatie/afbeeldingen/brochure-9-techniek.png" alt="Technology and installation" width="380"></a><br><sub>Technology and installation</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-1-voorkant.png"><img src="documentatie/afbeeldingen/en/brochure-1-voorkant.png" alt="Cover" width="380"></a><br><sub>Cover</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-2-wat-gymcoach-doet.png"><img src="documentatie/afbeeldingen/en/brochure-2-wat-gymcoach-doet.png" alt="What GymCoach does" width="380"></a><br><sub>What GymCoach does</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-3-weekplan.png"><img src="documentatie/afbeeldingen/en/brochure-3-weekplan.png" alt="Your weekly plan" width="380"></a><br><sub>Your weekly plan</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-4-zelf-samenstellen.png"><img src="documentatie/afbeeldingen/en/brochure-4-zelf-samenstellen.png" alt="Build your own" width="380"></a><br><sub>Build your own</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-5-lichaam.png"><img src="documentatie/afbeeldingen/en/brochure-5-lichaam.png" alt="Body measurements" width="380"></a><br><sub>Body measurements</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-6-inzicht.png"><img src="documentatie/afbeeldingen/en/brochure-6-inzicht.png" alt="Insights" width="380"></a><br><sub>Insights</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-7-trainingsrapport.png"><img src="documentatie/afbeeldingen/en/brochure-7-trainingsrapport.png" alt="Workout report" width="380"></a><br><sub>Workout report</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-8-afgestemd-op-jou.png"><img src="documentatie/afbeeldingen/en/brochure-8-afgestemd-op-jou.png" alt="Tailored to you" width="380"></a><br><sub>Tailored to you</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/en/brochure-9-techniek.png"><img src="documentatie/afbeeldingen/en/brochure-9-techniek.png" alt="Technology and installation" width="380"></a><br><sub>Technology and installation</sub></td></tr>
 </table>
 
 ## Screenshots
@@ -61,7 +61,7 @@ With a demo account and sample data; dark theme.
 - **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …).
 
 **Use**
-- **English and Dutch**: choose per user, or let the app follow your browser. More languages can be added with one dictionary file (`public/locales/`).
+- **English, Dutch and German**: choose per user with the flag menu, or let the app follow your browser. Another language needs a dictionary file (`public/locales/`) plus a translation of the in-app explanation and terms.
 - **Multiple users**, each with their own account, Speediance account, plan and connections; a wizard guides new users.
 - **Explanations in the app**: Settings → About GymCoach → *How GymCoach works* explains the plan and every calculation, with sources.
 - Dark and light theme; works on desktop, tablet and phone.

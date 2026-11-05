@@ -5,6 +5,14 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.1.0 — 5 november 2026
+GymCoach in het Duits, en taalkeuze met vlaggetjes.
+- Duits woordenboek compleet, met de uitleg *So funktioniert GymCoach* en de voorwaarden in het Duits (de Nederlandse tekst van de voorwaarden is leidend). Oefeningen komen van Speediance in het Duits.
+- Taalkeuze met vlaggetjes op het inlogscherm, in de menubalk en in het gebruikersvenster. De keuze op het inlogscherm wordt per browser onthouden; in de app wordt hij voor je account bewaard.
+- Gebruikersvenster: nieuw blok *Voorkeuren* met taal en thema, en een knop naar alle instellingen.
+- Duitse zelfstandige naamwoorden houden hun hoofdletter midden in een zin; de weeknaam in de editor komt uit het woordenboek.
+- Brochure in het Engels en Duits (`documentatie/GymCoach-brochure-en.pdf`, `-de.pdf`), met schermbeelden in die taal; README toont de Engelse pagina's. Het voorbeeldrapport in alle brochures gebruikt nu demodata.
+
 ## 2.0.0 — 5 november 2026
 GymCoach is meertalig: Nederlands en Engels (fase 6 van issue #1). Voor Nederlandse gebruikers verandert er niets behalve de nieuwe taalkeuze; schermen, PDF-rapporten, mail en een nieuw plan zijn voor en na vergeleken en gelijk.
 - Taalkeuze in Instellingen → Training: *Automatisch* (de taal van je browser) of een vaste taal. Ook het inlogscherm volgt de taal van de browser. Rapporten, mails en de AI-coach gebruiken dezelfde taal; bij *Automatisch* onthoudt de server de taal van je browser voor mails bij automatisch syncen.

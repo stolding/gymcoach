@@ -829,3 +829,27 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .pw-missed td:first-child { color: var(--muted); }
 .pw-extra td { color: var(--muted); }
 @media (max-width: 700px) { .pw-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pw-grid { grid-template-columns: 1fr; } .pw-tbl { font-size: .82rem; } }
+
+/* taalkeuze met vlaggetjes */
+.langpick { position: relative; display: inline-block; }
+.lp-btn { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .55rem; }
+.lp-code { font-size: .78rem; font-weight: 600; letter-spacing: .03em; }
+.lp-caret { font-size: .7rem; opacity: .7; }
+.flag { display: inline-block; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,.25); flex: none; }
+.lp-auto { width: 22px; height: 15px; box-shadow: none; text-align: center; line-height: 15px; font-size: .85rem; }
+.lp-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; list-style: none; margin: 0; padding: .3rem; min-width: 12rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+.lp-menu li { display: flex; align-items: center; gap: .55rem; padding: .45rem .55rem; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.lp-menu li:hover, .lp-menu li:focus { background: var(--line); outline: none; }
+.lp-menu li.on { font-weight: 600; }
+.auth-card { position: relative; }
+.auth-lang { position: absolute; top: .9rem; right: .9rem; }
+@media (max-width: 560px) { .top .lp-code, .top .lp-caret { display: none; } }
+.auth-card { padding-top: 3rem; }
+
+/* voorkeuren in het gebruikersvenster */
+.me-pref { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; }
+.me-pref .lp-menu { right: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { background: none; border: 0; color: inherit; font: inherit; font-size: .85rem; padding: .4rem .65rem; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.on { background: var(--line); font-weight: 600; }

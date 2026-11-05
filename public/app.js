@@ -1601,6 +1601,9 @@ function fillSettings() {
     el.value = v ?? '';
   }
   if (!f['withings.redirectUri'].value) f['withings.redirectUri'].value = cbDefault();
+  // accessoires die je niet gebruikt: vinkjes zonder name, zodat de algemene formulierlus ze overslaat
+  const no = new Set(s.noAccessories || []);
+  $('#accBox').innerHTML = (state.accessories || []).map((a) => `<label class="chip-check"><input type="checkbox" data-acc="${esc(a.key)}"${no.has(a.key) ? ' checked' : ''}><span>${esc(a.label)}<i class="acc-n" title="oefeningen met dit accessoire">${a.count}</i></span></label>`).join('');
   const mc = s.smtp && (s.smtp.configured ?? !!(s.smtp.host && s.smtp.from));
   $('#mailNote').textContent = mc ? '' : 'Let op: de beheerder heeft de mailserver nog niet ingesteld; er wordt nog niets verstuurd.';
   const toggleBand = () => $('#bandSexWrap').classList.toggle('hidden', ['m', 'v'].includes(f.sex.value));
@@ -1636,12 +1639,14 @@ $('#settingsForm').addEventListener('submit', async (ev) => {
     }
     else out[el.name] = ['heightCm', 'birthYear', 'hrMax'].includes(el.name) ? (el.value === '' ? null : +el.value) : el.type === 'number' || el.type === 'range' ? +el.value : el.value;
   }
+  if ($('#accBox').children.length) out.noAccessories = [...f.querySelectorAll('[data-acc]:checked')].map((x) => x.dataset.acc);
   try {
     const before = state.settings;
     state.settings = (await api('PUT', '/api/settings', out)).settings;
     fillSettings();
     const cs = (x) => (['m', 'v'].includes(x.sex) ? x.sex : ['m', 'v'].includes(x.bandSex) ? x.bandSex : '');
-    const changed = ['goal', 'daysPerWeek', 'minutesPerSession', 'experience', 'warmup', 'cooldown', 'pushMobility'].some((k) => before[k] !== state.settings[k]) || cs(before) !== cs(state.settings);
+    const changed = ['goal', 'daysPerWeek', 'minutesPerSession', 'experience', 'warmup', 'cooldown', 'pushMobility'].some((k) => before[k] !== state.settings[k]) || cs(before) !== cs(state.settings)
+      || [...(before.noAccessories || [])].sort().join() !== [...(state.settings.noAccessories || [])].sort().join();
     if (figureFor(before) !== figureFor(state.settings)) { renderPlan(); if ($('#tab-home').classList.contains('active')) renderHome(); }
     if (state.setup?.needed) { await load(); toast('Opgeslagen'); }
     else if (changed) { state.plan = (await api('POST', '/api/plan/generate')).plan; if (state.meta) state.meta.coach = null; renderCoach(null); renderPlan(); toast('Opgeslagen — nieuw plan gemaakt'); }

@@ -152,6 +152,8 @@ const DICT = {
     'pk.done': 'Eerder gedaan · {date} · {sets} · {times}×',
     'pk.new': 'Nieuw voor jou',
     'pk.avoided': 'niet meer voorstellen',
+    'pk.hideAcc': 'Accessoires die ik niet gebruik verbergen',
+    'pk.accBlocked': 'accessoire niet gebruikt',
     'pk.inSession': 'al in deze training',
     'pk.none': 'Geen oefeningen gevonden. Kies een andere spiergroep of soort.',
     'pk.more': 'en nog {n} … verfijn de zoekopdracht',

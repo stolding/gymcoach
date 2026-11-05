@@ -793,3 +793,9 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .ask-msg { font-size: .98rem; line-height: 1.5; white-space: normal; }
 .ask-input { width: 100%; box-sizing: border-box; }
 .ask-btns { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .2rem; }
+
+/* Instellingen → Training: accessoires die je niet gebruikt */
+.acc-wrap { display: flex; flex-direction: column; gap: .5rem; }
+.acc-title { font-weight: 550; }
+.acc-box { display: flex; flex-wrap: wrap; gap: .45rem; }
+.acc-n { font-style: normal; font-size: .78em; opacity: .65; margin-left: .45rem; font-variant-numeric: tabular-nums; }

@@ -398,13 +398,16 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
   try { libCache = libCache || await ctx.api('GET', '/api/library'); } catch (e) { ctx.toast(e.message, true); pdlg.close(); return; }
   const lib = libCache;
   const avoid = new Set((lib.avoid || []).map(Number));
+  // oefeningen met een accessoire dat je niet gebruikt (Instellingen → Training)
+  const noAcc = new Set(lib.noAcc || []);
+  const accBlocked = (e) => (e.acc || []).some((k) => noAcc.has(k));
   const inS = new Set(inSession.map(Number));
   const defTab = (bl) => (bl === 'ex' ? 'Training' : bl === 'warm' ? 'Warmup' : 'Stretch');
   const st = {
     block,
     muscle: block === 'ex' && muscleKey ? KEY2LIB[muscleKey] || null : null,
     tab: defTab(block),
-    q: '', onlyDone: false, hideAvoid: true, sel: new Set(), detail: null, busy: false,
+    q: '', onlyDone: false, hideAvoid: true, hideAcc: true, sel: new Set(), detail: null, busy: false,
   };
   const counts = (filterTab) => {
     const c = {};
@@ -414,7 +417,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
   const filtered = () => {
     const q = st.q.trim().toLowerCase();
     return lib.items.filter((e) => (st.tab === 'all' || e.tab === st.tab) && (!st.muscle || e.muscle === st.muscle) && (!q || e.name.toLowerCase().includes(q))
-      && (!st.onlyDone || lib.history[e.id]) && (!st.hideAvoid || !avoid.has(Number(e.id))))
+      && (!st.onlyDone || lib.history[e.id]) && (!st.hideAvoid || !avoid.has(Number(e.id))) && (!st.hideAcc || !accBlocked(e)))
       .sort((a, b) => (lib.history[b.id]?.times || 0) - (lib.history[a.id]?.times || 0) || a.name.localeCompare(b.name));
   };
   // soort zonder oefeningen in deze catalogus: dan alles tonen
@@ -427,7 +430,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
     return `<div class="pk-row${on ? ' on' : ''}">
       <input type="checkbox" ${on ? 'checked' : ''} data-pk="sel" data-id="${e.id}" aria-label="${t('pk.select')}: ${esc(e.name)}">
       <button type="button" class="pk-name" data-pk="detail" data-id="${e.id}"><b>${esc(e.name)}</b>
-        <span class="muted small">${esc(musName(e.muscle))} · ${esc(tabName(e.tab))}${inS.has(Number(e.id)) ? ` · <span class="badge">${t('pk.inSession')}</span>` : ''}${avoid.has(Number(e.id)) ? ` · <span class="badge warn">${t('pk.avoided')}</span>` : ''}</span>
+        <span class="muted small">${esc(musName(e.muscle))} · ${esc(tabName(e.tab))}${inS.has(Number(e.id)) ? ` · <span class="badge">${t('pk.inSession')}</span>` : ''}${avoid.has(Number(e.id)) ? ` · <span class="badge warn">${t('pk.avoided')}</span>` : ''}${accBlocked(e) ? ` · <span class="badge warn">${t('pk.accBlocked')}</span>` : ''}</span>
         <span class="small ${h ? 'up' : 'muted'}">${h ? esc(t('pk.done', { date: h.last, sets: h.sets, times: h.times })) : t('pk.new')}</span></button>
       <span class="pk-chev" aria-hidden="true">›</span></div>`;
   }
@@ -478,6 +481,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
           <div class="eyebrow" style="margin-top:.6rem">${t('pk.filters')}</div>
           <label class="inline-check small"><input type="checkbox" data-pk="onlyDone" ${st.onlyDone ? 'checked' : ''}> ${t('pk.onlyDone')}</label>
           <label class="inline-check small"><input type="checkbox" data-pk="hideAvoid" ${st.hideAvoid ? 'checked' : ''}> ${t('pk.hideAvoid')}</label>
+          ${noAcc.size ? `<label class="inline-check small"><input type="checkbox" data-pk="hideAcc" ${st.hideAcc ? 'checked' : ''}> ${t('pk.hideAcc')}</label>` : ''}
         </aside>
         <section class="pk-main">${st.detail ? '<div class="pk-dwrap"></div>' : `
           <input type="search" class="pk-search" placeholder="${esc(t('pk.search'))}" aria-label="${esc(t('pk.search'))}" value="${esc(st.q)}" data-pk="q">
@@ -535,7 +539,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
   pdlg.onchange = (ev) => {
     const el = ev.target; const a = el.dataset?.pk;
     if (a === 'sel') { const id = Number(el.dataset.id); if (el.checked) { if (replace) st.sel.clear(); st.sel.add(id); } else st.sel.delete(id); render(); }
-    else if (a === 'onlyDone' || a === 'hideAvoid') { st[a] = el.checked; render(); }
+    else if (a === 'onlyDone' || a === 'hideAvoid' || a === 'hideAcc') { st[a] = el.checked; render(); }
   };
   pdlg.oninput = (ev) => {
     if (ev.target.dataset?.pk !== 'q') return;

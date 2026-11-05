@@ -83,7 +83,7 @@ async function context() {
 // Oefeningen die de AI mag voorstellen: uit de catalogus, zonder vermeden oefeningen.
 function allowedExercises(library, settings) {
   const ids = new Set(Object.values(engine.PATTERNS).flatMap((p) => p.ids));
-  return library.filter((e) => ids.has(Number(e.id)) && !settings.avoidIds.includes(Number(e.id))).map((e) => ({ id: e.id, name: e.name, muscle: e.muscle }));
+  return engine.usableLibrary(library, settings).filter((e) => ids.has(Number(e.id)) && !settings.avoidIds.includes(Number(e.id))).map((e) => ({ id: e.id, name: e.name, muscle: e.muscle }));
 }
 
 const mask = (v) => (v ? '••••' + v.slice(-4) : '');
@@ -216,7 +216,8 @@ async function generatePlan(prefs) {
   const wish = prefs?.wish ?? prev?.wish ?? '';
   const dayTypes = prefs?.dayTypes ?? prev?.dayTypes ?? null;
   const snapshot = JSON.parse(await readFile(path.join(ROOT, 'lib', 'library.snapshot.json'), 'utf8'));
-  const plan = engine.buildPlan({ settings: ctx.settings, library: ctx.library, history: ctx.history, week, focus, wish, snapshot, dayTypes });
+  // alleen oefeningen met accessoires die je gebruikt (Instellingen → Training)
+  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes });
   // vastgezette trainingen blijven staan, met progressie op basis van de historie (behalve bij vast gewicht)
   for (const ls of (prev?.sessions || []).filter((x) => x.locked)) {
     const kept = engine.progressSession(ls, ctx.history);
@@ -271,6 +272,8 @@ const routes = {
       volFactors: engine.volumeFactors(ctx.history), // geplande sets → echt volume (twee handgrepen = 2×)
       patterns: Object.fromEntries(Object.entries(engine.PATTERNS).map(([k, p]) => [k, { label: p.label, type: p.type }])),
       libraryCount: ctx.library.length,
+      // accessoires met het aantal oefeningen dat ze nodig heeft, voor Instellingen → Training
+      accessories: engine.ACCESSORIES.map((a) => ({ key: a.key, label: a.label, count: ctx.library.filter(a.test).length })),
       library: await libraryStatus(),
       withings: await withings.status(),
       overview: engine.overview({ workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, plan, settings: ctx.settings }),
@@ -454,6 +457,7 @@ const routes = {
     if (!['', 'm', 'v', 'x', 'o'].includes(next.sex)) next.sex = cur.sex || '';
     if (!['', 'man', 'vrouw', 'neutraal'].includes(next.figure)) next.figure = cur.figure || '';
     if (!['', 'm', 'v'].includes(next.bandSex)) next.bandSex = cur.bandSex || '';
+    next.noAccessories = Array.isArray(next.noAccessories) ? [...new Set(next.noAccessories.filter((k) => engine.ACCESSORIES.some((a) => a.key === k)))] : cur.noAccessories || [];
     next.birthYear = next.birthYear === '' || next.birthYear == null ? null : Math.round(+next.birthYear);
     if (next.birthYear != null && !(next.birthYear >= 1920 && next.birthYear <= new Date().getFullYear() - 10)) throw Object.assign(new Error('Ongeldig geboortejaar'), { status: 400 });
     next.hrMax = next.hrMax === '' || next.hrMax == null || !(+next.hrMax) ? null : Math.round(+next.hrMax);
@@ -591,7 +595,7 @@ const routes = {
       const w = Math.max(...l.sets.map((x) => x.weight));
       hist[h.id] = { last: String(l.date || '').slice(0, 10), sets: `${l.sets.length} × ${l.sets[0].reps} × ${w} kg`, times: h.log.length, e1rm: Math.round(Math.max(...l.sets.map((x) => engine.epley(x.weight, x.reps))) * 10) / 10 };
     }
-    return { items: ctx.library.map((e) => ({ id: e.id, name: e.name, muscle: e.muscle, tab: e.tab })), history: hist, avoid: ctx.settings.avoidIds || [] };
+    return { items: ctx.library.map((e) => ({ id: e.id, name: e.name, muscle: e.muscle, tab: e.tab, acc: engine.accessoriesOf(e) })), history: hist, avoid: ctx.settings.avoidIds || [], noAcc: ctx.settings.noAccessories || [] };
   },
   // uitleg, beelden en video van een oefening (gedeelde cache, zie lib/exinfo.js)
   'GET /api/exercise/info': async (req, url) => {
@@ -623,7 +627,7 @@ const routes = {
   // foto's en video's van Speediance via de eigen server (gedeelde cache in data/media)
   'GET /api/media': async (req, url) => ({ __file: await exinfo.mediaFile(url.searchParams.get('u') || '') }),
   'GET /api/alternatives': async (req, url) => {
-    const library = await getLibrary();
+    const library = engine.usableLibrary(await getLibrary(), await store.getSettings());
     return { items: engine.alternatives(library, url.searchParams.get('muscle')) };
   },
   'POST /api/bodyweight': async (req) => {

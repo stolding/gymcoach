@@ -3,7 +3,7 @@
 Kleine iPhone-app die uit Apple Health precies leest wat GymCoach nodig heeft en het naar je eigen GymCoach-server stuurt:
 
 - **Workouts** (iPhone en Apple Watch): soort, start/eind, duur, afstand, actieve energie, gemiddelde en maximale hartslag, het hartslagverloop tijdens de workout (ook in de rust tussen sets), bron.
-- **Dagtotalen**: stappen, actieve energie, wandel-/loopafstand en hartslag in rust.
+- **Dagwaarden**: stappen, actieve energie, wandel-/loopafstand, hartslag in rust, hartslagvariabiliteit (HRV, SDNN) en VO2max-schatting (Apple Watch).
 
 Nieuwe workouts gaan automatisch, ook op de achtergrond (HealthKit background delivery), hooguit één keer per uur. Met *Automatisch alleen thuis* (standaard aan) alleen op wifi en als de server bereikbaar is; zet dit uit als GymCoach via internet bereikbaar is. Gym Monster-trainingen die Speediance zelf naar Apple Health schrijft, slaat de server over; het hartslagverloop ervan wordt wel aan de training gekoppeld voor het rapport.
 

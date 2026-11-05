@@ -68,6 +68,8 @@ final class SyncModel: ObservableObject {
             HKQuantityType(.distanceSwimming),
             HKQuantityType(.heartRate),
             HKQuantityType(.restingHeartRate),
+            HKQuantityType(.heartRateVariabilitySDNN),
+            HKQuantityType(.vo2Max),
         ]
     }
 
@@ -295,18 +297,24 @@ final class SyncModel: ObservableObject {
             }
             out.append(["name": name, "units": units, "data": data] as [String: Any])
         }
-        // hartslag in rust: gemiddelde per dag (Apple Watch)
-        let restType = HKQuantityType(.restingHeartRate)
-        let restDescriptor = HKStatisticsCollectionQueryDescriptor(
-            predicate: .quantitySample(type: restType, predicate: HKQuery.predicateForSamples(withStart: anchor, end: nil)),
-            options: .discreteAverage, anchorDate: anchor, intervalComponents: DateComponents(day: 1))
-        if let rest = try? await restDescriptor.result(for: store) {
+        // gemiddelde per dag (Apple Watch): hartslag in rust, HRV (SDNN) en VO2max-schatting
+        let bpm = HKUnit.count().unitDivided(by: .minute())
+        let vo2 = HKUnit.literUnit(with: .milli).unitDivided(by: HKUnit.gramUnit(with: .kilo).unitMultiplied(by: .minute()))
+        let averages: [(String, HKQuantityTypeIdentifier, HKUnit, String)] = [
+            ("resting_heart_rate", .restingHeartRate, bpm, "count/min"),
+            ("heart_rate_variability", .heartRateVariabilitySDNN, .secondUnit(with: .milli), "ms"),
+            ("vo2_max", .vo2Max, vo2, "ml/(kg·min)"),
+        ]
+        for (name, id, unit, units) in averages {
+            let descriptor = HKStatisticsCollectionQueryDescriptor(
+                predicate: .quantitySample(type: HKQuantityType(id), predicate: HKQuery.predicateForSamples(withStart: anchor, end: nil)),
+                options: .discreteAverage, anchorDate: anchor, intervalComponents: DateComponents(day: 1))
+            guard let result = try? await descriptor.result(for: store) else { continue }
             var data: [[String: Any]] = []
-            let bpm = HKUnit.count().unitDivided(by: .minute())
-            rest.enumerateStatistics(from: anchor, to: Date()) { stats, _ in
-                if let q = stats.averageQuantity() { data.append(["date": self.fmt(stats.startDate), "qty": q.doubleValue(for: bpm)] as [String: Any]) }
+            result.enumerateStatistics(from: anchor, to: Date()) { stats, _ in
+                if let q = stats.averageQuantity() { data.append(["date": self.fmt(stats.startDate), "qty": q.doubleValue(for: unit)] as [String: Any]) }
             }
-            if !data.isEmpty { out.append(["name": "resting_heart_rate", "units": "count/min", "data": data] as [String: Any]) }
+            if !data.isEmpty { out.append(["name": name, "units": units, "data": data] as [String: Any]) }
         }
         return out
     }

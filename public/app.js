@@ -395,7 +395,7 @@ function renderPlan() {
   $('#planTitle').textContent = t('app.week3', { w: planIso(plan).w, y: planIso(plan).y });
   updateWeekNav();
   const nDone = plan.sessions.filter((x) => !x.outdoor && doneOf(x)).length, nGym = plan.sessions.filter((x) => !x.outdoor).length;
-  $('#planMeta').innerHTML = t('app.perWeekBron', { a: GOAL[plan.goal] || plan.goal, daysPerWeek: plan.daysPerWeek, b: esc(String(plan.source || '').replace('regels', t('app.src.rules'))) }) + (plan.deload ? ' · <span class="badge warn">' + t('app.deloadWeek') + '</span>' : '')
+  $('#planMeta').innerHTML = t('app.perWeekBron', { a: GOAL[plan.goal] || plan.goal, daysPerWeek: plan.daysPerWeek, b: esc(String(plan.source || '').replace('regels', t('app.src.rules'))) }) + (plan.deload ? ' · <span class="badge warn"' + (plan.deloadReason === 'recovery' ? ` title="${t('sig.deloadEarly')}"` : '') + '>' + t('app.deloadWeek') + (plan.deloadReason === 'recovery' ? ' · ' + t('sig.deloadEarlyShort') : '') + '</span>' : '')
     + (nDone ? ` · <span class="badge ok">${t('app.vanGedaan', { nDone, nGym, a: nDone >= nGym ? t('app.weekCompleet') : '' })}</span>` : '');
 
   renderWeekMap();
@@ -409,7 +409,7 @@ function renderPlan() {
       <p class="muted small">${t('app.geenProgrammaVoorDe')}</p>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
-      <header><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
+      <header><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div></header>
       ${s.warmup && (s.warmup.mobility.length + s.warmup.cable.length) ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: s.warmup.mobility.length + s.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
       ${s.exercises.map((e, i) => `
@@ -870,6 +870,38 @@ function delta(cur, prev, unit = '%') {
 }
 
 // Tabblad Overzicht: deze week, volgende training, trends, kalender en activiteiten.
+// Herstelscore en afvaltempo op het overzicht (lib/signals.js). Uitleg en bronnen: 'Hoe GymCoach werkt' → signalen.
+const SIG_STATE = tmap({ good: '§sig.state.good', watch: '§sig.state.watch', easy: '§sig.state.easy' });
+function sigLine(s) {
+  const lvl = s.level >= 2 ? 'down' : s.level === 1 ? 'balwarn' : 'up';
+  const txt = s.key === 'restHr' ? t('sig.restHr', { recent: fmtNum(s.recent), base: fmtNum(s.base), d: (s.delta > 0 ? '+' : '') + fmtNum(s.delta) })
+    : s.key === 'hrv' ? t('sig.hrv', { recent: fmtNum(s.recent), base: fmtNum(s.base), p: (s.pct > 0 ? '+' : '') + s.pct })
+    : s.key === 'reps' ? t('sig.reps', { recent: s.recent, base: s.base })
+    : t('sig.slow', { recent: s.recent, base: s.base });
+  return `<li><span class="sig-dot ${lvl}"></span>${esc(txt)}</li>`;
+}
+function renderSignals() {
+  const box = $('#sigBar'), sg = state.signals || {};
+  const r = sg.recovery, w = sg.weightLoss;
+  if (state.setup?.needed || (!r && !w?.warn)) { box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  // de eerstvolgende krachttraining (geen cardio buiten) die deze week nog niet gedaan is
+  const ses = state.plan?.sessions || [];
+  const nk = state.overview?.next && ses.find((x) => x.key === state.overview.next.key);
+  const next = nk && !nk.outdoor ? nk : ses.find((x) => !x.outdoor && !doneOf(x));
+  const canLighten = r?.state === 'easy' && next && !next.outdoor && !next.lightened;
+  box.innerHTML = `${r ? `<div class="card sig-card sig-${r.state}">
+      <div class="row between wrap gap"><div><div class="eyebrow">${t('sig.title')}</div><div class="mid">${esc(SIG_STATE[r.state])}</div></div>
+      ${canLighten ? `<button class="btn small" id="sigLighter">${t('sig.lighter', { name: esc(next.name) })}</button>` : next?.lightened ? `<span class="badge">${t('sig.lightened')}</span>` : ''}</div>
+      <ul class="sig-list small">${r.signals.map(sigLine).join('')}</ul>
+      <div class="small muted">${t('sig.' + r.state + 'Text')} <a href="#" data-explain="signalen">${t('sig.why')}</a></div></div>` : ''}
+    ${w?.warn ? `<div class="card sig-card sig-watch"><div class="eyebrow">${t('sig.lossTitle')}</div>
+      <div class="small">${t('sig.lossText', { pct: fmtNum(w.pctWeek), kg: fmtNum(w.kgWeek), muscle: fmtNum(w.muscleKg28) })} <a href="#" data-explain="signalen">${t('sig.why')}</a></div></div>` : ''}`;
+  $('#sigLighter')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
+    state.plan = (await api('POST', '/api/plan/lighter', { session: next.key })).plan;
+    toast(t('sig.lightenedToast', { name: next.name })); renderSignals(); renderPlan();
+  }));
+}
 function renderHome() {
   const o = state.overview; if (!o) return;
   const now = new Date();
@@ -877,6 +909,7 @@ function renderHome() {
   const h = now.getHours();
   $('#greet').textContent = (h < 12 ? t('app.goedemorgen') : h < 18 ? t('app.goedemiddag') : t('app.goedenavond')) + ', ' + (state.me?.name || '');
   $('#tip').textContent = o.tip;
+  renderSignals();
 
   const n = o.next;
   document.querySelector('.dash').classList.toggle('setup-mode', !!state.setup?.needed);
@@ -1170,7 +1203,7 @@ async function loadHealth(newLink) {
       <li>${t('app.installeer')} <b>${t('app.healthAutoExportJson')}</b> ${t('app.opJeIphoneVoor')}</li>
       <li>${t('app.gaNaar')} <b>${t('app.automationsNieuweAutomatiseringRest')}</b>.</li>
       <li><b>${t('app.url')}</b>${t('app.deUrlHierbovenVoeg')} <b>${t('app.headers')}</b> ${t('app.toeSleutel')} <code>${t('app.authorization')}</code>${t('app.waarde')} <code>${t('app.bearer2')}</code> ${t('app.jeSleutel')}</li>
-      <li><b>${t('app.dataType')}</b>${t('app.workoutsMaakEventueelEen')} <i>${t('app.stepCount')}</i>, <i>${t('app.activeEnergy')}</i> ${t('app.en')} <i>${t('app.walkingRunningDistance')}</i>.</li>
+      <li><b>${t('app.dataType')}</b>${t('app.workoutsMaakEventueelEen')} <i>${t('app.stepCount')}</i>, <i>${t('app.activeEnergy')}</i>, <i>${t('app.walkingRunningDistance')}</i>, <i>Resting Heart Rate</i>, <i>Heart Rate Variability</i> ${t('app.en')} <i>VO2 Max</i>.</li>
       <li><b>${t('app.exportFormat')}</b>${t('app.json')} <b>${t('app.dateRange')}</b>${t('app.laatste7Dagen')} <b>${t('app.aggregation')}</b> ${t('app.bijMetricsPerDag')}</li>
       <li>${t('app.kiesEenIntervalBijv')} <b>${t('app.manualExport')}</b> ${t('app.omHetMeteenTe')}</li>
       <li>${t('app.jeOudeHistorieDoe')}</li>
@@ -1236,15 +1269,19 @@ function workoutHtml(d) {
       const reps = e.sets.reduce((t, x) => t + (x.reps || 0), 0);
       return `<div class="wo-ex light"><div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small muted">${t('app.zonderGewicht', { a: e.sets.length ? ` · ${t('app.setsN', { n: e.sets.length })}${reps ? ` · ${t('app.repsTotal', { reps })}` : ''}` : '' })}</div></div></div>`;
     }
+    // vertraging binnen de set (laatste herhalingen tegenover de eerste): tot 25% fris, 25–40% zwaar, vanaf 40% tot het uiterste
+    const hasSlow = e.sets.some((x) => x.slow != null);
+    const slowCell = (p) => (p == null ? '<td class="num muted">—</td>' : `<td class="num ${p >= 40 ? 'down' : p >= 25 ? 'balwarn' : 'up'}">${p}%</td>`);
     return `<div class="wo-ex">
       <div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small">${t('app.zwaarsteSetKg', { a: nl1(e.top), delta })}</div></div>
-      <table class="wo-sets"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ui.stats.herhalingen')}</th><th class="num">${t('ui.setTraining.doel')}</th><th class="num">${t('app.gewicht')}</th></tr></thead><tbody>
-        ${e.sets.map((x, j) => `<tr><td>${j + 1}</td><td class="num ${x.target && x.reps < x.target ? 'down' : x.target && x.reps >= x.target ? 'up' : ''}">${x.reps}</td><td class="num muted">${x.target ?? '—'}</td><td class="num">${nl1(x.weight)} kg${x.min != null && x.max !== x.min ? ` <span class="muted small">(${nl1(x.min)}–${nl1(x.max)})</span>` : ''}</td></tr>`).join('')}
+      <table class="wo-sets"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ui.stats.herhalingen')}</th><th class="num">${t('ui.setTraining.doel')}</th><th class="num">${t('app.gewicht')}</th>${hasSlow ? `<th class="num" title="${t('sig.slowHint')}">${t('sig.slowCol')}</th>` : ''}</tr></thead><tbody>
+        ${e.sets.map((x, j) => `<tr><td>${j + 1}</td><td class="num ${x.target && x.reps < x.target ? 'down' : x.target && x.reps >= x.target ? 'up' : ''}">${x.reps}</td><td class="num muted">${x.target ?? '—'}</td><td class="num">${nl1(x.weight)} kg${x.min != null && x.max !== x.min ? ` <span class="muted small">(${nl1(x.min)}–${nl1(x.max)})</span>` : ''}</td>${hasSlow ? slowCell(x.slow) : ''}</tr>`).join('')}
       </tbody></table>
       <div class="small muted">${t('app.volumeKgGeschat1rm', { a: e.volume.toLocaleString(localeOf()), b: nl1(e.e1rm), c: e.prev ? t('app.vorigeKeer2', { a: esc(fmtDate(e.prev.date)), b: esc(doneSetsSummary(e.prev.sets)) }) : '' })}</div>
     </div>`;
   }).join('');
   return `${d.hrSource ? `<p class="muted small" style="margin:0">${t('app.hartslagGemiddeldMaximaalUit', { a: esc(d.hrSource) })}</p>` : ''}
+    ${d.cardioBefore ? `<div class="sig-note small">${t('sig.cardioBefore', { what: actLabel(d.cardioBefore.type), gap: d.cardioBefore.gapMin })} <a href="#" data-explain="signalen">${t('sig.why')}</a></div>` : ''}
     ${Object.keys(d.muscles || {}).length ? `<div class="wo-map"><div>${bodyMap(d.muscles, { height: 170, title: t('app.getraindeSpiergroepen') })}</div><div class="mbars">${Object.entries(d.muscles).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v], i, arr) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / arr[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>`).join('')}</div></div>` : ''}
     ${insightsHtml(d)}
     ${d.hasDetail ? exs : '<div class="empty">' + t('app.geenDetailsVoorDeze') + '</div>'}`;
@@ -1317,6 +1354,7 @@ const COMP = tmap([
   ['bmi', '§app.comp.bmi', '', null], ['ffmi', '§app.comp.ffmi', '', 'up'], ['musclePct', '§app.comp.musclePct', '%', 'up'],
   ['restHr', '§app.comp.restHr', 'bpm', 'down'], ['pwv', '§app.comp.pwv', 'm/s', 'down'], ['vascAge', '§app.comp.vascAge', 'jr', 'down'],
   ['nerve', '§app.comp.nerve', 'µS', 'up'],
+  ['hrv', '§app.comp.hrv', 'ms', 'up'], ['vo2max', '§app.comp.vo2max', 'ml/kg/min', 'up'],
 ]);
 
 // Kleur van de lijn boven een tegel: dezelfde kleuren als de achtergrondbanden in de grafieken.
@@ -1357,6 +1395,8 @@ function healthBands(metric) {
     case 'ffmi': return sex ? { bands: sex === 'm' ? B([-Infinity, 17, 'warn'], [17, Infinity, 'ok']) : B([-Infinity, 14, 'warn'], [14, Infinity, 'ok']), note: t('app.richtwaardeVanafGoed', { a: sex === 'm' ? 17 : 14 }) } : { bands: null, note: t('app.vulGeslachtOfDe2') };
     case 'restHr': return { bands: B([-Infinity, 75, 'ok'], [75, 90, 'warn'], [90, Infinity, 'bad']), note: t('app.richtwaardeOnder75Goed') };
     case 'pwv': return { bands: B([-Infinity, 8, 'ok'], [8, 10, 'warn'], [10, Infinity, 'bad']), note: t('app.richtwaardeOnder8M') };
+    case 'hrv': return { bands: null, note: t('sig.hrvNote') };
+    case 'vo2max': return { bands: null, note: t('sig.vo2Note') };
     case 'nerve': return { bands: B([-Infinity, 40, 'bad'], [40, 60, 'warn'], [60, Infinity, 'ok']), note: t('app.richtwaardeVanaf60S') };
     case 'metAge': case 'vascAge': return age ? { bands: ageBands(age), note: t('app.groenGelijkAanOf', { age }) } : { bands: null, note: t('app.vulJeGeboortejaarIn') };
     default: return null;
@@ -1365,6 +1405,19 @@ function healthBands(metric) {
 // lengte in meters: eigen instelling gaat voor, anders uit Withings
 const heightM = () => (state.settings.heightCm ? state.settings.heightCm / 100 : state.withings?.height || null);
 // BMI per meting berekenen (gewicht / lengte²)
+// HRV en VO2max van de Apple Watch (dagwaarden) bij de metingen van de weegschaal voegen, voor de tegels en grafiek.
+function withWatch(log) {
+  const extra = (state.healthDaily || []).filter((d) => d.hrv || d.vo2max);
+  if (!extra.length) return log;
+  const out = log.map((b) => ({ ...b }));
+  const byDay = new Map(out.map((b) => [String(b.date).slice(0, 10), b]));
+  for (const d of extra) {
+    const b = byDay.get(d.date);
+    if (b) { if (d.hrv) b.hrv = Math.round(d.hrv); if (d.vo2max) b.vo2max = Math.round(d.vo2max * 10) / 10; }
+    else { const n = { date: d.date, ...(d.hrv && { hrv: Math.round(d.hrv) }), ...(d.vo2max && { vo2max: Math.round(d.vo2max * 10) / 10 }) }; out.push(n); byDay.set(d.date, n); }
+  }
+  return out.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+}
 function withBmi(log) {
   const h = heightM();
   return log.map((b) => {
@@ -1443,7 +1496,7 @@ function trendOf(log, key) {
 
 // Lichaamssamenstelling: gewicht, vet, spiermassa met richtwaarden.
 function renderComposition() {
-  const log = withBmi(state.bodyLog);
+  const log = withBmi(withWatch(state.bodyLog));
   const avail = COMP.filter(([k]) => log.some((b) => b[k] != null));
   const card = $('#compCard');
   if (!avail.length) { card.innerHTML = '<h2>' + t('app.lichaamssamenstelling') + '</h2><div class="empty">' + t('app.nogGeenMetingenKoppel') + '</div>'; $('#segCard').classList.add('hidden'); return; }
@@ -2274,6 +2327,10 @@ function renderAnalysis() {
   $('#recoveryNote').innerHTML = rc.source
     ? `<p class="small" style="margin:.4rem 0 0">${t('app.rusthartslagLaatste7Dagen')} <b>${n1nl(rc.recent ?? 0)}</b> ${t('app.bpmDe4Weken')} <b>${n1nl(rc.base ?? 0)}</b>.${rc.signal ? ` <span class="${sig[rc.signal][0]}">${sig[rc.signal][1]}</span>` : ''}</p><p class="muted small" style="margin:.2rem 0 0">${t('app.bronEenStijgingVan', { a: esc(rc.source) })}</p>`
     : '<p class="muted small">' + t('app.nogGeenHartslagIn') + '</p>';
+  // herstelscore (alle signalen samen) en cardio vlak voor krachttraining in deze periode
+  const rs = a.recoveryScore, cb = a.cardioBefore;
+  $('#recoveryNote').insertAdjacentHTML('beforeend', (rs ? `<p class="small" style="margin:.5rem 0 0"><b>${t('sig.title')}: ${esc(SIG_STATE[rs.state])}</b></p><ul class="sig-list small">${rs.signals.map(sigLine).join('')}</ul>` : '')
+    + (cb?.count ? `<p class="small" style="margin:.3rem 0 0">${t('sig.cardioStats', { n: cb.count, total: cb.total })}${cb.doneWithout != null ? ' ' + t('sig.cardioDone', { a: cb.doneWith, b: cb.doneWithout }) : ''} <a href="#" data-explain="signalen">${t('sig.why')}</a></p>` : ''));
 
   // 9. calorieën en gewicht
   const en = a.energy;

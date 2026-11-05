@@ -5,6 +5,15 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.2.0 — 5 november 2026
+Slimmer plannen met gecombineerde signalen (uit het onderzoek naar verborgen inzichten). Uitleg en bronnen staan in de app bij *Hoe GymCoach werkt → Signalen*.
+- HRV en VO2max-schatting van de Apple Watch: ingelezen via GymCoach Sync (iOS 1.5) en Health Auto Export, als tegels bij Lichaam.
+- Vertraging binnen een set: uit de tijd per herhaling (Gym Monster) hoeveel trager de laatste herhalingen waren dan de eerste, per set in het rapport (app en PDF). Haal je alle herhalingen maar werden de laatste 40% of meer trager, dan blijft het gewicht nog één keer gelijk.
+- Herstelscore op het overzicht en in de analyse: goed / let op / rustig aan, uit rusthartslag, HRV, gehaalde herhalingen en vertraging. Pas bij twee of meer afwijkende signalen. Bij *rustig aan*: knop om de volgende krachttraining lichter te maken (10% minder, een set minder), en een eerdere deloadweek bij een nieuw plan. De AI-coach krijgt de score mee.
+- Afvaltempo: waarschuwing op het overzicht bij meer dan ~1% gewichtsverlies per week met dalende spiermassa (Withings).
+- Cardio vlak voor krachttraining: melding in het rapport als een activiteit binnen 3 uur vóór de training eindigde; in de analyse hoe vaak dat gebeurde en de gehaalde herhalingen op die dagen.
+- Nieuwe uitlegsectie *Signalen* met bronnen (Hickmott 2022, Garthe 2011, Schumann 2022, Buchheit 2014, Bittencourt 2024, Granero-Gallegos 2020), in nl, en en de.
+
 ## 2.1.0 — 5 november 2026
 GymCoach in het Duits, en taalkeuze met vlaggetjes.
 - Duits woordenboek compleet, met de uitleg *So funktioniert GymCoach* en de voorwaarden in het Duits (de Nederlandse tekst van de voorwaarden is leidend). Oefeningen komen van Speediance in het Duits.

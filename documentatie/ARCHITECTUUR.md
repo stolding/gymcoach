@@ -33,12 +33,13 @@ Hoe de code in elkaar zit, voor wie GymCoach wil aanpassen of uitbreiden. Wat de
 | `server.js` | HTTP-server: statische bestanden, alle `/api/…`-routes, inloggen, automatische sync, plan maken en naar het toestel sturen. |
 | `lib/store.js` | Database (`node:sqlite`): tabellen, lezen/schrijven per gebruiker, import van oude JSON-bestanden, standaardinstellingen. |
 | `lib/engine.js` | Regels-engine: schema's, voorschrift per doel, dubbele progressie, rust, deload, focus, tijdbudget; trainingsdetails, statistieken en overzicht; omzetten naar een programma voor de Gym Monster. |
+| `lib/signals.js` | Signalen uit gecombineerde data: vertraging binnen een set (tijd per herhaling), afvaltempo naast spiermassa, cardio vlak voor kracht, herstelscore (rusthartslag, HRV, prestatie, vertraging). Gebruikt door de progressie, het plan (eerdere deload), het overzicht, de analyse, het rapport en de AI-coach. |
 | `lib/insights.js` | Rapport en analyse: vergelijking met eerdere trainingen, hartslag en zones, balans, krachtindex, records, energie, herstel. |
 | `lib/ai.js` | AI-coach: Claude API of OpenAI-compatibele server; context opbouwen en de voorgestelde aanpassingen begrenzen. |
 | `lib/cli.js` | Aanroepen van `speediance-cli` (trainingen, details, catalogus, programma's maken). |
 | `lib/speediance.js` | Directe Speediance-API met de CLI-sessie (programma's tonen en verwijderen). |
 | `lib/withings.js` | Withings OAuth en metingen ophalen. |
-| `lib/health.js` | Ontvanger voor Apple Health: workouts, hartslagverloop, dagwaarden, koppelsleutel. |
+| `lib/health.js` | Ontvanger voor Apple Health: workouts, hartslagverloop, dagwaarden (stappen, energie, afstand, rusthartslag, HRV, VO2max), koppelsleutel. |
 | `lib/exinfo.js` | Uitleg, foto's en video's per oefening van Speediance, met gedeelde cache (database + `data/media`). |
 | `lib/acttypes.js` | Soorten activiteiten uit Apple Health → Nederlandse naam en categorie. |
 | `lib/auth.js` | Gebruikers, scrypt-wachtwoorden, sessies en cookies. |

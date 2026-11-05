@@ -66,6 +66,18 @@ export default [
     <p class="muted small">Alle Werte sind Schätzungen für deinen eigenen Fortschritt, keine medizinischen Messungen.</p>`,
   },
   {
+    id: 'signalen', title: 'Signale: Erholung und Anpassen',
+    html: `<p>GymCoach legt Daten aus verschiedenen Quellen nebeneinander. Jedes Signal für sich sagt wenig; zusammen sagen sie mehr.</p>
+    <dl class="explain-dl">
+      <dt>Verlangsamung im Satz</dt><dd>Der Gym Monster speichert die Zeit pro Wiederholung. GymCoach vergleicht die letzten zwei Wiederholungen mit den ersten zwei. Bis 25 % langsamer ist frisch, 25–40 % schwer, ab 40 % ging der Satz bis zum Limit. Forschung zum Geschwindigkeitsverlust zeigt, dass ein Abbruch bei etwa 20–25 % die Kraft begünstigt und Weitermachen mehr Muskelwachstum bringen kann (Hickmott et al. 2022). Schaffst du alle Wiederholungen, aber die letzten waren 40 % oder mehr langsamer, bleibt das Gewicht noch einmal gleich. Bewusst langsame Modi (exzentrisch, isokinetisch) zählen nicht.</dd>
+      <dt>Erholungswert</dt><dd>Aus Ruhepuls und HRV (letzte 7 Tage gegenüber den 4 Wochen davor), den geschafften Wiederholungen und der Verlangsamung in deinen letzten drei Trainings. Der Ruhepuls schwankt von Tag zu Tag um etwa 10 %, die HRV um 10–20 % (Buchheit 2014); ein einzelnes abweichendes Signal sagt daher nichts: erst wenn zwei oder mehr in dieselbe Richtung zeigen, steht der Wert auf <i>Achtung</i>, bei deutlichen Abweichungen auf <i>ruhig angehen</i>. Dann kannst du das nächste Training leichter machen (10 % weniger Gewicht, ein Satz weniger), und die Deload-Woche kommt früher als im festen Rhythmus. Die HRV zählt mit, entscheidet aber nie allein: beim Krafttraining brachte HRV-gesteuertes Training keinen zusätzlichen Gewinn (Bittencourt et al. 2024); beim Ausdauertraining einen kleinen Vorteil (Granero-Gallegos et al. 2020).</dd>
+      <dt>Abnehmtempo</dt><dd>Beim Abnehmen vergleicht GymCoach deinen wöchentlichen Gewichtsverlust mit deiner Muskelmasse (Withings, letzte 4 Wochen). Athleten, die ~0,7 % pro Woche abnahmen, behielten ihre Muskelmasse; bei ~1,4 % pro Woche nicht (Garthe et al. 2011). Nimmst du schneller als ~1 % pro Woche ab und sinkt deine Muskelmasse, bekommst du einen Tipp; der Plan hält das Trainingsvolumen.</dd>
+      <dt>Cardio kurz vor dem Krafttraining</dt><dd>Ein Spaziergang oder eine Radtour, die innerhalb von 3 Stunden vor einem Krafttraining endete, steht im Bericht. Ausdauer- und Krafttraining zusammen kosten keine Muskelmasse oder Maximalkraft, aber etwas Schnellkraft, wenn beides in einer Einheit liegt; nicht mit 3 Stunden oder mehr dazwischen (Schumann et al. 2021).</dd>
+      <dt>HRV und VO2max</dt><dd>Von der Apple Watch, über GymCoach Sync oder Health Auto Export. Die HRV (SDNN, in ms) unterscheidet sich stark zwischen Menschen: vergleiche mit dir selbst. VO2max ist eine Schätzung der Apple Watch und zeigt, was Gehen und Cardio bringen.</dd>
+    </dl>
+    <p class="muted small">Das sind Beobachtungen, keine Diagnose. Ein höherer Ruhepuls kann auch auf eine Krankheit hindeuten; bei Beschwerden: zum Arzt.</p>`,
+  },
+  {
     id: 'ai', title: 'Der KI-Coach',
     html: `<p>Der KI-Coach erhält deine Einstellungen, Alter und Geschlecht, deine letzten Trainings, Gewicht und Aktivitäten sowie den Plan, den die Regeln erstellt haben. Er darf Übungen tauschen (nur aus deinem eigenen Katalog) und Sätze (2–5), Wiederholungen (5–20) und Gewicht (höchstens 15 %) anpassen. Jede Änderung wird geprüft, und du wählst, was du übernimmst.</p>
     <p><b>Deine eigenen Trainings.</b> Der Coach sieht, welche Trainings du selbst gebaut, bearbeitet oder fixiert hast, mit ihrer Struktur (Supersätze, Modi, Pausen, festes Gewicht). Dort schlägt er Änderungen nur mit Begründung vor, und diese Vorschläge sind standardmäßig nicht angehakt. Übernimmst du einen, bleibt die Struktur: Gewicht und Wiederholungen verschieben sich pro Satz, ein festes Gewicht ändert sich nie. Mit <i>KI-Rat</i> bei einem Training fragst du nur für dieses Training um Rat.</p>
@@ -81,6 +93,12 @@ export default [
       <li>Tanaka H et al. (2001). Age-predicted maximal heart rate revisited. <i>J Am Coll Cardiol</i>.</li>
       <li>Gallagher D et al. (2000). Healthy percentage body fat ranges. <i>Am J Clin Nutr</i>.</li>
       <li>Epley B (1985). Poundage chart. <i>Boyd Epley Workout</i>.</li>
+      <li>Hickmott LM et al. (2022). The effect of load and volume autoregulation on muscular strength and hypertrophy: a systematic review and meta-analysis. <i>Sports Medicine – Open</i> 8:9.</li>
+      <li>Garthe I et al. (2011). Effect of two different weight-loss rates on body composition and strength and power-related performance in elite athletes. <i>Int J Sport Nutr Exerc Metab</i> 21(2).</li>
+      <li>Schumann M et al. (2022). Compatibility of concurrent aerobic and strength training for skeletal muscle size and function: an updated systematic review and meta-analysis. <i>Sports Med</i>.</li>
+      <li>Buchheit M (2014). Monitoring training status with HR measures: do all roads lead to Rome? <i>Front Physiol</i>.</li>
+      <li>Bittencourt D et al. (2024). Effects of individualized resistance training prescription with heart rate variability in older women. <i>Front Physiol</i>.</li>
+      <li>Granero-Gallegos A et al. (2020). HRV-based training for improving VO2max in endurance athletes. <i>Int J Environ Res Public Health</i> 17:7999.</li>
     </ul>`,
   },
 ];

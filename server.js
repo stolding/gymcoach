@@ -12,6 +12,7 @@ import { tr, userLang, parseAccept } from './lib/lang.js';
 // taal voor uitleg en beelden van Speediance: die van de gebruiker als Speediance hem goed levert, anders Engels
 const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'en');
 import * as insights from './lib/insights.js';
+import * as signals from './lib/signals.js';
 import { TERMS_VERSION } from './public/terms.js';
 import * as ai from './lib/ai.js';
 import * as withings from './lib/withings.js';
@@ -104,6 +105,8 @@ async function workoutDetailFor(id, ctx) {
   const d = engine.workoutDetail(w, s, ctx.library, ctx.history, wh[String(id)]);
   d.compare = insights.compare(d, { workouts: ctx.workouts, sessions: ctx.sessions, health: wh });
   d.heart = insights.heart(d, wh[String(id)], ctx.settings);
+  // cardio die eindigde binnen 3 uur vóór deze training (Apple Health)
+  d.cardioBefore = s ? signals.cardioBefore(signals.sessionStart(s, wh[String(id)]), await store.getActivities()) : null;
   return d;
 }
 // Mailt het trainingsrapport (met PDF) naar de gebruiker.
@@ -211,9 +214,19 @@ function refreshMuscles(plan) {
   return plan;
 }
 
+// Herstelscore en afvaltempo voor de huidige gebruiker (zie lib/signals.js).
+async function userSignals(ctx) {
+  const daily = await store.getHealthDaily();
+  return { recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }), weightLoss: signals.weightLoss(ctx.bodyLog) };
+}
+
 // Maakt een nieuw weekplan met de regels-engine en bewaart het.
 async function generatePlan(prefs) {
   const ctx = await context();
+  // eerder een lichtere week als de herstelscore 'rustig aan' zegt en er de laatste 3 weken geen deload was
+  const sig = await userSignals(ctx);
+  const recentDeload = store.listArchivedWeeks().slice(0, 3).some((w) => store.getArchivedPlan(w.week)?.deload);
+  const earlyDeload = sig.recovery?.state === 'easy' && !recentDeload;
   const week = engine.weekNumber(ctx.sessions);
   const prev = await store.getPlan();
   const focus = prefs?.focus ?? prev?.focus ?? [];
@@ -221,7 +234,7 @@ async function generatePlan(prefs) {
   const dayTypes = prefs?.dayTypes ?? prev?.dayTypes ?? null;
   const snapshot = JSON.parse(await readFile(path.join(ROOT, 'lib', 'library.snapshot.json'), 'utf8'));
   // alleen oefeningen met accessoires die je gebruikt (Instellingen → Training)
-  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes });
+  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes, earlyDeload });
   // vastgezette trainingen blijven staan, met progressie op basis van de historie (behalve bij vast gewicht)
   for (const ls of (prev?.sessions || []).filter((x) => x.locked)) {
     const kept = engine.progressSession(ls, ctx.history);
@@ -283,6 +296,10 @@ const routes = {
       withings: await withings.status(),
       overview: engine.overview({ workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, plan, settings: ctx.settings }),
       week: engine.weekNumber(ctx.sessions),
+      signals: await userSignals(ctx),
+      // dagwaarden van de Apple Watch voor Lichaam (rusthartslag, HRV, VO2max), het laatste jaar
+      healthDaily: (await store.getHealthDaily()).filter((d) => d.date >= new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10) && (d.restHr || d.hrv || d.vo2max))
+        .map((d) => ({ date: d.date, restHr: d.restHr ?? undefined, hrv: d.hrv ?? undefined, vo2max: d.vo2max ?? undefined })),
     };
   },
   'GET /api/stats': async (req, url) => {
@@ -302,7 +319,8 @@ const routes = {
     const days = Math.max(0, Number(url.searchParams.get('days') ?? 365));
     const since = from || (days > 0 ? new Date(Date.now() - days * 864e5).toISOString().slice(0, 10) : '0000');
     const [activities, daily, workoutHealth] = await Promise.all([store.getActivities(), store.getHealthDaily(), store.getWorkoutHealth()]);
-    return insights.analysis({ history: ctx.history, workouts: ctx.workouts, sessions: ctx.sessions, workoutHealth, activities, daily, bodyLog: ctx.bodyLog }, since);
+    return { ...insights.analysis({ history: ctx.history, workouts: ctx.workouts, sessions: ctx.sessions, workoutHealth, activities, daily, bodyLog: ctx.bodyLog }, since),
+      cardioBefore: signals.cardioStats({ sessions: ctx.sessions, history: ctx.history, activities, workoutHealth }, since), recoveryScore: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }) };
   },
   'GET /api/workouts': async () => {
     const [workouts, sessions, wh] = await Promise.all([store.getWorkouts(), store.getSessions(), store.getWorkoutHealth()]);
@@ -411,7 +429,7 @@ const routes = {
     const ctx = await context();
     const plan = (await store.getPlan()) || (await generatePlan());
     const allowed = allowedExercises(ctx.library, ctx.settings);
-    const result = await ai.coach({ settings: ctx.settings, plan, history: ctx.history, bodyLog: ctx.bodyLog, weekly: engine.weeklyStats(ctx.workouts), allowed, activities: await store.getActivities(), onlySession: typeof b?.session === 'string' ? b.session : null });
+    const result = await ai.coach({ settings: ctx.settings, plan, history: ctx.history, bodyLog: ctx.bodyLog, weekly: engine.weeklyStats(ctx.workouts), allowed, activities: await store.getActivities(), onlySession: typeof b?.session === 'string' ? b.session : null, signals: await userSignals(ctx) });
     const meta = await store.getMeta();
     meta.coach = { ...result, at: new Date().toISOString() };
     await store.saveMeta(meta);
@@ -571,6 +589,18 @@ const routes = {
     if (!p) throw Object.assign(new Error(tr('srv.geenPlanBewaardVoor')), { status: 404 });
     const ctx = await context();
     return { ...engine.planWeekReport(p, ctx.workouts, ctx.sessions), plan: p };
+  },
+  // Lichtere variant van een training uit het plan (bij herstelscore 'rustig aan'; de gebruiker kiest).
+  'POST /api/plan/lighter': async (req) => {
+    const { session } = await body(req);
+    const plan = await store.getPlan();
+    const i = (plan?.sessions || []).findIndex((s) => s.key === session);
+    if (i < 0) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
+    if (plan.sessions[i].lightened) return { plan };
+    plan.sessions[i] = engine.lighterSession(plan.sessions[i]);
+    refreshMuscles(plan);
+    await store.savePlan(plan);
+    return { plan };
   },
   'POST /api/plan/session': async (req) => {
     const { mode = 'empty', from, name, week } = await body(req);

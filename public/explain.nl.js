@@ -66,6 +66,18 @@ export default [
     <p class="muted small">Alle waarden zijn schattingen voor je eigen voortgang, geen medische metingen.</p>`,
   },
   {
+    id: 'signalen', title: 'Signalen: herstel en bijsturen',
+    html: `<p>GymCoach legt gegevens uit verschillende bronnen naast elkaar. Elk signaal staat los weinig vast; samen zeggen ze meer.</p>
+    <dl class="explain-dl">
+      <dt>Vertraging binnen een set</dt><dd>De Gym Monster bewaart de tijd per herhaling. GymCoach vergelijkt de laatste twee herhalingen met de eerste twee. Tot 25% trager is fris, 25–40% zwaar, vanaf 40% ging de set tot het uiterste. Onderzoek naar snelheidsverlies laat zien dat stoppen rond 20–25% gunstig is voor kracht en dat doorgaan meer spiergroei kan geven (Hickmott e.a. 2022). Haal je alle herhalingen maar werden de laatste 40% of meer trager, dan blijft het gewicht nog één keer gelijk. Bewust trage modi (excentrisch, isokinetisch) tellen niet mee.</dd>
+      <dt>Herstelscore</dt><dd>Uit je rusthartslag en HRV (laatste 7 dagen tegenover de 4 weken ervoor), de herhalingen die je haalde en de vertraging in je laatste drie trainingen. Rusthartslag schommelt dag op dag zo'n 10% en HRV 10–20% (Buchheit 2014), daarom zegt één afwijkend signaal niets: pas als twee of meer dezelfde kant op wijzen, staat de score op <i>let op</i>, en bij duidelijke afwijkingen op <i>rustig aan</i>. Dan kun je de volgende training lichter maken (10% minder gewicht, een set minder), en komt de deloadweek eerder dan het vaste ritme. HRV laat GymCoach meewegen maar niet alleen beslissen: bij krachttraining gaf trainen op basis van HRV geen extra winst (Bittencourt e.a. 2024); bij duurtraining een klein voordeel (Granero-Gallegos e.a. 2020).</dd>
+      <dt>Afvaltempo</dt><dd>Bij afvallen vergelijkt GymCoach je gewichtsverlies per week met je spiermassa (Withings, laatste 4 weken). Atleten die ~0,7% per week afvielen, behielden hun spiermassa; bij ~1,4% per week niet (Garthe e.a. 2011). Ga je sneller dan ~1% per week en daalt je spiermassa, dan krijg je een tip; het plan houdt het trainingsvolume op peil.</dd>
+      <dt>Cardio vlak voor krachttraining</dt><dd>Een wandel- of fietsactiviteit die binnen 3 uur vóór een krachttraining eindigde, staat in het rapport. Duur- en krachttraining samen kosten geen spiermassa of maximale kracht, wel wat explosieve kracht als ze in één sessie vallen; met 3 uur of meer ertussen niet (Schumann e.a. 2021).</dd>
+      <dt>HRV en VO2max</dt><dd>Van de Apple Watch, via GymCoach Sync of Health Auto Export. HRV (SDNN, in ms) verschilt sterk tussen mensen: vergelijk met jezelf. VO2max is een schatting van de Apple Watch en laat zien wat wandelen en cardio opleveren.</dd>
+    </dl>
+    <p class="muted small">Dit zijn waarnemingen, geen diagnose. Een hogere rusthartslag kan ook op ziekte wijzen; bij klachten: naar de dokter.</p>`,
+  },
+  {
     id: 'ai', title: 'De AI-coach',
     html: `<p>De AI-coach krijgt je instellingen, leeftijd en geslacht, je recente trainingen, gewicht en activiteiten, en het plan van de regels. Hij mag oefeningen wisselen (alleen uit je eigen catalogus), en sets (2–5), herhalingen (5–20) en gewicht (hooguit 15%) aanpassen. Elke wijziging wordt gecontroleerd en jij kiest wat je overneemt.</p>
     <p><b>Eigen trainingen.</b> De coach ziet welke trainingen je zelf hebt gemaakt, bewerkt of vastgezet, met hun opbouw (supersets, modi, rust, vast gewicht). Daar stelt hij alleen iets voor met een reden, en die voorstellen staan standaard uit. Neem je er een over, dan blijft de opbouw staan: gewicht en herhalingen schuiven per set mee, vast gewicht verandert nooit. Met <i>AI-advies</i> op een training vraag je advies voor alleen die training.</p>
@@ -81,6 +93,12 @@ export default [
       <li>Tanaka H e.a. (2001). Age-predicted maximal heart rate revisited. <i>J Am Coll Cardiol</i>.</li>
       <li>Gallagher D e.a. (2000). Healthy percentage body fat ranges. <i>Am J Clin Nutr</i>.</li>
       <li>Epley B (1985). Poundage chart. <i>Boyd Epley Workout</i>.</li>
+      <li>Hickmott LM et al. (2022). The effect of load and volume autoregulation on muscular strength and hypertrophy: a systematic review and meta-analysis. <i>Sports Medicine – Open</i> 8:9.</li>
+      <li>Garthe I et al. (2011). Effect of two different weight-loss rates on body composition and strength and power-related performance in elite athletes. <i>Int J Sport Nutr Exerc Metab</i> 21(2).</li>
+      <li>Schumann M et al. (2022). Compatibility of concurrent aerobic and strength training for skeletal muscle size and function: an updated systematic review and meta-analysis. <i>Sports Med</i>.</li>
+      <li>Buchheit M (2014). Monitoring training status with HR measures: do all roads lead to Rome? <i>Front Physiol</i>.</li>
+      <li>Bittencourt D et al. (2024). Effects of individualized resistance training prescription with heart rate variability in older women. <i>Front Physiol</i>.</li>
+      <li>Granero-Gallegos A et al. (2020). HRV-based training for improving VO2max in endurance athletes. <i>Int J Environ Res Public Health</i> 17:7999.</li>
     </ul>`,
   },
 ];

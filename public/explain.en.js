@@ -66,6 +66,18 @@ export default [
     <p class="muted small">All values are estimates for your own progress, not medical measurements.</p>`,
   },
   {
+    id: 'signalen', title: 'Signals: recovery and adjusting',
+    html: `<p>GymCoach combines data from different sources. Each signal on its own says little; together they say more.</p>
+    <dl class="explain-dl">
+      <dt>Slowdown within a set</dt><dd>The Gym Monster stores the time per rep. GymCoach compares the last two reps with the first two. Up to 25% slower is fresh, 25–40% hard, from 40% the set went to the limit. Research on velocity loss shows that stopping around 20–25% favours strength and that going further may give more muscle growth (Hickmott et al. 2022). If you hit all reps but the last ones were 40% or more slower, the weight stays the same one more time. Deliberately slow modes (eccentric, isokinetic) do not count.</dd>
+      <dt>Recovery score</dt><dd>From your resting heart rate and HRV (last 7 days against the 4 weeks before), the reps you achieved and the slowdown in your last three workouts. Resting heart rate varies about 10% day to day and HRV 10–20% (Buchheit 2014), so one deviating signal means nothing: only when two or more point the same way does the score say <i>take care</i>, and with clear deviations <i>take it easy</i>. You can then make the next workout lighter (10% less weight, one set fewer), and the deload week comes earlier than the fixed rhythm. HRV counts but never decides alone: in strength training, HRV-guided training gave no extra gains (Bittencourt et al. 2024); in endurance training a small benefit (Granero-Gallegos et al. 2020).</dd>
+      <dt>Rate of weight loss</dt><dd>When losing weight, GymCoach compares your weekly weight loss with your muscle mass (Withings, last 4 weeks). Athletes losing ~0.7% per week kept their muscle mass; at ~1.4% per week they did not (Garthe et al. 2011). If you go faster than ~1% per week and your muscle mass drops, you get a tip; the plan keeps the training volume up.</dd>
+      <dt>Cardio right before strength training</dt><dd>A walk or ride that ended within 3 hours before a strength workout is shown in the report. Combining endurance and strength training costs no muscle mass or maximal strength, but some explosive strength when both are in one session; not with 3 hours or more in between (Schumann et al. 2021).</dd>
+      <dt>HRV and VO2max</dt><dd>From the Apple Watch, via GymCoach Sync or Health Auto Export. HRV (SDNN, in ms) differs a lot between people: compare with yourself. VO2max is an Apple Watch estimate and shows what walking and cardio bring.</dd>
+    </dl>
+    <p class="muted small">These are observations, not a diagnosis. A higher resting heart rate can also mean illness; with complaints, see a doctor.</p>`,
+  },
+  {
     id: 'ai', title: 'The AI coach',
     html: `<p>The AI coach receives your settings, age and sex, your recent workouts, weight and activities, and the plan made by the rules. It may swap exercises (only from your own catalogue), and adjust sets (2–5), reps (5–20) and weight (at most 15%). Every change is checked and you choose what to accept.</p>
     <p><b>Your own workouts.</b> The coach sees which workouts you built, edited or locked yourself, with their structure (supersets, modes, rest, fixed weight). It only suggests changes there with a reason, and those suggestions are unticked by default. If you accept one, the structure stays: weight and reps shift per set, a fixed weight never changes. With <i>AI advice</i> on a workout you ask for advice on that workout alone.</p>
@@ -81,6 +93,12 @@ export default [
       <li>Tanaka H et al. (2001). Age-predicted maximal heart rate revisited. <i>J Am Coll Cardiol</i>.</li>
       <li>Gallagher D et al. (2000). Healthy percentage body fat ranges. <i>Am J Clin Nutr</i>.</li>
       <li>Epley B (1985). Poundage chart. <i>Boyd Epley Workout</i>.</li>
+      <li>Hickmott LM et al. (2022). The effect of load and volume autoregulation on muscular strength and hypertrophy: a systematic review and meta-analysis. <i>Sports Medicine – Open</i> 8:9.</li>
+      <li>Garthe I et al. (2011). Effect of two different weight-loss rates on body composition and strength and power-related performance in elite athletes. <i>Int J Sport Nutr Exerc Metab</i> 21(2).</li>
+      <li>Schumann M et al. (2022). Compatibility of concurrent aerobic and strength training for skeletal muscle size and function: an updated systematic review and meta-analysis. <i>Sports Med</i>.</li>
+      <li>Buchheit M (2014). Monitoring training status with HR measures: do all roads lead to Rome? <i>Front Physiol</i>.</li>
+      <li>Bittencourt D et al. (2024). Effects of individualized resistance training prescription with heart rate variability in older women. <i>Front Physiol</i>.</li>
+      <li>Granero-Gallegos A et al. (2020). HRV-based training for improving VO2max in endurance athletes. <i>Int J Environ Res Public Health</i> 17:7999.</li>
     </ul>`,
   },
 ];

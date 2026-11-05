@@ -51,6 +51,7 @@ With a demo account and sample data; dark theme.
 - **Look back at previous weeks** in the plan: per exercise what was planned versus what you did (sets, reps, weight), with sessions you can copy to this week or save as a template.
 - **Accessories you don't use** (bar, bench, handles, rope, belt, rowing/ski handle, mat): exercises that need them are left out of your plan, swaps and AI suggestions, just like the setting in the Speediance app. Per user.
 - **Done this week**: workouts you've already done are marked in the plan.
+- **Recovery and signals**: GymCoach combines your data. A recovery score (good / take care / take it easy) from resting heart rate, HRV, reps achieved and how much your reps slow down within a set; with *take it easy* you can make the next workout lighter and the deload week comes earlier. Plus: rep slowdown per set in the report, a warning when you lose weight faster than ~1% per week while losing muscle, and a note when cardio ended within 3 hours before a strength workout. Each with its sources in the app.
 - **Optional AI coach** via the Claude API or a local language model (OpenAI-compatible). Suggestions are validated and only applied when you click them.
 
 **Looking back**
@@ -58,7 +59,7 @@ With a demo account and sample data; dark theme.
 - **Statistics**: per muscle group, strength index, push/pull and upper/lower balance, records, muscle mass versus volume, km per week and steps.
 - **Analysis**: calendar with your full history (month and year), when you train, records timeline, energy versus weight and recovery (resting heart rate versus load).
 - **Body** via Withings: weight, fat %, muscle mass, segments per arm/leg/trunk, vascular age, with reference ranges.
-- **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …).
+- **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …), plus HRV and the VO2max estimate of the Apple Watch.
 
 **Use**
 - **English, Dutch and German**: choose per user with the flag menu, or let the app follow your browser. Another language needs a dictionary file (`public/locales/`) plus a translation of the in-app explanation and terms.

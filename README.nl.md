@@ -49,6 +49,7 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Vorige weken terugkijken** in het plan: per oefening wat gepland stond tegenover wat je deed (sets, herhalingen, gewicht), en trainingen die je naar deze week kopieert of als sjabloon bewaart.
 - **Accessoires die je niet gebruikt** (stang, bank, handgrepen, touw, heupgordel, roei- en skihandvat, mat): oefeningen die ze nodig hebben, blijven buiten je plan, wisselen en de voorstellen van de AI-coach, net als de instelling in de Speediance-app. Per gebruiker.
 - **Gedaan deze week**: wat je al hebt getraind staat gemarkeerd in het plan.
+- **Herstel en signalen**: GymCoach combineert je gegevens. Een herstelscore (goed / let op / rustig aan) uit rusthartslag, HRV, gehaalde herhalingen en hoeveel trager je herhalingen binnen een set worden; bij *rustig aan* maak je de volgende training lichter en komt de deloadweek eerder. Verder: vertraging per set in het rapport, een waarschuwing als je sneller dan ~1% per week afvalt en spiermassa verliest, en een melding als cardio binnen 3 uur vóór een krachttraining eindigde. Steeds met de bronnen in de app.
 - **Optionele AI-coach** via de Claude API of een lokaal taalmodel (OpenAI-compatibel). Aanpassingen worden gecontroleerd en alleen toegepast als jij erop klikt.
 
 **Terugkijken**
@@ -56,7 +57,7 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Statistieken**: per spiergroep, krachtindex, duwen/trekken- en boven/onder-balans, records, spiermassa tegen volume, km per week en stappen.
 - **Analyse**: kalender met je volledige historie (maand en jaar), wanneer je traint, records-tijdlijn, energie tegen gewicht en herstel (rusthartslag tegen belasting).
 - **Lichaam** via Withings: gewicht, vet%, spiermassa, segmenten per arm/been/romp, vasculaire leeftijd, met richtwaarden.
-- **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal.
+- **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal, plus HRV en de VO2max-schatting van de Apple Watch.
 
 **Gebruik**
 - **Nederlands, Engels en Duits**: kies per gebruiker met de vlaggetjes (inlogscherm, menubalk of je gebruikersmenu), of laat de app de taal van je browser volgen. Rapporten, mails en de AI-coach gebruiken dezelfde taal. Uitleg en video's van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels. Een taal toevoegen vraagt een woordenboek (`public/locales/`) en een vertaling van de uitleg en de voorwaarden.

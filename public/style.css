@@ -853,3 +853,14 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .seg button { background: none; border: 0; color: inherit; font: inherit; font-size: .85rem; padding: .4rem .65rem; cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button.on { background: var(--line); font-weight: 600; }
+
+/* signalen: herstelscore en afvaltempo op het overzicht */
+.sig-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.sig-card { border-left: 3px solid var(--ok); }
+.sig-card.sig-watch { border-left-color: #e5b84b; }
+.sig-card.sig-easy { border-left-color: #ff6b5a; }
+.sig-list { list-style: none; margin: .5rem 0; padding: 0; display: grid; gap: .25rem; }
+.sig-list li { display: flex; align-items: center; gap: .45rem; }
+.sig-dot { width: .55rem; height: .55rem; border-radius: 50%; background: currentColor; flex: none; }
+.sig-dot.up { color: var(--ok); } .sig-dot.balwarn { color: #e5b84b; } .sig-dot.down { color: #ff6b5a; }
+.sig-note { margin: .2rem 0 .6rem; padding: .45rem .6rem; border-radius: 8px; background: rgba(229, 184, 75, .12); }

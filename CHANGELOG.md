@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.5.1 — 5 november 2026
+- "Geen Speediance-abonnement nodig" verwijderd uit de README en de brochure (nieuwe ondertitel op de voorkant: "Een plan dat met je meegroeit.").
+
 ## 1.5.0 — 5 november 2026
 - Installeren met Docker: `Dockerfile` en `docker-compose.yml`; het image wordt automatisch gebouwd voor amd64 en arm64 en staat op `ghcr.io/stolding/gymcoach`.
 - Geen persoonlijke standaardwaarden meer: de VPS-tunnel vraagt om je eigen VPS (`GYMCOACH_VPS_HOST` in `.env`), voorbeeldadressen in Instellingen zijn neutraal. README beschrijft Tailscale, een eigen reverse proxy of een eigen VPS om GymCoach buitenshuis te gebruiken.

@@ -1,6 +1,6 @@
 # GymCoach
 
-**Je eigen trainingscoach voor de Speediance Gym Monster. Geen Speediance-abonnement nodig.**
+**Je eigen trainingscoach voor de Speediance Gym Monster.**
 
 GymCoach is een trainingsdashboard dat je zelf host. Het leest je trainingen uit via de onofficiële [`speediance-cli`](https://github.com/stozo04/speediance-cli), maakt elke week een persoonlijk schema en zet dat met één klik als programma op je Gym Monster. Metingen van een Withings-weegschaal en activiteiten uit Apple Health komen er automatisch bij.
 

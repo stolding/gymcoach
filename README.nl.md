@@ -43,7 +43,7 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Persoonlijk afgestemd**: rust en volume per geslacht en op je eigen herstel; maximale hartslag met Tanaka of (voor vrouwen) Gulati.
 - **Weekfocus** op spiergroepen; een anatomisch figuur (man, vrouw of neutraal) laat zien wat er getraind wordt.
 - **Met één klik op de Gym Monster**, met warming-up, mobiliteit en cooldown. Programma's heten naar de kalenderweek: `GC 2026-W45 Full Body A`.
-- **Trainingseditor**: pas elke training aan (sets, herhalingen, gewicht, rust en Gym Monster-modus per set, volgorde, warming-up en cooldown) met live spierkaart en sets per spiergroep voor de hele week; bewerkte trainingen staan vast en schuiven mee met je progressie bij een nieuw voorstel.
+- **Trainingseditor**: blader door de oefeningen per spiergroep en soort, bekijk de video van de coach, de aandachtspunten en de uitleg van Speediance (gedeeld bewaard op je eigen server), voeg oefeningen toe aan de training, warming-up of cooldown; pas elke training aan (sets, herhalingen, gewicht, rust en Gym Monster-modus per set, volgorde, warming-up en cooldown) met live spierkaart en sets per spiergroep voor de hele week; bewerkte trainingen staan vast en schuiven mee met je progressie bij een nieuw voorstel.
 - **Gedaan deze week**: wat je al hebt getraind staat gemarkeerd in het plan.
 - **Optionele AI-coach** via de Claude API of een lokaal taalmodel (OpenAI-compatibel). Aanpassingen worden gecontroleerd en alleen toegepast als jij erop klikt.
 

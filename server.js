@@ -17,6 +17,9 @@ import * as health from './lib/health.js';
 import * as mail from './lib/mail.js';
 import { workoutPdf, workoutMail } from './lib/summary.js';
 import { figureFor } from './public/bodymap.js';
+import * as exinfo from './lib/exinfo.js';
+import { createReadStream } from 'node:fs';
+import { stat as fsStat } from 'node:fs/promises';
 import { homedir } from 'node:os';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -500,6 +503,47 @@ const routes = {
     await store.saveSettings(s);
     return { plan: await generatePlan() };
   },
+  // catalogus voor de editor: alle oefeningen, met per oefening jouw historie en de vermeden oefeningen
+  'GET /api/library': async () => {
+    const ctx = await context();
+    const hist = {};
+    for (const h of Object.values(ctx.history)) {
+      if (h.id == null || !h.log.length) continue;
+      const l = h.log[h.log.length - 1];
+      const w = Math.max(...l.sets.map((x) => x.weight));
+      hist[h.id] = { last: String(l.date || '').slice(0, 10), sets: `${l.sets.length} × ${l.sets[0].reps} × ${w} kg`, times: h.log.length, e1rm: Math.round(Math.max(...l.sets.map((x) => engine.epley(x.weight, x.reps))) * 10) / 10 };
+    }
+    return { items: ctx.library.map((e) => ({ id: e.id, name: e.name, muscle: e.muscle, tab: e.tab })), history: hist, avoid: ctx.settings.avoidIds || [] };
+  },
+  // uitleg, beelden en video van een oefening (gedeelde cache, zie lib/exinfo.js)
+  'GET /api/exercise/info': async (req, url) => {
+    const id = Number(url.searchParams.get('id'));
+    if (!(id > 0)) throw Object.assign(new Error('Ongeldige oefening'), { status: 400 });
+    if (!hasSpeediance()) throw Object.assign(new Error('Koppel eerst je Speediance-account'), { status: 400 });
+    const info = await exinfo.getInfo(id, url.searchParams.get('lang') || 'en');
+    // verloop van het geschatte 1RM uit je eigen historie
+    const ctx = await context();
+    const h = Object.values(ctx.history).find((x) => Number(x.id) === id);
+    const trend = (h?.log || []).slice(-16).map((l) => ({ x: String(l.date).slice(0, 10), y: Math.round(Math.max(...l.sets.map((s) => engine.epley(s.weight, s.reps))) * 10) / 10 }));
+    return { info, trend };
+  },
+  // een oefening uit de catalogus klaarzetten voor de editor (blok: ex, warm of cool)
+  'POST /api/exercise/template': async (req) => {
+    const { id, block = 'ex' } = await body(req);
+    const ctx = await context();
+    const lib = ctx.library.find((e) => Number(e.id) === Number(id));
+    if (!lib) throw Object.assign(new Error('Oefening niet in de catalogus'), { status: 404 });
+    let info = store.getExerciseInfo(Number(id), 'en')?.info || null;
+    if (!info && hasSpeediance()) info = await exinfo.getInfo(id, 'en').catch(() => null);
+    if (block === 'warm') {
+      const cable = lib.tab === 'Training';
+      return { item: { kind: cable ? 'cable' : 'mobility', id: lib.id, title: lib.name, reps: cable ? 12 : 10, weight: cable ? Math.max(1, Math.round((info?.recommendedWeight || 6) * 0.3 * 2) / 2) : 0, dose: cable ? '' : '10 herh.' } };
+    }
+    if (block === 'cool') return { item: { id: lib.id, title: lib.name, dose: info?.unilateral ? '30 s per kant' : '30 s' } };
+    return { exercise: engine.exerciseFromLibrary(lib, { settings: ctx.settings, history: ctx.history, info }) };
+  },
+  // foto's en video's van Speediance via de eigen server (gedeelde cache in data/media)
+  'GET /api/media': async (req, url) => ({ __file: await exinfo.mediaFile(url.searchParams.get('u') || '') }),
   'GET /api/alternatives': async (req, url) => {
     const library = await getLibrary();
     return { items: engine.alternatives(library, url.searchParams.get('muscle')) };
@@ -712,9 +756,24 @@ const publicRoutes = {
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.md': 'text/markdown; charset=utf-8' };
 
-// Stuurt het antwoord van een route: JSON, PDF/bestand of een redirect.
-function send(res, out) {
+// Stuurt het antwoord van een route: JSON, PDF/bestand, een bestand van schijf (met Range voor video) of een redirect.
+async function send(res, out, req = null) {
   if (out?.__redirect) { res.writeHead(302, { location: out.__redirect }); return res.end(); }
+  if (out?.__file) {
+    const { file, type } = out.__file;
+    const size = (await fsStat(file)).size;
+    const base = { 'content-type': type || 'application/octet-stream', 'accept-ranges': 'bytes', 'cache-control': 'private, max-age=2592000' };
+    const m = /^bytes=(\d*)-(\d*)$/.exec(req?.headers.range || '');
+    if (m && (m[1] || m[2])) {
+      let start = m[1] ? Number(m[1]) : size - Number(m[2]), end = m[1] && m[2] ? Number(m[2]) : size - 1;
+      if (start < 0 || start >= size || end < start) { res.writeHead(416, { 'content-range': `bytes */${size}` }); return res.end(); }
+      end = Math.min(end, size - 1);
+      res.writeHead(206, { ...base, 'content-range': `bytes ${start}-${end}/${size}`, 'content-length': end - start + 1 });
+      return createReadStream(file, { start, end }).pipe(res);
+    }
+    res.writeHead(200, { ...base, 'content-length': size });
+    return createReadStream(file).pipe(res);
+  }
   if (out?.__binary) {
     const h = { 'content-type': out.__binary.type, 'cache-control': out.__binary.filename ? 'no-store' : 'private, max-age=31536000, immutable', 'content-security-policy': "default-src 'none'" };
     if (out.__binary.filename) h['content-disposition'] = `inline; filename="${out.__binary.filename.replace(/"/g, '')}"`;
@@ -743,7 +802,7 @@ const server = http.createServer(async (req, res) => {
         if (url.pathname === '/api/withings/callback') return send(res, { __html: '<p>Je bent niet (meer) ingelogd. <a href="/">Log in</a> en start het koppelen opnieuw.</p>' });
         res.writeHead(401, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: 'Niet ingelogd', login: true }));
       }
-      return await store.runAs(user, async () => send(res, await handler(req, url)));
+      return await store.runAs(user, async () => send(res, await handler(req, url), req));
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(404); return res.end(); }
     const rel = url.pathname === '/' ? 'index.html' : url.pathname.slice(1);

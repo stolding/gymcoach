@@ -5,6 +5,11 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.7.0 — 5 november 2026
+- Trainingseditor stap 2: oefeningen toevoegen aan oefeningen, warming-up en cooldown. Bladeren per spiergroep en soort (kracht, eigen gewicht, warming-up, stretch, herstel …), zoeken op naam, filters (eerder gedaan, "niet meer voorstellen" verbergen). Per oefening je historie; nieuwe oefeningen krijgen sets, herhalingen, rust en gewicht volgens je doel en historie (of het aanbevolen startgewicht van Speediance).
+- Oefening bekijken: demovideo van de coach, foto's met aandachtspunten, uitvoering in stappen, ademhaling, wat je moet voelen, veelgemaakte fout, hoofd- en meewerkende spieren, Speediance-voorinstellingen en je eigen verloop (geschat 1RM). Bladeren met vorige/volgende.
+- Gedeelde cache: uitleg per oefening staat 30 dagen in de database voor alle gebruikers; foto's en video's worden pas bij bekijken gedownload naar `data/media` en daarna vanaf de eigen server getoond (met ondersteuning voor doorspoelen in video). Back-ups slaan deze cache over.
+
 ## 1.6.0 — 5 november 2026
 - Trainingseditor (stap 1): knop *Bewerken* bij elke training. Pas sets, herhalingen, gewicht, rust en modus per set aan (standaard, excentrisch, isokinetisch, constant, spotter), voeg sets toe of verwijder ze, alle sets gelijk, opwarmset, piramide, volgorde, oefeningen verwijderen, warming-up en cooldown aanpassen. Rechts live het figuur, duur, sets, volume, duwen/trekken en de sets per spiergroep voor de hele week, met waarschuwingen. Ongedaan maken, terug naar voorstel.
 - Bewerkte trainingen staan standaard vast: bij een nieuw voorstel blijven ze staan en schuiven de gewichten mee met de progressie (uit te zetten per oefening met *vast gewicht*). De modus per set gaat mee naar de Gym Monster.

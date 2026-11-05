@@ -101,7 +101,7 @@ export function openEditor(key, ctx) {
     const items = [...(draft.warmup?.mobility || []).map((x, i) => ['mobility', i, x]), ...(draft.warmup?.cable || []).map((x, i) => ['cable', i, x])];
     const min = items.length ? 6 : 0;
     return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.warmup')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min })}</span></div>
-      ${!items.length && (original.warmup?.mobility?.length || original.warmup?.cable?.length) ? `<button type="button" class="btn ghost small" data-ed="restore-warm">${t('ed.restoreBlock')}</button>` : ''}</div>
+      <div class="row gap">${!items.length && (original.warmup?.mobility?.length || original.warmup?.cable?.length) ? `<button type="button" class="btn ghost small" data-ed="restore-warm">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-warm">${t('ed.add')}</button></div></div>
       ${items.length ? `<div class="ed-wc">${items.map(([kind, i, x]) => `<div class="ed-wci"><span>${esc(x.title)}</span>
         ${kind === 'cable' ? `<label>${t('ed.reps')}<input type="number" min="1" max="30" value="${x.reps}" data-ed="wc" data-kind="cable" data-i="${i}" data-f="reps"></label><label>${t('ed.kg')}<input type="number" min="0" step="0.5" value="${x.weight}" data-ed="wc" data-kind="cable" data-i="${i}" data-f="weight"></label>`
         : `<label>${t('ed.reps')}<input type="number" min="1" max="60" value="${x.reps}" data-ed="wc" data-kind="mobility" data-i="${i}" data-f="reps"></label>`}
@@ -111,7 +111,7 @@ export function openEditor(key, ctx) {
   function coolBlock() {
     const items = draft.cooldown || [];
     return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.cooldown')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min: items.length ? 4 : 0 })}</span></div>
-      ${!items.length && original.cooldown?.length ? `<button type="button" class="btn ghost small" data-ed="restore-cool">${t('ed.restoreBlock')}</button>` : ''}</div>
+      <div class="row gap">${!items.length && original.cooldown?.length ? `<button type="button" class="btn ghost small" data-ed="restore-cool">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-cool">${t('ed.add')}</button></div></div>
       ${items.length ? `<div class="ed-wc">${items.map((x, i) => `<div class="ed-wci"><span>${esc(x.title)} <span class="muted small">${esc((x.dose || '').replace(/^\d+\s*s\s*/, ''))}</span></span>
         <label>${t('ed.secs')}<input type="number" min="5" max="180" step="5" value="${secsOf(x.dose)}" data-ed="cool" data-i="${i}"></label>
         <button type="button" class="ed-x" aria-label="${t('ed.remove')}" data-ed="cool-del" data-i="${i}">×</button></div>`).join('')}</div>` : `<div class="muted small">${t('ed.empty')}</div>`}
@@ -217,7 +217,19 @@ export function openEditor(key, ctx) {
       case 'cool-del': snapshot(); draft.cooldown.splice(i, 1); break;
       case 'restore-warm': snapshot(); draft.warmup = clone(original.warmup); break;
       case 'restore-cool': snapshot(); draft.cooldown = clone(original.cooldown); break;
-      case 'add': ctx.toast(t('ed.addSoon')); return;
+      case 'add': case 'add-warm': case 'add-cool': {
+        const block = a === 'add' ? 'ex' : a === 'add-warm' ? 'warm' : 'cool';
+        const ids = block === 'ex' ? draft.exercises.map((x) => x.id) : block === 'warm' ? [...(draft.warmup?.mobility || []), ...(draft.warmup?.cable || [])].map((x) => x.id) : (draft.cooldown || []).map((x) => x.id);
+        openPicker(block, ctx, { muscleKey: selMuscle, inSession: ids }, (items) => {
+          if (!items.length) return;
+          snapshot();
+          if (block === 'ex') { draft.exercises.push(...items); open = draft.exercises.length - items.length; }
+          else if (block === 'warm') { draft.warmup = draft.warmup || { mobility: [], cable: [] }; for (const it of items) { const k = it.kind === 'cable' ? 'cable' : 'mobility'; delete it.kind; draft.warmup[k].push(it); } }
+          else { draft.cooldown = draft.cooldown || []; draft.cooldown.push(...items); }
+          render();
+        });
+        return;
+      }
       case 'undo': if (!undo.length) return; draft = JSON.parse(undo.pop()); changes = Math.max(0, changes - 1); break;
       case 'reset':
         if (!confirm(t('ed.resetConfirm'))) return;
@@ -274,4 +286,165 @@ export function openEditor(key, ctx) {
   dlg.oncancel = (ev) => { if (changes && !confirm(t('ed.cancelConfirm'))) ev.preventDefault(); };
   render();
   dlg.showModal();
+}
+
+// ---------- oefening kiezen (catalogus van het toestel) ----------
+
+const GROUPS = [
+  ['pk.upper', ['Pecs', 'Lats', 'Traps', 'Front Delts', 'Side Delts', 'Rear Delts', 'Biceps', 'Triceps', 'Forearms']],
+  ['pk.lower', ['Quads', 'Hamstrings', 'Glutes', 'Adductors', 'Calves']],
+  ['pk.trunk', ['Abs', 'Back Extensors', 'Full Body']],
+];
+const TABS = ['Training', 'Bodyweight', 'Warmup', 'Stretch', 'Recovery', 'HIIT', 'Pilates-Mat', 'Row & Ski'];
+// sleutel van het figuur → spiergroep in de catalogus
+const KEY2LIB = { pecs: 'Pecs', lats: 'Lats', traps: 'Traps', frontDelts: 'Front Delts', sideDelts: 'Side Delts', rearDelts: 'Rear Delts', biceps: 'Biceps', triceps: 'Triceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings', glutes: 'Glutes', adductors: 'Adductors', calves: 'Calves', abs: 'Abs', lowerBack: 'Back Extensors' };
+const musName = (m) => { const k = 'mus.' + m; const v = t(k); return v === k ? m : v; };
+const tabName = (x) => { const k = 'tab.' + x; const v = t(k); return v === k ? x : v; };
+
+let libCache = null, pdlg = null;
+const infoCache = new Map();
+
+// Opent de kiezer. block: 'ex' (oefeningen), 'warm' of 'cool'. onAdd(lijst) krijgt de klaargezette oefeningen.
+export async function openPicker(block, ctx, { muscleKey = null, inSession = [] } = {}, onAdd) {
+  const { esc } = ctx;
+  if (!pdlg) { pdlg = document.createElement('dialog'); pdlg.className = 'picker-dlg'; document.body.appendChild(pdlg); }
+  pdlg.innerHTML = `<div class="pk-loading muted">${t('pk.loading')}</div>`;
+  pdlg.showModal();
+  try { libCache = libCache || await ctx.api('GET', '/api/library'); } catch (e) { ctx.toast(e.message, true); pdlg.close(); return; }
+  const lib = libCache;
+  const avoid = new Set((lib.avoid || []).map(Number));
+  const inS = new Set(inSession.map(Number));
+  const st = {
+    muscle: block === 'ex' && muscleKey ? KEY2LIB[muscleKey] || null : null,
+    tab: block === 'ex' ? 'Training' : block === 'warm' ? 'Warmup' : 'Stretch',
+    q: '', onlyDone: false, hideAvoid: true, sel: new Set(), detail: null, busy: false,
+  };
+  const counts = (filterTab) => {
+    const c = {};
+    for (const e of lib.items) if (!st.muscle || e.muscle === st.muscle) c[e.tab] = (c[e.tab] || 0) + 1;
+    return c;
+  };
+  const filtered = () => {
+    const q = st.q.trim().toLowerCase();
+    return lib.items.filter((e) => (st.tab === 'all' || e.tab === st.tab) && (!st.muscle || e.muscle === st.muscle) && (!q || e.name.toLowerCase().includes(q))
+      && (!st.onlyDone || lib.history[e.id]) && (!st.hideAvoid || !avoid.has(Number(e.id))))
+      .sort((a, b) => (lib.history[b.id]?.times || 0) - (lib.history[a.id]?.times || 0) || a.name.localeCompare(b.name));
+  };
+  const title = block === 'warm' ? t('pk.titleWarm') : block === 'cool' ? t('pk.titleCool') : t('pk.title');
+
+  function row(e) {
+    const h = lib.history[e.id];
+    const on = st.sel.has(Number(e.id));
+    return `<div class="pk-row${on ? ' on' : ''}">
+      <input type="checkbox" ${on ? 'checked' : ''} data-pk="sel" data-id="${e.id}" aria-label="${t('pk.select')}: ${esc(e.name)}">
+      <button type="button" class="pk-name" data-pk="detail" data-id="${e.id}"><b>${esc(e.name)}</b>
+        <span class="muted small">${esc(musName(e.muscle))} · ${esc(tabName(e.tab))}${inS.has(Number(e.id)) ? ` · <span class="badge">${t('pk.inSession')}</span>` : ''}${avoid.has(Number(e.id)) ? ` · <span class="badge warn">${t('pk.avoided')}</span>` : ''}</span>
+        <span class="small ${h ? 'up' : 'muted'}">${h ? esc(t('pk.done', { date: h.last, sets: h.sets, times: h.times })) : t('pk.new')}</span></button>
+      <span class="pk-chev" aria-hidden="true">›</span></div>`;
+  }
+
+  function detailHtml(e, info, trend, err) {
+    const list = filtered(); const i = list.findIndex((x) => x.id === e.id);
+    const on = st.sel.has(Number(e.id));
+    const h = lib.history[e.id];
+    const spark = trend?.length > 1 ? (() => { const ys = trend.map((p) => p.y), lo = Math.min(...ys), hi = Math.max(...ys) || 1; const pts = trend.map((p, j) => `${(j / (trend.length - 1)) * 600},${50 - ((p.y - lo) / (hi - lo || 1)) * 42}`).join(' '); return `<svg viewBox="0 0 600 54" preserveAspectRatio="none" class="pk-spark" role="img" aria-label="${t('pk.history')}"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5"/></svg><div class="muted small">${esc(trend[0].x)}: ${String(trend[0].y).replace('.', ',')} kg → ${esc(trend[trend.length - 1].x)}: ${String(trend[trend.length - 1].y).replace('.', ',')} kg</div>`; })() : `<div class="muted small">${h ? '' : t('pk.noHistory')}</div>`;
+    return `<div class="pk-dhead"><button type="button" class="btn ghost small" data-pk="back">${t('pk.back')}</button>
+        <div class="row gap"><button type="button" class="btn ghost small" data-pk="nav" data-d="-1" aria-label="${t('pk.prev')}" ${i <= 0 ? 'disabled' : ''}>‹</button><button type="button" class="btn ghost small" data-pk="nav" data-d="1" aria-label="${t('pk.next')}" ${i < 0 || i >= list.length - 1 ? 'disabled' : ''}>›</button></div></div>
+      <div class="pk-detail">
+        <h3>${esc(info?.title || e.name)}</h3>
+        <div class="muted small">${esc(musName(e.muscle))} · ${esc(tabName(e.tab))}${info?.barbell ? ' · ' + t('pk.barbell') : ''}${info?.unilateral ? ' · ' + t('pk.perSide') : ''}</div>
+        ${err ? `<div class="note">${esc(t('pk.infoError', { msg: err }))}</div>` : !info ? `<div class="muted">${t('pk.loading')}</div>` : `
+        <div class="pk-media">
+          ${info.video ? `<video controls preload="none" playsinline ${info.poster || info.img ? `poster="${esc(info.poster || info.img)}"` : ''} src="${esc(info.video)}"></video>` : info.img ? `<img src="${esc(info.img)}" alt="">` : ''}
+          <div class="pk-mus"><div class="eyebrow">${t('pk.muscles')}</div>
+            ${info.main.map((m) => `<div class="row between"><span>${esc(musName(m))}</span><span class="accent-text small">${t('pk.main')}</span></div>`).join('')}
+            ${info.aux.map((m) => `<div class="row between"><span>${esc(musName(m))}</span><span class="muted small">${t('pk.aux')}</span></div>`).join('')}
+            ${info.coach ? `<div class="muted small" style="margin-top:auto">${esc(t('pk.coach', { name: info.coach }))}</div>` : ''}</div>
+        </div>
+        ${info.steps ? `<div><div class="eyebrow">${t('pk.steps')}</div><p class="pk-text">${esc(info.steps)}</p></div>` : ''}
+        ${info.keyPoints.length ? `<div><div class="eyebrow">${t('pk.keyPoints')}</div><div class="pk-kps">${info.keyPoints.map((k) => `<figure>${k.img ? `<img src="${esc(k.img)}" alt="" loading="lazy">` : ''}<figcaption class="pk-text">${esc(k.text)}</figcaption></figure>`).join('')}</div></div>` : ''}
+        <div class="pk-facts">
+          ${info.breathing ? `<div><b>${t('pk.breathing')}:</b> ${esc(info.breathing)}</div>` : ''}
+          ${info.feeling ? `<div><b>${t('pk.feeling')}:</b> ${esc(info.feeling)}</div>` : ''}
+          ${info.mistake ? `<div><b class="warn-text">${t('pk.mistake')}:</b> ${esc(info.mistake)}</div>` : ''}
+        </div>
+        ${info.presets?.length ? `<div><div class="eyebrow">${t('pk.presets')}</div>${info.presets.filter((p) => p.name).map((p) => `<div class="small muted">${esc(t('pk.preset', { name: p.name, sets: p.sets, r1: p.reps[0], r2: p.reps[1], s1: p.rest[0], s2: p.rest[1] }))}</div>`).join('')}</div>` : ''}
+        <div class="muted small">${t('pk.source')}</div>`}
+        <div><div class="eyebrow">${t('pk.history')}</div>${h ? `<div class="small up">${esc(t('pk.done', { date: h.last, sets: h.sets, times: h.times }))}</div>` : ''}${spark}</div>
+      </div>
+      <div class="pk-dfoot"><button type="button" class="btn ${on ? 'ghost' : 'accent'}" data-pk="toggle" data-id="${e.id}">${on ? t('pk.deselect') : t('pk.select')}</button></div>`;
+  }
+
+  function render() {
+    const c = counts();
+    const list = filtered();
+    pdlg.innerHTML = `<div class="pk">
+      <div class="pk-top"><div><div class="eyebrow">${esc(title)}</div></div><button type="button" class="btn ghost small" data-pk="close" aria-label="${t('pk.close')}">✕</button></div>
+      <div class="pk-body">
+        <aside class="pk-side">
+          <div class="eyebrow">${t('pk.muscle')}</div>
+          <button type="button" class="chip ${!st.muscle ? 'on' : ''}" data-pk="muscle" data-m="">${t('pk.anyMuscle')}</button>
+          ${GROUPS.map(([g, ms]) => `<div class="muted small">${t(g)}</div><div class="pk-chips">${ms.map((m) => `<button type="button" class="chip ${st.muscle === m ? 'on' : ''}" data-pk="muscle" data-m="${esc(m)}">${esc(musName(m))}</button>`).join('')}</div>`).join('')}
+          <div class="eyebrow" style="margin-top:.6rem">${t('pk.filters')}</div>
+          <label class="inline-check small"><input type="checkbox" data-pk="onlyDone" ${st.onlyDone ? 'checked' : ''}> ${t('pk.onlyDone')}</label>
+          <label class="inline-check small"><input type="checkbox" data-pk="hideAvoid" ${st.hideAvoid ? 'checked' : ''}> ${t('pk.hideAvoid')}</label>
+        </aside>
+        <section class="pk-main">${st.detail ? '<div class="pk-dwrap"></div>' : `
+          <input type="search" class="pk-search" placeholder="${esc(t('pk.search'))}" aria-label="${esc(t('pk.search'))}" value="${esc(st.q)}" data-pk="q">
+          <div class="pk-tabs"><button type="button" class="chip ${st.tab === 'all' ? 'on' : ''}" data-pk="tab" data-t="all">${t('pk.all')}</button>${TABS.filter((x) => c[x]).map((x) => `<button type="button" class="chip ${st.tab === x ? 'on' : ''}" data-pk="tab" data-t="${esc(x)}">${esc(tabName(x))} · ${c[x]}</button>`).join('')}</div>
+          <div class="pk-list">${list.length ? list.slice(0, 150).map(row).join('') + (list.length > 150 ? `<div class="muted small">${t('pk.more', { n: list.length - 150 })}</div>` : '') : `<div class="muted">${t('pk.none')}</div>`}</div>`}
+        </section>
+      </div>
+      <div class="pk-foot"><span class="small">${t('pk.selected', { n: st.sel.size })}</span><button type="button" class="btn accent" data-pk="add" ${st.sel.size && !st.busy ? '' : 'disabled'}>${st.busy ? t('pk.adding') : t('pk.add')}</button></div>
+    </div>`;
+    if (st.detail) showDetail(st.detail);
+  }
+
+  async function showDetail(id) {
+    const e = lib.items.find((x) => x.id === id); if (!e) return;
+    const wrap = pdlg.querySelector('.pk-dwrap'); if (!wrap) return;
+    const c = infoCache.get(id);
+    wrap.innerHTML = detailHtml(e, c?.info, c?.trend, c?.err);
+    if (c) return;
+    try { const r = await ctx.api('GET', `/api/exercise/info?id=${encodeURIComponent(id)}&lang=en`); infoCache.set(id, { info: r.info, trend: r.trend }); }
+    catch (err) { infoCache.set(id, { err: err.message }); }
+    if (st.detail === id) { const w = pdlg.querySelector('.pk-dwrap'); const x = infoCache.get(id); if (w) w.innerHTML = detailHtml(e, x.info, x.trend, x.err); }
+  }
+
+  pdlg.onclick = async (ev) => {
+    const b = ev.target.closest('[data-pk]'); if (!b || b.tagName === 'INPUT') return;
+    const a = b.dataset.pk;
+    if (a === 'close') { pdlg.close(); return; }
+    if (a === 'muscle') { st.muscle = b.dataset.m || null; st.detail = null; }
+    else if (a === 'tab') st.tab = b.dataset.t;
+    else if (a === 'detail') st.detail = isNaN(+b.dataset.id) ? b.dataset.id : +b.dataset.id;
+    else if (a === 'back') st.detail = null;
+    else if (a === 'nav') { const list = filtered(); const i = list.findIndex((x) => x.id === st.detail) + Number(b.dataset.d); if (list[i]) st.detail = list[i].id; }
+    else if (a === 'toggle') { const id = Number(b.dataset.id); if (st.sel.has(id)) st.sel.delete(id); else st.sel.add(id); }
+    else if (a === 'add') {
+      st.busy = true; render();
+      const out = [];
+      try {
+        for (const id of st.sel) {
+          const r = await ctx.api('POST', '/api/exercise/template', { id, block });
+          out.push(r.exercise || r.item);
+        }
+        pdlg.close(); onAdd(out);
+      } catch (err) { ctx.toast(err.message, true); st.busy = false; render(); }
+      return;
+    } else return;
+    render();
+  };
+  pdlg.onchange = (ev) => {
+    const el = ev.target; const a = el.dataset?.pk;
+    if (a === 'sel') { const id = Number(el.dataset.id); if (el.checked) st.sel.add(id); else st.sel.delete(id); render(); }
+    else if (a === 'onlyDone' || a === 'hideAvoid') { st[a] = el.checked; render(); }
+  };
+  pdlg.oninput = (ev) => {
+    if (ev.target.dataset?.pk !== 'q') return;
+    st.q = ev.target.value;
+    const listEl = pdlg.querySelector('.pk-list'); const list = filtered();
+    if (listEl) listEl.innerHTML = list.length ? list.slice(0, 150).map(row).join('') : `<div class="muted">${t('pk.none')}</div>`;
+  };
+  render();
 }

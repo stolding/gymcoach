@@ -39,6 +39,7 @@ Hoe de code in elkaar zit, voor wie GymCoach wil aanpassen of uitbreiden. Wat de
 | `lib/speediance.js` | Directe Speediance-API met de CLI-sessie (programma's tonen en verwijderen). |
 | `lib/withings.js` | Withings OAuth en metingen ophalen. |
 | `lib/health.js` | Ontvanger voor Apple Health: workouts, hartslagverloop, dagwaarden, koppelsleutel. |
+| `lib/exinfo.js` | Uitleg, foto's en video's per oefening van Speediance, met gedeelde cache (database + `data/media`). |
 | `lib/acttypes.js` | Soorten activiteiten uit Apple Health → Nederlandse naam en categorie. |
 | `lib/auth.js` | Gebruikers, scrypt-wachtwoorden, sessies en cookies. |
 | `lib/summary.js` | Trainingsrapport als PDF en als mail. |
@@ -46,6 +47,8 @@ Hoe de code in elkaar zit, voor wie GymCoach wil aanpassen of uitbreiden. Wat de
 | `lib/mail.js` | Minimale SMTP-client (TLS/STARTTLS, AUTH, bijlagen). |
 | `public/index.html`, `style.css` | De pagina en de opmaak (thema's via CSS-variabelen). |
 | `public/app.js` | De app in de browser: alle tabbladen, grafieken (eigen SVG), instellingen, wizard. |
+| `public/editor.js` | Trainingseditor en de kiezer voor oefeningen (met "Oefening bekijken"). |
+| `public/i18n.js` | Teksten per taal (`t('sleutel')`), begin van meertaligheid. |
 | `public/bodymap.js` | Spierkaart (SVG) met man-, vrouw- en neutraal figuur; ook gebruikt door de PDF. |
 | `public/explain.js` | Uitleg "Hoe GymCoach werkt". |
 | `public/terms.js` | Voorwaarden en gezondheidsverklaring (met versienummer). |
@@ -76,6 +79,7 @@ Gedeelde instellingen (AI, Withings-app, SMTP, automatisch syncen) staan in `glo
 | `activities` | Activiteiten uit Apple Health. |
 | `health_daily` | Dagwaarden: stappen, actieve energie, afstand, rusthartslag. |
 | `exercise_library` | Oefeningencatalogus per toesteltype. |
+| `exercise_info` | Gedeelde cache: uitleg en beelden per oefening en taal (30 dagen). |
 | `avatars` | Profielfoto's. |
 
 Nieuwe kolommen worden bij het opstarten toegevoegd (zie "kolommen die later zijn toegevoegd" in `lib/store.js`).

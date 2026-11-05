@@ -73,20 +73,21 @@
   <section id="tab-plan" class="panel">
     <div class="row between wrap gap">
       <div>
-        <h1 id="planTitle">Weekplan</h1>
+        <div class="week-nav"><button type="button" class="btn ghost small wk-arrow" id="wkPrev" aria-label="Vorige week" title="Vorige week" disabled>‹</button><h1 id="planTitle">Weekplan</h1><button type="button" class="btn ghost small wk-arrow" id="wkNext" aria-label="Volgende week" title="Volgende week" disabled>›</button></div>
         <div id="planMeta" class="muted"></div>
       </div>
-      <div class="row gap wrap">
+      <div class="row gap wrap cur-only">
         <button id="newSessBtn" class="btn">+ Nieuwe training</button>
         <button id="genBtn" class="btn">Nieuw voorstel</button>
         <button id="coachBtn" class="btn accent">AI-coach advies</button>
       </div>
     </div>
+    <div id="pastWeek" class="hidden"></div>
     <div id="coachPanel" class="card coach hidden"></div>
-    <div id="planOverview"></div>
-    <div id="sessions" class="sessions"></div>
-    <div id="tplCard" class="card"></div>
-    <div class="card">
+    <div id="planOverview" class="cur-only"></div>
+    <div id="sessions" class="sessions cur-only"></div>
+    <div id="tplCard" class="card cur-only"></div>
+    <div class="card cur-only">
       <div class="row between wrap gap"><div><h2 style="margin:0">Programma’s op je Gym Monster</h2>
         <div class="muted small">Ruim oude GymCoach-trainingen op je account en toestel op.</div></div>
         <button class="btn" id="programsLoad">Toon programma’s</button></div>

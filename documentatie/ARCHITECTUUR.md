@@ -81,6 +81,7 @@ Gedeelde instellingen (AI, Withings-app, SMTP, automatisch syncen) staan in `glo
 | `health_daily` | Dagwaarden: stappen, actieve energie, afstand, rusthartslag. |
 | `exercise_library` | Oefeningencatalogus per toesteltype. |
 | `exercise_info` | Gedeelde cache: uitleg en beelden per oefening en taal (30 dagen). Foto's en video's staan in `data/media/`. |
+| `plan_archive` | Elk weekplan per kalenderweek (de laatste versie van die week), voor terugkijken. `store.savePlan` schrijft hier automatisch mee. |
 | `templates` | Sjablonen voor trainingen: eigenaar, naam, de training als JSON en of hij gedeeld is met alle gebruikers op de server. |
 | `avatars` | Profielfoto's. |
 
@@ -105,6 +106,7 @@ Alle routes staan in het object `routes` in `server.js`, als `'METHODE /pad': as
 Groepen:
 - **Toestand en weergave**: `/api/state`, `/api/stats`, `/api/analysis`, `/api/workouts`, `/api/workout`, `/api/workout/pdf`, `/api/activities`, `/api/about`.
 - **Plan**: `/api/plan/generate`, `/api/plan` (PUT), `/api/plan/session` (POST: nieuwe eigen training; DELETE), `/api/plan/push`, `/api/focus`, `/api/swap`, `/api/avoid`, `/api/alternatives`, `/api/coach`, `/api/coach/apply`, `/api/coach/dismiss`.
+- **Vorige weken**: `/api/plan/weeks` (bewaarde weken met samenvatting), `/api/plan/week?w=2026-W44` (gepland tegenover gedaan per oefening, `engine.planWeekReport`).
 - **Oefeningen en sjablonen**: `/api/library` (catalogus met je historie), `/api/exercise/info` (uitleg en beelden, gecachet), `/api/exercise/template`, `/api/media` (foto's en video's uit de cache, met Range), `/api/templates` (GET, POST, DELETE), `/api/template`, `/api/templates/share`.
 - **Toestel**: `/api/sync`, `/api/account`, `/api/account/detect`, `/api/programs`, `/api/programs/delete`, `/api/library/refresh`.
 - **Koppelingen**: `/api/withings/*`, `/api/health/*` (de ingest-route gebruikt de koppelsleutel in plaats van een sessie), `/api/mail/test`, `/api/workout/mail`.

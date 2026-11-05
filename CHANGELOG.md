@@ -5,6 +5,10 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.13.0 — 5 november 2026
+- Vorige weken terugkijken in Plan: met ‹ › naast de weektitel blader je door bewaarde weekplannen. Per week: trainingen gedaan, sets gehaald, volume en tijd. Per training per oefening wat gepland stond tegenover wat je deed (✓ gehaald, ↓ minder, ↑ meer, – niet gedaan), en oefeningen die je deed maar niet gepland waren. Vanuit een vorige week kun je een training naar deze week kopiëren, als sjabloon bewaren of het rapport openen.
+- Elk weekplan wordt nu bewaard (tabel `plan_archive`, per week de laatste versie). De geschiedenis begint bij deze versie; het huidige plan wordt meteen bewaard.
+
 ## 1.12.1 — 5 november 2026
 - Accessoires die je niet gebruikt staan nu duidelijk aangegeven: felle rode rand en een zachte rode achtergrond.
 

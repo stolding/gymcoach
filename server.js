@@ -547,15 +547,36 @@ const routes = {
     return { ok: true };
   },
   // nieuwe training in het plan: leeg, kopie van een training uit het plan, of uit een sjabloon
+  // Vorige weken: lijst met weken in het archief, en per week gepland tegenover gedaan (per oefening).
+  'GET /api/plan/weeks': async () => {
+    const cur = await store.getPlan();
+    if (cur?.sessions && !store.listArchivedWeeks().some((w) => w.week === engine.planLabel(cur))) store.archivePlan(cur);
+    const ctx = await context();
+    return { weeks: store.listArchivedWeeks().map((w) => {
+      const p = store.getArchivedPlan(w.week);
+      const r = engine.planWeekReport(p, ctx.workouts, ctx.sessions);
+      return { week: w.week, ...r.summary };
+    }) };
+  },
+  'GET /api/plan/week': async (req, url) => {
+    const w = String(url.searchParams.get('w') || '');
+    if (!/^\d{4}-W\d{2}$/.test(w)) throw Object.assign(new Error('Ongeldige week'), { status: 400 });
+    const p = store.getArchivedPlan(w);
+    if (!p) throw Object.assign(new Error('Geen plan bewaard voor deze week'), { status: 404 });
+    const ctx = await context();
+    return { ...engine.planWeekReport(p, ctx.workouts, ctx.sessions), plan: p };
+  },
   'POST /api/plan/session': async (req) => {
-    const { mode = 'empty', from, name } = await body(req);
+    const { mode = 'empty', from, name, week } = await body(req);
     const plan = await store.getPlan();
     if (!plan) throw Object.assign(new Error('Maak eerst een plan'), { status: 400 });
     const ctx = await context();
     let base;
     let foreign = false;
     if (mode === 'copy') {
-      const src = plan.sessions.find((x) => x.key === from);
+      // kopie uit dit plan, of met { week } uit een vorige week in het archief
+      const srcPlan = week ? store.getArchivedPlan(String(week)) : plan;
+      const src = srcPlan?.sessions.find((x) => x.key === from);
       if (!src || src.outdoor) throw Object.assign(new Error('Training niet gevonden'), { status: 404 });
       base = JSON.parse(JSON.stringify(src));
       for (const k of ['original', 'pushedAt', 'changedAfterPush', 'edited']) delete base[k];

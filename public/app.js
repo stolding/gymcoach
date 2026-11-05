@@ -270,6 +270,109 @@ const FOCUS_WORDS = {
 const setsSummary = (e) => `${e.sets.length} × ${e.sets[0]?.reps} · ${e.sets[0]?.weight} kg`;
 const MAX_MUSCLE = () => Math.max(1, ...Object.values(state.plan?.muscles || {}));
 
+// ---------- vorige weken ----------
+// Het tabblad Plan kan terugbladeren naar bewaarde weekplannen: per training gepland tegenover gedaan, per oefening.
+const nlNum = (n) => Number(n || 0).toLocaleString('nl-NL', { maximumFractionDigits: 1 });
+let pastWeek = null;       // null = deze week, anders "2026-W44"
+let weekList = null;       // [{ week, planned, done, … }] uit het archief, nieuwste eerst
+let pastData = null;       // het rapport van de bekeken week
+
+// Haalt de lijst met bewaarde weken op (één keer per bezoek aan Plan).
+async function loadWeekList() {
+  try { weekList = (await api('GET', '/api/plan/weeks')).weeks; } catch { weekList = []; }
+  updateWeekNav();
+}
+// Zet de pijltjes aan of uit: terug als er een oudere week is, vooruit als je niet in deze week zit.
+function updateWeekNav() {
+  const cur = state.plan ? planLabel(state.plan) : null;
+  const at = pastWeek || cur;
+  const older = (weekList || []).filter((w) => w.week < at && w.week !== cur);
+  $('#wkPrev').disabled = !older.length;
+  $('#wkNext').disabled = !pastWeek;
+}
+// Naar een andere week; null = terug naar deze week.
+async function gotoWeek(week) {
+  const cur = state.plan ? planLabel(state.plan) : null;
+  pastWeek = week && week !== cur ? week : null;
+  document.querySelectorAll('#tab-plan .cur-only').forEach((el) => el.classList.toggle('hidden', !!pastWeek));
+  $('#pastWeek').classList.toggle('hidden', !pastWeek);
+  if (pastWeek) { $('#coachPanel').classList.add('hidden'); $('#pastWeek').innerHTML = '<div class="card muted">Laden …</div>'; try { pastData = await api('GET', '/api/plan/week?w=' + pastWeek); } catch (e) { pastData = null; toast(e.message, true); } }
+  else { pastData = null; renderCoach(state.meta?.coach || null); }
+  renderPlan();
+}
+$('#wkPrev').addEventListener('click', () => {
+  const cur = state.plan ? planLabel(state.plan) : null, at = pastWeek || cur;
+  const prev = (weekList || []).find((w) => w.week < at && w.week !== cur);
+  if (prev) gotoWeek(prev.week);
+});
+$('#wkNext').addEventListener('click', () => {
+  const cur = state.plan ? planLabel(state.plan) : null;
+  const next = [...(weekList || [])].reverse().find((w) => w.week > pastWeek && w.week !== cur);
+  gotoWeek(next ? next.week : null);
+});
+
+// Sets kort opschrijven: "3 × 10 × 20 kg" als ze gelijk zijn, anders "10×20 · 8×22 kg".
+function setsShort(sets) {
+  if (!sets?.length) return '—';
+  const same = sets.every((x) => x.reps === sets[0].reps && x.weight === sets[0].weight);
+  const kg = (w) => nlNum(w);
+  return same ? `${sets.length} × ${sets[0].reps} × ${kg(sets[0].weight)} kg` : sets.map((x) => `${x.reps}×${kg(x.weight)}`).join(' · ') + ' kg';
+}
+const PW_STATUS = { ok: ['ok', '✓', 'gehaald'], less: ['less', '↓', 'minder dan gepland'], more: ['more', '↑', 'meer dan gepland'], missed: ['missed', '–', 'niet gedaan'] };
+
+// Toont een vorige week: samenvatting en per training de oefeningen, gepland tegenover gedaan.
+function renderPastWeek() {
+  const [y, w] = pastWeek.split('-W');
+  $('#planTitle').textContent = `Week ${+w} · ${y}`;
+  updateWeekNav();
+  const d = pastData;
+  if (!d) { $('#planMeta').textContent = ''; $('#pastWeek').innerHTML = '<div class="card muted">Geen plan bewaard voor deze week.</div>'; return; }
+  const sm = d.summary;
+  $('#planMeta').innerHTML = `Terugkijken · <span class="badge">alleen bekijken</span> · <a href="#" id="pwBack">naar deze week</a>`;
+  const card = (s) => {
+    const dn = s.done;
+    const when = dn ? new Date(dn.date + 'T12:00:00').toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+    const rows = s.exercises.map((e) => {
+      const [cls, ico, tip] = dn ? PW_STATUS[e.status] : ['none', '', 'niet gedaan'];
+      return `<tr class="pw-${cls}"><td>${e.group ? `<span class="badge ss">${esc(e.group)}</span> ` : ''}${esc(e.title)}</td><td class="pw-n">${setsShort(e.planned)}</td><td class="pw-n">${dn ? setsShort(e.done) : ''}</td><td class="pw-st" title="${tip}" data-tip="${tip}">${ico}</td></tr>`;
+    }).join('') + s.extra.map((e) => `<tr class="pw-extra"><td>${esc(e.title)} <span class="muted small">niet gepland</span></td><td class="pw-n">—</td><td class="pw-n">${setsShort(e.done)}</td><td class="pw-st" data-tip="extra gedaan">+</td></tr>`).join('');
+    return `<article class="card pw-card ${dn ? 'pw-done' : 'pw-skip'}" data-key="${esc(s.key)}">
+      <header class="row between wrap gap"><div><h3 style="margin:0">${esc(s.name)}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}</h3>
+        <div class="small ${dn ? '' : 'muted'}">${dn ? `<span class="badge ok">gedaan · ${esc(when)}</span> ${dn.minutes ? `${dn.minutes} min · ` : ''}${dn.volume ? `${nlNum(dn.volume)} kg` : ''}` : '<span class="badge warn">niet gedaan</span>'}</div></div>
+        <div class="row gap wrap">${dn ? '<button type="button" class="btn ghost small" data-pw="view">Rapport</button>' : ''}
+          <button type="button" class="btn ghost small" data-pw="copy">Kopieer naar deze week</button>
+          <button type="button" class="btn ghost small" data-pw="tpl">Opslaan als sjabloon</button></div></header>
+      ${s.exercises.length || s.extra.length ? `<table class="pw-tbl"><thead><tr><td>Oefening</td><td class="pw-n">Gepland</td><td class="pw-n">Gedaan</td><td></td></tr></thead><tbody>${rows}</tbody></table>` : '<p class="muted small">Geen oefeningen.</p>'}
+    </article>`;
+  };
+  $('#pastWeek').innerHTML = `<div class="card pw-sum">
+      <div class="pw-tiles">
+        <div><span class="eyebrow">Trainingen</span><b>${sm.done} van ${sm.planned}</b></div>
+        <div><span class="eyebrow">Sets gehaald</span><b>${sm.doneSets} van ${sm.plannedSets}</b></div>
+        <div><span class="eyebrow">Volume</span><b>${nlNum(sm.volume)} kg</b></div>
+        <div><span class="eyebrow">Tijd</span><b>${sm.minutes} min</b></div>
+      </div>
+      <div class="muted small pw-legend"><span class="pw-ok">✓ gehaald</span><span class="pw-less">↓ minder dan gepland</span><span class="pw-more">↑ meer</span><span class="pw-missed">– niet gedaan</span></div>
+    </div>
+    <div class="pw-grid">${d.sessions.map(card).join('')}</div>`;
+  $('#pwBack')?.addEventListener('click', (ev) => { ev.preventDefault(); gotoWeek(null); });
+  $('#pastWeek').querySelectorAll('.pw-card').forEach((c) => {
+    const s = d.sessions.find((x) => x.key === c.dataset.key);
+    const src = d.plan?.sessions.find((x) => x.key === s.key);
+    c.querySelector('[data-pw=view]')?.addEventListener('click', () => openWorkouts([s.done.id]));
+    c.querySelector('[data-pw=copy]').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
+      try {
+        const r = await api('POST', '/api/plan/session', { mode: 'copy', week: pastWeek, from: s.key, name: s.name });
+        state.plan = r.plan; toast(`“${s.name}” staat nu ook in deze week`); gotoWeek(null);
+      } catch (e) { toast(e.message, true); }
+    }));
+    c.querySelector('[data-pw=tpl]').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
+      const name = await askText(t('ed.tplName'), s.name); if (!name || !src) return;
+      try { await api('POST', '/api/templates', { name, session: src }); toast(t('ed.tplSaved', { name })); loadTemplates(); } catch (e) { toast(e.message, true); }
+    }));
+  });
+}
+
 // Tabblad Plan: weekoverzicht, spierkaart, trainingen en knoppen.
 function renderPlan() {
   const plan = state.plan;
@@ -279,7 +382,9 @@ function renderPlan() {
     $('#planMeta').innerHTML = state.setup?.needed ? 'Nog geen plan. Doorloop eerst de stappen op <a href="#" onclick="document.querySelector(\'.tab[data-tab=home]\').click();return false">Overzicht</a>: Speediance-account, je voorkeuren, en dan je eerste plan.' : 'Nog geen plan. Klik op “Nieuw voorstel”.';
     $('#planOverview').innerHTML = ''; wrap.innerHTML = ''; return;
   }
+  if (pastWeek) return renderPastWeek();
   $('#planTitle').textContent = `Week ${planIso(plan).w} · ${planIso(plan).y}`;
+  updateWeekNav();
   const nDone = plan.sessions.filter((x) => !x.outdoor && doneOf(x)).length, nGym = plan.sessions.filter((x) => !x.outdoor).length;
   $('#planMeta').innerHTML = `${GOAL[plan.goal] || plan.goal} · ${plan.daysPerWeek}× per week · bron: ${esc(plan.source)}` + (plan.deload ? ' · <span class="badge warn">deload-week</span>' : '')
     + (nDone ? ` · <span class="badge ok">${nDone} van ${nGym} gedaan${nDone >= nGym ? ' — week compleet 💪' : ''}</span>` : '');
@@ -2536,7 +2641,7 @@ $('#tplCard').addEventListener('click', async (ev) => {
     }
   } catch (e) { toast(e.message, true); }
 });
-document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'plan') loadTemplates(); }));
+document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'plan') { loadTemplates(); loadWeekList(); } }));
 
 // Venster "Nieuwe training": leeg, kopie van een training uit het plan, of uit een sjabloon.
 $('#newSessBtn').addEventListener('click', async () => {

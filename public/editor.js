@@ -2,7 +2,7 @@
 // met live het anatomische figuur, de kerncijfers en de sets per spiergroep voor de hele week.
 // Wijzigingen gebeuren op een kopie (concept) en worden pas bewaard bij Opslaan.
 import { bodyMap, MUSCLE_LABELS } from './bodymap.js';
-import { t, localeOf } from './i18n.js';
+import { t, localeOf, doseText } from './i18n.js';
 import { askConfirm, askText } from './dialogs.js';
 
 const MODES = [1, 2, 3, 4, 5];
@@ -11,7 +11,7 @@ const BIG = ['pecs', 'lats', 'quads', 'hamstrings', 'glutes']; // grote spiergro
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const num = (v, d = 0) => { const n = Number(String(v).replace(',', '.')); return Number.isFinite(n) ? n : d; };
 const half = (x) => Math.max(0, Math.round(x * 2) / 2);
-const nlNum = (v) => String(v).replace('.', ',');
+const nlNum = (v) => Number(v).toLocaleString(localeOf(), { maximumFractionDigits: 2 });
 
 // Sets per spiergroep in een training: hoofdspier telt 1, meewerkend 0,5 (zoals de engine).
 export function sessionMuscleSets(s) {
@@ -134,7 +134,7 @@ export function openEditor(key, ctx) {
     const items = draft.cooldown || [];
     return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.cooldown')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min: items.length ? 4 : 0 })}</span></div>
       <div class="row gap">${!items.length && original.cooldown?.length ? `<button type="button" class="btn ghost small" data-ed="restore-cool">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-cool">${t('ed.add')}</button></div></div>
-      ${items.length ? `<div class="ed-wc">${items.map((x, i) => `<div class="ed-wci"><span>${esc(x.title)} <span class="muted small">${esc((x.dose || '').replace(/^\d+\s*s\s*/, ''))}</span></span>
+      ${items.length ? `<div class="ed-wc">${items.map((x, i) => `<div class="ed-wci"><span>${esc(x.title)} <span class="muted small">${esc(doseText(x.dose || '').replace(/^\d+\s*s\s*/, ''))}</span></span>
         <label>${t('ed.secs')}<input type="number" min="5" max="180" step="5" value="${secsOf(x.dose)}" data-ed="cool" data-i="${i}"></label>
         <button type="button" class="ed-x" aria-label="${t('ed.remove')}" data-ed="cool-del" data-i="${i}">×</button></div>`).join('')}</div>` : `<div class="muted small">${t('ed.empty')}</div>`}
     </section>`;
@@ -439,7 +439,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
     const list = filtered(); const i = list.findIndex((x) => x.id === e.id);
     const on = st.sel.has(Number(e.id));
     const h = lib.history[e.id];
-    const spark = trend?.length > 1 ? (() => { const ys = trend.map((p) => p.y), lo = Math.min(...ys), hi = Math.max(...ys) || 1; const pts = trend.map((p, j) => `${(j / (trend.length - 1)) * 600},${50 - ((p.y - lo) / (hi - lo || 1)) * 42}`).join(' '); return `<svg viewBox="0 0 600 54" preserveAspectRatio="none" class="pk-spark" role="img" aria-label="${t('pk.history')}"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5"/></svg><div class="muted small">${esc(trend[0].x)}: ${String(trend[0].y).replace('.', ',')} kg → ${esc(trend[trend.length - 1].x)}: ${String(trend[trend.length - 1].y).replace('.', ',')} kg</div>`; })() : `<div class="muted small">${h ? '' : t('pk.noHistory')}</div>`;
+    const spark = trend?.length > 1 ? (() => { const ys = trend.map((p) => p.y), lo = Math.min(...ys), hi = Math.max(...ys) || 1; const pts = trend.map((p, j) => `${(j / (trend.length - 1)) * 600},${50 - ((p.y - lo) / (hi - lo || 1)) * 42}`).join(' '); return `<svg viewBox="0 0 600 54" preserveAspectRatio="none" class="pk-spark" role="img" aria-label="${t('pk.history')}"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5"/></svg><div class="muted small">${esc(trend[0].x)}: ${nlNum(trend[0].y)} kg → ${esc(trend[trend.length - 1].x)}: ${nlNum(trend[trend.length - 1].y)} kg</div>`; })() : `<div class="muted small">${h ? '' : t('pk.noHistory')}</div>`;
     return `<div class="pk-dhead"><button type="button" class="btn ghost small" data-pk="back">${t('pk.back')}</button>
         <div class="row gap"><button type="button" class="btn ghost small" data-pk="nav" data-d="-1" aria-label="${t('pk.prev')}" ${i <= 0 ? 'disabled' : ''}>‹</button><button type="button" class="btn ghost small" data-pk="nav" data-d="1" aria-label="${t('pk.next')}" ${i < 0 || i >= list.length - 1 ? 'disabled' : ''}>›</button></div></div>
       <div class="pk-detail">

@@ -1,12 +1,13 @@
 // Gestileerd anatomisch figuur (voor- en achteraanzicht) met spiergroepen als vlakken.
 // scores: { pecs: 6, quads: 3, ... } → kleurintensiteit per spiergroep.
+import { t } from './i18n.js';
 
-export const MUSCLE_LABELS = {
-  pecs: 'Borst', frontDelts: 'Voorkant schouder', sideDelts: 'Zijkant schouder', rearDelts: 'Achterkant schouder',
-  biceps: 'Biceps', triceps: 'Triceps', forearms: 'Onderarmen', abs: 'Buik / core', lats: 'Rug (lats)',
-  traps: 'Trapezius', lowerBack: 'Onderrug', glutes: 'Bilspieren', quads: 'Quadriceps', hamstrings: 'Hamstrings',
-  calves: 'Kuiten', adductors: 'Adductoren',
-};
+// Namen van de spiergroepen in de taal van de gebruiker (sleutels bm.* in het woordenboek). De server (PDF) zet met
+// setBodymapTranslator zijn eigen vertaler, die de taal van de gebruiker van het verzoek kent.
+let T = t;
+export const setBodymapTranslator = (fn) => { T = fn; };
+const MUSCLE_KEYS = ['pecs', 'frontDelts', 'sideDelts', 'rearDelts', 'biceps', 'triceps', 'forearms', 'abs', 'lats', 'traps', 'lowerBack', 'glutes', 'quads', 'hamstrings', 'calves', 'adductors'];
+export const MUSCLE_LABELS = new Proxy(Object.fromEntries(MUSCLE_KEYS.map((k) => [k, k])), { get: (o, k) => (typeof k === 'string' && k in o ? T(`bm.${k}`) : undefined) });
 
 // Spiegelt een pad rond x = 100 (alleen absolute M/L/Q/C-commando's met x,y-paren).
 function mirror(d) {
@@ -131,5 +132,5 @@ export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Get
   const view = (dx, parts, baseParts, label) => `<g transform="translate(${dx} 0)">${base(baseParts)}${parts.map(shape).join('')}${labels ? `<text x="100" y="416" text-anchor="middle" class="bm-lbl">${label}</text>` : ''}</g>`;
   const trained = Object.entries(scores).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([k]) => MUSCLE_LABELS[k]).join(', ');
   return `<svg class="bodymap${selected ? ' has-sel' : ''}" viewBox="0 0 400 ${labels ? 424 : 404}" style="height:${height}px" role="img" aria-label="${title}: ${trained || 'geen'}">
-    ${view(0, FRONT, FRONT_BASE, 'voor')}${view(200, BACK, BACK_BASE, 'achter')}</svg>`;
+    ${view(0, FRONT, FRONT_BASE, T('sum.voor'))}${view(200, BACK, BACK_BASE, T('sum.achter'))}</svg>`;
 }

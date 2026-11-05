@@ -112,7 +112,7 @@
       <div class="card" id="balanceCard"></div>
       <div class="card"><h2 data-i18n="ui.stats.spiermassaEnTrainingsvolume">Spiermassa en trainingsvolume</h2>
         <div id="chartVolMass" class="chart"></div>
-        <div class="legend"><span class="lg"><i style="background:var(--a)"></i>Volume per week</span><span class="lg"><i style="background:var(--b);height:3px;border-radius:2px"></i>Spiermassa (Withings)</span></div>
+        <div class="legend"><span class="lg"><i style="background:var(--a)"></i><span data-i18n="ui.leg.volumePerWeek">Volume per week</span></span><span class="lg"><i style="background:var(--b);height:3px;border-radius:2px"></i><span data-i18n="ui.leg.muscleWithings">Spiermassa (Withings)</span></span></div>
         <p class="muted small" id="volMassNote" style="margin:.3rem 0 0"></p></div>
     </div>
     <div class="card">
@@ -165,13 +165,13 @@
         <div id="heatmap"></div><p class="muted small" id="heatNote" style="margin:.4rem 0 0"></p></div>
       <div class="card"><h2 data-i18n="ui.analysis.herstel">Herstel</h2>
         <div id="chartRecovery" class="chart"></div>
-        <div class="legend"><span class="lg"><i style="background:var(--a)"></i>Trainingsminuten per week</span><span class="lg"><i style="background:var(--warn);height:3px;border-radius:2px"></i>Hartslag in rust</span></div>
+        <div class="legend"><span class="lg"><i style="background:var(--a)"></i><span data-i18n="ui.leg.trainingMinutes">Trainingsminuten per week</span></span><span class="lg"><i style="background:var(--warn);height:3px;border-radius:2px"></i><span data-i18n="ui.leg.restHr">Hartslag in rust</span></span></div>
         <div id="recoveryNote"></div></div>
     </div>
     <div class="grid2">
       <div class="card"><h2 data-i18n="ui.analysis.calorieenEnGewicht">Calorieën en gewicht</h2>
         <div id="chartEnergy" class="chart"></div>
-        <div class="legend"><span class="lg"><i style="background:var(--a)"></i>Actieve energie per week</span><span class="lg"><i style="background:var(--b);height:3px;border-radius:2px"></i>Gewicht</span></div>
+        <div class="legend"><span class="lg"><i style="background:var(--a)"></i><span data-i18n="ui.leg.activeEnergy">Actieve energie per week</span></span><span class="lg"><i style="background:var(--b);height:3px;border-radius:2px"></i><span data-i18n="ui.leg.weight">Gewicht</span></span></div>
         <p class="muted small" id="energyNote" style="margin:.3rem 0 0"></p></div>
       <div class="card"><h2 data-i18n="ui.analysis.records">Records</h2>
         <div id="chartRecords" class="chart" style="height:140px"></div>
@@ -188,7 +188,7 @@
     <div class="card">
       <div class="row between wrap gap"><h2 data-i18n="ui.stats.perOefening">Per oefening</h2><select id="exSelect"></select></div>
       <div id="chartExercise" class="chart tall"></div>
-      <div class="legend"><span class="dot a"></span>Geschat 1RM <span class="dot b"></span>Zwaarste set</div>
+      <div class="legend"><span class="dot a"></span><span data-i18n="ui.leg.e1rm">Geschat 1RM</span> <span class="dot b"></span><span data-i18n="ui.leg.heaviest">Zwaarste set</span></div>
     </div>
     <div class="card"><div class="row between wrap gap"><h2 data-i18n="tp.title">Trainingen</h2><input type="search" id="woSearch" placeholder="Zoek op naam of datum…" data-i18n-placeholder="ui.progress.zoekOpNaamOf" aria-label="Zoek trainingen" data-i18n-aria-label="ui.progress.zoekTrainingen" style="max-width:240px"></div>
       <p class="muted small" style="margin-top:-.4rem" data-i18n="ui.progress.klikOpEenTraining">Klik op een training voor de oefeningen, sets en gewichten.</p>
@@ -316,7 +316,7 @@
       <div class="admin-only form-sub span2">
       <div class="eyebrow" style="margin-top:.4rem"><span data-i18n="ui.setWithings.withingsAppGedeeld">Withings-app (gedeeld)</span> <span class="badge" data-i18n="ui.setWithings.beheerder">beheerder</span></div>
       <p class="muted" style="margin:-.3rem 0 0" data-i18n="ui.setWithings.maakEenmaligEenGratis">Maak eenmalig een gratis app aan op developer.withings.com (Dashboard → Create an application, type “Public API”). Vul als Callback-URL het adres hieronder in, en neem daarna Client ID en Client secret over.</p>
-      <label><span data-i18n="ui.setWithings.callbackUrl">Callback-URL</span> <input name="withings.redirectUri" placeholder="http://ip-van-je-server:8765/api/withings/callback"></label>
+      <label><span data-i18n="ui.setWithings.callbackUrl">Callback-URL</span> <input name="withings.redirectUri" placeholder="http://ip-van-je-server:8765/api/withings/callback" data-i18n-placeholder="ui.setWithings.cbPh"></label>
       <div class="row gap wrap"><button type="button" class="btn small ghost" id="cbFill" data-i18n="ui.setWithings.vulAdresVanDeze">Vul adres van deze pagina in</button><button type="button" class="btn small ghost" id="cbCopy" data-i18n="ui.setWithings.kopieer">Kopieer</button></div>
       <label><span data-i18n="ui.setWithings.clientId">Client ID</span> <input name="withings.clientId" autocomplete="off"></label>
       <label><span data-i18n="ui.setWithings.clientSecret">Client secret</span> <input name="withings.clientSecret" type="password" autocomplete="off" placeholder="leeg laten = ongewijzigd" data-i18n-placeholder="ui.app.leegLatenOngewijzigd"></label>
@@ -329,7 +329,7 @@
       <div class="card set-pane" data-pane="mail">
         <h2 data-i18n="ui.settings.eMail">E-mail</h2>
         <div class="fgrid">
-      <label><span data-i18n="ui.setMail.jeEMailadres">Je e-mailadres</span> <input name="email" type="email" autocomplete="email" placeholder="naam@voorbeeld.nl"></label>
+      <label><span data-i18n="ui.setMail.jeEMailadres">Je e-mailadres</span> <input name="email" type="email" autocomplete="email" placeholder="naam@voorbeeld.nl" data-i18n-placeholder="ui.setMail.emailPh"></label>
       <label><span data-i18n="ui.setMail.naElkeTrainingEen">Na elke training een samenvatting (PDF) mailen</span>
         <select name="mailSummary"><option value="off" data-i18n="ui.setMail.nee">Nee</option><option value="on" data-i18n="ui.setTraining.ja">Ja</option></select>
         <span class="muted" data-i18n="ui.setMail.naDeSyncGaat">Na de sync gaat er per nieuwe training een mail met de samenvatting als PDF naar je adres. Oude trainingen worden niet gemaild.</span>

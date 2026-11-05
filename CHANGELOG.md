@@ -5,6 +5,14 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.0.0 — 5 november 2026
+GymCoach is meertalig: Nederlands en Engels (fase 6 van issue #1). Voor Nederlandse gebruikers verandert er niets behalve de nieuwe taalkeuze; schermen, PDF-rapporten, mail en een nieuw plan zijn voor en na vergeleken en gelijk.
+- Taalkeuze in Instellingen → Training: *Automatisch* (de taal van je browser) of een vaste taal. Ook het inlogscherm volgt de taal van de browser. Rapporten, mails en de AI-coach gebruiken dezelfde taal; bij *Automatisch* onthoudt de server de taal van je browser voor mails bij automatisch syncen.
+- Engels woordenboek compleet, met de uitleg *Hoe GymCoach werkt* en de voorwaarden in het Engels (de Nederlandse tekst van de voorwaarden is leidend).
+- Uitleg en beelden van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels.
+- Een plan dat in de ene taal is gemaakt, wordt in de andere taal getoond: namen van patronen, cardiodagen en vaste adviezen worden vertaald (eigen namen blijven staan).
+- Laatste losse teksten naar het woordenboek: cardio-tegels, segmentbalans, hartslagtegel, tegels van het trainingsrapport, doseringen van warming-up en cooldown, uren, decimalen in de taal van de gebruiker.
+
 ## 1.17.0 — 5 november 2026
 Meertaligheid, fase 5: rapport, mail en AI-coach. Voor Nederlandse gebruikers verandert er niets; PDF-rapporten, mail en trainingsgegevens zijn voor en na vergeleken en gelijk.
 - PDF-rapport en mail na een training in de taal van de gebruiker, ook datums en getallen; meervoud via het woordenboek.

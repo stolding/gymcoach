@@ -56,9 +56,10 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Statistieken**: per spiergroep, krachtindex, duwen/trekken- en boven/onder-balans, records, spiermassa tegen volume, km per week en stappen.
 - **Analyse**: kalender met je volledige historie (maand en jaar), wanneer je traint, records-tijdlijn, energie tegen gewicht en herstel (rusthartslag tegen belasting).
 - **Lichaam** via Withings: gewicht, vet%, spiermassa, segmenten per arm/been/romp, vasculaire leeftijd, met richtwaarden.
-- **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) met Nederlandse namen.
+- **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal.
 
 **Gebruik**
+- **Nederlands en Engels**: kies per gebruiker, of laat de app de taal van je browser volgen. Rapporten, mails en de AI-coach gebruiken dezelfde taal. Uitleg en video's van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels. Een taal toevoegen kan met één woordenboekbestand (`public/locales/`).
 - **Meerdere gebruikers**, elk met eigen account, Speediance-account, plan en koppelingen; een wizard begeleidt nieuwe gebruikers.
 - **Uitleg in de app**: Instellingen → Over GymCoach → *Hoe GymCoach werkt* legt het plan en alle berekeningen uit, met bronnen.
 - Donker en licht thema; werkt op pc, tablet en telefoon.

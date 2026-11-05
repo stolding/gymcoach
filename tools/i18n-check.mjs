@@ -15,7 +15,8 @@ const args = process.argv.slice(2);
 const files = [
   'server.js',
   ...readdirSync(path.join(ROOT, 'lib')).filter((f) => f.endsWith('.js')).map((f) => 'lib/' + f),
-  ...readdirSync(path.join(ROOT, 'public')).filter((f) => /\.(js|html)$/.test(f) && f !== 'i18n.js').map((f) => 'public/' + f),
+  // explain.en.js, terms.nl.js e.d. zijn al per taal en tellen niet mee
+  ...readdirSync(path.join(ROOT, 'public')).filter((f) => /\.(js|html)$/.test(f) && f !== 'i18n.js' && !/\.[a-z]{2}\.js$/.test(f)).map((f) => 'public/' + f),
 ];
 const src = Object.fromEntries(files.map((f) => [f, readFileSync(path.join(ROOT, f), 'utf8')]));
 const nl = DICTS.nl;
@@ -67,6 +68,8 @@ function htmlLines(s) {
   const blank = (m) => m.replace(/[^\n]/g, ' ');
   const body = s.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<!--[\s\S]*?-->|<title>[\s\S]*?<\/title>/g, blank)
     .replace(/(<(p|span|div)\b[^>]*data-i18n-html="[^"]*"[^>]*>)([\s\S]*?)(<\/\2>)/g, (m, a, t, inner, b) => a + blank(inner) + b);
+  // tekst direct na een sluitende tag (bijv. </i>Volume per week) telt ook
+  for (const m of body.matchAll(/<\/[a-z][\w-]*>([^<]*[A-Za-zÀ-ÿ]{3,}[^<]*)</gi)) if (!/^\s*[,.;:)]/.test(m[1])) out.add(lineOf(m.index));
   for (const m of body.matchAll(/<([a-z][\w-]*)([^>]*)>([^<]*)/gi)) {
     const [, , attrs, text] = m;
     if (/[A-Za-zÀ-ÿ]{2,}/.test(text.replace(/&[a-z]+;/g, '').replace(/\bGymCoach\b/g, '')) && !/data-i18n(-html)?=/.test(attrs)) out.add(lineOf(m.index + m[0].length - text.length));

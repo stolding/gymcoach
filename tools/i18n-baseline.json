@@ -7,7 +7,5 @@
   "lib/store.js": 2,
   "public/app.js": 2,
   "public/bodymap.js": 1,
-  "public/explain.js": 45,
-  "public/index.html": 1,
-  "public/terms.js": 15
+  "public/index.html": 1
 }

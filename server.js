@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 import * as cli from './lib/cli.js';
 import * as store from './lib/store.js';
 import * as engine from './lib/engine.js';
-import { ALL_LANGS } from './public/i18n.js';
-import { tr, userLang } from './lib/lang.js';
+import { ALL_LANGS, resolveLang } from './public/i18n.js';
+import { tr, userLang, parseAccept } from './lib/lang.js';
 // taal voor uitleg en beelden van Speediance: die van de gebruiker als Speediance hem goed levert, anders Engels
 const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'en');
 import * as insights from './lib/insights.js';
@@ -248,7 +248,8 @@ async function body(req, limit = 2e6) {
 const routes = {
   'GET /api/state': async () => {
     const ctx = await context();
-    const [plan, meta] = await Promise.all([store.getPlan(), store.getMeta()]);
+    const [rawPlan, meta] = await Promise.all([store.getPlan(), store.getMeta()]);
+    const plan = engine.localizePlan(rawPlan);
     // eerste keer: stappen voor een nieuwe gebruiker (account, voorkeuren, eerste plan)
     const setup = { terms: Number(ctx.settings.termsVersion) >= TERMS_VERSION, termsAt: ctx.settings.termsAt || null, speediance: hasSpeediance() && !meta.speedianceLoginFailed, prefs: !!ctx.settings.prefsConfirmed || ctx.workouts.length > 0, plan: !!plan && !plan.auto };
     setup.needed = !setup.terms || !setup.speediance || !setup.prefs || !setup.plan;
@@ -889,11 +890,15 @@ async function send(res, out, req = null) {
     res.writeHead(200, h); return res.end(out.__binary.data);
   }
   if (out?.__html) { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); return res.end(`<!doctype html><meta charset="utf-8"><body style="font:16px system-ui;padding:2rem;background:#0f1012;color:#ecebe7">${out.__html}`); }
+  // een plan altijd in de taal van de gebruiker (opgeslagen standaardteksten vertalen)
+  if (out?.plan?.sessions) out = { ...out, plan: engine.localizePlan(out.plan) };
   res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
   return res.end(JSON.stringify(out));
 }
 
-const server = http.createServer(async (req, res) => {
+const server = http.createServer((req, res) => store.runAnon(parseAccept(req.headers['accept-language']), () => handleRequest(req, res)));
+// Afhandeling van één verzoek; de talen van de browser staan in de context (voor meldingen in de juiste taal).
+async function handleRequest(req, res) {
   const url = new URL(req.url, 'http://x');
   res.setHeader('x-content-type-options', 'nosniff');
   res.setHeader('x-frame-options', 'DENY');
@@ -911,7 +916,8 @@ const server = http.createServer(async (req, res) => {
         if (url.pathname === '/api/withings/callback') return send(res, { __html: '<p>' + tr('srv.jeBentNietMeer') + ' <a href="/">' + tr('srv.logIn') + '</a> ' + tr('srv.enStartHetKoppelen') + '</p>' });
         res.writeHead(401, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: tr('srv.nietIngelogd'), login: true }));
       }
-      return await store.runAs(user, async () => send(res, await handler(req, url), req));
+      // taal 'automatisch': onthoud wat de app in de browser kiest, voor mails bij automatisch syncen
+      return await store.runAs(user, async () => { if (store.currentAccept().length) store.rememberBrowserLang(resolveLang('', store.currentAccept(), 'en')); return send(res, await handler(req, url), req); });
     }
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(404); return res.end(); }
     const rel = url.pathname === '/' ? 'index.html' : url.pathname.slice(1);
@@ -928,7 +934,7 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(e.status || 500, { 'content-type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify({ error: e.message, authFailure: !!e.authFailure, ...(e.code && typeof e.code === 'string' && /^[a-z]+\./.test(e.code) ? { code: e.code, vars: e.vars || {} } : {}) }));
   }
-});
+}
 
 // Synct alle gebruikers met een Speediance-account na elkaar.
 async function syncAll() {

@@ -2,10 +2,10 @@
 // Tabbladen: Overzicht, Plan, Statistieken, Analyse, Voortgang, Lichaam en Instellingen.
 // Alle gegevens komen van de eigen server via api(); grafieken zijn zelfgemaakte SVG's.
 import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure } from './bodymap.js';
-import { TERMS_VERSION, TERMS_HTML } from './terms.js';
-import { EXPLAIN } from './explain.js';
+import { TERMS_VERSION, termsHtml } from './terms.js';
+import { explain } from './explain.js';
 import { openEditor } from './editor.js';
-import { t, t as tx, tmap, localeOf, has, setLang, resolveLang, applyI18n, LANGS } from './i18n.js';
+import { t, t as tx, tmap, localeOf, has, setLang, resolveLang, applyI18n, LANGS, fmtNum, doseText } from './i18n.js';
 import { askConfirm, askText } from './dialogs.js';
 
 // taal vóór het inloggen: die van de browser; na het laden van de instellingen die van de gebruiker (zie load)
@@ -391,7 +391,7 @@ function renderPlan() {
   $('#planTitle').textContent = t('app.week3', { w: planIso(plan).w, y: planIso(plan).y });
   updateWeekNav();
   const nDone = plan.sessions.filter((x) => !x.outdoor && doneOf(x)).length, nGym = plan.sessions.filter((x) => !x.outdoor).length;
-  $('#planMeta').innerHTML = t('app.perWeekBron', { a: GOAL[plan.goal] || plan.goal, daysPerWeek: plan.daysPerWeek, b: esc(plan.source) }) + (plan.deload ? ' · <span class="badge warn">' + t('app.deloadWeek') + '</span>' : '')
+  $('#planMeta').innerHTML = t('app.perWeekBron', { a: GOAL[plan.goal] || plan.goal, daysPerWeek: plan.daysPerWeek, b: esc(String(plan.source || '').replace('regels', t('app.src.rules'))) }) + (plan.deload ? ' · <span class="badge warn">' + t('app.deloadWeek') + '</span>' : '')
     + (nDone ? ` · <span class="badge ok">${t('app.vanGedaan', { nDone, nGym, a: nDone >= nGym ? t('app.weekCompleet') : '' })}</span>` : '');
 
   renderWeekMap();
@@ -507,7 +507,7 @@ function highlightSessions() {
     if (mm) mm.innerHTML = bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name, selected: selMuscle });
     card.querySelector('.mh-sum')?.remove();
     card.classList.toggle('mh-none', !!selMuscle && sets === 0);
-    if (selMuscle) card.querySelector('header > div').insertAdjacentHTML('beforeend', `<div class="mh-sum small">${sets ? `${Math.round(sets * 10) / 10} sets ${esc((MUSCLE_LABELS[selMuscle] || selMuscle).toLowerCase())}` : `geen ${esc((MUSCLE_LABELS[selMuscle] || selMuscle).toLowerCase())}`}</div>`);
+    if (selMuscle) card.querySelector('header > div').insertAdjacentHTML('beforeend', `<div class="mh-sum small">${sets ? t('app.mhSets', { n: fmtNum(sets), m: esc((MUSCLE_LABELS[selMuscle] || selMuscle).toLowerCase()) }) : t('app.mhNone', { m: esc((MUSCLE_LABELS[selMuscle] || selMuscle).toLowerCase()) })}</div>`);
   });
 }
 $('#planOverview').addEventListener('click', (ev) => {
@@ -689,8 +689,8 @@ const coolMin = (list) => Math.max(1, Math.round((list || []).reduce((t, c) => {
 function openWarmCool(session, which) {
   const dlg = $('#exDlg');
   const items = which === 'warm'
-    ? [...session.warmup.mobility.map((m) => ({ t: m.title, d: m.dose, dev: pushMob() })), ...session.warmup.cable.map((c) => ({ t: c.title, d: `2 × ${c.reps} @ ${c.weight} kg`, dev: true }))]
-    : session.cooldown.map((c) => ({ t: c.title, d: c.dose, dev: pushMob() }));
+    ? [...session.warmup.mobility.map((m) => ({ t: m.title, d: doseText(m.dose), dev: pushMob() })), ...session.warmup.cable.map((c) => ({ t: c.title, d: `2 × ${c.reps} @ ${c.weight} kg`, dev: true }))]
+    : session.cooldown.map((c) => ({ t: c.title, d: doseText(c.dose), dev: pushMob() }));
   dlg.innerHTML = `<form method="dialog" class="exd">
     <div class="exd-head"><div><div class="eyebrow">${esc(session.name)}</div><h2>${which === 'warm' ? t('app.warmingUp6Min') : t('app.cooldownMin', { a: coolMin(session.cooldown) })}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
     <table class="settable"><thead><tr><th>${t('app.oefening')}</th><th>${t('app.dosering')}</th><th>${t('app.opToestel2')}</th></tr></thead><tbody>
@@ -826,7 +826,7 @@ function renderCoach(c) {
     ${c.adjustments?.some((a) => a.own) ? '<p class="muted small" style="margin:.5rem 0 0">' + t('app.voorstellenVoorJeEigen') + '</p>' : ''}
     ${c.adjustments?.length ? `<div style="margin-top:.75rem">${c.adjustments.map((a, i) => `
       <label class="adj"><input type="checkbox" data-i="${i}"${a.own ? '' : ' checked'}>
-        <span><b>${esc(a.sessionName || a.session)} · ${esc(a.title)}</b>${a.own ? ' <span class="badge custom">' + t('app.eigenOpbouw') + '</span>' : ''}: ${[a.swapToId && 'wissel oefening', a.sets && a.sets + ' sets', a.reps && a.reps + ' herh.', a.weight && a.weight + ' kg'].filter(Boolean).join(', ')}<br><span class="muted">${esc(a.reason)}</span></span></label>`).join('')}
+        <span><b>${esc(a.sessionName || a.session)} · ${esc(a.title)}</b>${a.own ? ' <span class="badge custom">' + t('app.eigenOpbouw') + '</span>' : ''}: ${[a.swapToId && t('app.adj.swap'), a.sets && t('app.setsN', { n: a.sets }), a.reps && t('app.adj.reps', { n: a.reps }), a.weight && a.weight + ' kg'].filter(Boolean).join(', ')}<br><span class="muted">${esc(a.reason)}</span></span></label>`).join('')}
       <div class="row gap" style="margin-top:.6rem"><button class="btn accent" id="applyBtn">${t('app.geselecteerdeToepassen')}</button><button class="btn ghost" id="dismissBtn">${t('app.negeren')}</button></div></div>` : '<p class="muted">' + t('app.geenAanpassingenVoorgesteld') + '</p><button class="btn ghost small" id="dismissBtn">' + t('pk.close') + '</button>'}`;
   $('#applyBtn')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
     const chosen = [...p.querySelectorAll('input[type=checkbox]:checked')].map((x) => c.adjustments[+x.dataset.i]);
@@ -932,7 +932,7 @@ function renderHome() {
       const lvl = !info ? '' : info.min < 25 ? 'l1' : info.min < 45 ? 'l2' : 'l3';
       if (info) { count += Math.max(1, info.titles.length); trainedDays++; }
       const dayActs = (state.activities || []).filter((a) => a.date === keyOf(dt));
-      const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long' })}${info ? ` — ${info.titles.join(', ') || 'training'}${info.min ? ` (${info.min} min)` : ''}` : future || dayActs.length ? '' : ' — rustdag'}${dayActs.length ? ' — ' + dayActs.map(actLine).join(', ') : ''}`;
+      const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long' })}${info ? ` — ${info.titles.join(', ') || t('app.training')}${info.min ? ` (${info.min} min)` : ''}` : future || dayActs.length ? '' : ' — ' + t('app.rustdag')}${dayActs.length ? ' — ' + dayActs.map(actLine).join(', ') : ''}`;
       const acts = (state.activities || []).filter((a) => a.date === keyOf(dt));
       const actDots = acts.length ? `<span class="cd-acts">${acts.slice(0, 3).map((a) => `<i style="background:${actColor(a.type)}"></i>`).join('')}</span>` : '';
       cells += `<div class="cd ${lvl} ${future ? 'fut' : ''} ${isToday ? 'today' : ''}${info || acts.length ? ' click" data-date="' + keyOf(dt) + '" tabindex="0" role="button' : ''}" data-day="${keyOf(dt)}" title="${esc(tip)}"><span class="dn">${dt.getDate()}</span>${info?.min ? `<span class="dm">${info.min}′</span>` : ''}${actDots}</div>`;
@@ -1030,24 +1030,24 @@ function renderStats() {
   const tile = (label, val, sub = '') => `<div class="card tile"><div class="eyebrow">${label}</div><div class="big">${val}</div><div class="muted small">${sub}</div></div>`;
   const x = stats.extra || {};
   const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString(localeOf());
-  const KIND_NL = { program: 'programma', course: 'les', free: 'vrij', custom: 'eigen', overig: 'overig' };
+  const KIND_NL = tmap({ program: '§app.kind.program', course: '§app.kind.course', free: '§app.kind.free', custom: '§app.kind.custom', overig: '§app.kind.overig' });
   const kindTxt = Object.entries(x.kinds || {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${v} ${KIND_NL[k] || k}`).join(' · ');
   const vol = t.volume || x.summaryVolume || 0;
   $('#statTotals').innerHTML =
     // activiteit
-    tile('Trainingen', t.workouts, kindTxt || `${t.programSessions} met setdata`) +
-    tile('Per week', n1(x.perWeek || 0), x.firstDate ? `sinds ${esc(fmtDate(x.firstDate))}` : '') +
-    tile('Trainingstijd', `${Math.floor(t.minutes / 60)}<small>u</small> ${t.minutes % 60}<small>m</small>`, `gem. ${x.avgMinutes || 0} min per training`) +
-    tile('Calorieën', fmt(t.calories), `gem. ${fmt(x.avgKcal || 0)} kcal per training`) +
-    tile('Weekreeks', `${x.streak || 0}<small> ${tx('app.wk')}</small>`, `langste: ${x.longestStreak || 0} weken`) +
-    tile('Favoriete dag', x.favDay ? esc(x.favDay.day.charAt(0).toUpperCase() + x.favDay.day.slice(1)) : '—', x.favDay ? `${x.favDay.n}× · ${x.activeDays} actieve dagen` : '') +
+    tile(tx('tp.title'), t.workouts, kindTxt || tx('app.metSetdata', { programSessions: t.programSessions })) +
+    tile(tx('app.perWeek2'), n1(x.perWeek || 0), x.firstDate ? tx('app.sinds', { a: esc(fmtDate(x.firstDate)) }) : '') +
+    tile(tx('app.trainingstijd'), `${Math.floor(t.minutes / 60)}<small>${tx('app.hUnit')}</small> ${t.minutes % 60}<small>m</small>`, tx('app.gemMinPerTraining', { a: x.avgMinutes || 0 })) +
+    tile(tx('sum.calories'), fmt(t.calories), tx('app.gemKcalPerTraining', { a: fmt(x.avgKcal || 0) })) +
+    tile(tx('app.weekreeks'), `${x.streak || 0}<small> ${tx('app.wk')}</small>`, tx('app.langsteWeken', { a: x.longestStreak || 0 })) +
+    tile(tx('app.favorieteDag'), x.favDay ? esc(x.favDay.day.charAt(0).toUpperCase() + x.favDay.day.slice(1)) : '—', x.favDay ? tx('app.actieveDagen', { n: x.favDay.n, activeDays: x.activeDays }) : '') +
     // kracht en volume
-    tile('Totaal volume', kg(vol), t.volume ? `gem. ${kg(t.avgVolume)} per training` : vol ? 'volgens Speediance' : '') +
-    tile('Sets', fmt(t.sets), t.sets ? `${n1(x.setsPerWorkout)} per training · ${fmt(t.reps)} herh.` : `${fmt(t.reps)} herhalingen`) +
-    tile('Herhalingen per set', t.sets ? n1(x.repsPerSet) : '—', t.reps ? `gem. ${n1(x.avgLoad)} kg per herhaling` : '') +
-    tile('Zwaarste set', t.heaviest ? `${t.heaviest.weight}<small> kg</small>` : '—', t.heaviest ? `${esc(t.heaviest.name)} · ${t.heaviest.reps}×` : '') +
-    tile('Records', fmt(x.prs || 0), x.bestProgress ? `beste groei: ${esc(x.bestProgress.name)} ${x.bestProgress.pct > 0 ? '+' : ''}${n1(x.bestProgress.pct)}%` : 'nieuw geschat 1RM') +
-    tile('Spiergroepen', stats.muscles.filter((m) => m.sets).length, `${stats.exercises.length} oefeningen`);
+    tile(tx('app.totaalVolume'), kg(vol), t.volume ? tx('app.gemPerTraining', { a: kg(t.avgVolume) }) : vol ? tx('app.volgensSpeediance') : '') +
+    tile(tx('ed.sets'), fmt(t.sets), t.sets ? tx('app.perTrainingHerh', { a: n1(x.setsPerWorkout), b: fmt(t.reps) }) : `${fmt(t.reps)} herhalingen`) +
+    tile(tx('app.herhalingenPerSet'), t.sets ? n1(x.repsPerSet) : '—', t.reps ? tx('app.gemKgPerHerhaling', { a: n1(x.avgLoad) }) : '') +
+    tile(tx('ui.leg.heaviest'), t.heaviest ? `${t.heaviest.weight}<small> kg</small>` : '—', t.heaviest ? `${esc(t.heaviest.name)} · ${t.heaviest.reps}×` : '') +
+    tile(tx('ui.analysis.records'), fmt(x.prs || 0), x.bestProgress ? tx('app.besteGroei', { a: esc(x.bestProgress.name), b: x.bestProgress.pct > 0 ? '+' : '', c: n1(x.bestProgress.pct) }) : tx('app.nieuwGeschat1rm')) +
+    tile(tx('app.spiergroepen'), stats.muscles.filter((m) => m.sets).length, tx('app.oefeningen', { count: stats.exercises.length }));
   renderCardio();
   renderStatsExtra();
   $('#statNote').innerHTML = x.missingDetails ? `<div class="note">${tx('app.vanTrainingInDeze', { n: x.missingDetails })}</div>` : '';
@@ -1061,12 +1061,12 @@ function renderStats() {
   }).join('')}</tr>`).join('')}</tbody>` : '<tbody><tr><td class="empty">' + tx('app.nogGeenData') + '</td></tr></tbody>';
 
   renderSortable('muscleTable', stats.muscles, [
-    ['label', 'Spiergroep'], ['sessions', 'Trainingen', 'n'], ['exercises', 'Oefeningen', 'n'], ['sets', 'Sets', 'n'], ['setsPerWeek', 'Sets/week', 'n'],
-    ['reps', 'Herh.', 'n'], ['volume', 'Volume', 'kg'], ['maxWeight', 'Zwaarste', 'w'], ['bestE1rm', 'Best 1RM', 'w'], ['lastDate', 'Laatst'],
+    ['label', tx('pk.muscle')], ['sessions', tx('tp.title'), 'n'], ['exercises', tx('ed.exercises'), 'n'], ['sets', tx('ed.sets'), 'n'], ['setsPerWeek', tx('app.col.setsWeek'), 'n'],
+    ['reps', tx('ed.reps'), 'n'], ['volume', tx('ed.volume'), 'kg'], ['maxWeight', tx('sum.col.heaviest'), 'w'], ['bestE1rm', tx('app.col.best1rm'), 'w'], ['lastDate', tx('app.col.last')],
   ]);
   renderSortable('exTable', stats.exercises, [
-    ['name', 'Oefening'], ['muscle', 'Spiergroep'], ['sessions', 'Keer', 'n'], ['sets', 'Sets', 'n'], ['reps', 'Herh.', 'n'],
-    ['volume', 'Volume', 'kg'], ['maxWeight', 'Zwaarste', 'w'], ['bestE1rm', 'Best 1RM', 'w'], ['progressPct', 'Progressie', 'pct'], ['lastDate', 'Laatst'],
+    ['name', tx('app.oefening')], ['muscle', tx('pk.muscle')], ['sessions', tx('app.keer'), 'n'], ['sets', tx('ed.sets'), 'n'], ['reps', tx('ed.reps'), 'n'],
+    ['volume', tx('ed.volume'), 'kg'], ['maxWeight', tx('sum.col.heaviest'), 'w'], ['bestE1rm', tx('app.col.best1rm'), 'w'], ['progressPct', tx('app.col.progress'), 'pct'], ['lastDate', tx('app.col.last')],
   ]);
 }
 
@@ -1129,17 +1129,17 @@ function renderCardio() {
   }
   box.classList.remove('hidden');
   const n1 = (v) => (Math.round(v * 10) / 10).toLocaleString(localeOf());
-  const t = (l, v, sub = '') => `<div class="ctile static"><div class="eyebrow">${l}</div><div class="mid">${v}</div><div class="small muted">${sub}</div></div>`;
+  const ct = (l, v, sub = '') => `<div class="ctile static"><div class="eyebrow">${l}</div><div class="mid">${v}</div><div class="small muted">${sub}</div></div>`;
   box.innerHTML = `<div class="row between wrap gap"><h2>${tx('app.cardioEnActiviteit')}</h2><span class="muted small">${tx('app.uitAppleHealthGym')}</span></div>
     <div class="ctiles">
-      ${t('Activiteiten', c.count, `${Math.floor(c.minutes / 60)} u ${c.minutes % 60} m in totaal`)}
-      ${t('Actief per week', `${c.minutesPerWeek}<small> min</small>`, 'richtlijn: 150 min matig intensief')}
-      ${t('Afstand', `${n1(c.km)}<small> km</small>`, 'wandelen, fietsen, lopen …')}
-      ${t('Calorieën', fmt(c.kcal), 'actieve energie')}
-      ${c.avgSteps != null ? t('Stappen per dag', fmt(c.avgSteps), `gemiddeld over ${c.stepDays} dagen`) : ''}
+      ${ct(tx('app.c.acts'), c.count, tx('app.c.actsSub', { h: Math.floor(c.minutes / 60), m: c.minutes % 60 }))}
+      ${ct(tx('app.c.activeWeek'), `${c.minutesPerWeek}<small> min</small>`, tx('app.c.activeWeekSub'))}
+      ${ct(tx('app.afstand'), `${n1(c.km)}<small> km</small>`, tx('app.c.distSub'))}
+      ${ct(tx('sum.calories'), fmt(c.kcal), tx('app.c.kcalSub'))}
+      ${c.avgSteps != null ? ct(tx('app.c.steps'), fmt(c.avgSteps), tx('app.c.stepsSub', { n: c.stepDays })) : ''}
     </div>
     <div class="tablewrap" style="margin-top:.8rem"><table><thead><tr><th>${tx('app.soort')}</th><th class="num">${tx('app.keer')}</th><th class="num">${tx('app.tijd')}</th><th class="num">${tx('app.afstand')}</th><th class="num">${tx('app.langste')}</th><th class="num">kcal</th><th class="num">${tx('app.gemHartslag')}</th></tr></thead><tbody>
-      ${c.types.map((x) => `<tr><td><span class="segdot" style="background:${actColor(x.type)}"></span>${esc(actLabel(x.type))}</td><td class="num">${x.count}</td><td class="num">${Math.floor(x.minutes / 60)}u ${x.minutes % 60}m</td><td class="num">${x.km ? n1(x.km) + ' km' : '—'}</td><td class="num">${x.longestKm ? n1(x.longestKm) + ' km' : '—'}</td><td class="num">${x.kcal ? fmt(x.kcal) : '—'}</td><td class="num">${x.hrAvg ? x.hrAvg + ' bpm' : '—'}</td></tr>`).join('')}
+      ${c.types.map((x) => `<tr><td><span class="segdot" style="background:${actColor(x.type)}"></span>${esc(actLabel(x.type))}</td><td class="num">${x.count}</td><td class="num">${Math.floor(x.minutes / 60)}${tx('app.hUnit')} ${x.minutes % 60}m</td><td class="num">${x.km ? n1(x.km) + ' km' : '—'}</td><td class="num">${x.longestKm ? n1(x.longestKm) + ' km' : '—'}</td><td class="num">${x.kcal ? fmt(x.kcal) : '—'}</td><td class="num">${x.hrAvg ? x.hrAvg + ' bpm' : '—'}</td></tr>`).join('')}
     </tbody></table></div>`;
 }
 
@@ -1217,7 +1217,7 @@ function doneSetsSummary(sets) {
 }
 // Kerncijfers van een training (duur, oefeningen, volume, kcal, hartslag).
 function woTiles(d) {
-  const tiles = [['Duur', d.minutes != null ? `${d.minutes} min` : '—'], ['Oefeningen', d.exercises.length || '—'], ['Volume', d.volume ? `${d.volume.toLocaleString(localeOf())} kg` : '—'], ['kcal', d.calories ?? '—']];
+  const tiles = [[t('app.c.duur'), d.minutes != null ? `${d.minutes} min` : '—'], [t('app.oefeningenTile'), d.exercises.length || '—'], [t('app.volumeTile'), d.volume ? `${d.volume.toLocaleString(localeOf())} kg` : '—'], ['kcal', d.calories ?? '—']];
   if (d.calories == null && d.healthKcal != null) tiles[3] = ['kcal', d.healthKcal];
   if (d.hrAvg || d.hrMax) tiles.push(hrTile(d.hrAvg, d.hrMax));
   if (d.completion != null) tiles.push(['Voltooid', `${d.completion}%`]);
@@ -1241,7 +1241,7 @@ function workoutHtml(d) {
     </div>`;
   }).join('');
   return `${d.hrSource ? `<p class="muted small" style="margin:0">${t('app.hartslagGemiddeldMaximaalUit', { a: esc(d.hrSource) })}</p>` : ''}
-    ${Object.keys(d.muscles || {}).length ? `<div class="wo-map"><div>${bodyMap(d.muscles, { height: 170, title: t('app.getraindeSpiergroepen') })}</div><div class="mbars">${Object.entries(d.muscles).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v], i, arr) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / arr[0][1]) * 100}%"></div></div><b>${String(v).replace('.', ',')}</b></div>`).join('')}</div></div>` : ''}
+    ${Object.keys(d.muscles || {}).length ? `<div class="wo-map"><div>${bodyMap(d.muscles, { height: 170, title: t('app.getraindeSpiergroepen') })}</div><div class="mbars">${Object.entries(d.muscles).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v], i, arr) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / arr[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>`).join('')}</div></div>` : ''}
     ${insightsHtml(d)}
     ${d.hasDetail ? exs : '<div class="empty">' + t('app.geenDetailsVoorDeze') + '</div>'}`;
 }
@@ -1261,9 +1261,9 @@ function activityHtml(a, first) {
   const pace = !(a.km && a.minutes) ? null : a.type === 'fietsen' ? `${n1(a.km / (a.minutes / 60))} km/u`
     : a.type === 'zwemmen' ? `${mmss(a.minutes / (a.km * 10))} /100 m`
     : ['wandelen', 'hardlopen', 'roeien'].includes(a.type) ? `${mmss(a.minutes / a.km)} /km` : null;
-  const tiles = [['Duur', a.minutes != null ? `${a.minutes} min` : '—']];
-  if (a.km) tiles.push(['Afstand', a.type === 'zwemmen' && a.km < 10 ? `${Math.round(a.km * 1000).toLocaleString(localeOf())} m` : `${n1(a.km)} km`]);
-  if (pace) tiles.push([a.type === 'fietsen' ? 'Snelheid' : 'Tempo', pace]);
+  const tiles = [[t('app.c.duur'), a.minutes != null ? `${a.minutes} min` : '—']];
+  if (a.km) tiles.push([t('app.afstand'), a.type === 'zwemmen' && a.km < 10 ? `${Math.round(a.km * 1000).toLocaleString(localeOf())} m` : `${n1(a.km)} km`]);
+  if (pace) tiles.push([a.type === 'fietsen' ? t('app.c.speed') : t('app.c.pace'), pace]);
   tiles.push(['kcal', a.kcal ?? '—']);
   if (a.hrAvg || a.hrMax) tiles.push(hrTile(a.hrAvg, a.hrMax));
   return `<div class="wo-sticky"><div class="exd-head"><div><div class="eyebrow">${esc(new Date(a.date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}${start ? ` · ${start}` : ''}</div>
@@ -1331,7 +1331,7 @@ function hrZoneColor(bpm) {
   return i >= 0 ? ZONE_COLORS[i] : null;
 }
 // Hartslag-tegel: gemiddelde/maximum, gekleurd naar de zone van het gemiddelde.
-const hrTile = (avg, max) => ['Hartslag gem/max', `${avg ?? '—'}${max ? `/${max}` : ''}`, hrZoneColor(avg)];
+const hrTile = (avg, max) => [t('app.hrAvgMax'), `${avg ?? '—'}${max ? `/${max}` : ''}`, hrZoneColor(avg)];
 
 // Richtwaarden per meting (subtiele achtergrond in de grafiek). ok = groen, warn = geel, bad = rood.
 // Bronnen: BMI WHO; vet% Gallagher e.a. (2000, naar leeftijd en geslacht); overige zijn grove richtwaarden.
@@ -1387,8 +1387,8 @@ const rangeStart = (lastDate) => {
   return r?.[2] && lastDate ? daysBefore(lastDate, r[2]) : '';
 };
 const rangeChips = (id) => `<select id="${id}" class="period-sel" aria-label="${t('ui.stats.periode')}" title="${t('app.kalenderperiodesTellenVanafMaandag')}">
-  <optgroup label="Kalender">${BODY_RANGES.filter((r) => typeof r[2] === 'string').map(([k, l]) => `<option value="${k}" ${k === bodyRange ? 'selected' : ''}>${l}</option>`).join('')}</optgroup>
-  <optgroup label="Terugkijken">${BODY_RANGES.filter((r) => typeof r[2] !== 'string').map(([k, l]) => `<option value="${k}" ${k === bodyRange ? 'selected' : ''}>${l}</option>`).join('')}</optgroup></select>`;
+  <optgroup label="${t('ui.stats.kalender')}">${BODY_RANGES.filter((r) => typeof r[2] === 'string').map(([k, l]) => `<option value="${k}" ${k === bodyRange ? 'selected' : ''}>${l}</option>`).join('')}</optgroup>
+  <optgroup label="${t('ui.stats.terugkijken')}">${BODY_RANGES.filter((r) => typeof r[2] !== 'string').map(([k, l]) => `<option value="${k}" ${k === bodyRange ? 'selected' : ''}>${l}</option>`).join('')}</optgroup></select>`;
 // Koppelt de periodekeuze van een kaart in Lichaam (en onthoudt de keuze).
 function bindRange(card, id) {
   card.querySelector('#' + id).addEventListener('change', (ev) => {
@@ -1450,7 +1450,7 @@ function renderComposition() {
     const zc = BAND_COLORS[bandOf(healthBands(k)?.bands, cur[k])];
     return `<button class="ctile zoned ${k === compMetric ? 'on' : ''}" data-k="${k}"${zoneStyle(zc)}>
       <div class="eyebrow">${label}</div><div class="mid">${cur[k]}<small> ${unit}</small></div>
-      <div class="small ${cls}">${d == null ? '—' : `${d > 0 ? '+' : ''}${d} ${unit}`} <span class="muted">${old && old !== cur ? `sinds ${esc(old.date.slice(5))}` : ''}</span></div></button>`;
+      <div class="small ${cls}">${d == null ? '—' : `${d > 0 ? '+' : ''}${d} ${unit}`} <span class="muted">${old && old !== cur ? t('app.sinds', { a: esc(old.date.slice(5)) }) : ''}</span></div></button>`;
   }).join('');
   const [, mLabel, mUnit, mGood] = COMP.find(([k]) => k === compMetric);
   const tr = trendOf(log, compMetric);
@@ -1517,6 +1517,7 @@ function renderSegments() {
   card.classList.remove('hidden');
   const saved = state.settings.withings?.segmentNames || {};
   const nameOf = (p) => saved[p] || SEG_DEFAULT[p] || `Positie ${p}`;
+  const showName = (p) => (saved[p] || SEG_DEFAULT[p] ? segName(saved[p] || SEG_DEFAULT[p]) : t('app.segPosition', { p }));
   const last = log[log.length - 1];
   const old = [...log].reverse().find((b) => b.date <= daysBefore(last.date, 30)) || log[0];
   const positions = [...new Set(log.flatMap((b) => Object.keys(b.segments).map(Number)))].sort((a, b) => a - b);
@@ -1528,15 +1529,15 @@ function renderSegments() {
   const guessed = positions.some((p) => !saved[p]);
   // links/rechts-balans: (R − L) t.o.v. het gemiddelde in %; bij vet% het verschil in %-punt
   const posOf = (n) => positions.find((p) => nameOf(p) === n);
-  const pairs = [['Armen', 'Linkerarm', 'Rechterarm', '#ff7a2e'], ['Benen', 'Linkerbeen', 'Rechterbeen', '#4cc26a']]
+  const pairs = [[t('app.seg.armen'), 'Linkerarm', 'Rechterarm', '#ff7a2e'], [t('app.seg.benen'), 'Linkerbeen', 'Rechterbeen', '#4cc26a']]
     .map(([label, l, r, color]) => ({ label, l: posOf(l), r: posOf(r), color })).filter((x) => x.l != null && x.r != null);
-  const balUnit = segMetric === 'pct' ? '%-punt' : '%';
+  const balUnit = segMetric === 'pct' ? t('app.seg.pctPt') : '%';
   const balOf = (b, pr, m = segMetric) => {
     const L = segVal(b.segments?.[pr.l], m), R = segVal(b.segments?.[pr.r], m);
     if (L == null || R == null || !(L + R)) return null;
     return Math.round((m === 'pct' ? R - L : ((R - L) / ((L + R) / 2)) * 100) * 10) / 10;
   };
-  const balTxt = (v) => v == null ? '—' : Math.abs(v) < 1 ? 'in balans' : `${v > 0 ? 'rechts' : 'links'} ${String(Math.abs(v)).replace('.', ',')} ${balUnit} meer`;
+  const balTxt = (v) => v == null ? '—' : Math.abs(v) < 1 ? t('app.seg.balanced') : t(v > 0 ? 'app.seg.moreRight' : 'app.seg.moreLeft', { v: fmtNum(Math.abs(v)), u: balUnit });
   const balCls = (v) => v == null ? 'muted' : Math.abs(v) < 3 ? 'up' : Math.abs(v) < 8 ? 'balwarn' : 'down';
   // 6e punt op de weegschaal: visceraal vet (een index, geen segment) — klik toont de grafiek bovenaan
   const vLast = lastWith(state.bodyLog, 'visceral');
@@ -1570,7 +1571,7 @@ function renderSegments() {
     }).join('')}${viscRow}</tbody></table></div>
     ${balTiles}
     <div class="row between wrap gap" style="margin-top:1rem">
-      <div class="eyebrow" style="margin:0">${mLabel} ${segMode === 'bal' ? t('app.verschilLinksRechts0', { balUnit }) : t('app.perSegment2', { a: segMode === 'delta' ? `verandering sinds ${esc(chartLog[0]?.date || '—')} (${segMetric === 'pct' ? '%-punt' : mUnit})` : `absoluut (${mUnit})` })}</div>
+      <div class="eyebrow" style="margin:0">${mLabel} ${segMode === 'bal' ? t('app.verschilLinksRechts0', { balUnit }) : t('app.perSegment2', { a: segMode === 'delta' ? t('app.veranderingSinds', { a: esc(chartLog[0]?.date || '—'), b: segMetric === 'pct' ? '%-punt' : mUnit }) : t('app.absoluut2', { mUnit }) })}</div>
       <div class="row gap wrap">
         <div class="chips small" id="segSwitch">${Object.entries(SEG_METRICS).map(([k, [l]]) => `<button data-m="${k}" class="${k === segMetric ? 'on' : ''}">${l}</button>`).join('')}</div>
         ${rangeChips('segRange')}
@@ -1580,7 +1581,7 @@ function renderSegments() {
     </div>
     <div id="chartSeg" class="chart tall"></div>
     ${segMode === 'bal' ? `<div class="seg-toggles bal-toggles">${pairs.map((pr) => `<button class="seg-tg ${balHidden.has(pr.label) ? 'off' : ''}" data-b="${esc(pr.label)}" aria-pressed="${!balHidden.has(pr.label)}"><span class="segdot" style="background:${pr.color}"></span>${esc(pr.label)}</button>`).join('')}</div>` : ''}
-    <div class="seg-toggles${segMode === 'bal' ? ' hidden' : ''}">${positions.map((p, i) => `<button class="seg-tg ${segHidden.has(p) ? 'off' : ''}" data-p="${p}" aria-pressed="${!segHidden.has(p)}"><span class="segdot" style="background:${SEG_COLORS[i % SEG_COLORS.length]}"></span>${esc(nameOf(p))}</button>`).join('')}
+    <div class="seg-toggles${segMode === 'bal' ? ' hidden' : ''}">${positions.map((p, i) => `<button class="seg-tg ${segHidden.has(p) ? 'off' : ''}" data-p="${p}" aria-pressed="${!segHidden.has(p)}"><span class="segdot" style="background:${SEG_COLORS[i % SEG_COLORS.length]}"></span>${esc(showName(p))}</button>`).join('')}
       <button class="seg-tg all" data-p="all">${segHidden.size ? t('app.allesTonen') : t('app.allesVerbergen')}</button></div>`;
   bindRange(card, 'segRange');
   const visible = positions.map((p, i) => [p, i]).filter(([p]) => !segHidden.has(p));
@@ -1606,8 +1607,8 @@ function renderSegments() {
     const base = pts[0]?.y ?? 0;
     const rel = (arr) => segMode === 'delta' ? arr.map((q) => ({ x: q.x, y: Math.round((q.y - base) * 100) / 100 })) : arr;
     const color = SEG_COLORS[i % SEG_COLORS.length], unit = segMode === 'delta' && segMetric === 'pct' ? '%-punt' : mUnit;
-    const out = [{ color, label: nameOf(p) + (segMode === 'delta' ? ' (Δ)' : ''), unit, points: rel(pts).map((q) => ({ x: q.x, y: Math.round(q.y * 10) / 10 })) }];
-    if (segTrend && all.length > 2) out.push({ color, dash: true, label: nameOf(p) + t('app.trend2'), unit, points: rel(smoothTrend(all).filter(inRange)) });
+    const out = [{ color, label: showName(p) + (segMode === 'delta' ? ' (Δ)' : ''), unit, points: rel(pts).map((q) => ({ x: q.x, y: Math.round(q.y * 10) / 10 })) }];
+    if (segTrend && all.length > 2) out.push({ color, dash: true, label: showName(p) + t('app.trend2'), unit, points: rel(smoothTrend(all).filter(inRange)) });
     return out;
   }));
   card.querySelector('.bal-toggles')?.addEventListener('click', (ev) => {
@@ -1816,7 +1817,7 @@ $('#accountForm').addEventListener('submit', async (ev) => {
     const r = await api('PUT', '/api/account', payload);
     f.password.value = '';
     $('#accountInfo').innerHTML = r.login.ok
-      ? `<span class="up">${t('app.ingelogdBijSpeediance')}</span>${r.library ? ` <span class="muted">${t('app.catalogus', { a: esc(String(r.library)), b: typeof r.library === 'number' ? ' oefeningen' : '' })}</span>` : ''}`
+      ? `<span class="up">${t('app.ingelogdBijSpeediance')}</span>${r.library ? ` <span class="muted">${t('app.catalogus', { a: esc(String(r.library)), b: typeof r.library === 'number' ? ' ' + t('app.adj.exercisesWord') : '' })}</span>` : ''}`
       : `<span class="down">${esc(r.login.error)}</span>`;
     if (r.login.ok) { await load(); loadAccount(); }
   });
@@ -2186,7 +2187,7 @@ function renderStatsExtra() {
   if (bu != null && bu > 2.2) tips.push(t('app.jeBenenKrijgenRelatief'));
   if (bu != null && bu < 0.6) tips.push(t('app.jeBovenlichaamKrijgtRelatief'));
   $('#balanceCard').innerHTML = `<h2>${t('app.balans2')}</h2><p class="muted" style="margin-top:-.4rem">${t('app.werksetsInDeGekozen')}</p>
-    ${balRow(t('app.duwen'), b.push || 0, 'trekken', b.pull || 0, 45) || '<div class="empty">' + t('app.nogGeenData') + '</div>'}${balRow(t('app.boven'), b.upper || 0, 'onder', b.lower || 0, 50)}
+    ${balRow(t('app.duwen'), b.push || 0, t('app.trekken'), b.pull || 0, 45) || '<div class="empty">' + t('app.nogGeenData') + '</div>'}${balRow(t('app.boven'), b.upper || 0, t('app.onder'), b.lower || 0, 50)}
     ${tips.length ? `<div class="note small">${tips.map(esc).join('<br>')}</div>` : (b.push || b.upper ? '<p class="small up" style="margin:.4rem 0 0">' + t('app.mooiInBalans') + '</p>' : '')}`;
 
   // krachtindex per spiergroep
@@ -2206,7 +2207,7 @@ function renderStatsExtra() {
 
   // cardio
   const cw = s.cardioWeeks || [];
-  const types = [['wandelen', 'Wandelen'], ['fietsen', 'Fietsen'], ['hardlopen', 'Hardlopen'], ['overig', 'Overig']].filter(([k]) => cw.some((w) => w[k] > 0));
+  const types = ['wandelen', 'fietsen', 'hardlopen', 'overig'].map((k) => [k, actLabel(k)]).filter(([k]) => cw.some((w) => w[k] > 0));
   $('#cardioKmCard').classList.toggle('hidden', !cw.length && !(s.steps || []).length);
   comboChart($('#chartKm'), { x: cw.map((w) => w.x), stacks: types.map(([k, l]) => ({ label: l, color: actColor(k), values: cw.map((w) => w[k]) })), barUnit: 'km', label: t('ui.stats.kilometersPerWeek') });
   $('#kmLegend').innerHTML = legendHtml(types.map(([k, l]) => [actColor(k), l]));
@@ -2235,7 +2236,7 @@ function renderAnalysis() {
   const max = Math.max(1, ...a.heat.grid.flat().map(val));
   const cols = a.heat.blocks.map((b, i) => (a.heat.grid.some((r) => val(r[i]) > 0) || i < a.heat.blocks.length - 1 ? i : null)).filter((i) => i != null);
   $('#heatmap').innerHTML = `<div class="heat" style="grid-template-columns:2.2rem repeat(${cols.length},1fr)"><span></span>${cols.map((i) => `<span class="hh">${a.heat.blocks[i]}</span>`).join('')}
-    ${a.heat.days.map((d, r) => `<span class="hd">${d}</span>${cols.map((i) => { const c = a.heat.grid[r][i], v = val(c); return `<span class="hc" style="--o:${v ? 0.18 + 0.82 * (v / max) : 0}" title="${d} ${a.heat.blocks[i]}: ${c.gym} Gym Monster${withActs ? `, ${c.act} wandel/fiets` : ''}">${v || ''}</span>`; }).join('')}`).join('')}</div>`;
+    ${a.heat.days.map((d, r) => `<span class="hd">${d}</span>${cols.map((i) => { const c = a.heat.grid[r][i], v = val(c); return `<span class="hc" style="--o:${v ? 0.18 + 0.82 * (v / max) : 0}" title="${d} ${a.heat.blocks[i]}: ${c.gym} Gym Monster${withActs ? `, ${t('app.heatActs', { n: c.act })}` : ''}">${v || ''}</span>`; }).join('')}`).join('')}</div>`;
   const tot = a.heat.grid.flat().reduce((t, c) => t + val(c), 0);
   const best = (() => { let b = null; a.heat.grid.forEach((row, r) => row.forEach((c, i) => { if (!b || val(c) > b.v) b = { v: val(c), d: a.heat.days[r], t: a.heat.blocks[i] }; })); return b; })();
   $('#heatNote').innerHTML = tot ? `${t('app.meestalOp')} <b>${best.d} ${best.t}</b> ${t('app.uur', { a: a.heat.gymUntimed ? t('app.trainingZonderBekendTijdstip', { n: a.heat.gymUntimed }) : '' })}` : t('app.nogGeenTrainingenMet2');
@@ -2344,7 +2345,7 @@ function renderBigCal() {
       rows += `${cells}<div class="bc-w ${wkCount >= target ? 'hit' : ''}">${thisWeek ? `${wkCount}/${target}` : ''}</div>`;
     }
     body = `<div class="bc-grid">${weekdaysShort().map((d) => `<div class="bc-h">${d}</div>`).join('')}<div class="bc-h">${t('app.week')}</div>${rows}</div>
-      <div class="bc-sum">${MAANDEN[m]} ${y}: <b>${mGym}</b> ${mGym === 1 ? t('app.training') : t('app.trainingen2')}${mMin ? ` · <b>${Math.floor(mMin / 60)}u ${mMin % 60}m</b>` : ''}${mActs ? ` · <b>${mActs}</b> ${t('app.wandelFietsactiviteiten')}` : ''}</div>`;
+      <div class="bc-sum">${MAANDEN[m]} ${y}: <b>${mGym}</b> ${mGym === 1 ? t('app.training') : t('app.trainingen2')}${mMin ? ` · <b>${Math.floor(mMin / 60)}${t('app.hUnit')} ${mMin % 60}m</b>` : ''}${mActs ? ` · <b>${mActs}</b> ${t('app.wandelFietsactiviteiten')}` : ''}</div>`;
   } else {
     const y = calCursor.getFullYear();
     let months = '';
@@ -2403,7 +2404,7 @@ function dayTipHtml(date) {
   const d = new Date(date + 'T12:00:00'), today = new Date(); today.setHours(23, 59, 59);
   const head = d.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const gymHtml = gym.map((w) => `<div class="dt-row"><span class="dt-dot" style="background:var(--accent)"></span><div><b>${esc(w.title)}</b>
-    <div class="dt-meta">${[w.min ? `${w.min} min` : null, w.ex ? `${w.ex} oefeningen` : null, w.vol ? `${w.vol.toLocaleString(localeOf())} kg` : null, w.kcal ? `${w.kcal} kcal` : null, w.hr ? `♥ ${w.hr} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
+    <div class="dt-meta">${[w.min ? `${w.min} min` : null, w.ex ? t('app.oefeningen', { count: w.ex }) : null, w.vol ? `${w.vol.toLocaleString(localeOf())} kg` : null, w.kcal ? `${w.kcal} kcal` : null, w.hr ? `♥ ${w.hr} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
   const actHtml = acts.map((a) => `<div class="dt-row"><span class="dt-dot" style="background:${actColor(a.type)}"></span><div><b>${esc(actName(a))}</b>
     <div class="dt-meta">${[a.km ? `${n1nl(a.km)} km` : null, a.minutes ? `${a.minutes} min` : null, a.kcal ? `${Math.round(a.kcal)} kcal` : null, a.hrAvg ? `♥ ${a.hrAvg} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
   const empty = d > today ? t('app.notYet') : t('app.restDay');
@@ -2470,7 +2471,7 @@ function renderSetup() {
     <div class="hero-title">${t('app.inVierStappenAan')}</div>
     <ol class="su-list">
       ${step(1, st.terms, t('app.leesDeVoorwaardenEn'), t('app.gymcoachIsEenHulpmiddel2'), st.terms ? '' : '<button class="btn accent small" id="suTerms">' + t('app.lezenEnAkkoord') + '</button>')}
-      ${step(2, st.speediance, t('app.koppelJeSpeedianceAccount'), st.speediance && state.library?.count ? t('app.gekoppeldOefeningencatalogusVanJouw', { count: state.library.count, a: state.library.source === 'standaard' ? ' (standaardlijst)' : '' }) : t('app.metJeEigenE'), st.speediance ? '' : `<button class="btn accent small" data-go="account"${lock}>${t('app.instellen')}</button>`)}
+      ${step(2, st.speediance, t('app.koppelJeSpeedianceAccount'), st.speediance && state.library?.count ? t('app.gekoppeldOefeningencatalogusVanJouw', { count: state.library.count, a: state.library.source === 'standaard' ? t('app.standaardlijst') : '' }) : t('app.metJeEigenE'), st.speediance ? '' : `<button class="btn accent small" data-go="account"${lock}>${t('app.instellen')}</button>`)}
       ${step(3, st.prefs, t('app.kiesJeDoelEn'), t('app.spieropbouwAfvallenOfEen'), `<button class="btn ${st.prefs ? 'ghost' : 'accent'} small" data-go="training"${lock}>${st.prefs ? t('app.aanpassen') : t('app.instellen')}</button>`)}
       ${step(4, st.plan, t('app.maakJeEersteWeekplan'), st.terms && st.speediance && st.prefs ? t('app.gymcoachMaaktEenPlan') : t('app.kanZodraDeStappen'), `<button class="btn accent small" id="suPlan" ${st.terms && st.speediance && st.prefs ? '' : 'disabled'}>${t('app.maakMijnPlan')}</button>`)}
     </ol>
@@ -2489,7 +2490,7 @@ function openTerms() {
   if (!dlg) { dlg = document.createElement('dialog'); dlg.id = 'termsDlg'; dlg.className = 'terms-dlg'; document.body.appendChild(dlg); }
   dlg.innerHTML = `<form method="dialog" class="terms">
       <div class="exd-head"><h2>${t('app.voorwaardenEnGezondheid')}</h2><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
-      <div class="terms-body">${TERMS_HTML}</div>
+      <div class="terms-body">${termsHtml()}</div>
       <label class="inline-check"><input type="checkbox" id="tc1"> ${t('app.ikHebDitGelezen')}</label>
       <label class="inline-check"><input type="checkbox" id="tc2"> ${t('app.ikOverlegMetMijn')}</label>
       <div class="row gap"><button type="button" class="btn accent" id="tcOk" disabled>${t('app.akkoord')}</button><button value="close" class="btn ghost">${t('app.later')}</button></div>
@@ -2509,7 +2510,7 @@ function renderTermsPane() {
   const st = state?.setup || {};
   el.innerHTML = `<h2>${t('app.voorwaardenEnGezondheid')}</h2>
     <p class="muted small" style="margin-top:-.4rem">${st.terms && st.termsAt ? t('app.geaccepteerdOp', { a: new Date(st.termsAt).toLocaleDateString(localeOf(), { day: 'numeric', month: 'long', year: 'numeric' }) }) : t('app.nogNietGeaccepteerd')}</p>
-    <div class="terms-body">${TERMS_HTML}</div>
+    <div class="terms-body">${termsHtml()}</div>
     ${st.terms ? '' : '<button type="button" class="btn accent" id="tpAccept">' + t('app.lezenEnAkkoord') + '</button>'}`;
   $('#tpAccept')?.addEventListener('click', openTerms);
 }
@@ -2524,8 +2525,8 @@ function openExplain(section = 'kort') {
     dlg.innerHTML = `<form method="dialog" class="terms">
       <div class="exd-head"><h2>${t('app.hoeGymcoachWerkt')}</h2><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
       <div class="explain">
-        <nav class="explain-nav">${EXPLAIN.map((x) => `<button type="button" data-sec="${x.id}">${esc(x.title)}</button>`).join('')}</nav>
-        <div class="terms-body explain-body">${EXPLAIN.map((x) => `<section id="ex-${x.id}"><h3>${esc(x.title)}</h3>${x.html}</section>`).join('')}</div>
+        <nav class="explain-nav">${explain().map((x) => `<button type="button" data-sec="${x.id}">${esc(x.title)}</button>`).join('')}</nav>
+        <div class="terms-body explain-body">${explain().map((x) => `<section id="ex-${x.id}"><h3>${esc(x.title)}</h3>${x.html}</section>`).join('')}</div>
       </div></form>`;
     const body = dlg.querySelector('.explain-body'), nav = dlg.querySelector('.explain-nav');
     // gekozen onderdeel blijft gemarkeerd, ook als het te kort is om bovenaan te komen (zoals de laatste onderdelen)
@@ -2542,14 +2543,14 @@ function openExplain(section = 'kort') {
     for (const t of ['wheel', 'touchmove', 'keydown', 'mousedown']) body.addEventListener(t, () => { pinned = null; }, { passive: true });
     body.addEventListener('scroll', () => {
       if (pinned) return;
-      let cur = EXPLAIN[0].id;
-      for (const x of EXPLAIN) if (top(x.id) <= body.scrollTop + 40) cur = x.id;
-      if (body.scrollTop + body.clientHeight >= body.scrollHeight - 2) cur = EXPLAIN[EXPLAIN.length - 1].id; // helemaal onderaan
+      let cur = explain()[0].id;
+      for (const x of explain()) if (top(x.id) <= body.scrollTop + 40) cur = x.id;
+      if (body.scrollTop + body.clientHeight >= body.scrollHeight - 2) cur = explain()[explain().length - 1].id; // helemaal onderaan
       mark(cur);
     });
   }
   dlg.showModal();
-  dlg._goto(EXPLAIN.some((x) => x.id === section) ? section : EXPLAIN[0].id, false);
+  dlg._goto(explain().some((x) => x.id === section) ? section : explain()[0].id, false);
 }
 document.addEventListener('click', (ev) => { const a = ev.target.closest('[data-explain]'); if (a) { ev.preventDefault(); openExplain(a.dataset.explain); } });
 
@@ -2573,7 +2574,7 @@ function aboutHtml(a) {
       <p><button type="button" class="btn ghost small" data-explain="kort">${t('app.hoeGymcoachWerkt')}</button> <button type="button" class="btn ghost small" data-explain="meten">${t('app.hoeWeMeten')}</button></p>
       <p class="muted small">${t('app.2026AStoelwinderHolding')} <a href="#" data-go="terms">${t('app.voorwaardenEnGezondheid')}</a></p>
       <table class="about-tbl"><tbody>
-        ${row('GymCoach', a.version)}${row('Node.js', a.node)}${row('speediance-cli', a.cli)}${row('Gebruikers', a.users)}${row('Server gestart', a.started && new Date(a.started).toLocaleString(localeOf(), { dateStyle: 'medium', timeStyle: 'short' }))}
+        ${row('GymCoach', a.version)}${row(t('app.nodeJs'), a.node)}${row('speediance-cli', a.cli)}${row(t('ui.settings.gebruikers'), a.users)}${row(t('app.serverGestart'), a.started && new Date(a.started).toLocaleString(localeOf(), { dateStyle: 'medium', timeStyle: 'short' }))}
       </tbody></table>
     </div></div>`;
 }
@@ -2675,7 +2676,7 @@ $('#newSessBtn').addEventListener('click', async () => {
     <div class="eyebrow" style="margin:0">${t('nt.start')}</div>
     <div class="ns-list">
       ${opt('empty:', t('nt.empty'), t('nt.emptySub'))}
-      ${copies.length ? `<div class="muted small">${t('nt.copy')}</div>${copies.map((x) => opt('copy:' + x.key, x.name, `${x.exercises.length} oefeningen`)).join('')}` : ''}
+      ${copies.length ? `<div class="muted small">${t('nt.copy')}</div>${copies.map((x) => opt('copy:' + x.key, x.name, t('app.oefeningen', { count: x.exercises.length }))).join('')}` : ''}
       <div class="muted small">${t('nt.mine')}</div>${tplData.mine.length ? tplData.mine.map((x) => opt('template:' + x.id, x.name, t('tp.sum', { n: x.count, sets: x.sets, min: '' }))).join('') : `<div class="muted small">${t('nt.noTpl')}</div>`}
       ${tplData.shared.length ? `<div class="muted small">${t('nt.shared')}</div>${tplData.shared.map((x) => opt('template:' + x.id, x.name, t('nt.by', { name: x.owner }))).join('')}` : ''}
     </div>

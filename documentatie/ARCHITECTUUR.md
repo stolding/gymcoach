@@ -115,7 +115,7 @@ Groepen:
 
 ## Meertaligheid
 
-Alle tekst staat in `public/locales/<taal>.js` onder een sleutel (`plan.*`, `set.*`, `ui.<onderdeel>.*`, `err.*`, …). In de browser `t('sleutel', { n })`; in vaste HTML `data-i18n="sleutel"`. Op de server `tr()` uit `lib/lang.js`, in de taal van de huidige gebruiker (instelling `lang`, anders de browser). Een ontbrekende vertaling valt terug op Engels en daarna Nederlands. `tools/i18n-check.mjs` bewaakt dat er geen nieuwe losse Nederlandse tekst bijkomt. Het plan in fasen staat in issue #1.
+Alle tekst staat in `public/locales/<taal>.js` onder een sleutel (`plan.*`, `set.*`, `ui.<onderdeel>.*`, `err.*`, …). In de browser `t('sleutel', { n })`; in vaste HTML `data-i18n="sleutel"`. Op de server `tr()` uit `lib/lang.js`, in de taal van de huidige gebruiker (instelling `lang`, anders de browser). Een ontbrekende vertaling valt terug op Engels en daarna Nederlands. De taal kiest de gebruiker in Instellingen (`lang`; leeg = automatisch); zonder keuze geldt de browsertaal, en de server onthoudt die (`langSeen`) voor mails bij automatisch syncen. Plannen worden bewaard zoals ze gemaakt zijn; `engine.localizePlan()` vertaalt bij het versturen de standaardteksten die het plan bewaart (patroonnamen, cardiodagen, vaste adviezen). Uitleg en voorwaarden staan per taal in `explain.<taal>.js` en `terms.<taal>.js`. Oefeningen van Speediance komen in de taal van de gebruiker als Speediance die levert, anders in het Engels (`INFO_LANGS`). `tools/i18n-check.mjs` bewaakt dat er geen nieuwe losse Nederlandse tekst bijkomt. Het plan in fasen staat in issue #1.
 
 ## Ontwikkelen en testen
 

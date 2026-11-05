@@ -6,7 +6,7 @@
 
 GymCoach is a self-hosted training dashboard. It reads your workouts through the unofficial [`speediance-cli`](https://github.com/stozo04/speediance-cli), builds a personal plan every week and puts it on your Gym Monster as a program with one click. Measurements from a Withings scale and activities from Apple Health are added automatically.
 
-> **Language:** the app, the brochure and the in-app explanations are currently in **Dutch** only. This README is available in English and Dutch.
+> **Language:** the app is available in **English** and **Dutch** (Settings → Training → Language; *Automatic* follows your browser). Reports, emails and the AI coach use the same language. Exercise videos and instructions come from Speediance in your language when Speediance has it, otherwise in English. The brochure is in Dutch.
 
 ![GymCoach](public/icon-192.png)
 
@@ -61,6 +61,7 @@ With a demo account and sample data; dark theme.
 - **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …).
 
 **Use**
+- **English and Dutch**: choose per user, or let the app follow your browser. More languages can be added with one dictionary file (`public/locales/`).
 - **Multiple users**, each with their own account, Speediance account, plan and connections; a wizard guides new users.
 - **Explanations in the app**: Settings → About GymCoach → *How GymCoach works* explains the plan and every calculation, with sources.
 - Dark and light theme; works on desktop, tablet and phone.

@@ -4,8 +4,8 @@ import nl from './locales/nl.js';
 import en from './locales/en.js';
 
 export const DICTS = { nl, en };
-// Talen die gebruikers kunnen kiezen. Engels komt erbij zodra de vertaling compleet is (fase 6 van het plan).
-export const LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }];
+// Talen die gebruikers kunnen kiezen. Een nieuwe taal komt hier pas bij als zijn woordenboek compleet is.
+export const LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }];
 // Alle talen met een woordenboek, ook die nog niet te kiezen zijn (voor het controlescript en tests).
 export const ALL_LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }];
 const LOCALE = Object.fromEntries(ALL_LANGS.map((l) => [l.code, l.locale]));
@@ -18,13 +18,12 @@ export const getLang = () => lang;
 // De locale voor Intl (datums, getallen) bij een taal.
 export const localeOf = (l = lang) => LOCALE[l] || 'nl-NL';
 
-// Welke taal een gebruiker krijgt: zijn eigen keuze, anders de taal van de browser als die er is, anders Engels
-// (zolang alleen Nederlands te kiezen is: Nederlands).
-export function resolveLang(pref, browser = []) {
+// Welke taal een gebruiker krijgt: zijn eigen keuze, anders de taal van de browser als die er is, anders de terugval.
+export function resolveLang(pref, browser = [], fallback = 'en') {
   const ok = (c) => LANGS.some((x) => x.code === c);
   if (ok(pref)) return pref;
   for (const b of browser) { const c = String(b || '').slice(0, 2).toLowerCase(); if (ok(c)) return c; }
-  return ok('en') ? 'en' : 'nl';
+  return ok(fallback) ? fallback : 'nl';
 }
 
 // De ruwe waarde bij een sleutel: eerst de gevraagde taal, dan Engels, dan Nederlands.
@@ -80,3 +79,8 @@ export function applyI18n(root = typeof document !== 'undefined' ? document : nu
     for (const el of root.querySelectorAll(`[data-i18n-${attr}]`)) el.setAttribute(attr, t(el.dataset[ds]));
   }
 }
+
+// Dosering zoals opgeslagen in het plan ("10 herh.", "30 s per kant") in de gekozen taal tonen.
+export const doseText = (d, l = lang) => String(d ?? '')
+  .replace(/(\d+)\s*herh\./, (_, n) => t('dose.reps', { n }, l))
+  .replace(/per (kant|been|arm)\b/, (_, w) => t('dose.per' + w, {}, l));

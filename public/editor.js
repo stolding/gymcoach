@@ -36,15 +36,17 @@ let dlg = null;
 
 // Opent de editor voor de training met deze sleutel.
 // ctx: { state, api, esc, toast, onSaved(plan) }
+// Sjabloon bewerken: ctx.template = { session, onSave(draft) } (dan zonder slot, ongedaan maken blijft).
 export function openEditor(key, ctx) {
   const { state, esc } = ctx;
-  const plan = state.plan;
-  const idx = plan.sessions.findIndex((s) => s.key === key);
-  if (idx < 0) return;
-  const saved = plan.sessions[idx];
+  const plan = state.plan || { sessions: [] };
+  const tpl = ctx.template || null;
+  const idx = tpl ? -1 : plan.sessions.findIndex((s) => s.key === key);
+  if (!tpl && idx < 0) return;
+  const saved = tpl ? { key: '__tpl', warmup: { mobility: [], cable: [] }, cooldown: [], ...clone(tpl.session) } : plan.sessions[idx];
   const original = saved.original ? clone(saved.original) : (() => { const o = clone(saved); delete o.original; return o; })();
   let draft = clone(saved); delete draft.original;
-  if (draft.locked == null) draft.locked = true; // bewerken = standaard vastzetten
+  if (draft.locked == null && !tpl) draft.locked = true; // bewerken = standaard vastzetten
   const undo = [];
   let changes = 0, open = 0, selMuscle = null;
 
@@ -61,6 +63,7 @@ export function openEditor(key, ctx) {
       const m = s.key === draft.key ? sc : (s.muscles || sessionMuscleSets(s));
       for (const [k, v] of Object.entries(m)) week[k] = (week[k] || 0) + v;
     }
+    if (tpl) for (const [k, v] of Object.entries(sc)) week[k] = (week[k] || 0) + v; // sjabloon: alsof hij erbij komt
     const min = estMinutes(draft), target = Number(state.settings?.minutesPerSession) || 45;
     const sets = draft.exercises.reduce((n, e) => n + e.sets.length, 0);
     const vol = draft.exercises.reduce((v, e) => v + e.sets.reduce((a, x) => a + x.reps * x.weight, 0), 0);
@@ -162,13 +165,14 @@ export function openEditor(key, ctx) {
     const sets = draft.exercises.reduce((n, e) => n + e.sets.length, 0);
     dlg.innerHTML = `<form method="dialog" class="ed">
       <div class="ed-top">
-        <div class="ed-name"><div class="eyebrow">${esc(t('ed.eyebrow', { week: lbl }))}</div>
+        <div class="ed-name"><div class="eyebrow">${esc(tpl ? t('ed.eyebrowTpl') : t('ed.eyebrow', { week: lbl }))}</div>
           <div class="row gap wrap"><input class="ed-nameinput" aria-label="${t('ed.nameLabel')}" value="${esc(draft.name)}" data-ed="name" maxlength="40">
-            <button type="button" class="badge ${draft.locked ? 'lock-on' : ''}" data-ed="lock" title="${t('ed.lockToggle')}">${draft.locked ? '🔒 ' + t('ed.locked') : t('ed.unlocked')}</button>
+            ${tpl ? '' : `<button type="button" class="badge ${draft.locked ? 'lock-on' : ''}" data-ed="lock" title="${t('ed.lockToggle')}">${draft.locked ? '🔒 ' + t('ed.locked') : t('ed.unlocked')}</button>`}
             <span class="muted small">${changes ? (changes === 1 ? t('ed.changes1') : t('ed.changes', { n: changes })) : t('ed.noChanges')}</span></div></div>
         <div class="ed-btns">
           <button type="button" class="btn ghost" data-ed="undo" ${undo.length ? '' : 'disabled'}>${t('ed.undo')}</button>
-          <button type="button" class="btn ghost" data-ed="reset" ${saved.original || changes ? '' : 'disabled'}>${t('ed.reset')}</button>
+          ${tpl || saved.custom ? '' : `<button type="button" class="btn ghost" data-ed="reset" ${saved.original || changes ? '' : 'disabled'}>${t('ed.reset')}</button>`}
+          ${tpl ? '' : `<button type="button" class="btn ghost" data-ed="as-tpl">${t('ed.asTemplate')}</button>`}
           <button type="button" class="btn ghost" data-ed="cancel">${t('ed.cancel')}</button>
           <button type="button" class="btn accent" data-ed="save">${t('ed.save')}</button>
         </div>
@@ -243,6 +247,12 @@ export function openEditor(key, ctx) {
       case 'reset':
         if (!confirm(t('ed.resetConfirm'))) return;
         snapshot(); draft = clone(original); draft.locked = false; break;
+      case 'as-tpl': {
+        const name = prompt(t('ed.tplName'), draft.name); if (!name) return;
+        try { await ctx.api('POST', '/api/templates', { name, session: { ...clone(draft), estMinutes: estMinutes(draft) } }); ctx.toast(t('ed.tplSaved', { name })); ctx.onTemplates?.(); }
+        catch (err) { ctx.toast(err.message, true); }
+        return;
+      }
       case 'cancel': if (changes && !confirm(t('ed.cancelConfirm'))) return; close(); return;
       case 'save': await save(); return;
       default: return;
@@ -276,11 +286,16 @@ export function openEditor(key, ctx) {
   };
 
   async function save() {
+    if (tpl) {
+      try { await tpl.onSave({ ...clone(draft), estMinutes: estMinutes(draft) }); ctx.toast(t('ed.tplSaved', { name: draft.name })); close(); }
+      catch (err) { ctx.toast(err.message, true); }
+      return;
+    }
     const p = clone(plan);
     const strip = (x) => { const c = clone(x); for (const k of ['locked', 'edited', 'original', 'estMinutes', 'pushedAt', 'changedAfterPush', 'muscles']) delete c[k]; for (const e of c.exercises || []) delete e.muscles; return JSON.stringify(c); };
     // niets meer anders dan het voorstel (bijv. na "Terug naar voorstel"): gewoon weer het voorstel
-    const same = strip(draft) === strip(original);
-    const s = same ? { ...clone(original), locked: !!draft.locked } : { ...clone(draft), original, edited: true, estMinutes: estMinutes(draft) };
+    const same = !saved.custom && strip(draft) === strip(original);
+    const s = same ? { ...clone(original), locked: !!draft.locked } : saved.custom ? { ...clone(draft), estMinutes: estMinutes(draft) } : { ...clone(draft), original, edited: true, estMinutes: estMinutes(draft) };
     if (same) { delete s.edited; delete s.original; }
     if (saved.pushedAt && !same) { delete s.pushedAt; s.changedAfterPush = true; }
     p.sessions[idx] = s;

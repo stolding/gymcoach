@@ -5,6 +5,11 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.9.0 — 5 november 2026
+- Eigen trainingen: *+ Nieuwe training* in het plan, leeg, als kopie van een training uit het plan, of uit een sjabloon. Eigen trainingen staan vast, blijven bij een nieuw voorstel en krijgen progressie; *Uit plan halen* verwijdert ze weer.
+- Sjablonen (*Trainingen* onder het plan): bewaar een training met *Opslaan als sjabloon* in de editor; in dit plan zetten, bewerken (in de editor), delen met iedereen op de server of niet meer delen, verwijderen. Sjablonen van anderen zie je bij *Gedeeld op deze server*: in je plan zetten of kopiëren naar je eigen trainingen. De gewichten passen zich aan de gebruiker aan (eigen historie, anders een startgewicht).
+- Meewerkende spieren uit de Speediance-gegevens tellen nu blijvend mee in de spierkaart.
+
 ## 1.8.0 — 5 november 2026
 - Oefening toevoegen: onderaan kies je waar de oefeningen heen gaan (warming-up, oefeningen of cooldown). De kiezer opent op de juiste soort; ontbreekt die soort in de catalogus van je toestel, dan zie je alles.
 - Wisselen in de editor: per oefening een andere kiezen, met de kiezer op dezelfde spiergroep.

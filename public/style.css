@@ -768,3 +768,13 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 
 .pk-target { display: flex; gap: .3rem; }
 .pk-dfoot { gap: .5rem; align-items: center; }
+
+/* eigen trainingen en sjablonen */
+.badge.custom { border-color: var(--b); color: var(--b); }
+.tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .6rem; margin-top: .6rem; }
+.tpl-item { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: .7rem .8rem; display: flex; flex-direction: column; gap: .35rem; }
+.tpl-ex { line-height: 1.4; }
+.ns-list { display: flex; flex-direction: column; gap: .35rem; max-height: 50vh; overflow: auto; }
+.ns-opt { display: flex; gap: .6rem; align-items: flex-start; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.ns-opt:has(input:checked) { border-color: var(--accent); }
+.ns-opt input { margin-top: .2rem; accent-color: var(--accent); }

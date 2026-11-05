@@ -294,9 +294,9 @@ function renderPlan() {
       <p class="muted small">Geen programma voor de Gym Monster. Je wandel- of fietsrit komt binnen via Apple Health (Instellingen → Apple Health).</p>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
-      <header><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}</h3><div class="muted small">~${s.estMinutes} min · ${s.exercises.length} oefeningen${s.type && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">cardio-circuit</span>' : ''} ${doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">op toestel</span>' : s.changedAfterPush ? '· <span class="badge warn">gewijzigd, opnieuw op toestel zetten</span>' : ''}</div></div>
+      <header><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}</h3><div class="muted small">~${s.estMinutes} min · ${s.exercises.length} oefeningen${s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">cardio-circuit</span>' : ''} ${doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">op toestel</span>' : s.changedAfterPush ? '· <span class="badge warn">gewijzigd, opnieuw op toestel zetten</span>' : ''}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div></header>
-      ${s.warmup ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">Warming-up</span><span class="ri-sum">${s.warmup.mobility.length + s.warmup.cable.length} oef. · ~6 min</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
+      ${s.warmup && (s.warmup.mobility.length + s.warmup.cable.length) ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">Warming-up</span><span class="ri-sum">${s.warmup.mobility.length + s.warmup.cable.length} oef. · ~6 min</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
       ${s.exercises.map((e, i) => `
         <button class="row-item${exDone(s, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
           ${exDone(s, e) ? '<span class="ri-check" title="gedaan">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}" title="${e.focus ? 'focus deze week' : ''}"></span>`}
@@ -304,7 +304,7 @@ function renderPlan() {
           <span class="ri-sum">${setsSummary(e)}${/^↑/.test(e.note || '') ? ' <span class="up">↑</span>' : /^↓/.test(e.note || '') ? ' <span class="down">↓</span>' : ''}</span>
           <span class="ri-chev" aria-hidden="true">›</span>
         </button>`).join('')}
-      ${s.cooldown ? `<button class="row-item wc" data-open="cool"><span class="ri-dot cool"></span><span class="ri-name">Cooldown</span><span class="ri-sum">${s.cooldown.length} stretches · ~${coolMin(s.cooldown)} min</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
+      ${s.cooldown?.length ? `<button class="row-item wc" data-open="cool"><span class="ri-dot cool"></span><span class="ri-name">Cooldown</span><span class="ri-sum">${s.cooldown.length} stretches · ~${coolMin(s.cooldown)} min</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
       ${doneBanner(s)}
       <footer>${doneOf(s) ? `
         <button class="btn accent" data-act="view">Bekijk training</button>
@@ -315,6 +315,7 @@ function renderPlan() {
         <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
         <button class="btn ghost" data-act="lock" title="${s.locked ? t('ed.unlockHint') : t('ed.lockHint')}">${s.locked ? t('ed.unlock') : t('ed.lock')}</button>
         ${s.edited ? `<button class="btn ghost" data-act="revert">${t('ed.reset')}</button>` : ''}
+        ${s.custom ? `<button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>` : ''}
         <button class="btn ghost" data-act="dry">Controleer</button>
         <button class="btn accent" data-act="push">Zet op Gym Monster</button>`}
       </footer>
@@ -478,6 +479,11 @@ $('#sessions').addEventListener('click', async (ev) => {
   if (!btn) return;
   const act = btn.dataset.act;
   if (act === 'view') { const d = doneOf(session); if (d) openWorkouts([d.id]); return; }
+  if (act === 'remove') {
+    if (!confirm(t('ed.removeFromPlanConfirm', { name: session.name }))) return;
+    try { state.plan = (await api('DELETE', '/api/plan/session?key=' + encodeURIComponent(session.key))).plan; renderPlan(); } catch (e) { toast(e.message, true); }
+    return;
+  }
   if (act === 'lock' || act === 'revert') {
     if (act === 'revert' && !confirm(t('ed.resetConfirm'))) return;
     const p = JSON.parse(JSON.stringify(state.plan));
@@ -493,7 +499,7 @@ $('#sessions').addEventListener('click', async (ev) => {
     return;
   }
   if (act === 'edit') {
-    openEditor(session.key, { state, api, esc, toast, weekLabel: (p) => `week ${planIso(p).w} · ${planIso(p).y}`, onSaved: (plan) => { state.plan = plan; renderPlan(); } });
+    openEditor(session.key, edCtx());
     return;
   }
   if (act === 'push' && !confirm(`“${progName(state.plan, session)}” als programma op je Gym Monster zetten?`)) return;
@@ -1859,6 +1865,7 @@ async function load() {
   setDefaultFigure(figureFor(state.settings || {}));
   renderMe();
   renderSyncStatus(); renderPlan(); fillSettings(); renderWithingsSettings();
+  if ($('#tab-plan')?.classList.contains('active')) loadTemplates();
   if ($('#tab-home').classList.contains('active')) renderHome();
   if ($('#tab-stats').classList.contains('active')) loadStats();
   renderCoach(state.meta?.coach || null);
@@ -2458,3 +2465,89 @@ $('#setNav').addEventListener('click', (ev) => { if (ev.target.closest('[data-pa
   document.addEventListener('touchstart', (ev) => { const el = ev.target.closest?.('[data-tip]'); if (el) { const t = ev.touches[0]; cur = null; show(el, t.clientX, t.clientY); } else hide(); }, { passive: true });
   document.addEventListener('scroll', hide, true);
 })();
+
+
+// ---------- eigen trainingen en sjablonen (Mijn trainingen / gedeeld) ----------
+// Context voor de editor (zie editor.js).
+const edCtx = (extra = {}) => ({ state, api, esc, toast, weekLabel: (p) => `week ${planIso(p).w} · ${planIso(p).y}`, onSaved: (plan) => { state.plan = plan; renderPlan(); }, onTemplates: loadTemplates, ...extra });
+let tplTab = 'mine', tplData = { mine: [], shared: [] };
+// Haalt de sjablonen op en tekent het paneel Trainingen.
+async function loadTemplates() {
+  try { tplData = await api('GET', '/api/templates'); } catch { tplData = { mine: [], shared: [] }; }
+  renderTemplates();
+}
+// Paneel met eigen en gedeelde sjablonen onder het plan.
+function renderTemplates() {
+  const box = $('#tplCard'); if (!box) return;
+  const list = tplTab === 'mine' ? tplData.mine : tplData.shared;
+  const item = (x) => `<div class="tpl-item" data-id="${esc(x.id)}">
+    <div class="row between wrap gap"><b>${esc(x.name)}</b><span class="muted small">${x.mine ? (x.shared ? `<span class="badge custom">${t('tp.sharedBadge')}</span>` : '') : esc(t('nt.by', { name: x.owner }))}</span></div>
+    <div class="muted small">${esc(t('tp.sum', { n: x.count, sets: x.sets, min: x.estMinutes ? ` · ~${x.estMinutes} min` : '' }))}</div>
+    <div class="muted small tpl-ex">${x.exercises.slice(0, 6).map(esc).join(' · ')}${x.exercises.length > 6 ? ' …' : ''}</div>
+    <div class="row gap wrap">
+      <button class="btn accent small" data-tpl="use">${t('tp.inPlan')}</button>
+      ${x.mine ? `<button class="btn ghost small" data-tpl="edit">${t('tp.edit')}</button>
+        <button class="btn ghost small" data-tpl="share">${x.shared ? t('tp.unshare') : t('tp.share')}</button>
+        <button class="btn ghost small danger-text" data-tpl="del">${t('tp.delete')}</button>` : `<button class="btn ghost small" data-tpl="copy">${t('tp.copyMine')}</button>`}
+    </div></div>`;
+  box.innerHTML = `<div class="row between wrap gap"><h2 style="margin:0">${t('tp.title')}</h2>
+      <div class="row gap"><button class="chip ${tplTab === 'mine' ? 'on' : ''}" data-tpltab="mine">${t('tp.mine', { n: tplData.mine.length })}</button><button class="chip ${tplTab === 'shared' ? 'on' : ''}" data-tpltab="shared">${t('tp.shared', { n: tplData.shared.length })}</button></div></div>
+    ${list.length ? `<div class="tpl-grid">${list.map(item).join('')}</div>` : `<p class="muted small">${tplTab === 'mine' ? t('tp.emptyMine') : t('tp.emptyShared')}</p>`}
+    ${tplTab === 'shared' && list.length ? `<p class="muted small">${t('tp.weightsNote')}</p>` : ''}`;
+}
+$('#tplCard').addEventListener('click', async (ev) => {
+  const tb = ev.target.closest('[data-tpltab]'); if (tb) { tplTab = tb.dataset.tpltab; renderTemplates(); return; }
+  const b = ev.target.closest('[data-tpl]'); if (!b) return;
+  const id = b.closest('.tpl-item').dataset.id, act = b.dataset.tpl;
+  const x = [...tplData.mine, ...tplData.shared].find((y) => y.id === id); if (!x) return;
+  try {
+    if (act === 'use') {
+      const r = await api('POST', '/api/plan/session', { mode: 'template', from: id });
+      state.plan = r.plan; renderPlan(); toast(t('tp.added', { name: x.name }));
+    } else if (act === 'edit') {
+      const r = await api('GET', '/api/template?id=' + encodeURIComponent(id));
+      openEditor(null, edCtx({ template: { session: { ...r.template, key: '__tpl' }, onSave: async (draft) => { await api('POST', '/api/templates', { id, name: draft.name, session: draft }); await loadTemplates(); } } }));
+    } else if (act === 'share') {
+      await api('PUT', '/api/templates/share', { id, shared: !x.shared }); toast(x.shared ? t('tp.sharedOff') : t('tp.sharedOn')); await loadTemplates();
+    } else if (act === 'del') {
+      if (!confirm(t('tp.deleteConfirm', { name: x.name }))) return;
+      await api('DELETE', '/api/templates?id=' + encodeURIComponent(id)); await loadTemplates();
+    } else if (act === 'copy') {
+      const r = await api('GET', '/api/template?id=' + encodeURIComponent(id));
+      await api('POST', '/api/templates', { name: r.template.name, session: r.template }); tplTab = 'mine'; await loadTemplates();
+    }
+  } catch (e) { toast(e.message, true); }
+});
+document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'plan') loadTemplates(); }));
+
+// Venster "Nieuwe training": leeg, kopie van een training uit het plan, of uit een sjabloon.
+$('#newSessBtn').addEventListener('click', async () => {
+  if (!state.plan) { toast('Maak eerst een plan', true); return; }
+  await loadTemplates();
+  let dlg = $('#newSessDlg');
+  if (!dlg) { dlg = document.createElement('dialog'); dlg.id = 'newSessDlg'; dlg.className = 'wide-dlg'; document.body.appendChild(dlg); }
+  const copies = state.plan.sessions.filter((x) => !x.outdoor);
+  const opt = (v, label, sub = '') => `<label class="ns-opt"><input type="radio" name="ns" value="${esc(v)}"> <span><b>${esc(label)}</b>${sub ? `<br><span class="muted small">${esc(sub)}</span>` : ''}</span></label>`;
+  dlg.innerHTML = `<form method="dialog" class="exd">
+    <div class="exd-head"><div><div class="eyebrow">${t('nt.title')}</div><h2>${t('nt.title')}</h2></div><button value="close" class="btn ghost small" aria-label="Sluiten">✕</button></div>
+    <label>${t('nt.name')} <input name="name" maxlength="40" placeholder="${esc(t('nt.namePh'))}"></label>
+    <div class="eyebrow" style="margin:0">${t('nt.start')}</div>
+    <div class="ns-list">
+      ${opt('empty:', t('nt.empty'), t('nt.emptySub'))}
+      ${copies.length ? `<div class="muted small">${t('nt.copy')}</div>${copies.map((x) => opt('copy:' + x.key, x.name, `${x.exercises.length} oefeningen`)).join('')}` : ''}
+      <div class="muted small">${t('nt.mine')}</div>${tplData.mine.length ? tplData.mine.map((x) => opt('template:' + x.id, x.name, t('tp.sum', { n: x.count, sets: x.sets, min: '' }))).join('') : `<div class="muted small">${t('nt.noTpl')}</div>`}
+      ${tplData.shared.length ? `<div class="muted small">${t('nt.shared')}</div>${tplData.shared.map((x) => opt('template:' + x.id, x.name, t('nt.by', { name: x.owner }))).join('')}` : ''}
+    </div>
+    <div class="row gap end"><button value="close" class="btn ghost">Annuleren</button><button type="button" class="btn accent" id="nsMake">${t('nt.make')}</button></div>
+  </form>`;
+  dlg.querySelector('input[value="empty:"]').checked = true;
+  dlg.querySelector('#nsMake').addEventListener('click', () => busy(dlg.querySelector('#nsMake'), async () => {
+    const [mode, from] = dlg.querySelector('input[name=ns]:checked').value.split(/:(.*)/s);
+    try {
+      const r = await api('POST', '/api/plan/session', { mode, from, name: dlg.querySelector('input[name=name]').value.trim() || undefined });
+      state.plan = r.plan; renderPlan(); dlg.close();
+      openEditor(r.key, edCtx());
+    } catch (e) { toast(e.message, true); }
+  }));
+  dlg.showModal();
+});

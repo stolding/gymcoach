@@ -504,6 +504,80 @@ const routes = {
     // vanuit de editor: alleen onthouden, het plan niet opnieuw maken
     return regenerate === false ? { ok: true } : { plan: await generatePlan() };
   },
+  // ---------- eigen trainingen en sjablonen ----------
+  'GET /api/templates': async () => {
+    const me = store.currentUser().id;
+    const names = Object.fromEntries((await store.getUsers()).map((u) => [u.id, u.name]));
+    const all = store.listTemplates().map((t) => ({ id: t.id, name: t.name, shared: t.shared, mine: t.ownerId === me, owner: names[t.ownerId] || '?', updatedAt: t.updatedAt,
+      count: (t.exercises || []).length, sets: (t.exercises || []).reduce((n, e) => n + (e.sets?.length || 0), 0), estMinutes: t.estMinutes || null, exercises: (t.exercises || []).map((e) => e.title) }));
+    return { mine: all.filter((t) => t.mine), shared: all.filter((t) => !t.mine && t.shared) };
+  },
+  'GET /api/template': async (req, url) => {
+    const t = store.getTemplate(url.searchParams.get('id'));
+    if (!t) throw Object.assign(new Error('Sjabloon niet gevonden'), { status: 404 });
+    return { template: t, mine: t.ownerId === store.currentUser().id };
+  },
+  // sjabloon bewaren: uit een training (editor) of een bestaand sjabloon bijwerken
+  'POST /api/templates': async (req) => {
+    const { id, name, session, shared } = await body(req);
+    if (!session || !Array.isArray(session.exercises)) throw Object.assign(new Error('Geen training meegegeven'), { status: 400 });
+    const tid = id || 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const cur = id ? store.getTemplate(id) : null;
+    const keep = ['name', 'warmup', 'cooldown', 'exercises', 'estMinutes', 'muscles'];
+    const bodyT = Object.fromEntries(keep.filter((k) => session[k] !== undefined).map((k) => [k, session[k]]));
+    for (const e of bodyT.exercises) { delete e.note; delete e.basis; delete e.restNote; }
+    return { template: store.saveTemplate({ id: tid, name: name || session.name || 'Training', shared: shared ?? cur?.shared ?? false, body: bodyT }) };
+  },
+  'PUT /api/templates/share': async (req) => {
+    const { id, shared } = await body(req);
+    const t = store.getTemplate(id);
+    if (!t || t.ownerId !== store.currentUser().id) throw Object.assign(new Error('Alleen de maker kan delen'), { status: 403 });
+    const { id: _i, ownerId, name, shared: _s, updatedAt, ...rest } = t;
+    return { template: store.saveTemplate({ id, name, shared: !!shared, body: rest }) };
+  },
+  'DELETE /api/templates': async (req, url) => {
+    if (!store.deleteTemplate(url.searchParams.get('id'))) throw Object.assign(new Error('Sjabloon niet gevonden of niet van jou'), { status: 404 });
+    return { ok: true };
+  },
+  // nieuwe training in het plan: leeg, kopie van een training uit het plan, of uit een sjabloon
+  'POST /api/plan/session': async (req) => {
+    const { mode = 'empty', from, name } = await body(req);
+    const plan = await store.getPlan();
+    if (!plan) throw Object.assign(new Error('Maak eerst een plan'), { status: 400 });
+    const ctx = await context();
+    let base;
+    let foreign = false;
+    if (mode === 'copy') {
+      const src = plan.sessions.find((x) => x.key === from);
+      if (!src || src.outdoor) throw Object.assign(new Error('Training niet gevonden'), { status: 404 });
+      base = JSON.parse(JSON.stringify(src));
+      for (const k of ['original', 'pushedAt', 'changedAfterPush', 'edited']) delete base[k];
+    } else if (mode === 'template') {
+      const tpl = store.getTemplate(from);
+      if (!tpl) throw Object.assign(new Error('Sjabloon niet gevonden'), { status: 404 });
+      foreign = tpl.ownerId !== store.currentUser().id;
+      base = { name: tpl.name, warmup: tpl.warmup || null, cooldown: tpl.cooldown || null, exercises: tpl.exercises || [], template: tpl.id };
+    } else base = { name: 'Eigen training', warmup: { mobility: [], cable: [] }, cooldown: [], exercises: [] };
+    let n = 1; while (plan.sessions.some((x) => x.key === `X${n}`)) n++;
+    const sess = engine.adaptSession({ ...base, key: `X${n}`, name: String(name || base.name || 'Eigen training').slice(0, 40), type: 'eigen' }, {
+      history: ctx.history, settings: ctx.settings, library: ctx.library, foreign, info: (id) => store.getExerciseInfo(Number(id), 'en')?.info || null,
+    });
+    Object.assign(sess, { custom: true, locked: true, estMinutes: sess.estMinutes || 45 });
+    plan.sessions.push(sess);
+    refreshMuscles(plan);
+    await store.savePlan(plan);
+    return { plan, key: sess.key };
+  },
+  // eigen training uit het plan halen
+  'DELETE /api/plan/session': async (req, url) => {
+    const plan = await store.getPlan();
+    const i = plan?.sessions.findIndex((x) => x.key === url.searchParams.get('key') && x.custom) ?? -1;
+    if (i < 0) throw Object.assign(new Error('Alleen eigen trainingen kun je uit het plan halen'), { status: 400 });
+    plan.sessions.splice(i, 1);
+    refreshMuscles(plan);
+    await store.savePlan(plan);
+    return { plan };
+  },
   // catalogus voor de editor: alle oefeningen, met per oefening jouw historie en de vermeden oefeningen
   'GET /api/library': async () => {
     const ctx = await context();

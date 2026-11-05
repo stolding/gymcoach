@@ -45,7 +45,7 @@ With a demo account and sample data; dark theme.
 - **Tailored to you**: rest and volume adjusted for sex and for your own recovery; maximum heart rate with Tanaka or (for women) Gulati.
 - **Weekly focus** on muscle groups; an anatomical figure (male, female or neutral) shows what you train.
 - **One click to the Gym Monster**, including warm-up, mobility and cool-down. Programs are named after the calendar week: `GC 2026-W45 Full Body A`.
-- **Training editor**: browse the exercise catalogue by muscle group and type, see the coach video, key points and instructions from Speediance (cached on your own server for all users), add exercises to the workout, warm-up or cool-down; edit any workout (sets, reps, weight, rest and Gym Monster mode per set, order, warm-up and cool-down) with a live muscle map and weekly sets per muscle group; edited workouts are locked and keep progressing when a new plan is made.
+- **Training editor**: browse the exercise catalogue by muscle group and type, see the coach video, key points and instructions from Speediance (cached on your own server for all users), add exercises to the workout, warm-up or cool-down; edit any workout (sets, reps, weight, rest and Gym Monster mode per set, order, warm-up and cool-down) with a live muscle map and weekly sets per muscle group; edited workouts are locked and keep progressing when a new plan is made. Create your own workouts (empty, as a copy or from a template), save templates and share them with other users on your server; weights adapt to each user.
 - **Done this week**: workouts you've already done are marked in the plan.
 - **Optional AI coach** via the Claude API or a local language model (OpenAI-compatible). Suggestions are validated and only applied when you click them.
 

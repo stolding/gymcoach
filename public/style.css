@@ -799,3 +799,6 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .acc-title { font-weight: 550; }
 .acc-box { display: flex; flex-wrap: wrap; gap: .45rem; }
 .acc-n { font-style: normal; font-size: .78em; opacity: .65; margin-left: .45rem; font-variant-numeric: tabular-nums; }
+/* aangevinkt = gebruik ik niet: felle rode rand en een zachte rode achtergrond */
+.acc-box .chip-check input:checked + span { background: rgba(255, 59, 48, .16); color: var(--ink); border: 2px solid #ff3b30; padding: calc(.45rem - 1px) calc(.9rem - 1px); }
+.acc-box .chip-check input:checked + span .acc-n { opacity: .8; }

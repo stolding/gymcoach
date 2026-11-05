@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.12.1 — 5 november 2026
+- Accessoires die je niet gebruikt staan nu duidelijk aangegeven: felle rode rand en een zachte rode achtergrond.
+
 ## 1.12.0 — 5 november 2026
 - Accessoires die je niet gebruikt (Instellingen → Training): stang, bank, handgrepen, touw, heupgordel, roei- en skihandvat en mat. Oefeningen die zo'n accessoire nodig hebben, komen niet meer in je plan, niet bij wisselen en niet in de voorstellen van de AI-coach, net als in de Speediance-app. Per gebruiker. In de oefeningenkiezer staan ze standaard verborgen (met een filter om ze toch te tonen). GymCoach leidt het accessoire af uit de naam en het soort oefening, omdat de catalogus van Speediance het niet meegeeft.
 

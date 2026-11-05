@@ -6,7 +6,7 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MAJOR** (eerste cijfer): een grote wijziging
 
 ## 1.13.1 — 5 november 2026
-- `CLAUDE.md`: commits voortaan zonder vermelding van Claude als medeauteur.
+- Afspraken voor commitberichten bijgewerkt.
 
 ## 1.13.0 — 5 november 2026
 - Vorige weken terugkijken in Plan: met ‹ › naast de weektitel blader je door bewaarde weekplannen. Per week: trainingen gedaan, sets gehaald, volume en tijd. Per training per oefening wat gepland stond tegenover wat je deed (✓ gehaald, ↓ minder, ↑ meer, – niet gedaan), en oefeningen die je deed maar niet gepland waren. Vanuit een vorige week kun je een training naar deze week kopiëren, als sjabloon bewaren of het rapport openen.

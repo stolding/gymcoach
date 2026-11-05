@@ -130,6 +130,7 @@ export function openEditor(key, ctx) {
         <div class="ed-acts">
           <button type="button" class="btn ghost small" data-ed="move" data-i="${i}" data-d="-1" aria-label="${t('ed.up')}" ${i === 0 ? 'disabled' : ''}>↑</button>
           <button type="button" class="btn ghost small" data-ed="move" data-i="${i}" data-d="1" aria-label="${t('ed.down')}" ${i === n - 1 ? 'disabled' : ''}>↓</button>
+          <button type="button" class="btn ghost small" data-ed="swap" data-i="${i}">${t('ed.swap')}</button>
           <button type="button" class="btn ghost small danger-text" data-ed="ex-del" data-i="${i}">${t('ed.remove')}</button>
         </div></div>`;
     if (open !== i) return `<div class="card ed-ex${hl}" data-i="${i}">${head}<div class="ed-sum muted">${e.sets.length} × ${e.sets[0]?.reps} · ${nlNum(e.sets[0]?.weight)} kg · ${e.sets[0]?.rest} s${e.sets.some((x) => (x.mode || 1) !== 1) ? ` · ${t('ed.mode')}: ${[...new Set(e.sets.map((x) => t('ed.mode' + (x.mode || 1))))].join('/')}` : ''}</div></div>`;
@@ -218,15 +219,23 @@ export function openEditor(key, ctx) {
       case 'restore-warm': snapshot(); draft.warmup = clone(original.warmup); break;
       case 'restore-cool': snapshot(); draft.cooldown = clone(original.cooldown); break;
       case 'add': case 'add-warm': case 'add-cool': {
-        const block = a === 'add' ? 'ex' : a === 'add-warm' ? 'warm' : 'cool';
-        const ids = block === 'ex' ? draft.exercises.map((x) => x.id) : block === 'warm' ? [...(draft.warmup?.mobility || []), ...(draft.warmup?.cable || [])].map((x) => x.id) : (draft.cooldown || []).map((x) => x.id);
-        openPicker(block, ctx, { muscleKey: selMuscle, inSession: ids }, (items) => {
+        const start = a === 'add' ? 'ex' : a === 'add-warm' ? 'warm' : 'cool';
+        const ids = [...draft.exercises, ...(draft.warmup?.mobility || []), ...(draft.warmup?.cable || []), ...(draft.cooldown || [])].map((x) => x.id);
+        openPicker(start, ctx, { muscleKey: selMuscle, inSession: ids }, (items, block) => {
           if (!items.length) return;
           snapshot();
           if (block === 'ex') { draft.exercises.push(...items); open = draft.exercises.length - items.length; }
           else if (block === 'warm') { draft.warmup = draft.warmup || { mobility: [], cable: [] }; for (const it of items) { const k = it.kind === 'cable' ? 'cable' : 'mobility'; delete it.kind; draft.warmup[k].push(it); } }
           else { draft.cooldown = draft.cooldown || []; draft.cooldown.push(...items); }
           render();
+        });
+        return;
+      }
+      case 'swap': {
+        const k = Object.entries(e.muscles || {}).find(([, w]) => w >= 1)?.[0] || null;
+        openPicker('ex', ctx, { muscleKey: k, inSession: draft.exercises.map((x) => x.id), replace: e.title }, (items) => {
+          if (!items.length) return;
+          snapshot(); draft.exercises[i] = items[0]; open = i; render();
         });
         return;
       }
@@ -304,8 +313,10 @@ const tabName = (x) => { const k = 'tab.' + x; const v = t(k); return v === k ? 
 let libCache = null, pdlg = null;
 const infoCache = new Map();
 
-// Opent de kiezer. block: 'ex' (oefeningen), 'warm' of 'cool'. onAdd(lijst) krijgt de klaargezette oefeningen.
-export async function openPicker(block, ctx, { muscleKey = null, inSession = [] } = {}, onAdd) {
+// Opent de kiezer. block: waar de oefeningen standaard heen gaan ('ex', 'warm' of 'cool'; te wijzigen in de kiezer).
+// replace: naam van de oefening die gewisseld wordt (dan één keuze, altijd naar 'ex').
+// onAdd(lijst, blok) krijgt de klaargezette oefeningen.
+export async function openPicker(block, ctx, { muscleKey = null, inSession = [], replace = null } = {}, onAdd) {
   const { esc } = ctx;
   if (!pdlg) { pdlg = document.createElement('dialog'); pdlg.className = 'picker-dlg'; document.body.appendChild(pdlg); }
   pdlg.innerHTML = `<div class="pk-loading muted">${t('pk.loading')}</div>`;
@@ -314,9 +325,11 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [] 
   const lib = libCache;
   const avoid = new Set((lib.avoid || []).map(Number));
   const inS = new Set(inSession.map(Number));
+  const defTab = (bl) => (bl === 'ex' ? 'Training' : bl === 'warm' ? 'Warmup' : 'Stretch');
   const st = {
+    block,
     muscle: block === 'ex' && muscleKey ? KEY2LIB[muscleKey] || null : null,
-    tab: block === 'ex' ? 'Training' : block === 'warm' ? 'Warmup' : 'Stretch',
+    tab: defTab(block),
     q: '', onlyDone: false, hideAvoid: true, sel: new Set(), detail: null, busy: false,
   };
   const counts = (filterTab) => {
@@ -330,7 +343,9 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [] 
       && (!st.onlyDone || lib.history[e.id]) && (!st.hideAvoid || !avoid.has(Number(e.id))))
       .sort((a, b) => (lib.history[b.id]?.times || 0) - (lib.history[a.id]?.times || 0) || a.name.localeCompare(b.name));
   };
-  const title = block === 'warm' ? t('pk.titleWarm') : block === 'cool' ? t('pk.titleCool') : t('pk.title');
+  // soort zonder oefeningen in deze catalogus: dan alles tonen
+  if (!lib.items.some((e) => e.tab === st.tab)) st.tab = 'all';
+  const title = replace ? t('pk.titleSwap', { name: replace }) : t('pk.title');
 
   function row(e) {
     const h = lib.history[e.id];
@@ -372,7 +387,8 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [] 
         <div class="muted small">${t('pk.source')}</div>`}
         <div><div class="eyebrow">${t('pk.history')}</div>${h ? `<div class="small up">${esc(t('pk.done', { date: h.last, sets: h.sets, times: h.times }))}</div>` : ''}${spark}</div>
       </div>
-      <div class="pk-dfoot"><button type="button" class="btn ${on ? 'ghost' : 'accent'}" data-pk="toggle" data-id="${e.id}">${on ? t('pk.deselect') : t('pk.select')}</button></div>`;
+      <div class="pk-dfoot">${avoid.has(Number(e.id)) ? `<span class="badge warn">${t('pk.avoided')}</span>` : `<button type="button" class="btn ghost" data-pk="avoid" data-id="${e.id}">${t('pk.avoid')}</button>`}
+        <button type="button" class="btn ${on ? 'ghost' : 'accent'}" data-pk="toggle" data-id="${e.id}">${on ? t('pk.deselect') : t('pk.select')}</button></div>`;
   }
 
   function render() {
@@ -395,7 +411,9 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [] 
           <div class="pk-list">${list.length ? list.slice(0, 150).map(row).join('') + (list.length > 150 ? `<div class="muted small">${t('pk.more', { n: list.length - 150 })}</div>` : '') : `<div class="muted">${t('pk.none')}</div>`}</div>`}
         </section>
       </div>
-      <div class="pk-foot"><span class="small">${t('pk.selected', { n: st.sel.size })}</span><button type="button" class="btn accent" data-pk="add" ${st.sel.size && !st.busy ? '' : 'disabled'}>${st.busy ? t('pk.adding') : t('pk.add')}</button></div>
+      <div class="pk-foot"><span class="small">${t('pk.selected', { n: st.sel.size })}</span>
+        <div class="row gap wrap">${replace ? '' : `<span class="small muted">${t('pk.target')}</span><div class="pk-target">${['warm', 'ex', 'cool'].map((x) => `<button type="button" class="chip ${st.block === x ? 'on' : ''}" data-pk="target" data-b="${x}">${t(x === 'warm' ? 'ed.warmup' : x === 'cool' ? 'ed.cooldown' : 'ed.exercises')}</button>`).join('')}</div>`}
+        <button type="button" class="btn accent" data-pk="add" ${st.sel.size && !st.busy ? '' : 'disabled'}>${st.busy ? t('pk.adding') : replace ? t('pk.swap') : t('pk.add')}</button></div></div>
     </div>`;
     if (st.detail) showDetail(st.detail);
   }
@@ -420,16 +438,21 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [] 
     else if (a === 'detail') st.detail = isNaN(+b.dataset.id) ? b.dataset.id : +b.dataset.id;
     else if (a === 'back') st.detail = null;
     else if (a === 'nav') { const list = filtered(); const i = list.findIndex((x) => x.id === st.detail) + Number(b.dataset.d); if (list[i]) st.detail = list[i].id; }
-    else if (a === 'toggle') { const id = Number(b.dataset.id); if (st.sel.has(id)) st.sel.delete(id); else st.sel.add(id); }
+    else if (a === 'toggle') { const id = Number(b.dataset.id); if (st.sel.has(id)) st.sel.delete(id); else { if (replace) st.sel.clear(); st.sel.add(id); } }
+    else if (a === 'target') { st.block = b.dataset.b; st.tab = lib.items.some((e) => e.tab === defTab(st.block)) ? defTab(st.block) : 'all'; if (st.block !== 'ex') st.muscle = null; }
+    else if (a === 'avoid') {
+      const id = Number(b.dataset.id);
+      try { await ctx.api('POST', '/api/avoid', { id, regenerate: false }); avoid.add(id); (lib.avoid ||= []).push(id); st.sel.delete(id); ctx.toast(t('pk.avoidedToast')); } catch (err) { ctx.toast(err.message, true); }
+    }
     else if (a === 'add') {
       st.busy = true; render();
       const out = [];
       try {
         for (const id of st.sel) {
-          const r = await ctx.api('POST', '/api/exercise/template', { id, block });
+          const r = await ctx.api('POST', '/api/exercise/template', { id, block: replace ? 'ex' : st.block });
           out.push(r.exercise || r.item);
         }
-        pdlg.close(); onAdd(out);
+        pdlg.close(); onAdd(out, replace ? 'ex' : st.block);
       } catch (err) { ctx.toast(err.message, true); st.busy = false; render(); }
       return;
     } else return;
@@ -437,7 +460,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [] 
   };
   pdlg.onchange = (ev) => {
     const el = ev.target; const a = el.dataset?.pk;
-    if (a === 'sel') { const id = Number(el.dataset.id); if (el.checked) st.sel.add(id); else st.sel.delete(id); render(); }
+    if (a === 'sel') { const id = Number(el.dataset.id); if (el.checked) { if (replace) st.sel.clear(); st.sel.add(id); } else st.sel.delete(id); render(); }
     else if (a === 'onlyDone' || a === 'hideAvoid') { st[a] = el.checked; render(); }
   };
   pdlg.oninput = (ev) => {

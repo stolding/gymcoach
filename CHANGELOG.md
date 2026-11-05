@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.8.0 — 5 november 2026
+- Oefening toevoegen: onderaan kies je waar de oefeningen heen gaan (warming-up, oefeningen of cooldown). De kiezer opent op de juiste soort; ontbreekt die soort in de catalogus van je toestel, dan zie je alles.
+- Wisselen in de editor: per oefening een andere kiezen, met de kiezer op dezelfde spiergroep.
+- "Niet meer voorstellen" in het scherm Oefening bekijken (zonder dat het plan opnieuw wordt gemaakt).
+- Plan: per training *Vastzetten* / *Losmaken*, en *Terug naar voorstel* bij een bewerkte training.
+
 ## 1.7.0 — 5 november 2026
 - Trainingseditor stap 2: oefeningen toevoegen aan oefeningen, warming-up en cooldown. Bladeren per spiergroep en soort (kracht, eigen gewicht, warming-up, stretch, herstel …), zoeken op naam, filters (eerder gedaan, "niet meer voorstellen" verbergen). Per oefening je historie; nieuwe oefeningen krijgen sets, herhalingen, rust en gewicht volgens je doel en historie (of het aanbevolen startgewicht van Speediance).
 - Oefening bekijken: demovideo van de coach, foto's met aandachtspunten, uitvoering in stappen, ademhaling, wat je moet voelen, veelgemaakte fout, hoofd- en meewerkende spieren, Speediance-voorinstellingen en je eigen verloop (geschat 1RM). Bladeren met vorige/volgende.

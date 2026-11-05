@@ -309,8 +309,12 @@ function renderPlan() {
       <footer>${doneOf(s) ? `
         <button class="btn accent" data-act="view">Bekijk training</button>
         <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
+        <button class="btn ghost" data-act="lock" title="${s.locked ? t('ed.unlockHint') : t('ed.lockHint')}">${s.locked ? t('ed.unlock') : t('ed.lock')}</button>
+        ${s.edited ? `<button class="btn ghost" data-act="revert">${t('ed.reset')}</button>` : ''}
         <button class="btn ghost" data-act="push">Opnieuw op toestel</button>` : `
         <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
+        <button class="btn ghost" data-act="lock" title="${s.locked ? t('ed.unlockHint') : t('ed.lockHint')}">${s.locked ? t('ed.unlock') : t('ed.lock')}</button>
+        ${s.edited ? `<button class="btn ghost" data-act="revert">${t('ed.reset')}</button>` : ''}
         <button class="btn ghost" data-act="dry">Controleer</button>
         <button class="btn accent" data-act="push">Zet op Gym Monster</button>`}
       </footer>
@@ -474,6 +478,20 @@ $('#sessions').addEventListener('click', async (ev) => {
   if (!btn) return;
   const act = btn.dataset.act;
   if (act === 'view') { const d = doneOf(session); if (d) openWorkouts([d.id]); return; }
+  if (act === 'lock' || act === 'revert') {
+    if (act === 'revert' && !confirm(t('ed.resetConfirm'))) return;
+    const p = JSON.parse(JSON.stringify(state.plan));
+    const i = p.sessions.findIndex((x) => x.key === session.key);
+    if (act === 'lock') p.sessions[i].locked = !p.sessions[i].locked;
+    else {
+      const o = p.sessions[i].original; if (!o) return;
+      const was = p.sessions[i];
+      p.sessions[i] = { ...o, locked: false };
+      if (was.pushedAt || was.changedAfterPush) p.sessions[i].changedAfterPush = true;
+    }
+    try { state.plan = (await api('PUT', '/api/plan', p)).plan; renderPlan(); toast(act === 'lock' ? (state.plan.sessions[i].locked ? t('ed.lockedToast') : t('ed.unlockedToast')) : t('ed.revertedToast')); } catch (e) { toast(e.message, true); }
+    return;
+  }
   if (act === 'edit') {
     openEditor(session.key, { state, api, esc, toast, weekLabel: (p) => `week ${planIso(p).w} · ${planIso(p).y}`, onSaved: (plan) => { state.plan = plan; renderPlan(); } });
     return;

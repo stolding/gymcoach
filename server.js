@@ -497,11 +497,12 @@ const routes = {
     return { plan: await generatePlan() };
   },
   'POST /api/avoid': async (req) => {
-    const { id } = await body(req);
+    const { id, regenerate = true } = await body(req);
     const s = await store.getSettings();
     s.avoidIds = [...new Set([...(s.avoidIds || []), Number(id)])];
     await store.saveSettings(s);
-    return { plan: await generatePlan() };
+    // vanuit de editor: alleen onthouden, het plan niet opnieuw maken
+    return regenerate === false ? { ok: true } : { plan: await generatePlan() };
   },
   // catalogus voor de editor: alle oefeningen, met per oefening jouw historie en de vermeden oefeningen
   'GET /api/library': async () => {

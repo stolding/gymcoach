@@ -765,3 +765,6 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
   .pk-side { border-right: 0; border-bottom: 1px solid var(--line); max-height: 34vh; }
   .pk-media { grid-template-columns: minmax(0, 1fr); }
 }
+
+.pk-target { display: flex; gap: .3rem; }
+.pk-dfoot { gap: .5rem; align-items: center; }

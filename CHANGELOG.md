@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.5.2 — 5 november 2026
+- README: de pagina's van de brochure als afbeeldingen ("Zo ziet GymCoach eruit"), in `documentatie/afbeeldingen/`.
+
 ## 1.5.1 — 5 november 2026
 - "Geen Speediance-abonnement nodig" verwijderd uit de README en de brochure (nieuwe ondertitel op de voorkant: "Een plan dat met je meegroeit.").
 

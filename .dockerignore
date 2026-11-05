@@ -7,4 +7,4 @@ ios
 deploy
 .env
 node_modules
-documentatie/*.pdf
+documentatie

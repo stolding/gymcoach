@@ -11,6 +11,17 @@ GymCoach is een trainingsdashboard dat je zelf host. Het leest je trainingen uit
 - **Wijzigingen per versie:** [CHANGELOG.md](CHANGELOG.md)
 - **iPhone-app (GymCoach Sync):** [ios/README.md](ios/README.md)
 
+## Zo ziet GymCoach eruit
+
+Uit de [brochure](documentatie/GymCoach-brochure.pdf); klik op een pagina voor het groot formaat. Alle cijfers zijn voorbeelddata.
+
+<table>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-1-voorkant.png"><img src="documentatie/afbeeldingen/brochure-1-voorkant.png" alt="Voorkant" width="380"></a><br><sub>Voorkant</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-2-wat-gymcoach-doet.png"><img src="documentatie/afbeeldingen/brochure-2-wat-gymcoach-doet.png" alt="Wat GymCoach doet" width="380"></a><br><sub>Wat GymCoach doet</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-3-weekplan.png"><img src="documentatie/afbeeldingen/brochure-3-weekplan.png" alt="Je weekplan" width="380"></a><br><sub>Je weekplan</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-4-lichaam.png"><img src="documentatie/afbeeldingen/brochure-4-lichaam.png" alt="Lichaamsmetingen" width="380"></a><br><sub>Lichaamsmetingen</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-5-inzicht.png"><img src="documentatie/afbeeldingen/brochure-5-inzicht.png" alt="Inzicht" width="380"></a><br><sub>Inzicht</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-6-trainingsrapport.png"><img src="documentatie/afbeeldingen/brochure-6-trainingsrapport.png" alt="Trainingsrapport" width="380"></a><br><sub>Trainingsrapport</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-7-afgestemd-op-jou.png"><img src="documentatie/afbeeldingen/brochure-7-afgestemd-op-jou.png" alt="Afgestemd op jou" width="380"></a><br><sub>Afgestemd op jou</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-8-techniek.png"><img src="documentatie/afbeeldingen/brochure-8-techniek.png" alt="Techniek en installatie" width="380"></a><br><sub>Techniek en installatie</sub></td></tr>
+</table>
+
 ## Functies
 
 **Plannen en trainen**

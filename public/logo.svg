@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="GymCoach">
+  <!-- halter met het scherm van de Gym Monster; zelfde ontwerp als het app-icoon van GymCoach Sync -->
+  <rect width="1024" height="1024" rx="224" fill="#ff7a2e"/><g fill="#0f1012">
+    <rect x="200" y="400" width="72" height="224" rx="36"/>
+    <rect x="300" y="300" width="72" height="424" rx="36"/>
+    <rect x="372" y="480" width="280" height="64"/>
+    <rect x="652" y="300" width="72" height="424" rx="36"/>
+    <rect x="752" y="400" width="72" height="224" rx="36"/></g><rect x="422" y="322" width="180" height="128" rx="20" fill="#ffe3cf" stroke="#0f1012" stroke-width="16"/><path d="M450 420 L484 386 L508 406 L572 350" fill="none" stroke="#ff7a2e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/></svg>

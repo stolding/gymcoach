@@ -1,0 +1,8 @@
+[Unit]
+Description=Check GymCoach reverse SSH tunnel
+After=gymcoach.service gymcoach-tunnel.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-%h/gymcoach/.env
+ExecStart=/bin/bash %h/gymcoach/deploy/tunnel/gymcoach-tunnel-watch.sh

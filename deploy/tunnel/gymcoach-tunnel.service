@@ -1,0 +1,13 @@
+[Unit]
+Description=GymCoach reverse SSH tunnel to VPS
+After=network-online.target gymcoach.service
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=-%h/gymcoach/.env
+ExecStart=/bin/bash %h/gymcoach/deploy/tunnel/gymcoach-tunnel.sh
+Restart=always
+RestartSec=8
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,17 @@
+# GymCoach met Docker:  docker compose up -d
+# Daarna: http://<ip-van-je-server>:8765  (eerste keer: beheerdersaccount aanmaken)
+services:
+  gymcoach:
+    image: ghcr.io/stolding/gymcoach:latest
+    # zelf bouwen in plaats van het kant-en-klare image: docker compose up -d --build
+    build: .
+    container_name: gymcoach
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    volumes:
+      - ./data:/data
+    environment:
+      TZ: Europe/Amsterdam
+      # Achter een reverse proxy (https via je eigen webserver): zet op 1
+      TRUST_PROXY: ""

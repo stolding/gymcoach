@@ -1,0 +1,12 @@
+# persoonlijke gegevens: database, logins, tokens
+data/
+backups/
+*.db
+*.db-wal
+*.db-shm
+.env
+node_modules/
+*.zip
+.DS_Store
+ios/*.xcodeproj/
+ios/build.log

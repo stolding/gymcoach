@@ -1,0 +1,75 @@
+# Wijzigingen
+
+Versienummers volgen MAJOR.MINOR.PATCH:
+- **PATCH** (laatste cijfer): elke wijziging of reparatie
+- **MINOR** (middelste cijfer): een kleine nieuwe functie
+- **MAJOR** (eerste cijfer): een grote wijziging
+
+## 1.5.0 — 5 november 2026
+- Installeren met Docker: `Dockerfile` en `docker-compose.yml`; het image wordt automatisch gebouwd voor amd64 en arm64 en staat op `ghcr.io/stolding/gymcoach`.
+- Geen persoonlijke standaardwaarden meer: de VPS-tunnel vraagt om je eigen VPS (`GYMCOACH_VPS_HOST` in `.env`), voorbeeldadressen in Instellingen zijn neutraal. README beschrijft Tailscale, een eigen reverse proxy of een eigen VPS om GymCoach buitenshuis te gebruiken.
+
+## 1.4.8 — 5 november 2026
+- Per segment: visceraal vet staat nu in de kolom Vetmassa, met één decimaal en "index" erbij (het is een index zonder eenheid), en met de richtwaarde.
+
+## 1.4.7 — 5 november 2026
+- Popups in grafieken dekken de trainingsstreepjes onderaan nooit meer af: is er boven het punt geen ruimte, dan staat de popup naast de hulplijn, altijd binnen het grafiekvlak.
+
+## 1.4.6 — 5 november 2026
+- De zonekleur op de tegels staat nu als lijn aan de linkerkant in plaats van bovenaan (popups houden de lijn bovenaan).
+
+## 1.4.5 — 5 november 2026
+- Reparatie: popups met een zonekleur stonden soms over de hele breedte onder de grafiek (de opmaak van de tegels gold ook voor de popup).
+
+## 1.4.4 — 5 november 2026
+- Popups in grafieken krijgen bovenaan een lijn in de kleur van de zone waar de waarde in valt (groen/geel/rood zoals de achtergrond van de grafiek). De hartslaggrafieken in het rapport hebben nu ook zo'n popup (tijd, gemiddeld, maximaal en zone), in de kleur van de hartslagzone.
+
+## 1.4.3 — 5 november 2026
+- Tegels boven de grafieken krijgen een gekleurde lijn bovenaan voor de zone waarin de laatste meting valt: groen goed, geel let op, rood niet goed (dezelfde kleuren als de achtergrond in de grafiek). Hartslag-tegels bij trainingen en activiteiten volgen de kleur van de hartslagzone van het gemiddelde.
+
+## 1.4.2 — 5 november 2026
+- Documentatie: elke functie en elk bestand heeft commentaar (ook de iPhone-app); nieuwe README; `documentatie/ARCHITECTUUR.md` (hoe de code in elkaar zit); `.env.example` met proxy- en tunnelinstellingen.
+- Brochure bijgewerkt (nieuw logo, nieuwe pagina "Afgestemd op jou", iPhone-app, wizard, buitenshuis via VPS) en als PDF in `documentatie/`.
+
+## 1.4.1 — 5 november 2026
+- Uitleg: het gekozen onderdeel blijft oranje gemarkeerd, ook bij korte onderdelen onderaan (AI-coach, Bronnen); helemaal onderaan gescrold wordt het laatste onderdeel gemarkeerd.
+
+## 1.4.0 — 5 november 2026
+- Spierkaarten met een mannelijk, vrouwelijk of neutraal figuur (automatisch volgens geslacht, of zelf te kiezen); ook in de PDF.
+- Berekeningen per geslacht: maximale hartslag voor vrouwen met Gulati (206 − 0,88 × leeftijd), rust 20% korter en wat meer volume per training voor vrouwen. Bij non-binair/anders kies je zelf de tabel.
+- Rust wordt ook afgestemd op je eigen herstel: zakken je herhalingen in latere sets, dan langere rust; haal je steeds alles, dan iets korter. De reden staat bij de oefening.
+- AI-coach krijgt geslacht en leeftijd mee.
+- Nieuw: "Hoe GymCoach werkt" (Instellingen → Over GymCoach, en "Waarom?" bij Lichaam en doelen): uitleg van het plan, de persoonlijke afstemming, hoe alles wordt gemeten, de AI-coach en de bronnen.
+
+## 1.3.2 — 5 november 2026
+- Plan gebruikt de kalenderweek (jaar-weeknummer) in plaats van een eigen weekteller: "Week 45 · 2026"; programma's op het toestel heten nu "GC 2026-W45 Full Body A". Oude namen ("GC W12 …") worden nog herkend.
+
+## 1.3.1 — 5 november 2026
+Plan: de groene balk "Gedaan op …" staat nu onder de oefeningen, boven de knoppen, zodat alle trainingen dezelfde opbouw houden.
+
+## 1.3.0 — 5 november 2026
+Plan: trainingen die deze week al gedaan zijn, krijgen een groene balk "Gedaan op …" met duur, volume en kcal, een vinkje per gedane oefening en de knop "Bekijk training". Bovenaan "x van y gedaan"; Overzicht slaat gedane trainingen over bij "Volgende training".
+
+## 1.2.1 — 5 november 2026
+Oefeningencatalogus pas na het koppelen van het Speediance-account en toestel; meteen opgehaald voor dat toestel. Geen standaardlijst meer voor gebruikers zonder account; bron en datum zichtbaar bij Sync en catalogus.
+
+## 1.2.0 — 5 november 2026
+Alle soorten activiteiten uit Apple Health herkend, met Nederlandse naam (bijv. Voetbal, Padel, Zwemmen) en nieuwe categorieën: racketsport, teamsport, watersport, wintersport, vechtsport en dansen. Ook oudere gegevens ("Other 41") krijgen de juiste naam. Tempo per sport: zwemmen per 100 m, fietsen in km/u; geen afstand/tempo bij balsporten.
+
+## 1.1.3 — 5 november 2026
+Lichaamsgrafiek: activiteiten in een eigen strook tussen de grafiek en de datums.
+
+## 1.1.2 — 5 november 2026
+Lichaamsgrafiek: activiteiten alleen als streepjes onderaan, geen gekleurde balken meer over de richtwaarden heen.
+
+## 1.1.1 — 5 november 2026
+AI-coach: toegepast of genegeerd advies blijft niet als open voorstel staan (korte regel met "Toon advies"); knop "Negeren"; bij een nieuw plan vervalt het oude advies.
+
+## 1.1.0 — 5 november 2026
+Nieuw logo: de halter met het scherm van de Gym Monster (variant C2), in de web-app, als favicon en beginschermicoon, en als app-icoon van GymCoach Sync 1.4.
+
+## 1.0.1 — 5 november 2026
+Copyright-vermeldingen aangepast aan open source (MIT-licentie): Over GymCoach, inlogscherm en voorwaarden.
+
+## 1.0.0 — 5 november 2026
+Eerste genummerde versie: weekplan en progressie, statistieken en analyse, trainingskalender, lichaamsmetingen (Withings), Apple Health via GymCoach Sync, trainingsrapport per mail, AI-coach, meerdere gebruikers met welkomststappen en voorwaarden, logo en "Over GymCoach".

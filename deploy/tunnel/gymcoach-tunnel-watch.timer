@@ -1,0 +1,11 @@
+[Unit]
+Description=Check GymCoach reverse SSH tunnel every 2 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=2min
+AccuracySec=15s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

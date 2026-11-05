@@ -1,0 +1,10 @@
+data
+backups
+*.zip
+.git
+.github
+ios
+deploy
+.env
+node_modules
+documentatie/*.pdf

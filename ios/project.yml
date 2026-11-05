@@ -1,0 +1,48 @@
+# XcodeGen-projectbeschrijving: "xcodegen generate" maakt hieruit GymCoachSync.xcodeproj (geen Mac nodig om te bewerken).
+name: GymCoachSync
+options:
+  bundleIdPrefix: com.stolding
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.4"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  GymCoachSync:
+    type: application
+    platform: iOS
+    sources:
+      - GymCoachSync
+    entitlements:
+      path: GymCoachSync/GymCoachSync.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.developer.healthkit.background-delivery: true
+    info:
+      path: GymCoachSync/Info.plist
+      properties:
+        CFBundleDisplayName: GymCoach Sync
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSHealthShareUsageDescription: GymCoach Sync leest je workouts (wandelen, fietsen enz.) met hartslag, en dagtotalen voor stappen, actieve energie, afstand en hartslag in rust, en stuurt die naar je eigen GymCoach-server.
+        NSHealthUpdateUsageDescription: GymCoach Sync schrijft niets naar Apple Health.
+        NSLocalNetworkUsageDescription: Om je GymCoach-server in je thuisnetwerk te bereiken.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+          NSAllowsLocalNetworking: true
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIRequiredDeviceCapabilities:
+          - healthkit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.stolding.gymcoachsync
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: NO

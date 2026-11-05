@@ -6,6 +6,7 @@ import { TERMS_VERSION, TERMS_HTML } from './terms.js';
 import { EXPLAIN } from './explain.js';
 import { openEditor } from './editor.js';
 import { t } from './i18n.js';
+import { askConfirm, askText } from './dialogs.js';
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const GOAL = { spieropbouw: 'Spieropbouw', combinatie: 'Combinatie', afvallen: 'Afvallen', gemengd: 'Gemengde week', circuit: 'Cardio-circuit', buiten: 'Cardio buiten' };
@@ -448,7 +449,7 @@ $('#programsBox').addEventListener('click', async (ev) => {
     const ids = boxes.filter((c) => c.checked).map((c) => c.value);
     if (!ids.length) { toast('Selecteer eerst één of meer programma’s', true); return; }
     const names = programs.filter((p) => ids.includes(String(p.id))).map((p) => '• ' + p.name);
-    if (!confirm(`Deze ${ids.length} programma’s definitief van je Speediance-account verwijderen?\n\n${names.slice(0, 15).join('\n')}${names.length > 15 ? `\n… en nog ${names.length - 15}` : ''}\n\nDit kan niet ongedaan worden gemaakt.`)) return;
+    if (!await askConfirm(`Deze ${ids.length} programma’s definitief van je Speediance-account verwijderen?\n\n${names.slice(0, 15).join('\n')}${names.length > 15 ? `\n… en nog ${names.length - 15}` : ''}\n\nDit kan niet ongedaan worden gemaakt.`, { danger: true, okText: 'Verwijderen' })) return;
     await busy(b, async () => {
       const r = await api('POST', '/api/programs/delete', { ids });
       toast(`${r.done.length} verwijderd${r.failed.length ? `, ${r.failed.length} mislukt: ${r.failed[0].error}` : ''}`, r.failed.length > 0);
@@ -482,12 +483,12 @@ $('#sessions').addEventListener('click', async (ev) => {
   if (act === 'view') { const d = doneOf(session); if (d) openWorkouts([d.id]); return; }
   if (act === 'coach') { coachRequest(btn, { session: session.key }); return; }
   if (act === 'remove') {
-    if (!confirm(t('ed.removeFromPlanConfirm', { name: session.name }))) return;
+    if (!await askConfirm(t('ed.removeFromPlanConfirm', { name: session.name }))) return;
     try { state.plan = (await api('DELETE', '/api/plan/session?key=' + encodeURIComponent(session.key))).plan; renderPlan(); } catch (e) { toast(e.message, true); }
     return;
   }
   if (act === 'lock' || act === 'revert') {
-    if (act === 'revert' && !confirm(t('ed.resetConfirm'))) return;
+    if (act === 'revert' && !await askConfirm(t('ed.resetConfirm'))) return;
     const p = JSON.parse(JSON.stringify(state.plan));
     const i = p.sessions.findIndex((x) => x.key === session.key);
     if (act === 'lock') p.sessions[i].locked = !p.sessions[i].locked;
@@ -504,7 +505,7 @@ $('#sessions').addEventListener('click', async (ev) => {
     openEditor(session.key, edCtx());
     return;
   }
-  if (act === 'push' && !confirm(`“${progName(state.plan, session)}” als programma op je Gym Monster zetten?`)) return;
+  if (act === 'push' && !await askConfirm(`“${progName(state.plan, session)}” als programma op je Gym Monster zetten?`, { okText: 'Zet op toestel' })) return;
   await busy(btn, async () => {
     const r = await api('POST', '/api/plan/push', { sessionKey: session.key, dryRun: act === 'dry' });
     if (act === 'dry') toast(`Controle ok: ${r.plan.exercises.length} oefeningen, ${r.plan.exercises.reduce((n, e) => n + e.sets.length, 0)} sets`);
@@ -562,7 +563,7 @@ function openExercise(session, i) {
   }));
   dlg.querySelector('[data-x=swap]').addEventListener('click', () => { dlg.close(); openSwap(e); });
   dlg.querySelector('[data-x=avoid]').addEventListener('click', async () => {
-    if (!confirm(`“${e.title}” niet meer voorstellen?`)) return;
+    if (!await askConfirm(`“${e.title}” niet meer voorstellen?`)) return;
     dlg.close();
     try { state.plan = (await api('POST', '/api/avoid', { id: e.id })).plan; renderPlan(); } catch (er) { toast(er.message, true); }
   });
@@ -677,8 +678,8 @@ function openGenerate() {
   };
   dlg.showModal();
 }
-$('#genBtn').addEventListener('click', () => {
-  if (state.plan?.source?.includes('AI') && !confirm('Huidig plan (met AI-aanpassingen) vervangen door een nieuw voorstel?')) return;
+$('#genBtn').addEventListener('click', async () => {
+  if (state.plan?.source?.includes('AI') && !await askConfirm('Huidig plan (met AI-aanpassingen) vervangen door een nieuw voorstel?')) return;
   openGenerate();
 });
 
@@ -784,7 +785,7 @@ function renderHome() {
       <button class="btn ghost" id="heroView">Bekijk in plan</button>
     </div>` : `<div class="eyebrow">Volgende training</div><div class="hero-title">Nog geen plan</div><button class="btn accent" id="heroGen">Maak een voorstel</button>`;
   $('#heroPush')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    if (!confirm(`“${progName(state.plan, n)}” op je Gym Monster zetten?`)) return;
+    if (!await askConfirm(`“${progName(state.plan, n)}” op je Gym Monster zetten?`, { okText: 'Zet op toestel' })) return;
     const r = await api('POST', '/api/plan/push', { sessionKey: n.key, dryRun: false });
     toast(`Op je Gym Monster gezet: ${r.plan.name}`); await load();
   }));
@@ -1061,11 +1062,11 @@ async function loadHealth(newLink) {
       <li>Je oude historie: doe één keer een handmatige export met een lange periode.</li>
     </ol><p class="muted small">Je iPhone moet de server kunnen bereiken: thuis via wifi, onderweg via je VPS of bijvoorbeeld Tailscale. iOS stuurt alleen als de telefoon ontgrendeld is geweest.</p></details>`;
   $('#hNew').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    if (st.linked && !confirm('Een nieuwe sleutel maken? De oude werkt dan niet meer; pas hem ook aan in Health Auto Export.')) return;
+    if (st.linked && !await askConfirm('Een nieuwe sleutel maken? De oude werkt dan niet meer; pas hem ook aan in Health Auto Export.')) return;
     loadHealth(await api('POST', '/api/health/token'));
   }));
   $('#hOff')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    if (!confirm('Apple Health ontkoppelen? Opgeslagen activiteiten blijven bewaard.')) return;
+    if (!await askConfirm('Apple Health ontkoppelen? Opgeslagen activiteiten blijven bewaard.')) return;
     await api('DELETE', '/api/health/token'); loadHealth();
   }));
   box.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
@@ -1571,7 +1572,7 @@ function renderBody() {
 }
 $('#bwList').addEventListener('click', async (ev) => {
   const d = ev.target.dataset.del;
-  if (!d || !confirm(`Meting van ${d} verwijderen?`)) return;
+  if (!d || !await askConfirm(`Meting van ${d} verwijderen?`, { danger: true, okText: 'Verwijderen' })) return;
   state.bodyLog = (await api('DELETE', '/api/bodyweight?date=' + encodeURIComponent(d))).bodyLog; renderBody();
 });
 
@@ -1583,7 +1584,7 @@ function renderWithingsSettings() {
   box.innerHTML = `<div class="row between wrap gap"><div>${w.connected ? `<span class="badge ok">gekoppeld</span> <span class="muted small">sinds ${w.connectedAt ? new Date(w.connectedAt).toLocaleDateString('nl-NL') : '—'}</span>` : `<span class="muted small">${configured ? 'Niet gekoppeld. Klik op Koppel Withings en log in met je eigen Withings-account.' : state.me?.role === 'admin' ? 'Vul eerst hieronder de Withings-app in (Callback-URL, Client ID, Client secret) en klik op Opslaan.' : 'De beheerder heeft de Withings-koppeling nog niet ingesteld.'}</span>`}</div>
     <div class="row gap">${w.connected ? '<button type="button" class="btn ghost small" id="wOff">Ontkoppelen</button>' : configured ? '<a class="btn accent small" href="/api/withings/connect" target="_blank" id="wConnect">Koppel Withings</a>' : ''}</div></div>`;
   $('#wOff')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-    if (!confirm('Withings ontkoppelen? Opgehaalde metingen blijven bewaard.')) return;
+    if (!await askConfirm('Withings ontkoppelen? Opgehaalde metingen blijven bewaard.')) return;
     await api('POST', '/api/withings/disconnect'); await load(); renderWithingsSettings();
   }));
 }
@@ -1843,12 +1844,12 @@ async function loadUsers() {
         try { await api('PUT', '/api/users/role', { id, role: ev.target.value }); toast('Rol bijgewerkt'); } catch (e) { toast(e.message, true); loadUsers(); }
       });
       tr.querySelector('[data-x=pw]').addEventListener('click', async () => {
-        const pw = prompt(`Nieuw wachtwoord voor ${name} (min. 8 tekens):`);
+        const pw = await askText(`Nieuw wachtwoord voor ${name} (min. 8 tekens):`, '', { type: 'password', minLength: 8, okText: 'Instellen' });
         if (!pw) return;
         try { await api('PUT', '/api/users/password', { id, password: pw }); toast('Wachtwoord ingesteld; bestaande sessies zijn uitgelogd'); } catch (e) { toast(e.message, true); }
       });
       tr.querySelector('[data-x=del]')?.addEventListener('click', async () => {
-        if (!confirm(`${name} verwijderen? Deze gebruiker kan daarna niet meer inloggen. Zijn gegevens blijven op de server bewaard.`)) return;
+        if (!await askConfirm(`${name} verwijderen? Deze gebruiker kan daarna niet meer inloggen. Zijn gegevens blijven op de server bewaard.`, { danger: true, okText: 'Verwijderen' })) return;
         try { const r = await api('DELETE', '/api/users?id=' + encodeURIComponent(id)); toast(r.note); loadUsers(); } catch (e) { toast(e.message, true); }
       });
     });
@@ -2522,7 +2523,7 @@ $('#tplCard').addEventListener('click', async (ev) => {
     } else if (act === 'share') {
       await api('PUT', '/api/templates/share', { id, shared: !x.shared }); toast(x.shared ? t('tp.sharedOff') : t('tp.sharedOn')); await loadTemplates();
     } else if (act === 'del') {
-      if (!confirm(t('tp.deleteConfirm', { name: x.name }))) return;
+      if (!await askConfirm(t('tp.deleteConfirm', { name: x.name }), { danger: true, okText: 'Verwijderen' })) return;
       await api('DELETE', '/api/templates?id=' + encodeURIComponent(id)); await loadTemplates();
     } else if (act === 'copy') {
       const r = await api('GET', '/api/template?id=' + encodeURIComponent(id));

@@ -48,6 +48,7 @@ Hoe de code in elkaar zit, voor wie GymCoach wil aanpassen of uitbreiden. Wat de
 | `public/index.html`, `style.css` | De pagina en de opmaak (thema's via CSS-variabelen). |
 | `public/app.js` | De app in de browser: alle tabbladen, grafieken (eigen SVG), instellingen, wizard. |
 | `public/editor.js` | Trainingseditor en de kiezer voor oefeningen (met "Oefening bekijken"). |
+| `public/dialogs.js` | Eigen vragen en bevestigingen (`askConfirm`, `askText`) in plaats van `confirm()`/`prompt()` van de browser. |
 | `public/i18n.js` | Teksten per taal (`t('sleutel')`), begin van meertaligheid. |
 | `public/bodymap.js` | Spierkaart (SVG) met man-, vrouw- en neutraal figuur; ook gebruikt door de PDF. |
 | `public/explain.js` | Uitleg "Hoe GymCoach werkt". |

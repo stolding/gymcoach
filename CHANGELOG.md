@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.11.2 — 5 november 2026
+- Vragen en bevestigingen (opslaan als sjabloon, op het toestel zetten, verwijderen, wachtwoord instellen …) in een eigen GymCoach-venster in de stijl van de app, in plaats van het venster van de browser met het IP-adres van de server erboven. Verwijderen heeft een rode knop. Nieuw bestand `public/dialogs.js`.
+
 ## 1.11.1 — 5 november 2026
 - Brochure: nieuwe pagina *Zelf samenstellen* over de editor, supersets, sjablonen en de AI-coach (nu 9 pagina's); afbeeldingen in `documentatie/afbeeldingen/` en de README's bijgewerkt, met schermafbeeldingen van de editor en de kiezer.
 - `documentatie/ARCHITECTUUR.md`: editor, eigen trainingen, sjablonen, supersets, volume en de nieuwe routes.

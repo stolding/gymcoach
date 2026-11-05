@@ -3,6 +3,7 @@
 // Wijzigingen gebeuren op een kopie (concept) en worden pas bewaard bij Opslaan.
 import { bodyMap, MUSCLE_LABELS } from './bodymap.js';
 import { t } from './i18n.js';
+import { askConfirm, askText } from './dialogs.js';
 
 const MODES = [1, 2, 3, 4, 5];
 const PUSH = new Set(['hpush', 'vpush', 'tri']), PULL = new Set(['hpull', 'vpull', 'rear', 'curl']);
@@ -302,15 +303,15 @@ export function openEditor(key, ctx) {
       }
       case 'undo': if (!undo.length) return; draft = JSON.parse(undo.pop()); changes = Math.max(0, changes - 1); break;
       case 'reset':
-        if (!confirm(t('ed.resetConfirm'))) return;
+        if (!await askConfirm(t('ed.resetConfirm'))) return;
         snapshot(); draft = clone(original); draft.locked = false; break;
       case 'as-tpl': {
-        const name = prompt(t('ed.tplName'), draft.name); if (!name) return;
+        const name = await askText(t('ed.tplName'), draft.name); if (!name) return;
         try { await ctx.api('POST', '/api/templates', { name, session: { ...clone(draft), estMinutes: estMinutes(draft) } }); ctx.toast(t('ed.tplSaved', { name })); ctx.onTemplates?.(); }
         catch (err) { ctx.toast(err.message, true); }
         return;
       }
-      case 'cancel': if (changes && !confirm(t('ed.cancelConfirm'))) return; close(); return;
+      case 'cancel': if (changes && !await askConfirm(t('ed.cancelConfirm'))) return; close(); return;
       case 'save': await save(); return;
       default: return;
     }
@@ -364,7 +365,8 @@ export function openEditor(key, ctx) {
     } catch (err) { ctx.toast(err.message, true); }
   }
 
-  dlg.oncancel = (ev) => { if (changes && !confirm(t('ed.cancelConfirm'))) ev.preventDefault(); };
+  // Esc: bij wijzigingen eerst vragen (de vraag is async, dus het sluiten altijd tegenhouden en zelf sluiten)
+  dlg.oncancel = async (ev) => { if (!changes) return; ev.preventDefault(); if (await askConfirm(t('ed.cancelConfirm'))) close(); };
   render();
   dlg.showModal();
 }

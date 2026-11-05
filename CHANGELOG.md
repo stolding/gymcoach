@@ -5,6 +5,13 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.16.0 — 5 november 2026
+Meertaligheid, fase 4: server en plan. Voor gebruikers verandert er nog niets; teksten en een nieuw gemaakt plan zijn voor en na vergeleken en gelijk.
+- Foutmeldingen en meldingen van de server (`server.js`, inloggen, Withings) in de taal van de gebruiker, via `tr()` uit `lib/lang.js`.
+- Regels-engine: notities bij progressie, rust en deload, de tip op het overzicht en de namen van cardiodagen uit het woordenboek. Labels van bewegingspatronen, focusgebieden, accessoires, spiergroepen en dagsoorten worden bij het lezen vertaald.
+- Activiteiten uit Apple Health worden bij het tonen vertaald (de database houdt de Nederlandse naam).
+- Het controlescript herkent sleutels die met een voorvoegsel worden samengesteld.
+
 ## 1.15.0 — 5 november 2026
 Meertaligheid, fase 3: alle tabbladen en vensters in `public/app.js` via het woordenboek (ongeveer 650 sleutels). Voor gebruikers verandert er nog niets; alle teksten zijn voor en na vergeleken.
 - Vaste lijsten (doelen, dagsoorten, thema's, activiteiten, lichaamsmetingen, perioden) via `tmap()`, dat bij het lezen vertaalt.

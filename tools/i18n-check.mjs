@@ -28,7 +28,8 @@ for (const s of Object.values(src)) {
   for (const m of s.matchAll(/\b(?:t|tx|tr)\(\s*[^,()]*\?\s*'([a-z][\w.-]*\w)'\s*:\s*'([a-z][\w.-]*\w)'/g)) { used.add(m[1]); used.add(m[2]); }
   for (const m of s.matchAll(/data-i18n(?:-[a-z-]+)?="([a-z][\w.-]*\w)"/g)) used.add(m[1]);
   for (const m of s.matchAll(/'§([a-z][\w.-]*\w)'/g)) used.add(m[1]); // tmap-lijsten
-  for (const m of s.matchAll(/\b(?:t|tr)\(\s*`([a-z][\w-]*\.)\$\{/g)) dynamic.add(m[1]);
+  for (const m of s.matchAll(/\b(?:t|tx|tr)\(\s*`([a-z][\w.-]*\.)\$\{/g)) dynamic.add(m[1]);
+  for (const m of s.matchAll(/\b(?:t|tx|tr|has)\(\s*'([a-z][\w.-]*\.)'\s*\+/g)) dynamic.add(m[1]);
 }
 const missing = [...used].filter((k) => !(k in nl));
 if (missing.length) { errors++; console.log(`✗ ${missing.length} sleutel(s) gebruikt maar niet in nl.js:\n  ${missing.join('\n  ')}`); }

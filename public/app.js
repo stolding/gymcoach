@@ -25,7 +25,7 @@ function isoWeekOf(d) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(
 const planIso = (p) => isoWeekOf(new Date(p?.generatedAt || Date.now()));
 const planLabel = (p) => { const { y, w } = planIso(p); return `${y}-W${String(w).padStart(2, '0')}`; };
 const progName = (p, s) => `GC ${planLabel(p)} ${s.name}`;
-const actName = (a) => a.label || actLabel(a.type);
+const actName = (a) => (a.label ? (has('actname.' + a.label) ? t('actname.' + a.label) : a.label) : actLabel(a.type));
 const actLine = (a) => `${actName(a)}${a.km ? ` ${(Math.round(a.km * 10) / 10).toLocaleString(localeOf())} km` : ''}${a.minutes ? ` · ${a.minutes} min` : ''}`;
 const DAY_SHORT = tmap({ spieropbouw: '§app.dayshort.spieropbouw', combinatie: '§app.dayshort.combinatie', afvallen: '§app.dayshort.afvallen', circuit: '§app.dayshort.circuit', buiten: '§app.dayshort.buiten' });
 
@@ -543,7 +543,7 @@ function renderPrograms() {
   box.innerHTML = `<div class="row between wrap gap"><span class="muted">${t('app.programmaSVanGymcoach', { n: programs.length, a: programs.filter((p) => p.gymcoach).length })}</span>
     <div class="row gap wrap"><button class="btn small ghost" data-p="old">${t('app.selecteerOudeGymcoachProgramma')}</button><button class="btn small ghost" data-p="none">${t('app.nietsSelecteren')}</button></div></div>
     <div class="tablewrap"><table class="progtable"><thead><tr><th></th><th>${t('nt.name')}</th><th>${t('app.aangemaakt')}</th><th class="num">${t('ed.exercises')}</th></tr></thead><tbody>
-    ${programs.map((p) => `<tr><td><input type="checkbox" class="pchk" value="${esc(p.id)}" aria-label="Selecteer ${esc(p.name)}"></td>
+    ${programs.map((p) => `<tr><td><input type="checkbox" class="pchk" value="${esc(p.id)}" aria-label="${t('app.selectItem', { name: esc(p.name) })}"></td>
       <td>${esc(p.name)} ${p.gymcoach ? `<span class="badge ${cur && p.name.startsWith(cur) ? 'ok' : ''}">${cur && p.name.startsWith(cur) ? t('app.huidigeWeek') : 'GymCoach'}</span>` : ''}</td>
       <td class="muted">${p.created ? esc(new Date(p.created).toLocaleString(localeOf(), { dateStyle: 'short', timeStyle: 'short' })) : '—'}</td>
       <td class="num">${p.exercises ?? '—'}</td></tr>`).join('')}</tbody></table></div>
@@ -754,8 +754,8 @@ function openGenerate() {
   let days = (state.plan?.dayTypes?.length ? [...state.plan.dayTypes] : Array.from({ length: +state.settings.daysPerWeek || 3 }, () => state.settings.goal || 'combinatie'));
   const drawDays = () => {
     $('#dayList').innerHTML = days.map((t, i) => `<div class="day-row"><span class="day-n">${tx('app.dag2', { a: i + 1 })}</span>
-      <select data-d="${i}" aria-label="Soort training dag ${i + 1}">${Object.entries(DAY_TYPES).map(([k, l]) => `<option value="${k}" ${k === t ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <button type="button" class="btn small ghost" data-del="${i}" aria-label="Dag ${i + 1} verwijderen" ${days.length <= 1 ? 'disabled' : ''}>✕</button></div>`).join('');
+      <select data-d="${i}" aria-label="${tx('app.dayTypeOf', { n: i + 1 })}">${Object.entries(DAY_TYPES).map(([k, l]) => `<option value="${k}" ${k === t ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <button type="button" class="btn small ghost" data-del="${i}" aria-label="${tx('app.dayRemove', { n: i + 1 })}" ${days.length <= 1 ? 'disabled' : ''}>✕</button></div>`).join('');
     const nK = days.filter((t) => !['circuit', 'buiten'].includes(t)).length;
     $('#dayNote').textContent = t('app.kracht', { nK, a: days.length - nK ? t('app.cardio', { a: days.length - nK }) : '', b: nK ? ` → ${nK === 1 ? 'full body' : nK <= 3 ? 'full body A/B' + (nK === 3 ? '/C' : '') : 'upper/lower'}` : '' });
   };

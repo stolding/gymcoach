@@ -8,6 +8,7 @@ import * as cli from './lib/cli.js';
 import * as store from './lib/store.js';
 import * as engine from './lib/engine.js';
 import { ALL_LANGS } from './public/i18n.js';
+import { tr } from './lib/lang.js';
 import * as insights from './lib/insights.js';
 import { TERMS_VERSION } from './public/terms.js';
 import * as ai from './lib/ai.js';
@@ -63,14 +64,14 @@ async function libraryStatus() {
 // Haalt de oefeningencatalogus van het toestel opnieuw op.
 async function refreshLibrary() {
   const lib = await cli.library();
-  if (!lib?.length) throw new Error('Lege catalogus ontvangen');
+  if (!lib?.length) throw new Error(tr('srv.legeCatalogusOntvangen'));
   const dt = await deviceType();
   await store.saveLibraryCache(lib, dt);
   libraryMem.set(dt, lib);
   return lib.length;
 }
 const isAdmin = () => store.currentUser()?.role === 'admin';
-const requireAdmin = () => { if (!isAdmin()) throw Object.assign(new Error('Alleen voor beheerders'), { status: 403 }); };
+const requireAdmin = () => { if (!isAdmin()) throw Object.assign(new Error(tr('srv.alleenVoorBeheerders')), { status: 403 }); };
 
 // Alles wat de engine nodig heeft voor de huidige gebruiker: instellingen, catalogus, historie, trainingen, metingen.
 async function context() {
@@ -96,7 +97,7 @@ async function workoutDetailFor(id, ctx) {
   ctx ||= await context();
   const w = ctx.workouts.find((x) => String(x.training_id) === String(id));
   const s = ctx.sessions[String(id)];
-  if (!w && !s) throw Object.assign(new Error('Training niet gevonden'), { status: 404 });
+  if (!w && !s) throw Object.assign(new Error(tr('srv.trainingNietGevonden')), { status: 404 });
   const wh = await store.getWorkoutHealth();
   const d = engine.workoutDetail(w, s, ctx.library, ctx.history, wh[String(id)]);
   d.compare = insights.compare(d, { workouts: ctx.workouts, sessions: ctx.sessions, health: wh });
@@ -132,7 +133,7 @@ const hasSpeediance = () => existsSync(path.join(store.speedianceDir(store.curre
 // Haalt nieuwe trainingen op bij Speediance, met details per set, en mailt het rapport van nieuwe trainingen.
 async function sync() {
   const uid = store.currentUser().id;
-  if (!hasSpeediance()) throw Object.assign(new Error('Vul eerst je Speediance-account in (Instellingen → Speediance-account)'), { status: 400 });
+  if (!hasSpeediance()) throw Object.assign(new Error(tr('srv.vulEerstJeSpeediance')), { status: 400 });
   if (syncing.has(uid)) return syncing.get(uid);
   const job = (async () => {
     const meta = await store.getMeta();
@@ -237,7 +238,7 @@ async function generatePlan(prefs) {
 
 async function body(req, limit = 2e6) {
   const chunks = []; let n = 0;
-  for await (const c of req) { n += c.length; if (n > limit) throw Object.assign(new Error('Verzoek te groot'), { status: 413 }); chunks.push(c); }
+  for await (const c of req) { n += c.length; if (n > limit) throw Object.assign(new Error(tr('srv.verzoekTeGroot')), { status: 413 }); chunks.push(c); }
   const t = Buffer.concat(chunks).toString('utf8');
   return t ? JSON.parse(t) : {};
 }
@@ -264,7 +265,7 @@ const routes = {
         const wh = await store.getWorkoutHealth();
         return ctx.workouts.map((w) => {
           const id = String(w.training_id), h = wh[id] || {}, ses = ctx.sessions[id];
-          return { id, date: String(w.date || '').slice(0, 10), title: w.title || 'Training', min: w.duration_secs ? Math.round(w.duration_secs / 60) : null,
+          return { id, date: String(w.date || '').slice(0, 10), title: w.title || tr('ui.settings.training'), min: w.duration_secs ? Math.round(w.duration_secs / 60) : null,
             kcal: w.calories ?? h.kcal ?? null, vol: Math.round(Number(w.volume) || 0) || null, hr: h.hrAvg ?? null, ex: Array.isArray(ses?.detail) ? ses.detail.length : null };
         }).filter((w) => w.date);
       })(),
@@ -304,7 +305,7 @@ const routes = {
     const [workouts, sessions, wh] = await Promise.all([store.getWorkouts(), store.getSessions(), store.getWorkoutHealth()]);
     return {
       workouts: [...workouts].reverse().map((w) => ({
-        id: String(w.training_id), date: String(w.date || '').slice(0, 10), title: w.title || 'Training', kind: w.kind || w.type || '',
+        id: String(w.training_id), date: String(w.date || '').slice(0, 10), title: w.title || tr('ui.settings.training'), kind: w.kind || w.type || '',
         minutes: w.duration_secs ? Math.round(w.duration_secs / 60) : null, calories: w.calories ?? null, volume: Math.round(Number(w.volume) || 0),
         exercises: Array.isArray(sessions[String(w.training_id)]?.detail) ? sessions[String(w.training_id)].detail.length : null,
         hrAvg: wh[String(w.training_id)]?.hrAvg ?? null,
@@ -322,7 +323,7 @@ const routes = {
   },
   'POST /api/mail/test': async () => {
     const s = await store.getSettings();
-    await mail.send(s.smtp, { to: s.email, subject: 'GymCoach: testmail', text: 'Het versturen van e-mail vanuit GymCoach werkt.', html: '<p>Het versturen van e-mail vanuit <b>GymCoach</b> werkt. ✓</p>' });
+    await mail.send(s.smtp, { to: s.email, subject: 'GymCoach: testmail', text: 'Het versturen van e-mail vanuit GymCoach werkt.', html: '<p>' + tr('srv.hetVersturenVanE') + ' <b>GymCoach</b> ' + tr('srv.werkt') + '</p>' });
     return { ok: true, to: s.email };
   },
   'GET /api/workout': async (req, url) => {
@@ -353,7 +354,7 @@ const routes = {
     const prefs = b && (b.focus || b.wish !== undefined || b.dayTypes) ? { focus: Array.isArray(b.focus) ? b.focus.map(String) : [], wish: String(b.wish || '') } : null;
     if (prefs && Array.isArray(b.dayTypes)) {
       const t = b.dayTypes.map(String).filter((x) => engine.DAY_TYPES[x]).slice(0, 6);
-      if (!t.length) throw Object.assign(new Error('Kies minstens één trainingsdag'), { status: 400 });
+      if (!t.length) throw Object.assign(new Error(tr('srv.kiesMinstensEenTrainingsdag')), { status: 400 });
       prefs.dayTypes = t;
     }
     return { plan: await generatePlan(prefs) };
@@ -361,7 +362,7 @@ const routes = {
   'GET /api/focus': async () => ({ focus: Object.fromEntries(Object.entries(engine.FOCUS).map(([k, v]) => [k, v.label])), dayTypes: engine.DAY_TYPES }),
   'PUT /api/plan': async (req) => {
     const plan = await body(req);
-    if (!plan?.sessions) throw Object.assign(new Error('Ongeldig plan'), { status: 400 });
+    if (!plan?.sessions) throw Object.assign(new Error(tr('srv.ongeldigPlan')), { status: 400 });
     const int = (v, lo, hi, d) => { const n = Math.round(+v); return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d; };
     for (const s of plan.sessions) {
       if (!Array.isArray(s.exercises)) s.exercises = [];
@@ -388,8 +389,8 @@ const routes = {
     const { sessionKey, dryRun = true } = await body(req);
     const plan = await store.getPlan();
     const session = plan?.sessions.find((s) => s.key === sessionKey);
-    if (!session) throw Object.assign(new Error('Sessie niet gevonden'), { status: 404 });
-    if (session.outdoor || !session.exercises?.length) throw Object.assign(new Error('Deze dag is cardio buiten; daar is geen programma voor de Gym Monster bij'), { status: 400 });
+    if (!session) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
+    if (session.outdoor || !session.exercises?.length) throw Object.assign(new Error(tr('srv.dezeDagIsCardio')), { status: 400 });
     const pushPlan = engine.toPushPlan(plan, session, await store.getSettings());
     const res = await cli.push(pushPlan, { dryRun });
     console.log(`push${dryRun ? ' (dry-run)' : ''} ${pushPlan.name}: ${typeof res.result === 'string' ? res.result.slice(0, 300) : JSON.stringify(res.result).slice(0, 300)}`);
@@ -439,7 +440,7 @@ const routes = {
   }),
   'POST /api/terms/accept': async (req) => {
     const b = await body(req);
-    if (Number(b.version) !== TERMS_VERSION) throw Object.assign(new Error('De voorwaarden zijn intussen gewijzigd; ververs de pagina'), { status: 409 });
+    if (Number(b.version) !== TERMS_VERSION) throw Object.assign(new Error(tr('srv.deVoorwaardenZijnIntussen')), { status: 409 });
     const s = await store.getSettings();
     await store.saveSettings({ ...s, termsVersion: TERMS_VERSION, termsAt: new Date().toISOString() });
     return { ok: true, version: TERMS_VERSION };
@@ -461,13 +462,13 @@ const routes = {
     if (next.lang !== '' && !ALL_LANGS.some((l) => l.code === next.lang)) next.lang = cur.lang || '';
     next.noAccessories = Array.isArray(next.noAccessories) ? [...new Set(next.noAccessories.filter((k) => engine.ACCESSORIES.some((a) => a.key === k)))] : cur.noAccessories || [];
     next.birthYear = next.birthYear === '' || next.birthYear == null ? null : Math.round(+next.birthYear);
-    if (next.birthYear != null && !(next.birthYear >= 1920 && next.birthYear <= new Date().getFullYear() - 10)) throw Object.assign(new Error('Ongeldig geboortejaar'), { status: 400 });
+    if (next.birthYear != null && !(next.birthYear >= 1920 && next.birthYear <= new Date().getFullYear() - 10)) throw Object.assign(new Error(tr('srv.ongeldigGeboortejaar')), { status: 400 });
     next.hrMax = next.hrMax === '' || next.hrMax == null || !(+next.hrMax) ? null : Math.round(+next.hrMax);
-    if (next.hrMax != null && !(next.hrMax >= 120 && next.hrMax <= 230)) throw Object.assign(new Error('Maximale hartslag moet tussen 120 en 230 liggen'), { status: 400 });
+    if (next.hrMax != null && !(next.hrMax >= 120 && next.hrMax <= 230)) throw Object.assign(new Error(tr('srv.maximaleHartslagMoetTussen')), { status: 400 });
     next.stepGoal = Math.min(40000, Math.max(1000, Math.round(+next.stepGoal || 8000)));
-    if (next.heightCm != null && !(next.heightCm >= 100 && next.heightCm <= 250)) throw Object.assign(new Error('Lengte moet tussen 100 en 250 cm liggen'), { status: 400 });
+    if (next.heightCm != null && !(next.heightCm >= 100 && next.heightCm <= 250)) throw Object.assign(new Error(tr('srv.lengteMoetTussen100')), { status: 400 });
     next.email = String(next.email || '').trim();
-    if (next.email && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(next.email)) throw Object.assign(new Error('Ongeldig e-mailadres'), { status: 400 });
+    if (next.email && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(next.email)) throw Object.assign(new Error(tr('srv.ongeldigEMailadres')), { status: 400 });
     if (!['on', 'off'].includes(next.mailSummary)) next.mailSummary = cur.mailSummary;
     if (!incoming.ai && !incoming.smtp && !incoming.withings) next.prefsConfirmed = true;
     else if (incoming.goal || incoming.daysPerWeek) next.prefsConfirmed = true;
@@ -523,13 +524,13 @@ const routes = {
   },
   'GET /api/template': async (req, url) => {
     const t = store.getTemplate(url.searchParams.get('id'));
-    if (!t) throw Object.assign(new Error('Sjabloon niet gevonden'), { status: 404 });
+    if (!t) throw Object.assign(new Error(tr('srv.sjabloonNietGevonden')), { status: 404 });
     return { template: t, mine: t.ownerId === store.currentUser().id };
   },
   // sjabloon bewaren: uit een training (editor) of een bestaand sjabloon bijwerken
   'POST /api/templates': async (req) => {
     const { id, name, session, shared } = await body(req);
-    if (!session || !Array.isArray(session.exercises)) throw Object.assign(new Error('Geen training meegegeven'), { status: 400 });
+    if (!session || !Array.isArray(session.exercises)) throw Object.assign(new Error(tr('srv.geenTrainingMeegegeven')), { status: 400 });
     const tid = id || 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     const cur = id ? store.getTemplate(id) : null;
     const keep = ['name', 'warmup', 'cooldown', 'exercises', 'estMinutes', 'muscles'];
@@ -540,12 +541,12 @@ const routes = {
   'PUT /api/templates/share': async (req) => {
     const { id, shared } = await body(req);
     const t = store.getTemplate(id);
-    if (!t || t.ownerId !== store.currentUser().id) throw Object.assign(new Error('Alleen de maker kan delen'), { status: 403 });
+    if (!t || t.ownerId !== store.currentUser().id) throw Object.assign(new Error(tr('srv.alleenDeMakerKan')), { status: 403 });
     const { id: _i, ownerId, name, shared: _s, updatedAt, ...rest } = t;
     return { template: store.saveTemplate({ id, name, shared: !!shared, body: rest }) };
   },
   'DELETE /api/templates': async (req, url) => {
-    if (!store.deleteTemplate(url.searchParams.get('id'))) throw Object.assign(new Error('Sjabloon niet gevonden of niet van jou'), { status: 404 });
+    if (!store.deleteTemplate(url.searchParams.get('id'))) throw Object.assign(new Error(tr('srv.sjabloonNietGevondenOf')), { status: 404 });
     return { ok: true };
   },
   // nieuwe training in het plan: leeg, kopie van een training uit het plan, of uit een sjabloon
@@ -562,16 +563,16 @@ const routes = {
   },
   'GET /api/plan/week': async (req, url) => {
     const w = String(url.searchParams.get('w') || '');
-    if (!/^\d{4}-W\d{2}$/.test(w)) throw Object.assign(new Error('Ongeldige week'), { status: 400 });
+    if (!/^\d{4}-W\d{2}$/.test(w)) throw Object.assign(new Error(tr('srv.ongeldigeWeek')), { status: 400 });
     const p = store.getArchivedPlan(w);
-    if (!p) throw Object.assign(new Error('Geen plan bewaard voor deze week'), { status: 404 });
+    if (!p) throw Object.assign(new Error(tr('srv.geenPlanBewaardVoor')), { status: 404 });
     const ctx = await context();
     return { ...engine.planWeekReport(p, ctx.workouts, ctx.sessions), plan: p };
   },
   'POST /api/plan/session': async (req) => {
     const { mode = 'empty', from, name, week } = await body(req);
     const plan = await store.getPlan();
-    if (!plan) throw Object.assign(new Error('Maak eerst een plan'), { status: 400 });
+    if (!plan) throw Object.assign(new Error(tr('app.maakEerstEenPlan')), { status: 400 });
     const ctx = await context();
     let base;
     let foreign = false;
@@ -579,12 +580,12 @@ const routes = {
       // kopie uit dit plan, of met { week } uit een vorige week in het archief
       const srcPlan = week ? store.getArchivedPlan(String(week)) : plan;
       const src = srcPlan?.sessions.find((x) => x.key === from);
-      if (!src || src.outdoor) throw Object.assign(new Error('Training niet gevonden'), { status: 404 });
+      if (!src || src.outdoor) throw Object.assign(new Error(tr('srv.trainingNietGevonden')), { status: 404 });
       base = JSON.parse(JSON.stringify(src));
       for (const k of ['original', 'pushedAt', 'changedAfterPush', 'edited']) delete base[k];
     } else if (mode === 'template') {
       const tpl = store.getTemplate(from);
-      if (!tpl) throw Object.assign(new Error('Sjabloon niet gevonden'), { status: 404 });
+      if (!tpl) throw Object.assign(new Error(tr('srv.sjabloonNietGevonden')), { status: 404 });
       foreign = tpl.ownerId !== store.currentUser().id;
       base = { name: tpl.name, warmup: tpl.warmup || null, cooldown: tpl.cooldown || null, exercises: tpl.exercises || [], template: tpl.id };
     } else base = { name: 'Eigen training', warmup: { mobility: [], cable: [] }, cooldown: [], exercises: [] };
@@ -602,7 +603,7 @@ const routes = {
   'DELETE /api/plan/session': async (req, url) => {
     const plan = await store.getPlan();
     const i = plan?.sessions.findIndex((x) => x.key === url.searchParams.get('key') && x.custom) ?? -1;
-    if (i < 0) throw Object.assign(new Error('Alleen eigen trainingen kun je uit het plan halen'), { status: 400 });
+    if (i < 0) throw Object.assign(new Error(tr('srv.alleenEigenTrainingenKun')), { status: 400 });
     plan.sessions.splice(i, 1);
     refreshMuscles(plan);
     await store.savePlan(plan);
@@ -623,8 +624,8 @@ const routes = {
   // uitleg, beelden en video van een oefening (gedeelde cache, zie lib/exinfo.js)
   'GET /api/exercise/info': async (req, url) => {
     const id = Number(url.searchParams.get('id'));
-    if (!(id > 0)) throw Object.assign(new Error('Ongeldige oefening'), { status: 400 });
-    if (!hasSpeediance()) throw Object.assign(new Error('Koppel eerst je Speediance-account'), { status: 400 });
+    if (!(id > 0)) throw Object.assign(new Error(tr('srv.ongeldigeOefening')), { status: 400 });
+    if (!hasSpeediance()) throw Object.assign(new Error(tr('srv.koppelEerstJeSpeediance')), { status: 400 });
     const info = await exinfo.getInfo(id, url.searchParams.get('lang') || 'en');
     // verloop van het geschatte 1RM uit je eigen historie
     const ctx = await context();
@@ -637,7 +638,7 @@ const routes = {
     const { id, block = 'ex' } = await body(req);
     const ctx = await context();
     const lib = ctx.library.find((e) => Number(e.id) === Number(id));
-    if (!lib) throw Object.assign(new Error('Oefening niet in de catalogus'), { status: 404 });
+    if (!lib) throw Object.assign(new Error(tr('srv.oefeningNietInDe')), { status: 404 });
     let info = store.getExerciseInfo(Number(id), 'en')?.info || null;
     if (!info && hasSpeediance()) info = await exinfo.getInfo(id, 'en').catch(() => null);
     if (block === 'warm') {
@@ -655,8 +656,8 @@ const routes = {
   },
   'POST /api/bodyweight': async (req) => {
     const { date, kg, fat } = await body(req);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !(+kg > 20 && +kg < 400)) throw Object.assign(new Error('Ongeldige invoer'), { status: 400 });
-    if (fat != null && !(+fat > 2 && +fat < 70)) throw Object.assign(new Error('Ongeldig vetpercentage'), { status: 400 });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !(+kg > 20 && +kg < 400)) throw Object.assign(new Error(tr('srv.ongeldigeInvoer')), { status: 400 });
+    if (fat != null && !(+fat > 2 && +fat < 70)) throw Object.assign(new Error(tr('srv.ongeldigVetpercentage')), { status: 400 });
     const log = (await store.getBodyLog()).filter((b) => b.date !== date);
     log.push({ date, kg: Math.round(+kg * 10) / 10, ...(fat != null ? { fat: Math.round(+fat * 10) / 10 } : {}), source: 'handmatig' });
     log.sort((a, b) => a.date.localeCompare(b.date));
@@ -676,11 +677,11 @@ const routes = {
       await withings.handleCallback(await store.getSettings(), { code: url.searchParams.get('code'), state: url.searchParams.get('state') });
       const r = await withings.syncWeight(await store.getSettings());
       // dit tabblad is los geopend: GymCoach in het andere tabblad laten verversen en dit tabblad sluiten
-      return { __html: `<h2 style="margin:0 0 .5rem">Withings gekoppeld ✓</h2><p>${r.added} metingen opgehaald. Je kunt dit tabblad sluiten; GymCoach in het andere tabblad is bijgewerkt.</p><p><a href="/#body" style="color:#ff7a2e">Of ga naar GymCoach</a></p>
+      return { __html: `<h2 style="margin:0 0 .5rem">${tr('srv.withingsGekoppeld')}</h2><p>${tr('srv.metingenOpgehaaldJeKunt', { added: r.added })}</p><p><a href="/#body" style="color:#ff7a2e">${tr('srv.ofGaNaarGymcoach')}</a></p>
         <script>try{new BroadcastChannel('gymcoach').postMessage({type:'withings',ok:true,added:${Number(r.added) || 0}})}catch(e){}setTimeout(()=>{window.close()},1500)</script>` };
     } catch (e) {
       const msg = String(e.message).replace(/[<&"]/g, (c) => ({ '<': '&lt;', '&': '&amp;', '"': '&quot;' }[c]));
-      return { __html: `<h2 style="margin:0 0 .5rem;color:#ff6b6b">Koppelen mislukt</h2><p>${msg}</p><p>Sluit dit tabblad en probeer het opnieuw in GymCoach.</p>
+      return { __html: `<h2 style="margin:0 0 .5rem;color:#ff6b6b">${tr('srv.koppelenMislukt')}</h2><p>${msg}</p><p>${tr('srv.sluitDitTabbladEn')}</p>
         <script>try{new BroadcastChannel('gymcoach').postMessage({type:'withings',ok:false,error:${JSON.stringify(String(e.message)).replace(/</g, '\\u003c')}})}catch(e){}</script>` };
     }
   },
@@ -709,16 +710,16 @@ const routes = {
     if (b.email) await cli.configSet('email', String(b.email).trim());
     if (b.password) await cli.configSet('password', String(b.password));
     if (b.region) {
-      if (!['Global', 'EU'].includes(b.region)) throw Object.assign(new Error('Regio moet Global of EU zijn'), { status: 400 });
+      if (!['Global', 'EU'].includes(b.region)) throw Object.assign(new Error(tr('srv.regioMoetGlobalOf')), { status: 400 });
       await cli.configSet('region', b.region);
     }
     if (b.deviceType != null) {
       const dt = Math.round(Number(b.deviceType));
-      if (!(dt >= 1 && dt <= 20)) throw Object.assign(new Error('Ongeldig toesteltype'), { status: 400 });
+      if (!(dt >= 1 && dt <= 20)) throw Object.assign(new Error(tr('srv.ongeldigToesteltype')), { status: 400 });
       await cli.configSet('device_type', dt);
     }
     let login = { ok: true }, library = null;
-    try { await cli.login(); } catch (e) { login = { ok: false, error: e.authFailure ? 'Inloggen mislukt: controleer e-mail, wachtwoord en regio' : e.message }; }
+    try { await cli.login(); } catch (e) { login = { ok: false, error: e.authFailure ? tr('srv.inloggenMisluktControleerE') : e.message }; }
     const changedDevice = Number(before.device_type || 1) !== Number(b.deviceType ?? before.device_type) || (b.region && b.region !== before.region);
     // catalogus ophalen bij een ander toestel of regio, of als er voor dit toestel nog geen opgehaalde catalogus is
     if (login.ok && (changedDevice || !store.getLibraryInfo(await deviceType()))) {
@@ -734,7 +735,7 @@ const routes = {
   'GET /api/programs': async () => ({ programs: await speediance.listPrograms() }),
   'POST /api/programs/delete': async (req) => {
     const { ids } = await body(req);
-    if (!Array.isArray(ids) || !ids.length) throw Object.assign(new Error('Geen programma’s gekozen'), { status: 400 });
+    if (!Array.isArray(ids) || !ids.length) throw Object.assign(new Error(tr('srv.geenProgrammaSGekozen')), { status: 400 });
     const r = await speediance.deletePrograms(ids.map(String).slice(0, 200));
     console.log(`programma's verwijderd: ${r.done.length}, mislukt: ${r.failed.length}`);
     return r;
@@ -745,13 +746,13 @@ const routes = {
   'PUT /api/me/password': async (req) => {
     const { current, password } = await body(req);
     const me = store.currentUser();
-    await auth.login(me.username, current, 'pw-change:' + me.id).catch(() => { throw Object.assign(new Error('Huidig wachtwoord klopt niet'), { status: 400 }); });
+    await auth.login(me.username, current, 'pw-change:' + me.id).catch(() => { throw Object.assign(new Error(tr('srv.huidigWachtwoordKloptNiet')), { status: 400 }); });
     await auth.setPassword(me.id, password);
     return { ok: true, relogin: true };
   },
   'PUT /api/me': async (req) => {
     const { name } = await body(req);
-    if (!name || String(name).length > 40) throw Object.assign(new Error('Ongeldige naam'), { status: 400 });
+    if (!name || String(name).length > 40) throw Object.assign(new Error(tr('srv.ongeldigeNaam')), { status: 400 });
     const users = await store.getUsers();
     const u = users.find((x) => x.id === store.currentUser().id);
     u.name = String(name).trim();
@@ -762,18 +763,18 @@ const routes = {
   'PUT /api/me/avatar': async (req) => {
     const { dataUrl } = await body(req);
     const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ''));
-    if (!m) throw Object.assign(new Error('Alleen JPG, PNG of WebP'), { status: 400 });
+    if (!m) throw Object.assign(new Error(tr('srv.alleenJpgPngOf')), { status: 400 });
     const buf = Buffer.from(m[2], 'base64');
     const sig = { 'image/jpeg': [0xff, 0xd8], 'image/png': [0x89, 0x50], 'image/webp': [0x52, 0x49] }[m[1]];
-    if (buf.length > 400e3) throw Object.assign(new Error('Foto is te groot (max. 400 kB)'), { status: 400 });
-    if (buf[0] !== sig[0] || buf[1] !== sig[1]) throw Object.assign(new Error('Geen geldige afbeelding'), { status: 400 });
+    if (buf.length > 400e3) throw Object.assign(new Error(tr('srv.fotoIsTeGroot')), { status: 400 });
+    if (buf[0] !== sig[0] || buf[1] !== sig[1]) throw Object.assign(new Error(tr('srv.geenGeldigeAfbeelding')), { status: 400 });
     const v = store.setAvatar(store.currentUser().id, m[1], buf);
     return { avatar: v };
   },
   'DELETE /api/me/avatar': async () => { store.deleteAvatar(store.currentUser().id); return { avatar: null }; },
   'GET /api/avatar': async (req, url) => {
     const a = store.getAvatar(url.searchParams.get('id') || '');
-    if (!a) throw Object.assign(new Error('Geen foto'), { status: 404 });
+    if (!a) throw Object.assign(new Error(tr('srv.geenFoto')), { status: 404 });
     return { __binary: { type: a.mime, data: Buffer.from(a.data) } };
   },
 
@@ -796,8 +797,8 @@ const routes = {
     const { id, role } = await body(req);
     const users = await store.getUsers();
     const u = users.find((x) => x.id === id);
-    if (!u) throw Object.assign(new Error('Gebruiker niet gevonden'), { status: 404 });
-    if (u.role === 'admin' && role !== 'admin' && users.filter((x) => x.role === 'admin').length === 1) throw Object.assign(new Error('Er moet minstens één beheerder blijven'), { status: 400 });
+    if (!u) throw Object.assign(new Error(tr('srv.gebruikerNietGevonden')), { status: 404 });
+    if (u.role === 'admin' && role !== 'admin' && users.filter((x) => x.role === 'admin').length === 1) throw Object.assign(new Error(tr('srv.erMoetMinstensEen')), { status: 400 });
     u.role = role === 'admin' ? 'admin' : 'user';
     await store.saveUsers(users);
     return { user: auth.publicUser(u) };
@@ -805,9 +806,9 @@ const routes = {
   'DELETE /api/users': async (req, url) => {
     requireAdmin();
     const id = url.searchParams.get('id');
-    if (id === store.currentUser().id) throw Object.assign(new Error('Je kunt jezelf niet verwijderen'), { status: 400 });
+    if (id === store.currentUser().id) throw Object.assign(new Error(tr('srv.jeKuntJezelfNiet')), { status: 400 });
     await auth.deleteUser(id);
-    return { ok: true, note: 'De gebruiker kan niet meer inloggen. Zijn gegevens blijven bewaard in de database.' };
+    return { ok: true, note: tr('srv.deGebruikerKanNiet') };
   },
 };
 
@@ -819,11 +820,11 @@ const publicRoutes = {
     return { setupNeeded: users.length === 0, user: auth.publicUser(u), version: VERSION };
   },
   'POST /api/auth/setup': async (req, url, res) => {
-    if ((await store.getUsers()).length) throw Object.assign(new Error('Er bestaat al een beheerder'), { status: 409 });
+    if ((await store.getUsers()).length) throw Object.assign(new Error(tr('srv.erBestaatAlEen')), { status: 409 });
     // nooit een nieuwe beheerder maken terwijl er nog niet-overgezette accounts staan
     if (existsSync(path.join(store.DATA_DIR, 'users.json'))) {
-      const imp = await store.importJsonStore().catch((e) => { throw Object.assign(new Error(`Je bestaande accounts konden niet worden overgezet (${e.message}). Draai 'node restore.js' op de server.`), { status: 500 }); });
-      if (imp) throw Object.assign(new Error('Je bestaande accounts zijn hersteld. Log in met je oude gebruikersnaam en wachtwoord.'), { status: 409 });
+      const imp = await store.importJsonStore().catch((e) => { throw Object.assign(new Error(tr('srv.jeBestaandeAccountsKonden', { message: e.message })), { status: 500 }); });
+      if (imp) throw Object.assign(new Error(tr('srv.jeBestaandeAccountsZijn')), { status: 409 });
     }
     const b = await body(req);
     const user = await auth.createUser({ username: b.username, name: b.name, password: b.password, role: 'admin' });
@@ -837,9 +838,9 @@ const publicRoutes = {
   'POST /api/health/ingest': async (req, url) => {
     const token = health.tokenFromRequest(req, url);
     const userId = token && store.userIdForHealthToken(health.hashToken(token));
-    if (!userId) throw Object.assign(new Error('Ongeldige of ontbrekende sleutel'), { status: 401 });
+    if (!userId) throw Object.assign(new Error(tr('srv.ongeldigeOfOntbrekendeSleutel')), { status: 401 });
     const user = (await store.getUsers()).find((u) => u.id === userId);
-    if (!user) throw Object.assign(new Error('Gebruiker bestaat niet meer'), { status: 401 });
+    if (!user) throw Object.assign(new Error(tr('srv.gebruikerBestaatNietMeer')), { status: 401 });
     const payload = await body(req, 50e6);
     const r = await store.runAs(user, () => health.ingest(payload));
     console.log(`apple health ${user.username}: ${r.activities} activiteiten, ${r.skipped} overgeslagen, ${r.days} dagen`);
@@ -898,14 +899,14 @@ const server = http.createServer(async (req, res) => {
     if (publicRoutes[key]) return send(res, await publicRoutes[key](req, url, res));
     // wijzigende verzoeken alleen van dezelfde herkomst (CSRF-bescherming)
     if (req.method !== 'GET' && req.method !== 'HEAD' && req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) {
-      res.writeHead(403, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: 'Verzoek van andere herkomst geweigerd' }));
+      res.writeHead(403, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: tr('srv.verzoekVanAndereHerkomst') }));
     }
     const handler = routes[key];
     if (handler) {
       const user = await auth.userFromRequest(req);
       if (!user) {
-        if (url.pathname === '/api/withings/callback') return send(res, { __html: '<p>Je bent niet (meer) ingelogd. <a href="/">Log in</a> en start het koppelen opnieuw.</p>' });
-        res.writeHead(401, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: 'Niet ingelogd', login: true }));
+        if (url.pathname === '/api/withings/callback') return send(res, { __html: '<p>' + tr('srv.jeBentNietMeer') + ' <a href="/">' + tr('srv.logIn') + '</a> ' + tr('srv.enStartHetKoppelen') + '</p>' });
+        res.writeHead(401, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ error: tr('srv.nietIngelogd'), login: true }));
       }
       return await store.runAs(user, async () => send(res, await handler(req, url), req));
     }

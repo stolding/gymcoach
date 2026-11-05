@@ -142,7 +142,9 @@ Zet daarna `TRUST_PROXY=1` in `.env` en herstart GymCoach.
 
 **Mail.** Met een SMTP-server (Instellingen → E-mail) krijg je na elke training het rapport als PDF.
 
-**AI-coach.** De beheerder kiest de Claude API of een lokale server (llama.cpp, Ollama). De coach krijgt je instellingen, geslacht en leeftijd, recente trainingen, gewicht, activiteiten en het plan. Hij mag oefeningen wisselen (alleen uit je eigen catalogus) en sets (2–5), herhalingen (5–20) en gewicht (±15%) aanpassen. Er wordt niets toegepast zonder dat jij erop klikt.
+**AI-coach.** De beheerder kiest de Claude API of een lokale server (llama.cpp, Ollama). De coach krijgt je instellingen, geslacht en leeftijd, recente trainingen, gewicht, activiteiten en het plan. Hij mag oefeningen wisselen (alleen uit je eigen catalogus) en sets (2–5), herhalingen (5–20) en gewicht (±15%) aanpassen. Er wordt niets toegepast zonder dat jij erop klikt. Hij ziet ook welke trainingen je zelf hebt gemaakt, bewerkt of vastgezet, met hun opbouw (supersets, modi, rust, vast gewicht); die opbouw respecteert hij, voorstellen doet hij daar alleen met een reden, en ze staan standaard uit. Met de knop *AI-advies* op een training vraag je advies voor alleen die training.
+
+**Volume.** GymCoach neemt het volume dat de Gym Monster per set opslaat, dus bij oefeningen met twee handgrepen tellen beide kanten mee (2 × het gewicht per handgreep). Gewichten en geschat 1RM zijn per handgreep, zoals op het toestel.
 
 ## Hoe het werkt
 

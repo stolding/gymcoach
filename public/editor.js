@@ -83,7 +83,8 @@ export function openEditor(key, ctx) {
     if (tpl) for (const [k, v] of Object.entries(sc)) week[k] = (week[k] || 0) + v; // sjabloon: alsof hij erbij komt
     const min = estMinutes(draft), target = Number(state.settings?.minutesPerSession) || 45;
     const sets = draft.exercises.reduce((n, e) => n + e.sets.length, 0);
-    const vol = draft.exercises.reduce((v, e) => v + e.sets.reduce((a, x) => a + x.reps * x.weight, 0), 0);
+    const vf = state.volFactors || { byId: {}, def: 1 };
+    const vol = draft.exercises.reduce((v, e) => v + (vf.byId[e.id] || vf.def) * e.sets.reduce((a, x) => a + x.reps * x.weight, 0), 0);
     let push = 0, pull = 0;
     for (const e of draft.exercises) { if (PUSH.has(e.pattern)) push += e.sets.length; if (PULL.has(e.pattern)) pull += e.sets.length; }
     const ratio = push && pull ? `1 : ${nlNum((pull / push).toFixed(1))}` : push ? '1 : 0' : pull ? '0 : 1' : '—';

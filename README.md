@@ -144,7 +144,9 @@ Then set `TRUST_PROXY=1` in `.env` and restart GymCoach.
 
 **Mail.** With an SMTP server (Settings → E-mail) you get the report as a PDF after every workout.
 
-**AI coach.** The admin chooses the Claude API or a local server (llama.cpp, Ollama). The coach receives your settings, sex and age, recent workouts, weight, activities and the plan. It may swap exercises (only from your own catalogue) and adjust sets (2–5), reps (5–20) and weight (±15%). Nothing is applied unless you click it.
+**AI coach.** The admin chooses the Claude API or a local server (llama.cpp, Ollama). The coach receives your settings, sex and age, recent workouts, weight, activities and the plan. It may swap exercises (only from your own catalogue) and adjust sets (2–5), reps (5–20) and weight (±15%). Nothing is applied unless you click it. It also sees which sessions you built, edited or locked yourself, including their structure (supersets, modes, rest, fixed weights); it respects that structure, suggests changes there only with a reason, and leaves those suggestions unticked. The *AI advice* button on a session asks about that session alone.
+
+**Volume.** GymCoach uses the volume the Gym Monster stores per set, so for two-handle exercises both sides count (2 × the weight per handle). Weights and estimated 1RM are per handle, as on the machine.
 
 ## How it works
 

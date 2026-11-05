@@ -49,7 +49,7 @@ export const EXPLAIN = [
     id: 'meten', title: 'Hoe GymCoach meet',
     html: `<dl class="explain-dl">
       <dt>Geschat 1RM</dt><dd>Het gewicht dat je één keer zou kunnen tillen, geschat met de formule van Epley: gewicht × (1 + herhalingen ÷ 30). Zo kun je sets met verschillende herhalingen eerlijk vergelijken. Per training telt de beste set.</dd>
-      <dt>Volume</dt><dd>Sets × herhalingen × kilo's, opgeteld. Een maat voor hoeveel werk je hebt gedaan.</dd>
+      <dt>Volume</dt><dd>Herhalingen × kilo's, opgeteld over alle sets: hoeveel werk je hebt gedaan. GymCoach neemt het volume dat de Gym Monster per set opslaat; bij oefeningen met twee handgrepen tellen beide kanten mee (2 × het gewicht per handgreep). Gewichten en geschat 1RM zijn per handgreep, zoals op het toestel.</dd>
       <dt>Spierkaart</dt><dd>Elke oefening telt mee voor de spiergroepen die hij traint: de hoofdspier als 1 set, meewerkende spieren als ½ set.</dd>
       <dt>Krachtindex</dt><dd>Per spiergroep het geschatte 1RM ten opzichte van de eerste keer in de gekozen periode (= 100). 110 betekent 10% sterker.</dd>
       <dt>Balans</dt><dd>Werksets duwen tegenover trekken, en bovenlichaam tegenover onderlichaam. Rond 1 : 1 is evenwichtig.</dd>
@@ -65,7 +65,9 @@ export const EXPLAIN = [
   },
   {
     id: 'ai', title: 'De AI-coach',
-    html: `<p>De AI-coach krijgt je instellingen, leeftijd en geslacht, je recente trainingen, gewicht en activiteiten, en het plan van de regels. Hij mag oefeningen wisselen (alleen uit je eigen catalogus), en sets (2–5), herhalingen (5–20) en gewicht (hooguit 15%) aanpassen. Elke wijziging wordt gecontroleerd en jij kiest wat je overneemt. Bij pijn of klachten: huisarts of fysiotherapeut.</p>`,
+    html: `<p>De AI-coach krijgt je instellingen, leeftijd en geslacht, je recente trainingen, gewicht en activiteiten, en het plan van de regels. Hij mag oefeningen wisselen (alleen uit je eigen catalogus), en sets (2–5), herhalingen (5–20) en gewicht (hooguit 15%) aanpassen. Elke wijziging wordt gecontroleerd en jij kiest wat je overneemt.</p>
+    <p><b>Eigen trainingen.</b> De coach ziet welke trainingen je zelf hebt gemaakt, bewerkt of vastgezet, met hun opbouw (supersets, modi, rust, vast gewicht). Daar stelt hij alleen iets voor met een reden, en die voorstellen staan standaard uit. Neem je er een over, dan blijft de opbouw staan: gewicht en herhalingen schuiven per set mee, vast gewicht verandert nooit. Met <i>AI-advies</i> op een training vraag je advies voor alleen die training.</p>
+    <p>Bij pijn of klachten: huisarts of fysiotherapeut.</p>`,
   },
   {
     id: 'bronnen', title: 'Bronnen',

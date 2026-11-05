@@ -316,6 +316,7 @@ function renderPlan() {
         <button class="btn ghost" data-act="lock" title="${s.locked ? t('ed.unlockHint') : t('ed.lockHint')}">${s.locked ? t('ed.unlock') : t('ed.lock')}</button>
         ${s.edited ? `<button class="btn ghost" data-act="revert">${t('ed.reset')}</button>` : ''}
         ${s.custom ? `<button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>` : ''}
+        ${state.settings.ai?.provider && state.settings.ai.provider !== 'none' ? `<button class="btn ghost" data-act="coach" title="Laat de AI-coach naar deze training kijken; jij kiest wat je overneemt">AI-advies</button>` : ''}
         <button class="btn ghost" data-act="dry">Controleer</button>
         <button class="btn accent" data-act="push">Zet op Gym Monster</button>`}
       </footer>
@@ -479,6 +480,7 @@ $('#sessions').addEventListener('click', async (ev) => {
   if (!btn) return;
   const act = btn.dataset.act;
   if (act === 'view') { const d = doneOf(session); if (d) openWorkouts([d.id]); return; }
+  if (act === 'coach') { coachRequest(btn, { session: session.key }); return; }
   if (act === 'remove') {
     if (!confirm(t('ed.removeFromPlanConfirm', { name: session.name }))) return;
     try { state.plan = (await api('DELETE', '/api/plan/session?key=' + encodeURIComponent(session.key))).plan; renderPlan(); } catch (e) { toast(e.message, true); }
@@ -680,12 +682,17 @@ $('#genBtn').addEventListener('click', () => {
   openGenerate();
 });
 
-$('#coachBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
-  const p = $('#coachPanel');
-  p.classList.remove('hidden'); p.innerHTML = '<span class="muted">Coach denkt na…</span>';
-  try { const c = await api('POST', '/api/coach'); if (state.meta) state.meta.coach = c; renderCoach(c); }
-  catch (e) { p.innerHTML = `<span class="muted">${esc(e.message)}</span>`; throw e; }
-}));
+// Vraag de AI-coach om advies: voor het hele plan, of met { session } voor één training.
+function coachRequest(btn, payload = {}) {
+  return busy(btn, async () => {
+    const p = $('#coachPanel');
+    p.classList.remove('hidden'); p.innerHTML = '<span class="muted">Coach denkt na…</span>';
+    p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    try { const c = await api('POST', '/api/coach', payload); if (state.meta) state.meta.coach = c; renderCoach(c); }
+    catch (e) { p.innerHTML = `<span class="muted">${esc(e.message)}</span>`; throw e; }
+  });
+}
+$('#coachBtn').addEventListener('click', (ev) => coachRequest(ev.currentTarget));
 
 // Paneel met het advies van de AI-coach en de voorgestelde aanpassingen.
 function renderCoach(c) {
@@ -702,11 +709,13 @@ function renderCoach(c) {
     return;
   }
   p.classList.remove('coach-done');
-  p.innerHTML = `<h2>AI-coach <span class="muted">(${esc(c.provider)} · ${esc(c.model)})</span></h2>
+  // voorstellen voor je eigen (bewerkte, vastgezette of zelf gemaakte) trainingen staan standaard uit: jij kiest
+  p.innerHTML = `<h2>AI-coach${c.sessionName ? ` · ${esc(c.sessionName)}` : ''} <span class="muted">(${esc(c.provider)} · ${esc(c.model)})</span></h2>
     <div class="advice">${esc(c.advice)}</div>
+    ${c.adjustments?.some((a) => a.own) ? '<p class="muted small" style="margin:.5rem 0 0">Voorstellen voor je eigen trainingen staan uit; vink aan wat je wilt overnemen. De opbouw (volgorde, supersets, modi, rust) blijft staan.</p>' : ''}
     ${c.adjustments?.length ? `<div style="margin-top:.75rem">${c.adjustments.map((a, i) => `
-      <label class="adj"><input type="checkbox" data-i="${i}" checked>
-        <span><b>${esc(a.session)} · ${esc(a.title)}</b>: ${[a.swapToId && 'wissel oefening', a.sets && a.sets + ' sets', a.reps && a.reps + ' herh.', a.weight && a.weight + ' kg'].filter(Boolean).join(', ')}<br><span class="muted">${esc(a.reason)}</span></span></label>`).join('')}
+      <label class="adj"><input type="checkbox" data-i="${i}"${a.own ? '' : ' checked'}>
+        <span><b>${esc(a.sessionName || a.session)} · ${esc(a.title)}</b>${a.own ? ' <span class="badge custom">eigen opbouw</span>' : ''}: ${[a.swapToId && 'wissel oefening', a.sets && a.sets + ' sets', a.reps && a.reps + ' herh.', a.weight && a.weight + ' kg'].filter(Boolean).join(', ')}<br><span class="muted">${esc(a.reason)}</span></span></label>`).join('')}
       <div class="row gap" style="margin-top:.6rem"><button class="btn accent" id="applyBtn">Geselecteerde toepassen</button><button class="btn ghost" id="dismissBtn">Negeren</button></div></div>` : '<p class="muted">Geen aanpassingen voorgesteld.</p><button class="btn ghost small" id="dismissBtn">Sluiten</button>'}`;
   $('#applyBtn')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
     const chosen = [...p.querySelectorAll('input[type=checkbox]:checked')].map((x) => c.adjustments[+x.dataset.i]);
@@ -838,7 +847,7 @@ function renderHome() {
   else {
     const all = pl.sessions.flatMap((x) => x.exercises);
     const sets = all.reduce((n, e) => n + e.sets.length, 0);
-    const vol = all.reduce((n, e) => n + e.sets.reduce((m, st) => m + st.reps * st.weight, 0), 0);
+    const vol = all.reduce((n, e) => n + volFactor(e.id) * e.sets.reduce((m, st) => m + st.reps * st.weight, 0), 0);
     const mins = pl.sessions.reduce((n, x) => n + (x.estMinutes || 0), 0);
     const ups = all.filter((e) => /^↑/.test(e.note || '')).length;
     const top = Object.entries(pl.muscles || {}).sort((a, b) => b[1] - a[1]).slice(0, 4);
@@ -1196,6 +1205,9 @@ const COMP = [
 ];
 
 // Kleur van de lijn boven een tegel: dezelfde kleuren als de achtergrondbanden in de grafieken.
+// Gepland gewicht → echt volume: bij twee handgrepen telt Speediance beide kanten (factor uit je eigen trainingen).
+function volFactor(id) { const vf = state.volFactors || {}; return (vf.byId || {})[id] || vf.def || 1; }
+
 const BAND_COLORS = { ok: '#4cc26a', warn: '#e5b84b', bad: '#ff6b6b' };
 // In welke band (ok/warn/bad) valt waarde v?
 const bandOf = (bands, v) => (bands && v != null ? bands.find((b) => v >= b.from && v < b.to)?.cls || null : null);

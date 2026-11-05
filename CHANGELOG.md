@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.11.0 — 5 november 2026
+- AI-coach voor eigen trainingen: de coach weet welke trainingen je zelf hebt gemaakt, bewerkt of vastgezet, en ziet de opbouw (supersets, modi, rust, piramides en vast gewicht). Hij respecteert die opbouw en stelt alleen iets voor met een reden. Zijn voorstellen voor eigen trainingen staan standaard uit: je vinkt zelf aan wat je overneemt. Overnemen houdt de opbouw per set intact; vast gewicht verandert nooit.
+- Nieuwe knop *AI-advies* op elke training in het plan: advies voor alleen die training, in de context van je week.
+- Volume telt nu echt: bij oefeningen met twee handgrepen tellen beide kanten mee (de *capacity* die Speediance per set opslaat). Het totaal in het rapport is gelijk aan de som van de oefeningen, en statistieken, weekvolume, voortgang en vergelijkingen rekenen op dezelfde manier. Geplande volumes in het plan en de editor gebruiken de verhouding die uit je eigen trainingen blijkt.
+- Supersets getest op de Gym Monster: om en om, rust en herhalingen kloppen, en het rapport voegt de stappen samen tot oefeningen met hun sets.
+
 ## 1.10.0 — 5 november 2026
 - Supersets in de editor: *+ Superset* koppelt een oefening aan de volgende (ook drie of meer). In een blauw kader met het aantal rondes en de rust na elke ronde; *Superset opheffen* maakt ze weer los. In het plan staan ze als A1, A2 …
 - Naar de Gym Monster gaat een superset om en om per ronde (A1, A2, A1, A2 …) met 5 s om te wisselen en de ingestelde rust na de laatste oefening van de ronde. Nog te testen op het toestel.

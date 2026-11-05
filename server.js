@@ -268,6 +268,7 @@ const routes = {
       })(),
       bodyLog: ctx.bodyLog,
       progress: engine.exerciseProgress(ctx.history).slice(0, 30),
+      volFactors: engine.volumeFactors(ctx.history), // geplande sets → echt volume (twee handgrepen = 2×)
       patterns: Object.fromEntries(Object.entries(engine.PATTERNS).map(([k, p]) => [k, { label: p.label, type: p.type }])),
       libraryCount: ctx.library.length,
       library: await libraryStatus(),
@@ -396,11 +397,13 @@ const routes = {
     }
     return { ...res, plan: pushPlan };
   },
-  'POST /api/coach': async () => {
+  // AI-coach voor het hele plan, of met { session } alleen voor die ene training (bijv. een eigen training)
+  'POST /api/coach': async (req) => {
+    const b = await body(req).catch(() => ({}));
     const ctx = await context();
     const plan = (await store.getPlan()) || (await generatePlan());
     const allowed = allowedExercises(ctx.library, ctx.settings);
-    const result = await ai.coach({ settings: ctx.settings, plan, history: ctx.history, bodyLog: ctx.bodyLog, weekly: engine.weeklyStats(ctx.workouts), allowed, activities: await store.getActivities() });
+    const result = await ai.coach({ settings: ctx.settings, plan, history: ctx.history, bodyLog: ctx.bodyLog, weekly: engine.weeklyStats(ctx.workouts), allowed, activities: await store.getActivities(), onlySession: typeof b?.session === 'string' ? b.session : null });
     const meta = await store.getMeta();
     meta.coach = { ...result, at: new Date().toISOString() };
     await store.saveMeta(meta);

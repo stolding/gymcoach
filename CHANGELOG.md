@@ -5,6 +5,11 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.10.0 — 5 november 2026
+- Supersets in de editor: *+ Superset* koppelt een oefening aan de volgende (ook drie of meer). In een blauw kader met het aantal rondes en de rust na elke ronde; *Superset opheffen* maakt ze weer los. In het plan staan ze als A1, A2 …
+- Naar de Gym Monster gaat een superset om en om per ronde (A1, A2, A1, A2 …) met 5 s om te wisselen en de ingestelde rust na de laatste oefening van de ronde. Nog te testen op het toestel.
+- Historie: als een oefening vaker in één training voorkomt (superset), worden de sets samengevoegd, zodat progressie en rapport kloppen.
+
 ## 1.9.0 — 5 november 2026
 - Eigen trainingen: *+ Nieuwe training* in het plan, leeg, als kopie van een training uit het plan, of uit een sjabloon. Eigen trainingen staan vast, blijven bij een nieuw voorstel en krijgen progressie; *Uit plan halen* verwijdert ze weer.
 - Sjablonen (*Trainingen* onder het plan): bewaar een training met *Opslaan als sjabloon* in de editor; in dit plan zetten, bewerken (in de editor), delen met iedereen op de server of niet meer delen, verwijderen. Sjablonen van anderen zie je bij *Gedeeld op deze server*: in je plan zetten of kopiëren naar je eigen trainingen. De gewichten passen zich aan de gebruiker aan (eigen historie, anders een startgewicht).

@@ -300,7 +300,7 @@ function renderPlan() {
       ${s.exercises.map((e, i) => `
         <button class="row-item${exDone(s, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
           ${exDone(s, e) ? '<span class="ri-check" title="gedaan">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}" title="${e.focus ? 'focus deze week' : ''}"></span>`}
-          <span class="ri-name">${esc(e.title)}</span>
+          <span class="ri-name">${e.group ? `<span class="badge ss">${e.group}${s.exercises.slice(0, i + 1).filter((x) => x.group === e.group).length}</span> ` : ''}${esc(e.title)}</span>
           <span class="ri-sum">${setsSummary(e)}${/^↑/.test(e.note || '') ? ' <span class="up">↑</span>' : /^↓/.test(e.note || '') ? ' <span class="down">↓</span>' : ''}</span>
           <span class="ri-chev" aria-hidden="true">›</span>
         </button>`).join('')}

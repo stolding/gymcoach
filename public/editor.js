@@ -18,11 +18,28 @@ export function sessionMuscleSets(s) {
   for (const e of s.exercises || []) for (const [k, w] of Object.entries(e.muscles || {})) out[k] = (out[k] || 0) + w * (e.sets?.length || 0);
   return out;
 }
+// Supersets: groepen moeten aaneengesloten zijn en minstens 2 oefeningen hebben; anders wordt de groep opgeheven.
+export function normalizeGroups(exs) {
+  const seen = new Set();
+  for (let i = 0; i < exs.length; i++) {
+    const g = exs[i].group; if (!g) continue;
+    if (seen.has(g) && exs[i - 1]?.group !== g) delete exs[i].group; // losgeraakt deel
+    else seen.add(g);
+  }
+  for (const g of seen) if (exs.filter((e) => e.group === g).length < 2) for (const e of exs) if (e.group === g) delete e.group;
+  // letters opnieuw toekennen in volgorde: A, B, C …
+  const map = new Map(); let n = 0;
+  for (const e of exs) if (e.group) { if (!map.has(e.group)) map.set(e.group, String.fromCharCode(65 + n++)); e.group = map.get(e.group); }
+  return exs;
+}
+// Rust die echt telt: binnen een superset alleen na de laatste oefening van de ronde.
+const lastInGroup = (exs, i) => !exs[i].group || exs[i + 1]?.group !== exs[i].group;
 // Geschatte duur in minuten (zelfde rekenregel als de engine: 4 s per herhaling + rust + 1 min wisselen per oefening).
 function estMinutes(s) {
   let sec = 0;
-  for (const e of s.exercises || []) {
-    sec += 60 + e.sets.reduce((tt, x) => tt + x.reps * 4 + x.rest, 0);
+  for (const [i, e] of (s.exercises || []).entries()) {
+    const last = lastInGroup(s.exercises, i);
+    sec += (e.group && i > 0 && s.exercises[i - 1].group === e.group ? 15 : 60) + e.sets.reduce((tt, x) => tt + x.reps * 4 + (last ? x.rest : 5), 0);
     if (e.rampUp) sec += 8 * 4 + 45;
   }
   const warm = (s.warmup?.mobility?.length || 0) + (s.warmup?.cable?.length || 0) ? 6 : 0;
@@ -128,11 +145,12 @@ export function openEditor(key, ctx) {
     const prim = Object.entries(e.muscles || {}).filter(([, w]) => w >= 1).map(([k]) => MUSCLE_LABELS[k] || k).join(', ') || e.muscle || '';
     const hl = selMuscle && e.muscles?.[selMuscle] ? ' hl' : '';
     const head = `<div class="ed-exh">
-        <button type="button" class="ed-title" data-ed="open" data-i="${i}" aria-expanded="${open === i}"><b>${i + 1} · ${esc(e.title)}</b>
+        <button type="button" class="ed-title" data-ed="open" data-i="${i}" aria-expanded="${open === i}"><b>${e.group ? `${e.group}${draft.exercises.slice(0, i + 1).filter((x) => x.group === e.group).length} · ` : `${i + 1} · `}${esc(e.title)}</b>
           <span class="muted small">${esc(prim)}${sec.length ? ' · ' + esc(t('ed.secondary', { list: sec.join(', ') })) : ''}${e.type ? ' · ' + t(e.type === 'compound' ? 'ed.compound' : 'ed.isolation') : ''}${e.fixed ? ` · <span class="badge">${t('ed.fixed')}</span>` : ''}</span></button>
         <div class="ed-acts">
           <button type="button" class="btn ghost small" data-ed="move" data-i="${i}" data-d="-1" aria-label="${t('ed.up')}" ${i === 0 ? 'disabled' : ''}>↑</button>
           <button type="button" class="btn ghost small" data-ed="move" data-i="${i}" data-d="1" aria-label="${t('ed.down')}" ${i === n - 1 ? 'disabled' : ''}>↓</button>
+          ${i < n - 1 && !(e.group && draft.exercises[i + 1].group === e.group) ? `<button type="button" class="btn ghost small" data-ed="ss-link" data-i="${i}" title="${t('ss.linkHint')}">${t('ss.link')}</button>` : ''}
           <button type="button" class="btn ghost small" data-ed="swap" data-i="${i}">${t('ed.swap')}</button>
           <button type="button" class="btn ghost small danger-text" data-ed="ex-del" data-i="${i}">${t('ed.remove')}</button>
         </div></div>`;
@@ -159,6 +177,25 @@ export function openEditor(key, ctx) {
       </div></div>`;
   }
 
+  // oefeningen tekenen, supersets in een eigen kader
+  function groupedCards() {
+    const exs = draft.exercises; let html = '';
+    for (let i = 0; i < exs.length; i++) {
+      const e = exs[i];
+      if (!e.group) { html += exCard(e, i); continue; }
+      const start = i; let end = i; while (exs[end + 1]?.group === e.group) end++;
+      const grp = exs.slice(start, end + 1);
+      const rounds = Math.max(...grp.map((g) => g.sets.length));
+      const rest = exs[end].sets[0]?.rest ?? 60;
+      html += `<div class="ed-ss"><div class="row between wrap gap"><b class="ed-ss-h">${esc(t('ss.head', { g: e.group, n: rounds, rest }))}</b>
+        <button type="button" class="btn ghost small" data-ed="ss-off" data-g="${e.group}">${t('ss.off')}</button></div>
+        <div class="muted small">${t('ss.hint')}</div>
+        ${grp.map((g, j) => exCard(g, start + j)).join('')}</div>`;
+      i = end;
+    }
+    return html;
+  }
+
   // ---------- alles tekenen ----------
   function render() {
     const lbl = ctx.weekLabel ? ctx.weekLabel(plan) : '';
@@ -182,7 +219,7 @@ export function openEditor(key, ctx) {
           ${warmBlock()}
           <div class="row between wrap gap ed-exhead"><div><b>${t('ed.exercises')}</b> <span class="muted small">${t('ed.exSum', { n: draft.exercises.length, sets })}</span></div>
             <button type="button" class="btn accent small" data-ed="add">${t('ed.addExercise')}</button></div>
-          ${draft.exercises.map(exCard).join('')}
+          ${groupedCards()}
           ${coolBlock()}
         </div>
         <aside class="ed-side">${sidePanel()}</aside>
@@ -206,8 +243,16 @@ export function openEditor(key, ctx) {
       case 'open': open = open === i ? -1 : i; break;
       case 'muscle': selMuscle = selMuscle === b.dataset.m ? null : b.dataset.m; break;
       case 'lock': snapshot(); draft.locked = !draft.locked; break;
-      case 'move': { const d = Number(b.dataset.d), j = i + d; if (j < 0 || j >= draft.exercises.length) return; snapshot(); [draft.exercises[i], draft.exercises[j]] = [draft.exercises[j], draft.exercises[i]]; if (open === i) open = j; else if (open === j) open = i; break; }
-      case 'ex-del': snapshot(); draft.exercises.splice(i, 1); if (open >= draft.exercises.length) open = draft.exercises.length - 1; break;
+      case 'move': {
+        const d = Number(b.dataset.d), j = i + d; if (j < 0 || j >= draft.exercises.length) return; snapshot();
+        // binnen een superset verplaatsen blijft binnen de groep; een losse oefening springt over een hele superset heen
+        const other = draft.exercises[j];
+        if (other.group && other.group !== e.group) { let k = j; while (draft.exercises[k + d]?.group === other.group) k += d; draft.exercises.splice(i, 1); draft.exercises.splice(k, 0, e); open = k; }
+        else { [draft.exercises[i], draft.exercises[j]] = [draft.exercises[j], draft.exercises[i]]; if (open === i) open = j; else if (open === j) open = i; }
+        normalizeGroups(draft.exercises);
+        break;
+      }
+      case 'ex-del': snapshot(); draft.exercises.splice(i, 1); normalizeGroups(draft.exercises); if (open >= draft.exercises.length) open = draft.exercises.length - 1; break;
       case 'set-add': snapshot(); e.sets.push({ ...e.sets[e.sets.length - 1] }); break;
       case 'set-del': if (e.sets.length <= 1) { ctx.toast(t('ed.lastRemoved'), true); return; } snapshot(); e.sets.splice(Number(b.dataset.j), 1); break;
       case 'equal': snapshot(); e.sets = e.sets.map(() => ({ ...e.sets[0] })); break;
@@ -235,11 +280,22 @@ export function openEditor(key, ctx) {
         });
         return;
       }
+      case 'ss-link': {
+        // superset met de volgende oefening (sluit aan bij een bestaande superset)
+        snapshot();
+        const next = draft.exercises[i + 1];
+        const g = e.group || next.group || 'Z' + Date.now();
+        if (next.group && next.group !== g) { const old = next.group; for (const x of draft.exercises) if (x.group === old) x.group = g; }
+        e.group = g; next.group = g;
+        normalizeGroups(draft.exercises);
+        break;
+      }
+      case 'ss-off': snapshot(); for (const x of draft.exercises) if (x.group === b.dataset.g) delete x.group; normalizeGroups(draft.exercises); break;
       case 'swap': {
         const k = Object.entries(e.muscles || {}).find(([, w]) => w >= 1)?.[0] || null;
         openPicker('ex', ctx, { muscleKey: k, inSession: draft.exercises.map((x) => x.id), replace: e.title }, (items) => {
           if (!items.length) return;
-          snapshot(); draft.exercises[i] = items[0]; open = i; render();
+          snapshot(); draft.exercises[i] = e.group ? { ...items[0], group: e.group } : items[0]; open = i; render();
         });
         return;
       }

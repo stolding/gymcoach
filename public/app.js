@@ -725,7 +725,14 @@ function renderHome() {
   document.querySelector('.dash').classList.toggle('setup-mode', !!state.setup?.needed);
   if (state.setup?.needed) { renderSetup(); return; }
   $('#nextCard').classList.remove('setup');
-  $('#nextCard').innerHTML = n ? `
+  // cardio buiten: geen programma voor het toestel, wel het advies
+  const nOut = n && (state.plan?.sessions || []).find((x) => x.name === n.name && x.outdoor);
+  $('#nextCard').innerHTML = nOut ? `
+    <div class="eyebrow">Volgende training</div>
+    <div class="hero-title">${esc(n.name)}</div>
+    <div class="hero-meta"><span>~${n.estMinutes} min</span><span>wandelen of fietsen</span></div>
+    <p class="muted" style="margin:.4rem 0 .8rem">${esc(nOut.advice || '')}</p>
+    <div class="row gap wrap"><button class="btn ghost" id="heroView">Bekijk in plan</button></div>` : n ? `
     <div class="eyebrow">Volgende training</div>
     <div class="hero-title">${esc(n.name)}</div>
     <div class="hero-meta"><span>~${n.estMinutes} min</span><span>${n.count} oefeningen</span><span>${esc(GOAL[o.goal] || '')}</span>${n.pushedAt ? '<span class="badge ok">op toestel</span>' : ''}</div>

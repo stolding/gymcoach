@@ -116,5 +116,6 @@ Syntaxcontrole van alles: `for f in server.js lib/*.js public/*.js; do node --ch
 - **Versie** in `package.json` (MAJOR.MINOR.PATCH), bij elke wijziging omhoog, met een regel in `CHANGELOG.md`. De app toont de versie in Over GymCoach en op het inlogscherm.
 - **Commentaar**: elk bestand begint met een korte uitleg; elke functie heeft een regel commentaar erboven.
 - **Logo**: `public/logo.svg` is hetzelfde ontwerp als het app-icoon van GymCoach Sync; maak de PNG-iconen opnieuw als het logo verandert.
+- **README** in twee talen: `README.md` (Engels) en `README.nl.md` (Nederlands); wijzig ze samen. Schermafbeeldingen staan in `documentatie/afbeeldingen/app-*.png`.
 - **Brochure**: `documentatie/GymCoach-brochure.pdf` en de afbeeldingen per pagina in `documentatie/afbeeldingen/` (gebruikt in de README) samen bijwerken.
 - **Licentie**: MIT, © A. Stoelwinder Holding B.V.

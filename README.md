@@ -1,53 +1,68 @@
 # GymCoach
 
-**Je eigen trainingscoach voor de Speediance Gym Monster.**
+🇬🇧 English · 🇳🇱 [Nederlands](README.nl.md)
 
-GymCoach is een trainingsdashboard dat je zelf host. Het leest je trainingen uit via de onofficiële [`speediance-cli`](https://github.com/stozo04/speediance-cli), maakt elke week een persoonlijk schema en zet dat met één klik als programma op je Gym Monster. Metingen van een Withings-weegschaal en activiteiten uit Apple Health komen er automatisch bij.
+**Your own training coach for the Speediance Gym Monster.**
+
+GymCoach is a self-hosted training dashboard. It reads your workouts through the unofficial [`speediance-cli`](https://github.com/stozo04/speediance-cli), builds a personal plan every week and puts it on your Gym Monster as a program with one click. Measurements from a Withings scale and activities from Apple Health are added automatically.
+
+> **Language:** the app, the brochure and the in-app explanations are currently in **Dutch** only. This README is available in English and Dutch.
 
 ![GymCoach](public/icon-192.png)
 
-- **Brochure:** [documentatie/GymCoach-brochure.pdf](documentatie/GymCoach-brochure.pdf)
-- **Hoe de code in elkaar zit:** [documentatie/ARCHITECTUUR.md](documentatie/ARCHITECTUUR.md)
-- **Wijzigingen per versie:** [CHANGELOG.md](CHANGELOG.md)
-- **iPhone-app (GymCoach Sync):** [ios/README.md](ios/README.md)
+- **Brochure (Dutch):** [documentatie/GymCoach-brochure.pdf](documentatie/GymCoach-brochure.pdf)
+- **How the code is organised (Dutch):** [documentatie/ARCHITECTUUR.md](documentatie/ARCHITECTUUR.md)
+- **Changes per version:** [CHANGELOG.md](CHANGELOG.md)
+- **iPhone app (GymCoach Sync):** [ios/README.md](ios/README.md)
 
-## Zo ziet GymCoach eruit
+## What it looks like
 
-Uit de [brochure](documentatie/GymCoach-brochure.pdf); klik op een pagina voor het groot formaat. Alle cijfers zijn voorbeelddata.
+Pages from the [brochure](documentatie/GymCoach-brochure.pdf) (Dutch); click a page to enlarge. All figures are sample data.
 
 <table>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-1-voorkant.png"><img src="documentatie/afbeeldingen/brochure-1-voorkant.png" alt="Voorkant" width="380"></a><br><sub>Voorkant</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-2-wat-gymcoach-doet.png"><img src="documentatie/afbeeldingen/brochure-2-wat-gymcoach-doet.png" alt="Wat GymCoach doet" width="380"></a><br><sub>Wat GymCoach doet</sub></td></tr>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-3-weekplan.png"><img src="documentatie/afbeeldingen/brochure-3-weekplan.png" alt="Je weekplan" width="380"></a><br><sub>Je weekplan</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-4-lichaam.png"><img src="documentatie/afbeeldingen/brochure-4-lichaam.png" alt="Lichaamsmetingen" width="380"></a><br><sub>Lichaamsmetingen</sub></td></tr>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-5-inzicht.png"><img src="documentatie/afbeeldingen/brochure-5-inzicht.png" alt="Inzicht" width="380"></a><br><sub>Inzicht</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-6-trainingsrapport.png"><img src="documentatie/afbeeldingen/brochure-6-trainingsrapport.png" alt="Trainingsrapport" width="380"></a><br><sub>Trainingsrapport</sub></td></tr>
-<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-7-afgestemd-op-jou.png"><img src="documentatie/afbeeldingen/brochure-7-afgestemd-op-jou.png" alt="Afgestemd op jou" width="380"></a><br><sub>Afgestemd op jou</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-8-techniek.png"><img src="documentatie/afbeeldingen/brochure-8-techniek.png" alt="Techniek en installatie" width="380"></a><br><sub>Techniek en installatie</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-1-voorkant.png"><img src="documentatie/afbeeldingen/brochure-1-voorkant.png" alt="Cover" width="380"></a><br><sub>Cover</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-2-wat-gymcoach-doet.png"><img src="documentatie/afbeeldingen/brochure-2-wat-gymcoach-doet.png" alt="What GymCoach does" width="380"></a><br><sub>What GymCoach does</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-3-weekplan.png"><img src="documentatie/afbeeldingen/brochure-3-weekplan.png" alt="Your weekly plan" width="380"></a><br><sub>Your weekly plan</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-4-lichaam.png"><img src="documentatie/afbeeldingen/brochure-4-lichaam.png" alt="Body measurements" width="380"></a><br><sub>Body measurements</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-5-inzicht.png"><img src="documentatie/afbeeldingen/brochure-5-inzicht.png" alt="Insights" width="380"></a><br><sub>Insights</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-6-trainingsrapport.png"><img src="documentatie/afbeeldingen/brochure-6-trainingsrapport.png" alt="Workout report" width="380"></a><br><sub>Workout report</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-7-afgestemd-op-jou.png"><img src="documentatie/afbeeldingen/brochure-7-afgestemd-op-jou.png" alt="Tailored to you" width="380"></a><br><sub>Tailored to you</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/brochure-8-techniek.png"><img src="documentatie/afbeeldingen/brochure-8-techniek.png" alt="Technology and installation" width="380"></a><br><sub>Technology and installation</sub></td></tr>
 </table>
 
-## Functies
+## Screenshots
 
-**Plannen en trainen**
-- **Persoonlijk weekplan** op basis van doel (spieropbouw, combinatie, afvallen), dagen per week en beschikbare tijd; per dag kun je ook een cardio-circuit of cardio buiten kiezen.
-- **Automatische progressie**: dubbele progressie, inloop bij nieuwe oefeningen, deloadweken.
-- **Persoonlijk afgestemd**: rust en volume per geslacht en op je eigen herstel; maximale hartslag met Tanaka of (voor vrouwen) Gulati.
-- **Weekfocus** op spiergroepen; een anatomisch figuur (man, vrouw of neutraal) laat zien wat er getraind wordt.
-- **Met één klik op de Gym Monster**, met warming-up, mobiliteit en cooldown. Programma's heten naar de kalenderweek: `GC 2026-W45 Full Body A`.
-- **Gedaan deze week**: wat je al hebt getraind staat gemarkeerd in het plan.
-- **Optionele AI-coach** via de Claude API of een lokaal taalmodel (OpenAI-compatibel). Aanpassingen worden gecontroleerd en alleen toegepast als jij erop klikt.
+With a demo account and sample data; dark theme.
 
-**Terugkijken**
-- **Trainingsrapport** na elke training (in de app, als PDF en per mail): vergelijking met de laatste 4 keer, hartslag per set en over de hele training met zones, tijd onder spanning en rust.
-- **Statistieken**: per spiergroep, krachtindex, duwen/trekken- en boven/onder-balans, records, spiermassa tegen volume, km per week en stappen.
-- **Analyse**: kalender met je volledige historie (maand en jaar), wanneer je traint, records-tijdlijn, energie tegen gewicht en herstel (rusthartslag tegen belasting).
-- **Lichaam** via Withings: gewicht, vet%, spiermassa, segmenten per arm/been/romp, vasculaire leeftijd, met richtwaarden.
-- **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) met Nederlandse namen.
+<table>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/app-overzicht.png"><img src="documentatie/afbeeldingen/app-overzicht.png" alt="Overview" width="420"></a><br><sub>Overview</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/app-plan.png"><img src="documentatie/afbeeldingen/app-plan.png" alt="Weekly plan" width="420"></a><br><sub>Weekly plan</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/app-rapport.png"><img src="documentatie/afbeeldingen/app-rapport.png" alt="Workout report" width="420"></a><br><sub>Workout report</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/app-analyse.png"><img src="documentatie/afbeeldingen/app-analyse.png" alt="Analysis: calendar with your full history" width="420"></a><br><sub>Analysis: calendar with your full history</sub></td></tr>
+<tr><td align="center" width="50%"><a href="documentatie/afbeeldingen/app-statistieken.png"><img src="documentatie/afbeeldingen/app-statistieken.png" alt="Statistics" width="420"></a><br><sub>Statistics</sub></td><td align="center" width="50%"><a href="documentatie/afbeeldingen/app-uitleg.png"><img src="documentatie/afbeeldingen/app-uitleg.png" alt="How GymCoach works (in-app explanation)" width="420"></a><br><sub>How GymCoach works (in-app explanation)</sub></td></tr>
+<tr><td align="center"><a href="documentatie/afbeeldingen/app-lichaam.png"><img src="documentatie/afbeeldingen/app-lichaam.png" alt="Body" width="420"></a><br><sub>Body: measurements with reference ranges</sub></td><td align="center"><a href="documentatie/afbeeldingen/app-mobiel.png"><img src="documentatie/afbeeldingen/app-mobiel.png" alt="On a phone" width="200"></a><br><sub>On a phone</sub></td></tr>
+</table>
 
-**Gebruik**
-- **Meerdere gebruikers**, elk met eigen account, Speediance-account, plan en koppelingen; een wizard begeleidt nieuwe gebruikers.
-- **Uitleg in de app**: Instellingen → Over GymCoach → *Hoe GymCoach werkt* legt het plan en alle berekeningen uit, met bronnen.
-- Donker en licht thema; werkt op pc, tablet en telefoon.
+## Features
 
-## Installeren met Docker (aanbevolen)
+**Planning and training**
+- **Personal weekly plan** based on your goal (muscle gain, combination, fat loss), days per week and available time; per day you can also choose a cardio circuit or outdoor cardio.
+- **Automatic progression**: double progression, run-in for new exercises, deload weeks.
+- **Tailored to you**: rest and volume adjusted for sex and for your own recovery; maximum heart rate with Tanaka or (for women) Gulati.
+- **Weekly focus** on muscle groups; an anatomical figure (male, female or neutral) shows what you train.
+- **One click to the Gym Monster**, including warm-up, mobility and cool-down. Programs are named after the calendar week: `GC 2026-W45 Full Body A`.
+- **Done this week**: workouts you've already done are marked in the plan.
+- **Optional AI coach** via the Claude API or a local language model (OpenAI-compatible). Suggestions are validated and only applied when you click them.
 
-Je hebt alleen een machine met **Docker** nodig (een mini-pc, NAS of server thuis; Linux, amd64 of arm64) en een Speediance Gym Monster met account.
+**Looking back**
+- **Workout report** after every workout (in the app, as PDF and by email): comparison with the last 4 sessions, heart rate per set and over the whole workout with zones, time under tension and rest.
+- **Statistics**: per muscle group, strength index, push/pull and upper/lower balance, records, muscle mass versus volume, km per week and steps.
+- **Analysis**: calendar with your full history (month and year), when you train, records timeline, energy versus weight and recovery (resting heart rate versus load).
+- **Body** via Withings: weight, fat %, muscle mass, segments per arm/leg/trunk, vascular age, with reference ranges.
+- **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …).
+
+**Use**
+- **Multiple users**, each with their own account, Speediance account, plan and connections; a wizard guides new users.
+- **Explanations in the app**: Settings → About GymCoach → *How GymCoach works* explains the plan and every calculation, with sources.
+- Dark and light theme; works on desktop, tablet and phone.
+
+## Install with Docker (recommended)
+
+All you need is a machine with **Docker** (a mini PC, NAS or home server; Linux, amd64 or arm64) and a Speediance Gym Monster with an account.
 
 ```bash
 mkdir gymcoach && cd gymcoach
@@ -55,18 +70,18 @@ curl -fsSLO https://raw.githubusercontent.com/stolding/gymcoach/main/docker-comp
 docker compose up -d
 ```
 
-Open daarna `http://<ip-van-je-server>:8765`. De eerste keer maak je het beheerdersaccount aan; daarna helpt een wizard je met de voorwaarden, je Speediance-account, je voorkeuren en je eerste plan.
+Then open `http://<your-server-ip>:8765`. The first time you create the admin account; a wizard then walks you through the terms, your Speediance account, your preferences and your first plan.
 
-- Alle gegevens staan in de map `data/` naast `docker-compose.yml` (database en Speediance-logins). Maak daar een back-up van.
-- **Bijwerken:** `docker compose pull && docker compose up -d`
+- All data lives in the `data/` folder next to `docker-compose.yml` (database and Speediance logins). Back that folder up.
+- **Update:** `docker compose pull && docker compose up -d`
 - **Logs:** `docker compose logs -f`
-- **Zelf bouwen** in plaats van het kant-en-klare image: clone de repository en draai `docker compose up -d --build`.
-- Het image (`ghcr.io/stolding/gymcoach`) wordt automatisch gebouwd voor amd64 en arm64 (bijv. Raspberry Pi 4/5).
-- Instellingen via `environment` in `docker-compose.yml`, zie de tabel hieronder.
+- **Build it yourself** instead of using the ready-made image: clone the repository and run `docker compose up -d --build`.
+- The image (`ghcr.io/stolding/gymcoach`) is built automatically for amd64 and arm64 (e.g. Raspberry Pi 4/5).
+- Settings go in `environment` in `docker-compose.yml`, see the table below.
 
-## Installeren zonder Docker
+## Install without Docker
 
-Op een Linux-machine met **Node.js 22.5 of nieuwer** en systemd. Er zijn geen npm-pakketten nodig: GymCoach gebruikt alleen Node.js zelf, met de ingebouwde SQLite (`node:sqlite`).
+On a Linux machine with **Node.js 22.5 or newer** and systemd. No npm packages are needed: GymCoach only uses Node.js itself, including its built-in SQLite (`node:sqlite`).
 
 ```bash
 git clone https://github.com/stolding/gymcoach.git ~/gymcoach
@@ -74,41 +89,41 @@ cd ~/gymcoach
 bash install.sh
 ```
 
-Het script controleert Node.js, installeert `speediance-cli` in `~/.local/bin` en start GymCoach als systemd-gebruikersdienst op poort 8765. Bijwerken: `git pull && systemctl --user restart gymcoach`.
+The script checks Node.js, installs `speediance-cli` in `~/.local/bin` and starts GymCoach as a systemd user service on port 8765. Update: `git pull && systemctl --user restart gymcoach`.
 
-## Instellingen
+## Settings
 
-Via `environment` in `docker-compose.yml`, of in `.env` (zie `.env.example`) bij een installatie zonder Docker:
+Via `environment` in `docker-compose.yml`, or in `.env` (see `.env.example`) when installed without Docker:
 
-| Variabele | Standaard | Betekenis |
+| Variable | Default | Meaning |
 |---|---|---|
-| `PORT` | `8765` | Poort van de webserver |
-| `HOST` | `0.0.0.0` | Adres; `127.0.0.1` achter een proxy (zonder Docker) |
-| `TRUST_PROXY` | leeg | `1` achter een reverse proxy (echte IP en https uit de headers) |
-| `TZ` | `Europe/Amsterdam` (Docker) | Tijdzone |
-| `GYMCOACH_DATA` | `./data` (Docker: `/data`) | Map met database en logins |
+| `PORT` | `8765` | Web server port |
+| `HOST` | `0.0.0.0` | Address; `127.0.0.1` behind a proxy (without Docker) |
+| `TRUST_PROXY` | empty | `1` behind a reverse proxy (real IP and https from the headers) |
+| `TZ` | `Europe/Amsterdam` (Docker) | Time zone |
+| `GYMCOACH_DATA` | `./data` (Docker: `/data`) | Folder with database and logins |
 
-Optioneel: een Withings-weegschaal met een eigen Withings-ontwikkelaarsapp; een iPhone met *Health Auto Export* of een eigen build van *GymCoach Sync*; een Claude API-key of een lokaal taalmodel; een mailserver.
+Optional: a Withings scale with your own Withings developer app; an iPhone with *Health Auto Export* or your own build of *GymCoach Sync*; a Claude API key or a local language model; a mail server.
 
-## Bereikbaar van buitenaf
+## Access from outside your home
 
-GymCoach draait thuis en is standaard alleen in je eigen netwerk bereikbaar; er is geen centrale server. Wil je het buitenshuis gebruiken (ook voor de iPhone-sync), dan regel je dat zelf, bijvoorbeeld met:
+GymCoach runs at home and is only reachable on your own network by default; there is no central server. To use it away from home (also for the iPhone sync), set that up yourself, for example with:
 
-- **Tailscale** of een andere VPN: het eenvoudigst, niets open naar internet;
-- een **reverse proxy** met https op je eigen domein (Caddy, nginx, Traefik, Nginx Proxy Manager) met `TRUST_PROXY=1`;
-- een **reverse SSH-tunnel naar je eigen VPS** (installatie zonder Docker), zie hieronder.
+- **Tailscale** or another VPN: the simplest option, nothing exposed to the internet;
+- a **reverse proxy** with https on your own domain (Caddy, nginx, Traefik, Nginx Proxy Manager) with `TRUST_PROXY=1`;
+- a **reverse SSH tunnel to your own VPS** (installation without Docker), see below.
 
-### SSH-tunnel naar je eigen VPS
+### SSH tunnel to your own VPS
 
-De VPS stuurt `127.0.0.1:18765` door naar GymCoach thuis, en de webserver op de VPS (bijv. Apache in Plesk) doet https.
+The VPS forwards `127.0.0.1:18765` to GymCoach at home, and the web server on the VPS (e.g. Apache in Plesk) handles https.
 
-Zet de gegevens van je VPS in `.env` (zie `.env.example`): `GYMCOACH_VPS_HOST`, `GYMCOACH_VPS_USER`, `GYMCOACH_VPS_KEY` (SSH-sleutel zonder wachtwoord) en eventueel `GYMCOACH_VPS_TUNNEL_PORT`. Installeer dan:
+Put your VPS details in `.env` (see `.env.example`): `GYMCOACH_VPS_HOST`, `GYMCOACH_VPS_USER`, `GYMCOACH_VPS_KEY` (SSH key without passphrase) and optionally `GYMCOACH_VPS_TUNNEL_PORT`. Then install:
 
 ```bash
 bash deploy/tunnel/install-tunnel.sh
 ```
 
-Dit installeert de tunnel en een bewaker die de tunnel herstart als hij niet meer reageert (met `autossh` als dat aanwezig is). Proxy-instellingen voor Apache (Plesk → *Apache & nginx* → *Additional directives for HTTPS*):
+This installs the tunnel plus a watchdog that restarts it when it stops responding (using `autossh` if available). Proxy settings for Apache (Plesk → *Apache & nginx* → *Additional directives for HTTPS*):
 
 ```
 ProxyPreserveHost On
@@ -118,71 +133,71 @@ ProxyPassReverse / http://127.0.0.1:18765/
 RequestHeader set X-Forwarded-Proto "https"
 ```
 
-Zet daarna `TRUST_PROXY=1` in `.env` en herstart GymCoach.
+Then set `TRUST_PROXY=1` in `.env` and restart GymCoach.
 
-## Koppelingen
+## Connections
 
-**Apple Health.** Met *Health Auto Export – JSON+CSV* uit de App Store (REST API naar `/api/health/ingest`), of met de iPhone-app [GymCoach Sync](ios/README.md) (workouts, hartslagverloop, stappen, energie, rusthartslag; automatisch op de achtergrond). GymCoach Sync staat niet in de App Store: je bouwt hem met je eigen Apple-ontwikkelaarsaccount via GitHub Actions (zie de handleiding). De koppelsleutel maak je bij Instellingen → Apple Health. Krachttrainingen die Speediance zelf naar Apple Health schrijft, worden overgeslagen, zodat niets dubbel telt.
+**Apple Health.** With *Health Auto Export – JSON+CSV* from the App Store (REST API to `/api/health/ingest`), or with the iPhone app [GymCoach Sync](ios/README.md) (workouts, heart-rate curve, steps, energy, resting heart rate; automatically in the background). GymCoach Sync is not in the App Store: you build it with your own Apple developer account via GitHub Actions (see its guide). Create the pairing key under Settings → Apple Health. Strength workouts that Speediance writes to Apple Health itself are skipped, so nothing is counted twice.
 
-**Withings.** De beheerder maakt één Withings-ontwikkelaarsapp (tot 10 gebruikers) en vult de gegevens in bij Instellingen → Withings. Iedere gebruiker klikt daarna op *Koppel Withings*.
+**Withings.** The admin creates one Withings developer app (up to 10 users) and enters its details under Settings → Withings. Each user then clicks *Koppel Withings* (connect).
 
-**Mail.** Met een SMTP-server (Instellingen → E-mail) krijg je na elke training het rapport als PDF.
+**Mail.** With an SMTP server (Settings → E-mail) you get the report as a PDF after every workout.
 
-**AI-coach.** De beheerder kiest de Claude API of een lokale server (llama.cpp, Ollama). De coach krijgt je instellingen, geslacht en leeftijd, recente trainingen, gewicht, activiteiten en het plan. Hij mag oefeningen wisselen (alleen uit je eigen catalogus) en sets (2–5), herhalingen (5–20) en gewicht (±15%) aanpassen. Er wordt niets toegepast zonder dat jij erop klikt.
+**AI coach.** The admin chooses the Claude API or a local server (llama.cpp, Ollama). The coach receives your settings, sex and age, recent workouts, weight, activities and the plan. It may swap exercises (only from your own catalogue) and adjust sets (2–5), reps (5–20) and weight (±15%). Nothing is applied unless you click it.
 
-## Hoe het werkt
+## How it works
 
-Uitgebreid in de app (*Hoe GymCoach werkt*) en in [documentatie/ARCHITECTUUR.md](documentatie/ARCHITECTUUR.md). In het kort:
+Explained in detail in the app (*Hoe GymCoach werkt*) and in [documentatie/ARCHITECTUUR.md](documentatie/ARCHITECTUUR.md). In short:
 
-- **Sync.** Na de start en daarna op een instelbaar interval haalt GymCoach je trainingen op, met herhalingen, gewichten, tijden en hartslag per set.
-- **Schema.** 2–3 dagen: full body; 4 dagen: upper/lower; 5 dagen: upper/lower plus full body.
-- **Voorschrift.** Spieropbouw 8–12 herhalingen, 90 s rust; afvallen 12–20 herhalingen, 30–45 s rust; *combinatie* daartussen.
-- **Progressie.** Alle sets op de bovenkant: gewicht omhoog (+2 kg samengesteld, +1 kg isolatie). Twee keer onder het doel: −10%.
-- **Inloop en deload.** Nieuwe oefening: eerst 2 sets. Elke 6 trainingsweken (instelbaar) een lichtere week.
-- **Persoonlijk.** Vrouwen: 20% kortere rust en wat meer volume. Iedereen: langere rust als je herhalingen in latere sets zakken.
-- **Tijd.** Oefeningen worden ingekort tot de training in je ingestelde minuten past.
+- **Sync.** At start-up and then at a configurable interval GymCoach fetches your workouts, with reps, weights, timings and heart rate per set.
+- **Schedule.** 2–3 days: full body; 4 days: upper/lower; 5 days: upper/lower plus full body.
+- **Prescription.** Muscle gain 8–12 reps, 90 s rest; fat loss 12–20 reps, 30–45 s rest; *combination* in between.
+- **Progression.** All sets at the top of the range: weight goes up (+2 kg compound, +1 kg isolation). Twice below target: −10%.
+- **Run-in and deload.** New exercise: 2 sets first. Every 6 training weeks (configurable) a lighter week.
+- **Personal.** Women: 20% shorter rest and a little more volume. Everyone: longer rest when reps drop in later sets.
+- **Time.** Exercises are trimmed until the workout fits your configured minutes.
 
-## Eerste keer: controleer de gewichtseenheid
+## First time: check the weight unit
 
-De CLI rekent in kilogram. Kijk bij het eerste programma op het scherm van de Gym Monster of de gewichten kloppen.
+The CLI works in kilograms. With your first program, check on the Gym Monster's screen that the weights are right.
 
-## Beheer
+## Administration
 
 ```bash
 docker compose logs -f                  # Docker: logs
-journalctl --user -u gymcoach -f        # zonder Docker: logs
-systemctl --user restart gymcoach       # zonder Docker: herstart
+journalctl --user -u gymcoach -f        # without Docker: logs
+systemctl --user restart gymcoach       # without Docker: restart
 ```
 
-Alle data staat in `data/` (rechten 700/600):
-- `data/gymcoach.db` — SQLite-database met gebruikers, instellingen, plannen, trainingen, metingen, activiteiten en koppelingen;
-- `data/users/<naam>/speediance/` — de Speediance-login per gebruiker (bestanden, omdat de speediance-cli die nodig heeft).
+All data lives in `data/` (permissions 700/600):
+- `data/gymcoach.db` — SQLite database with users, settings, plans, workouts, measurements, activities and connections;
+- `data/users/<name>/speediance/` — the Speediance login per user (files, because the speediance-cli needs them).
 
-**Back-up** (mag terwijl de app draait):
+**Backup** (safe while the app is running):
 
 ```bash
-node backup.js                                    # zonder Docker: backups/gymcoach-<datum>.tar.gz
+node backup.js                                              # without Docker: backups/gymcoach-<date>.tar.gz
 docker compose exec gymcoach node backup.js /data/backups   # Docker: in data/backups
 ```
 
-**Herstellen:** `node restore.js` laat zien welke oude JSON-gegevens nog niet in de database staan; `node restore.js --apply` zet ze er alsnog in (eerst wordt een kopie van de database gemaakt).
+**Restore:** `node restore.js` shows which old JSON data is not yet in the database; `node restore.js --apply` adds it (a copy of the database is made first).
 
-**Upgraden vanaf een versie met JSON-bestanden:** bij de eerste start importeert GymCoach `data/*.json` en `data/users/*/*.json` automatisch. De oude bestanden krijgen de extensie `.imported`.
+**Upgrading from a version with JSON files:** on first start GymCoach imports `data/*.json` and `data/users/*/*.json` automatically. The old files get the extension `.imported`.
 
-De Speediance-API is onofficieel. Breekt een app-update van Speediance iets, dan komt er een nieuwe `speediance-cli`: met Docker zit die in een nieuw image (`CLI_VERSION` in de `Dockerfile`); zonder Docker zet je `CLI_VERSION` in `install.sh` op de nieuwste versie, verwijder je `~/.local/bin/speediance-cli` en draai je het script opnieuw.
+The Speediance API is unofficial. If a Speediance app update breaks something, a new `speediance-cli` will follow: with Docker it comes in a new image (`CLI_VERSION` in the `Dockerfile`); without Docker set `CLI_VERSION` in `install.sh` to the latest version, delete `~/.local/bin/speediance-cli` and run the script again.
 
-## Andere Gym Monster-modellen
+## Other Gym Monster models
 
-GymCoach is gebouwd en getest op de **Gym Monster 1**. Kies bij Instellingen → *Speediance-account* je model of klik op *Detecteer mijn toestel*; GymCoach haalt dan de oefeningencatalogus van jouw toestel op. Staat een standaardoefening er niet in, dan kiest GymCoach dezelfde oefening op naam, of een kabeloefening voor dezelfde spiergroep.
+GymCoach is built and tested on the **Gym Monster 1**. Choose your model under Settings → *Speediance account* or click *Detect my device*; GymCoach then fetches your device's exercise catalogue. If a standard exercise isn't in it, GymCoach picks the same exercise by name, or a cable exercise for the same muscle group.
 
-## Versies
+## Versions
 
-GymCoach volgt MAJOR.MINOR.PATCH (zie [CHANGELOG.md](CHANGELOG.md)); de versie staat in `package.json` en in de app. De iPhone-app heeft een eigen versienummer (`ios/project.yml`).
+GymCoach follows MAJOR.MINOR.PATCH (see [CHANGELOG.md](CHANGELOG.md), in Dutch); the version is in `package.json` and in the app. The iPhone app has its own version number (`ios/project.yml`).
 
 ## Disclaimer
 
-GymCoach is een onafhankelijk project en niet verbonden aan Speediance, Withings of Apple. Het gebruikt de onofficiële Speediance-API; een app-update van Speediance kan dingen breken. Trainingsvoorstellen en metingen zijn geen medisch advies: overleg met je huisarts voordat je begint als je klachten of risicofactoren hebt, en bij pijn met een arts of fysiotherapeut.
+GymCoach is an independent project and not affiliated with Speediance, Withings or Apple. It uses the unofficial Speediance API; a Speediance app update may break things. Training suggestions and measurements are not medical advice: talk to your doctor before you start if you have complaints or risk factors, and see a doctor or physiotherapist if you feel pain.
 
-## Licentie
+## License
 
-MIT, zie [LICENSE](LICENSE). © 2026 A. Stoelwinder Holding B.V.
+MIT, see [LICENSE](LICENSE). © 2026 A. Stoelwinder Holding B.V.

@@ -99,7 +99,7 @@ output { font-weight: 650; }
 .toast.err { background: var(--warn); color: #fff; }
 dialog { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); width: min(520px, 94vw); }
 dialog select { width: 100%; margin: .5rem 0 1rem; }
-@media (max-width: 520px) { .brand .sub { display: none; } #syncStatus { font-size: .75rem; max-width: 9rem; } .rx { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 1.3rem; } }
+@media (max-width: 520px) { .brand .sub { display: none; } #syncStatus { display: none; } .rx { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 1.3rem; } }
 
 .block { border-top: 1px solid var(--line); padding: .55rem 0; }
 .block .blabel { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: .3rem; font-weight: 650; }

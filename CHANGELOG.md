@@ -5,6 +5,11 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 1.5.3 — 5 november 2026
+- README in het Engels (`README.md`) en Nederlands (`README.nl.md`), met schermafbeeldingen van de app.
+- Overzicht: bij "Cardio buiten" als volgende training staat nu het advies en geen knop "Zet op Gym Monster" meer.
+- Telefoon: de synctijd bovenin is verborgen, zodat de kop niet meer over meerdere regels loopt.
+
 ## 1.5.2 — 5 november 2026
 - README: de pagina's van de brochure als afbeeldingen ("Zo ziet GymCoach eruit"), in `documentatie/afbeeldingen/`.
 

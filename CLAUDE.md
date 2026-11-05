@@ -10,3 +10,4 @@
 - Logo: `public/logo.svg` is hetzelfde ontwerp als het app-icoon van GymCoach Sync. PNG-iconen (`icon-180/192/512.png`, `favicon-32.png`) opnieuw maken als het logo verandert.
 - UI is Nederlands; donker thema is de standaard.
 - Copyright: © A. Stoelwinder Holding B.V., open source onder de MIT-licentie (zie LICENSE).
+- README in twee talen: `README.md` (Engels) en `README.nl.md` (Nederlands) samen bijwerken. Brochure-PDF en `documentatie/afbeeldingen/` samen bijwerken.

@@ -441,6 +441,8 @@ export default {
   'app.rustS': 'Rust s',
   'app.rust': 'Rust',
   'app.wisselOefening': 'Wissel oefening',
+  'app.instructies': 'Instructies',
+  'app.geenInstructies': 'Geen instructies beschikbaar voor deze oefening.',
   'app.klaar': 'Klaar',
   'app.alleenDashboard': 'alleen dashboard',
   'app.daarnaStartDeEerste': 'Daarna start de eerste zware oefening met een opwarmset op ~50%.',

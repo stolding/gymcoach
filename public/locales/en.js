@@ -456,6 +456,8 @@ export default {
   "app.rustS": "Rest s",
   "app.rust": "Rest",
   "app.wisselOefening": "Swap exercise",
+  "app.instructies": "Instructions",
+  "app.geenInstructies": "No instructions available for this exercise.",
   "app.klaar": "Done",
   "app.alleenDashboard": "dashboard only",
   "app.daarnaStartDeEerste": "After that the first heavy exercise starts with a warm-up set at ~50%.",

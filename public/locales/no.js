@@ -456,6 +456,8 @@ export default {
   "app.rustS": "Pause s",
   "app.rust": "Pause",
   "app.wisselOefening": "Bytt øvelse",
+  "app.instructies": "Instruksjoner",
+  "app.geenInstructies": "Ingen instruksjoner tilgjengelig for denne øvelsen.",
   "app.klaar": "Ferdig",
   "app.alleenDashboard": "bare dashbord",
   "app.daarnaStartDeEerste": "Etter det starter den første tunge øvelsen med et oppvarmingssett på ~50 %.",

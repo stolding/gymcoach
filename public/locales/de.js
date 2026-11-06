@@ -456,6 +456,8 @@ export default {
   "app.rustS": "Pause s",
   "app.rust": "Pause",
   "app.wisselOefening": "Übung tauschen",
+  "app.instructies": "Anleitung",
+  "app.geenInstructies": "Für diese Übung ist keine Anleitung verfügbar.",
   "app.klaar": "Fertig",
   "app.alleenDashboard": "nur Dashboard",
   "app.daarnaStartDeEerste": "Danach beginnt die erste schwere Übung mit einem Aufwärmsatz bei ~50 %.",

@@ -663,6 +663,7 @@ function openExercise(session, i) {
       </div>
     </div>
     <div class="row gap wrap end">
+      ${e.id ? `<button type="button" class="btn ghost" data-x="info">${t('app.instructies')}</button>` : ''}
       <button type="button" class="btn ghost" data-x="avoid">${t('pk.avoid')}</button>
       <button type="button" class="btn ghost" data-x="swap">${t('app.wisselOefening')}</button>
       <button value="close" class="btn accent">${t('app.klaar')}</button>
@@ -675,6 +676,7 @@ function openExercise(session, i) {
     savePlanSoon();
     openExercise(session, i);
   }));
+  dlg.querySelector('[data-x=info]')?.addEventListener('click', () => openInstructions(e));
   dlg.querySelector('[data-x=swap]').addEventListener('click', () => { dlg.close(); openSwap(e); });
   dlg.querySelector('[data-x=avoid]').addEventListener('click', async () => {
     if (!await askConfirm(t('app.nietMeerVoorstellen', { title: e.title }))) return;
@@ -682,6 +684,45 @@ function openExercise(session, i) {
     try { state.plan = (await api('POST', '/api/avoid', { id: e.id })).plan; renderPlan(); } catch (er) { toast(er.message, true); }
   });
   if (!dlg.open) dlg.showModal();
+}
+// Instructies van Speediance: tekst, foto's en video, boven het oefeningenvenster.
+async function openInstructions(ex) {
+  let dlg = $('#infoDlg');
+  if (!dlg) {
+    dlg = document.createElement('dialog'); dlg.id = 'infoDlg'; dlg.className = 'wide-dlg info-dlg'; document.body.appendChild(dlg);
+    dlg.addEventListener('close', () => dlg.querySelector('video')?.pause());
+  }
+  dlg.innerHTML = `<form method="dialog" class="exd">
+    <div class="exd-head"><div><h2>${esc(ex.title)}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
+    <div class="info-body"><p class="muted">${t('pk.loading')}</p></div>
+  </form>`;
+  dlg.showModal();
+  let info = null, err = '';
+  try { info = (await api('GET', '/api/exercise/info?id=' + encodeURIComponent(ex.id))).info; }
+  catch (e) { err = e.message; }
+  if (!dlg.open) return;
+  dlg.querySelector('.info-body').innerHTML = info ? instructionHtml(info) : `<div class="note">${esc(err || t('app.geenInstructies'))}</div>`;
+}
+function instructionHtml(info) {
+  const kps = (info.keyPoints || []).filter((k) => k.text || k.img);
+  const used = new Set([info.img, info.poster, ...kps.map((k) => k.img)].filter(Boolean));
+  const extra = (info.images || []).filter((u) => u && !used.has(u));
+  const media = info.video
+    ? `<video controls preload="metadata" playsinline ${info.poster || info.img ? `poster="${esc(info.poster || info.img)}"` : ''} src="${esc(info.video)}"></video>`
+    : (info.img ? `<img src="${esc(info.img)}" alt="">` : '');
+  const facts = [
+    info.breathing ? `<div><b>${t('pk.breathing')}:</b> ${esc(info.breathing)}</div>` : '',
+    info.feeling ? `<div><b>${t('pk.feeling')}:</b> ${esc(info.feeling)}</div>` : '',
+    info.mistake ? `<div><b class="warn-text">${t('pk.mistake')}:</b> ${esc(info.mistake)}</div>` : '',
+  ].filter(Boolean).join('');
+  if (!media && !info.steps && !kps.length && !extra.length && !facts) return `<p class="muted">${t('app.geenInstructies')}</p>`;
+  let lang = info.lang || 'en';
+  try { lang = new Intl.DisplayNames([localeOf()], { type: 'language' }).of(lang) || lang; } catch { /* code blijft staan */ }
+  return `${media || facts ? `<div class="pk-media">${media || '<div></div>'}${facts ? `<div class="pk-facts">${facts}</div>` : '<div></div>'}</div>` : ''}
+    ${info.steps ? `<div><div class="eyebrow">${t('pk.steps')}</div><p class="pk-text">${esc(info.steps)}</p></div>` : ''}
+    ${kps.length ? `<div><div class="eyebrow">${t('pk.keyPoints')}</div><div class="pk-kps">${kps.map((k) => `<figure>${k.img ? `<img src="${esc(k.img)}" alt="" loading="lazy">` : ''}<figcaption class="pk-text">${esc(k.text)}</figcaption></figure>`).join('')}</div></div>` : ''}
+    ${extra.length ? `<div class="info-shots">${extra.map((u) => `<img src="${esc(u)}" alt="" loading="lazy">`).join('')}</div>` : ''}
+    <div class="muted small">${t('pk.source', { lang })}</div>`;
 }
 
 // cooldown-duur: seconden per stretch (× 2 bij "per kant") plus wisseltijd

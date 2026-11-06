@@ -208,20 +208,29 @@
       <h2 data-i18n="goal.form.title">Doel stellen</h2>
       <p class="muted small" data-i18n="goal.form.starts">Een gewijzigd doel begint opnieuw, op de dag dat je het bewaart.</p>
       <form id="goalForm" class="fgrid">
-        <label><span data-i18n="goal.form.weight">Gewichtsverschil (kg)</span>
-          <input name="weight" type="number" step="0.1" min="-30" max="30" inputmode="decimal">
-          <span class="muted" data-i18n="goal.form.weightHint">Negatief is afvallen, bijvoorbeeld −2. Leeg laten als je alleen een krachtdoel stelt.</span></label>
-        <label><span data-i18n="goal.form.muscle">Spier (%)</span>
-          <input name="muscle" type="number" step="1" min="0" max="40" inputmode="decimal">
-          <span class="muted" data-i18n="goal.form.muscleHint">Leeg laten als je geen spierdoel stelt. Bijvoorbeeld 15, bovenop het gewicht.</span></label>
-        <label><span data-i18n="goal.form.weeks">Weken</span>
-          <input name="weeks" type="number" step="any" min="1" max="320" inputmode="decimal"></label>
-        <label><span data-i18n="goal.form.exercise">Krachtdoel</span>
-          <select name="exercise"><option value="" data-i18n="goal.form.none">Geen krachtdoel</option></select></label>
-        <label><span data-i18n="goal.form.pct">Extra kracht (%)</span>
-          <input name="pct" type="number" step="1" min="1" max="100" inputmode="decimal"></label>
-        <label><span data-i18n="goal.form.months">Maanden</span>
-          <input name="months" type="number" step="any" min="1" max="60" inputmode="decimal"></label>
+        <div class="form-sub">
+          <p class="eyebrow" data-i18n="goal.form.body">Lichaam</p>
+          <p class="muted small" id="goalNow"></p>
+          <label><span data-i18n="goal.form.weight">Gewichtsverschil (kg)</span>
+            <input name="weight" type="number" step="0.1" min="-30" max="30" inputmode="decimal">
+            <span class="muted" data-i18n="goal.form.weightHint">Negatief is afvallen, bijvoorbeeld −2. Leeg laten als je alleen een krachtdoel stelt.</span></label>
+          <label><span data-i18n="goal.form.muscle">Spier (%)</span>
+            <input name="muscle" type="number" step="1" min="0" max="40" inputmode="decimal">
+            <span class="muted" data-i18n="goal.form.muscleHint">Leeg laten als je geen spierdoel stelt. Bijvoorbeeld 15, bovenop het gewicht.</span></label>
+          <label><span data-i18n="goal.form.weeks">Weken</span>
+            <input name="weeks" type="number" step="any" min="1" max="320" inputmode="decimal"></label>
+        </div>
+        <div class="form-sub">
+          <p class="eyebrow" data-i18n="goal.form.strengthHead">Kracht</p>
+          <p class="muted small" data-i18n="goal.form.strengthLead">Een percentage geldt voor één oefening. Het geschatte 1RM van de laatste training is het startpunt. Zolang er ook een lichaamsdoel is, verandert dit de calorieën niet.</p>
+          <label><span data-i18n="goal.form.exercise">Oefening</span>
+            <select name="exercise"><option value="" data-i18n="goal.form.none">Geen krachtdoel</option></select></label>
+          <label><span data-i18n="goal.form.pct">Extra kracht (%)</span>
+            <input name="pct" type="number" step="1" min="1" max="100" inputmode="decimal"></label>
+          <label><span data-i18n="goal.form.months">Maanden</span>
+            <input name="months" type="number" step="any" min="1" max="60" inputmode="decimal"></label>
+          <p class="muted small hidden" id="goalE1rm"></p>
+        </div>
         <div class="span2">
           <label class="inline-check" for="goalAlign">
             <input type="checkbox" id="goalAlign">

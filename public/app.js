@@ -1907,16 +1907,39 @@ function fillGoalForm(v) {
   f.muscle.value = comp?.musclePct ?? '';
   f.weeks.value = comp ? comp.weeks : '';
   const opts = [`<option value="">${esc(t('goal.form.none'))}</option>`]
-    .concat((v.exercises || []).map((e) => `<option value="${esc(e.id)}">${esc(e.name)} (${esc(goalNum(e.e1rm))})</option>`));
+    .concat((v.exercises || []).map((e) => `<option value="${esc(e.id)}" data-e1rm="${esc(e.e1rm)}" data-date="${esc(e.date || '')}">${esc(e.name)} (${esc(goalNum(e.e1rm))} kg)</option>`));
   f.exercise.innerHTML = opts.join('');
   if (str && ![...f.exercise.options].some((o) => o.value === String(str.exerciseId))) {
-    f.exercise.insertAdjacentHTML('beforeend', `<option value="${esc(str.exerciseId)}">${esc(str.name)}</option>`);
+    f.exercise.insertAdjacentHTML('beforeend', `<option value="${esc(str.exerciseId)}" data-e1rm="${esc(str.startE1rm)}" data-date="${esc(str.startDate || '')}" data-start="1">${esc(str.name)}</option>`);
   }
   f.exercise.value = str ? String(str.exerciseId) : '';
   f.pct.value = str ? str.pct : '';
   f.months.value = str ? str.months : '';
   const align = $('#goalAlign');
   if (align) align.checked = !!v.alignPlan;
+  showGoalE1rm();
+}
+
+function showGoalNow(v) {
+  const el = $('#goalNow');
+  if (!el) return;
+  const n = v?.now || {};
+  if (!(n.kg > 0)) { el.textContent = t('goal.form.nowNone'); return; }
+  if (!(n.muscle > 0)) { el.textContent = t('goal.form.nowWeight', { kg: goalNum(n.kg), date: fmtDate(n.kgDate) }); return; }
+  if (n.kgDate && n.kgDate === n.muscleDate) el.textContent = t('goal.form.nowSame', { kg: goalNum(n.kg), muscle: goalNum(n.muscle), date: fmtDate(n.kgDate) });
+  else el.textContent = t('goal.form.nowSplit', { kg: goalNum(n.kg), kgDate: fmtDate(n.kgDate), muscle: goalNum(n.muscle), muscleDate: fmtDate(n.muscleDate) });
+}
+
+function showGoalE1rm() {
+  const el = $('#goalE1rm');
+  const opt = $('#goalForm')?.exercise?.selectedOptions?.[0];
+  if (!el) return;
+  const kg = opt?.dataset?.e1rm;
+  if (!opt?.value || !(Number(kg) > 0)) { el.textContent = ''; el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  const date = opt.dataset.date;
+  const key = opt.dataset.start === '1' ? 'goal.form.e1rmStart' : (date ? 'goal.form.e1rm' : 'goal.form.e1rmBare');
+  el.textContent = t(key, { kg: goalNum(kg), date: date ? fmtDate(date) : '' });
 }
 
 function renderGoal() {
@@ -1943,6 +1966,7 @@ function renderGoal() {
   box.innerHTML = html;
   $('#goalSettings')?.addEventListener('click', () => goSettings('body'));
   fillGoalForm(v);
+  showGoalNow(v);
   const b = v.blocked;
   let status = '';
   if (b?.composition?.limiter === 'muscle') status += `<p class="warn-text">${esc(t('goal.blockedMuscle', { weeks: goalNum(b.composition.requestedWeeks, 0), muscle: goalNum(b.composition.maxMuscleKg), ceiling: goalNum(b.composition.ceilingKgMonth, 2), date: fmtDate(b.composition.earliest) }))}</p>`;
@@ -2020,6 +2044,7 @@ function renderGoalTable() {
 }
 
 $('#goalForm').addEventListener('submit', (ev) => { ev.preventDefault(); busy(ev.submitter || $('#goalClear'), () => saveGoal(false)); });
+$('#goalForm').exercise?.addEventListener('change', showGoalE1rm);
 $('#goalClear').addEventListener('click', () => busy($('#goalClear'), () => saveGoal(false, true)));
 $('#goalStatus').addEventListener('click', (ev) => { const b = ev.target.closest('[data-accept]'); if (b) busy(b, () => saveGoal(true)); });
 $('#goalTableCard').addEventListener('click', (ev) => { if (!ev.target.closest('[data-goal-more]')) return; goalShowAll = !goalShowAll; renderGoalTable(); });

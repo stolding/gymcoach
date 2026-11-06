@@ -208,6 +208,7 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .goal-sp polyline { fill: none; stroke: var(--a); stroke-width: 2; stroke-linejoin: round; }
 .goal-sp polyline.b { stroke: var(--b); stroke-dasharray: 3 3; }
 #goalForm .inline-check { color: var(--ink); align-items: flex-start; }
+#goalForm > .form-sub:first-child { border-top: 0; padding-top: 0; }
 @media (max-width: 700px) { .goal-home { grid-template-columns: 1fr; } .goal-spark { align-items: flex-start; } }
 .hv { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
 .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }

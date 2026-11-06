@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.10.1 — 6 november 2026
+- Op Doel staan het lichaamsdoel en het krachtdoel apart. Bij het lichaam zie je het huidige gewicht en de spiermassa; bij een gekozen oefening het laatste geschatte 1RM.
+
 ## 2.10.0 — 6 november 2026
 - Een Docker-installatie laat ook zien of er een nieuwere versie op GitHub staat, na het inloggen en daarna elk uur. Bijwerken gaat daar niet met de knop: het venster geeft het commando `docker compose pull && docker compose up -d`. De map `data/` blijft staan.
 

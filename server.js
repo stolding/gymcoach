@@ -410,7 +410,11 @@ const routes = {
         }
       }
       for (const c of s.warmup?.cable || []) { c.reps = int(c.reps, 1, 30, 10); c.weight = Math.max(0, Math.round(+c.weight * 2) / 2 || 0); }
-      for (const m of s.warmup?.mobility || []) m.reps = int(m.reps, 1, 60, 10);
+      for (const m of s.warmup?.mobility || []) {
+        m.dose = engine.mobilityDose(m);
+        m.reps = int((/(\d+)\s*s\b/i.exec(m.dose) || [])[1], 5, 180, 30);
+      }
+      for (const c of s.cooldown || []) c.dose = engine.cooldownDose(c);
     }
     refreshMuscles(plan);
     await store.savePlan(plan);
@@ -695,9 +699,10 @@ const routes = {
     if (!info && hasSpeediance()) info = await exinfo.getInfo(id, 'en').catch(() => null);
     if (block === 'warm') {
       const cable = lib.tab === 'Training';
-      return { item: { kind: cable ? 'cable' : 'mobility', id: lib.id, title: lib.name, reps: cable ? 12 : 10, weight: cable ? Math.max(1, Math.round((info?.recommendedWeight || 6) * 0.3 * 2) / 2) : 0, dose: cable ? '' : '10 herh.' } };
+      const dose = cable ? '' : (info?.unilateral ? '30 s per kant' : '30 s');
+      return { item: { kind: cable ? 'cable' : 'mobility', id: lib.id, title: lib.name, reps: cable ? 12 : 30, weight: cable ? Math.max(1, Math.round((info?.recommendedWeight || 6) * 0.3 * 2) / 2) : 0, dose } };
     }
-    if (block === 'cool') return { item: { id: lib.id, title: lib.name, dose: info?.unilateral ? '30 s per kant' : '30 s' } };
+    if (block === 'cool') return { item: { id: lib.id, title: lib.name, dose: engine.cooldownDose({ id: lib.id, dose: info?.unilateral ? '30 s per kant' : '30 s' }) } };
     return { exercise: engine.exerciseFromLibrary(lib, { settings: ctx.settings, history: ctx.history, info }) };
   },
   // foto's en video's van Speediance via de eigen server (gedeelde cache in data/media)

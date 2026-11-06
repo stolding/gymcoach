@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.6.2 — 6 november 2026
+- Chest Stretch in de cooldown gaat per kant: 30 seconden links en 30 seconden rechts. Ook in een plan dat nog één set van 30 seconden had.
+
+## 2.6.1 — 6 november 2026
+- Mobiliteit zonder kabel (zoals World's Greatest Stretch en Prisoner Squat) gaat als seconden naar de Gym Monster, ongeveer 30 seconden. Die oefeningen kan het toestel niet als herhalingen tellen. Kabeloefeningen blijven herhalingen.
+
 ## 2.6.0 — 6 november 2026
 - In het oefeningenvenster opent *Instructies* de uitleg van Speediance, met tekst, foto's en video.
 

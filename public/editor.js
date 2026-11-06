@@ -47,8 +47,9 @@ function estMinutes(s) {
   const cool = s.cooldown?.length ? 4 : 0;
   return Math.round(sec / 60) + warm + cool;
 }
-// Seconden uit een dosering als "30 s per kant".
+// Seconden uit een dosering als "30 s per kant". Zonder seconden (oude "10 herh.") is het 30 s.
 const secsOf = (dose) => { const m = /(\d+)\s*s\b/i.exec(dose || ''); return m ? Number(m[1]) : 30; };
+const sideOf = (dose) => { const m = String(dose || '').match(/per (kant|been|arm)/i); return m ? `per ${m[1].toLowerCase()}` : ''; };
 
 let dlg = null;
 
@@ -124,9 +125,9 @@ export function openEditor(key, ctx) {
     const min = items.length ? 6 : 0;
     return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.warmup')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min })}</span></div>
       <div class="row gap">${!items.length && (original.warmup?.mobility?.length || original.warmup?.cable?.length) ? `<button type="button" class="btn ghost small" data-ed="restore-warm">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-warm">${t('ed.add')}</button></div></div>
-      ${items.length ? `<div class="ed-wc">${items.map(([kind, i, x]) => `<div class="ed-wci"><span>${esc(x.title)}</span>
+      ${items.length ? `<div class="ed-wc">${items.map(([kind, i, x]) => `<div class="ed-wci"><span>${esc(x.title)}${kind === 'mobility' && sideOf(x.dose) ? ` <span class="muted small">${esc(doseText(sideOf(x.dose)))}</span>` : ''}</span>
         ${kind === 'cable' ? `<label>${t('ed.reps')}<input type="number" min="1" max="30" value="${x.reps}" data-ed="wc" data-kind="cable" data-i="${i}" data-f="reps"></label><label>${t('ed.kg')}<input type="number" min="0" step="0.5" value="${x.weight}" data-ed="wc" data-kind="cable" data-i="${i}" data-f="weight"></label>`
-        : `<label>${t('ed.reps')}<input type="number" min="1" max="60" value="${x.reps}" data-ed="wc" data-kind="mobility" data-i="${i}" data-f="reps"></label>`}
+        : `<label>${t('ed.secs')}<input type="number" min="5" max="180" step="5" value="${secsOf(x.dose)}" data-ed="wc" data-kind="mobility" data-i="${i}" data-f="secs"></label>`}
         <button type="button" class="ed-x" aria-label="${t('ed.remove')}" data-ed="wc-del" data-kind="${kind}" data-i="${i}">×</button></div>`).join('')}</div>` : `<div class="muted small">${t('ed.empty')}</div>`}
     </section>`;
   }
@@ -333,8 +334,15 @@ export function openEditor(key, ctx) {
       if (f === 'mode') x.mode = Number(el.value) || 1;
     } else if (a === 'wc') {
       const x = draft.warmup[el.dataset.kind][i];
-      if (el.dataset.f === 'reps') x.reps = Math.min(60, Math.max(1, Math.round(num(el.value, x.reps))));
-      if (el.dataset.f === 'weight') x.weight = half(num(el.value, x.weight));
+      if (el.dataset.kind === 'mobility') {
+        const s = Math.min(180, Math.max(5, Math.round(num(el.value, 30))));
+        const side = sideOf(x.dose);
+        x.dose = side ? `${s} s ${side}` : `${s} s`;
+        x.reps = s;
+      } else {
+        if (el.dataset.f === 'reps') x.reps = Math.min(60, Math.max(1, Math.round(num(el.value, x.reps))));
+        if (el.dataset.f === 'weight') x.weight = half(num(el.value, x.weight));
+      }
     } else if (a === 'cool') {
       const x = draft.cooldown[i], s = Math.min(180, Math.max(5, Math.round(num(el.value, 30))));
       x.dose = /\d+\s*s\b/i.test(x.dose || '') ? x.dose.replace(/\d+\s*s\b/i, `${s} s`) : `${s} s`;

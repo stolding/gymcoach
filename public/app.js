@@ -733,13 +733,14 @@ const coolMin = (list) => Math.max(1, Math.round((list || []).reduce((t, c) => {
 // Venster met de warming-up of cooldown van een training.
 function openWarmCool(session, which) {
   const dlg = $('#exDlg');
+  const bothSides = (dose) => /per (kant|been|arm)/i.test(dose || '');
   const items = which === 'warm'
-    ? [...session.warmup.mobility.map((m) => ({ t: m.title, d: doseText(m.dose), dev: pushMob() })), ...session.warmup.cable.map((c) => ({ t: c.title, d: `2 × ${c.reps} @ ${c.weight} kg`, dev: true }))]
-    : session.cooldown.map((c) => ({ t: c.title, d: doseText(c.dose), dev: pushMob() }));
+    ? [...session.warmup.mobility.map((m) => ({ t: m.title, d: doseText(m.dose), dev: pushMob(), both: bothSides(m.dose) })), ...session.warmup.cable.map((c) => ({ t: c.title, d: `2 × ${c.reps} @ ${c.weight} kg`, dev: true }))]
+    : session.cooldown.map((c) => ({ t: c.title, d: doseText(c.dose), dev: pushMob(), both: bothSides(c.dose) }));
   dlg.innerHTML = `<form method="dialog" class="exd">
     <div class="exd-head"><div><div class="eyebrow">${esc(session.name)}</div><h2>${which === 'warm' ? t('app.warmingUp6Min') : t('app.cooldownMin', { a: coolMin(session.cooldown) })}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
     <table class="settable"><thead><tr><th>${t('app.oefening')}</th><th>${t('app.dosering')}</th><th>${t('app.opToestel2')}</th></tr></thead><tbody>
-      ${items.map((x) => `<tr><td>${esc(x.t)}</td><td>${esc(x.d)}</td><td>${x.dev ? (/per (kant|been|arm)/i.test(x.d || '') ? t('app.ja2SetsLinks') : 'ja') : '<span class="muted">' + t('app.alleenDashboard') + '</span>'}</td></tr>`).join('')}
+      ${items.map((x) => `<tr><td>${esc(x.t)}</td><td>${esc(x.d)}</td><td>${x.dev ? (x.both ? t('app.ja2SetsLinks') : 'ja') : '<span class="muted">' + t('app.alleenDashboard') + '</span>'}</td></tr>`).join('')}
     </tbody></table>
     ${which === 'warm' ? '<p class="muted small">' + t('app.daarnaStartDeEerste') + '</p>' : '<p class="muted small">' + t('app.rustigAdemenNietVerend') + '</p>'}
     <div class="row end"><button value="close" class="btn accent">${t('app.klaar')}</button></div></form>`;

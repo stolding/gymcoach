@@ -58,6 +58,7 @@ Hoe de code in elkaar zit, voor wie GymCoach wil aanpassen of uitbreiden. Wat de
 | `backup.js`, `restore.js` | Back-up maken; oude JSON-gegevens terugzetten. |
 | `Dockerfile`, `docker-compose.yml` | Container met Node.js 22 en speediance-cli; gegevens in het volume `/data`. Het image wordt gebouwd door `.github/workflows/docker.yml` (amd64 en arm64, naar ghcr.io). |
 | `install.sh` | Installatie zonder Docker: Node-controle, speediance-cli, systemd-dienst. |
+| `lib/update.js` | Bijwerken vanaf GitHub `main`: vergelijken, syntaxcontrole, `reset --hard`, herstart van de systemd-gebruikersdienst. Alleen de beheerder, alleen een eigen git-checkout. |
 | `deploy/tunnel/` | Optioneel: reverse SSH-tunnel naar je eigen VPS, met bewaker. |
 | `ios/` | iPhone-app GymCoach Sync (SwiftUI, HealthKit), gebouwd via GitHub Actions. |
 
@@ -113,7 +114,7 @@ Groepen:
 - **Toestel**: `/api/sync`, `/api/account`, `/api/account/detect`, `/api/programs`, `/api/programs/delete`, `/api/library/refresh`.
 - **Koppelingen**: `/api/withings/*`, `/api/health/*` (de ingest-route gebruikt de koppelsleutel in plaats van een sessie), `/api/mail/test`, `/api/workout/mail`.
 - **Lichaam**: `/api/bodyweight`.
-- **Gebruikers en instellingen**: `/api/auth/*`, `/api/me*`, `/api/users*`, `/api/settings`, `/api/terms/accept`, `/api/avatar`.
+- **Gebruikers en instellingen**: `/api/auth/*`, `/api/me*`, `/api/users*`, `/api/settings`, `/api/terms/accept`, `/api/avatar`, `/api/update` (GET: vergelijken met `main`; POST: binnenhalen en herstarten, alleen beheerder).
 
 ## Meertaligheid
 

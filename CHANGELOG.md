@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.3.0 — 6 november 2026
+- Instellingen → Over GymCoach: de beheerder kan op *Controleren op updates* kijken of `main` op GitHub nieuwer is en die versie meteen binnenhalen. GymCoach herstart daarna vanzelf als hij als systemd-gebruikersdienst draait. `data/` en `.env` blijven staan. Werkt alleen als de installatie een git-checkout is.
+
 ## 2.2.1 — 5 november 2026
 - Brochures (nl, en, de) bijgewerkt met de signalen uit 2.2.0: HRV en VO2max, herstelweek eerder als je herstel erom vraagt, vertraging per herhaling in het rapport en de herstelscore in de analyse.
 

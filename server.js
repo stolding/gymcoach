@@ -8,7 +8,7 @@ import * as cli from './lib/cli.js';
 import * as store from './lib/store.js';
 import * as engine from './lib/engine.js';
 import { ALL_LANGS, resolveLang } from './public/i18n.js';
-import { tr, userLang, parseAccept } from './lib/lang.js';
+import { tr, userLang, parseAccept, err } from './lib/lang.js';
 // taal voor uitleg en beelden van Speediance: die van de gebruiker als Speediance hem goed levert, anders Engels
 const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'en');
 import * as insights from './lib/insights.js';
@@ -23,6 +23,7 @@ import * as mail from './lib/mail.js';
 import { workoutPdf, workoutMail } from './lib/summary.js';
 import { figureFor } from './public/bodymap.js';
 import * as exinfo from './lib/exinfo.js';
+import * as ghUpdate from './lib/update.js';
 import { createReadStream } from 'node:fs';
 import { stat as fsStat } from 'node:fs/promises';
 import { homedir } from 'node:os';
@@ -459,6 +460,14 @@ const routes = {
     version: VERSION, node: process.version, cli: await cli.version().catch(() => null),
     started: STARTED, users: (await store.getUsers()).length,
   }),
+  'GET /api/update': async () => {
+    if (!isAdmin()) throw err('upd.alleenBeheerder', {}, 403);
+    return ghUpdate.status();
+  },
+  'POST /api/update': async () => {
+    if (!isAdmin()) throw err('upd.alleenBeheerder', {}, 403);
+    return ghUpdate.apply();
+  },
   'POST /api/terms/accept': async (req) => {
     const b = await body(req);
     if (Number(b.version) !== TERMS_VERSION) throw Object.assign(new Error(tr('srv.deVoorwaardenZijnIntussen')), { status: 409 });

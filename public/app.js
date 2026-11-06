@@ -2644,6 +2644,22 @@ async function renderAboutPane() {
   el.innerHTML = aboutHtml(a);
   try { a = await api('GET', '/api/about'); el.innerHTML = aboutHtml(a); } catch {}
   el.querySelector('[data-go=terms]')?.addEventListener('click', (ev) => { ev.preventDefault(); showSetPane('terms'); renderTermsPane(); });
+  el.querySelector('#updBtn')?.addEventListener('click', () => {
+    const btn = el.querySelector('#updBtn');
+    busy(btn, async () => {
+      const msg = el.querySelector('#updMsg');
+      msg.textContent = t('upd.bezig');
+      const s = await api('GET', '/api/update');
+      if (!s.git) { msg.textContent = t('upd.geenGit'); return; }
+      if (!s.behind) { msg.textContent = t('upd.bij', { v: s.version, sha: s.local }); return; }
+      const ok = await askConfirm(t('upd.beschikbaar', { v: s.remoteVersion || s.remote, sha: s.remote }), { okText: t('upd.nu') });
+      if (!ok) { msg.textContent = ''; return; }
+      const r = await api('POST', '/api/update');
+      const done = r.restarting ? t('upd.herstart') : t('upd.handmatig', { v: r.version || s.remoteVersion || '' });
+      msg.textContent = done;
+      toast(done);
+    });
+  });
 }
 // Inhoud van Over GymCoach.
 function aboutHtml(a) {
@@ -2653,6 +2669,7 @@ function aboutHtml(a) {
     <div>
       <h2 style="margin:0">GymCoach</h2>
       <div class="about-ver">${t('app.versie', { a: esc(a.version || '—') })}</div>
+      ${state?.me?.role === 'admin' ? `<p class="about-upd"><button type="button" class="btn small" id="updBtn">${t('upd.check')}</button></p><p id="updMsg" class="muted small"></p>` : ''}
       <p>${t('app.persoonlijkTrainingsdashboardVoorDe')}</p>
       <p><button type="button" class="btn ghost small" data-explain="kort">${t('app.hoeGymcoachWerkt')}</button> <button type="button" class="btn ghost small" data-explain="meten">${t('app.hoeWeMeten')}</button></p>
       <p class="muted small">${t('app.2026AStoelwinderHolding')} <a href="#" data-go="terms">${t('app.voorwaardenEnGezondheid')}</a></p>

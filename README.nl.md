@@ -94,7 +94,7 @@ cd ~/gymcoach
 bash install.sh
 ```
 
-Het script controleert Node.js, installeert `speediance-cli` in `~/.local/bin` en start GymCoach als systemd-gebruikersdienst op poort 8765. Bijwerken: `git pull && systemctl --user restart gymcoach`.
+Het script controleert Node.js, installeert `speediance-cli` in `~/.local/bin` en start GymCoach als systemd-gebruikersdienst op poort 8765. Bijwerken: Instellingen → Over GymCoach → *Controleren op updates* (alleen de beheerder). Die haalt `main` van GitHub en herstart de dienst. De map moet een git-clone zijn (`git clone`, zoals hierboven); `data/` en `.env` blijven staan.
 
 ## Instellingen
 

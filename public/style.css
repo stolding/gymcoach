@@ -209,6 +209,11 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .goal-sp polyline.b { stroke: var(--b); stroke-dasharray: 3 3; }
 #goalForm .inline-check { color: var(--ink); align-items: flex-start; }
 #goalForm > .form-sub:first-child { border-top: 0; padding-top: 0; }
+#goalForm .form-sub > #goalStrengthRows { grid-column: 1 / -1; }
+.goal-str { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, .7fr) minmax(0, .7fr) auto; gap: .45rem .9rem; align-items: end; margin-bottom: .8rem; }
+.goal-str .now { grid-column: 1 / -1; margin: 0; }
+.goal-str .btn { margin-bottom: .15rem; }
+@media (max-width: 760px) { .goal-str { grid-template-columns: 1fr 1fr auto; } .goal-str label:first-child { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .goal-home { grid-template-columns: 1fr; } .goal-spark { align-items: flex-start; } }
 .hv { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
 .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }

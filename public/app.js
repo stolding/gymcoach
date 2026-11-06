@@ -1088,15 +1088,15 @@ const PACE_KEY = { on: 'goal.tile.paceOn', ahead: 'goal.tile.paceAhead', behind:
 function renderGoalTile() {
   const el = $('#goalTile');
   if (!el) return;
-  const comp = goalView?.outcome?.composition, str = goalView?.outcome?.strength, board = goalView?.board;
-  if (!comp && !str) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+  const comp = goalView?.outcome?.composition, goals = goalView?.strengths || [], board = goalView?.board;
+  if (!comp && !goals.length) { el.classList.add('hidden'); el.innerHTML = ''; return; }
   el.classList.remove('hidden');
   const pace = comp ? board?.weight : board?.strength;
   const paceCls = pace?.state === 'behind' ? 'down' : pace?.state === 'on' || pace?.state === 'ahead' ? 'up' : 'muted';
   const lines = [];
   if (comp) lines.push(t('goal.tile.weight', { weight: goalSigned(comp.weightDeltaKg), date: fmtDate(comp.endDate) }));
   if (comp?.muscleDeltaKg > 0) lines.push(t('goal.tile.muscle', { muscle: goalNum(comp.muscleDeltaKg) }));
-  if (str) lines.push(t('goal.tile.strength', { name: str.name, from: goalNum(str.startE1rm), to: goalNum(str.targetE1rm) }));
+  for (const g of goals) lines.push(t('goal.tile.strength', { name: g.label || g.name, pct: goalNum(g.pct, 0), date: fmtDate(g.endDate) }));
   const food = board?.food || { state: 'none' };
   const note = food.state === 'notarget' ? t('goal.tile.noTarget')
     : food.state === 'over' ? t('goal.tile.over', { over: goalInt(food.over) })
@@ -1858,19 +1858,24 @@ function goalFormBody() {
     return Number.isFinite(n) ? n : NaN;
   };
   const weight = num(f.weight), muscle = num(f.muscle), weeks = num(f.weeks);
-  const pct = num(f.pct), months = num(f.months);
-  if ([weight, muscle, weeks, pct, months].some((n) => Number.isNaN(n))) throw new Error(t('goal.badInput'));
+  if ([weight, muscle, weeks].some((n) => Number.isNaN(n))) throw new Error(t('goal.badInput'));
   const composition = (weight != null || muscle != null || weeks != null) ? { weightDeltaKg: weight, musclePct: muscle, weeks } : null;
   if (composition && (weight == null || weeks == null)) throw new Error(t('goal.badInput'));
-  const strength = f.exercise.value ? { exerciseId: f.exercise.value, pct, months } : null;
-  if (strength && (pct == null || months == null)) throw new Error(t('goal.badInput'));
-  if (!composition && !strength) throw new Error(t('goal.badInput'));
-  return { composition, strength };
+  const strengths = [...f.querySelectorAll('.goal-str')].map((row) => {
+    const muscleKey = row.querySelector('[data-muscle]')?.value || '';
+    if (!muscleKey) return null;
+    const pct = num(row.querySelector('[data-pct]'));
+    const months = num(row.querySelector('[data-months]'));
+    if (Number.isNaN(pct) || Number.isNaN(months) || pct == null || months == null) throw new Error(t('goal.badInput'));
+    return { muscle: muscleKey, pct, months };
+  }).filter(Boolean);
+  if (!composition && !strengths.length) throw new Error(t('goal.badInput'));
+  return { composition, strengths: strengths.length ? strengths : null };
 }
 
 async function saveGoal(accept, clear) {
   const alignPlan = !!$('#goalAlign')?.checked;
-  const body = clear ? { composition: null, strength: null, accept: false, alignPlan } : { ...goalFormBody(), accept: !!accept, alignPlan };
+  const body = clear ? { composition: null, strengths: null, accept: false, alignPlan } : { ...goalFormBody(), accept: !!accept, alignPlan };
   goalView = await api('PUT', '/api/goal', body);
   if (state?.settings && goalView.alignPlan != null) state.settings.alignPlan = !!goalView.alignPlan;
   if (state?.settings && goalView.saved && goalView.outcome && goalView.alignPlan && goalView.style?.goal) {
@@ -1899,25 +1904,39 @@ async function offerAlignedPlan() {
   toast(t('goal.align.done'));
 }
 
+function strengthRow(g, muscles) {
+  const opts = [`<option value="">${esc(t('goal.form.pickMuscle'))}</option>`]
+    .concat((muscles || []).map((m) => `<option value="${esc(m.key)}"${m.key === g?.muscle ? ' selected' : ''}>${esc(m.label)}</option>`));
+  if (g?.muscle && !(muscles || []).some((m) => m.key === g.muscle)) opts.push(`<option value="${esc(g.muscle)}" selected>${esc(g.label || g.muscle)}</option>`);
+  const hint = g?.muscle ? muscleHint(g.muscle, muscles) : '';
+  return `<div class="goal-str">
+      <label><span>${esc(t('goal.form.muscleGroup'))}</span><select data-muscle>${opts.join('')}</select></label>
+      <label><span>${esc(t('goal.form.pct'))}</span><input data-pct type="number" step="1" min="1" max="100" inputmode="decimal" value="${g?.pct ?? ''}"></label>
+      <label><span>${esc(t('goal.form.months'))}</span><input data-months type="number" step="any" min="1" max="60" inputmode="decimal" value="${g?.months ?? ''}"></label>
+      <button type="button" class="btn ghost small" data-x="rm">${esc(t('goal.form.remove'))}</button>
+      <p class="muted small now" data-now>${esc(hint)}</p>
+    </div>`;
+}
+
+function muscleHint(key, muscles) {
+  if (!key) return '';
+  const m = (muscles || goalView?.muscles || []).find((x) => x.key === key);
+  if (!m?.best) return t('goal.form.muscleEmpty');
+  return t(m.count === 1 ? 'goal.form.muscleNowOne' : 'goal.form.muscleNow', { n: m.count, kg: goalNum(m.best.e1rm), name: m.best.name });
+}
+
 function fillGoalForm(v) {
   const f = $('#goalForm');
   if (!f || v.blocked || f.contains(document.activeElement)) return;
-  const comp = v.outcome?.composition, str = v.outcome?.strength;
+  const comp = v.outcome?.composition;
+  const goals = v.strengths?.length ? v.strengths : [{}];
   f.weight.value = comp ? comp.weightDeltaKg : '';
   f.muscle.value = comp?.musclePct ?? '';
   f.weeks.value = comp ? comp.weeks : '';
-  const opts = [`<option value="">${esc(t('goal.form.none'))}</option>`]
-    .concat((v.exercises || []).map((e) => `<option value="${esc(e.id)}" data-e1rm="${esc(e.e1rm)}" data-date="${esc(e.date || '')}">${esc(e.name)} (${esc(goalNum(e.e1rm))} kg)</option>`));
-  f.exercise.innerHTML = opts.join('');
-  if (str && ![...f.exercise.options].some((o) => o.value === String(str.exerciseId))) {
-    f.exercise.insertAdjacentHTML('beforeend', `<option value="${esc(str.exerciseId)}" data-e1rm="${esc(str.startE1rm)}" data-date="${esc(str.startDate || '')}" data-start="1">${esc(str.name)}</option>`);
-  }
-  f.exercise.value = str ? String(str.exerciseId) : '';
-  f.pct.value = str ? str.pct : '';
-  f.months.value = str ? str.months : '';
+  const box = $('#goalStrengthRows');
+  if (box) box.innerHTML = goals.map((g) => strengthRow(g.muscle ? g : null, v.muscles)).join('');
   const align = $('#goalAlign');
   if (align) align.checked = !!v.alignPlan;
-  showGoalE1rm();
 }
 
 function showGoalNow(v) {
@@ -1930,17 +1949,6 @@ function showGoalNow(v) {
   else el.textContent = t('goal.form.nowSplit', { kg: goalNum(n.kg), kgDate: fmtDate(n.kgDate), muscle: goalNum(n.muscle), muscleDate: fmtDate(n.muscleDate) });
 }
 
-function showGoalE1rm() {
-  const el = $('#goalE1rm');
-  const opt = $('#goalForm')?.exercise?.selectedOptions?.[0];
-  if (!el) return;
-  const kg = opt?.dataset?.e1rm;
-  if (!opt?.value || !(Number(kg) > 0)) { el.textContent = ''; el.classList.add('hidden'); return; }
-  el.classList.remove('hidden');
-  const date = opt.dataset.date;
-  const key = opt.dataset.start === '1' ? 'goal.form.e1rmStart' : (date ? 'goal.form.e1rm' : 'goal.form.e1rmBare');
-  el.textContent = t(key, { kg: goalNum(kg), date: date ? fmtDate(date) : '' });
-}
 
 function renderGoal() {
   const v = goalView;
@@ -1971,13 +1979,18 @@ function renderGoal() {
   let status = '';
   if (b?.composition?.limiter === 'muscle') status += `<p class="warn-text">${esc(t('goal.blockedMuscle', { weeks: goalNum(b.composition.requestedWeeks, 0), muscle: goalNum(b.composition.maxMuscleKg), ceiling: goalNum(b.composition.ceilingKgMonth, 2), date: fmtDate(b.composition.earliest) }))}</p>`;
   else if (b?.composition) status += `<p class="warn-text">${esc(t('goal.blockedFat', { fatWeek: goalNum(b.composition.fatPerWeek, 2), date: fmtDate(b.composition.earliest) }))}</p>`;
-  if (b?.strength) status += `<p class="warn-text">${esc(t('goal.blockedStrength', { pct: goalNum(b.strength.pct, 0), months: goalNum(b.strength.requestedMonths, 0), per: b.strength.perMonth, minMonths: goalNum(b.strength.minMonths) }))}</p>`;
-  if (b?.composition?.reason === 'deadline' || b?.strength?.reason === 'deadline') status += `<p><button type="button" class="btn small" data-accept="1">${esc(t('goal.useEarliest'))}</button></p>`;
-  const comp = v.outcome?.composition, str = v.outcome?.strength;
+  for (const s of (Array.isArray(b?.strength) ? b.strength : (b?.strength ? [b.strength] : []))) {
+    status += `<p class="warn-text">${esc(t('goal.blockedStrength', { name: s.name || '', pct: goalNum(s.pct, 0), months: goalNum(s.requestedMonths, 0), per: s.perMonth, minMonths: goalNum(s.minMonths) }))}</p>`;
+  }
+  if (b?.composition?.reason === 'deadline' || (Array.isArray(b?.strength) ? b.strength.some((s) => s.reason === 'deadline') : b?.strength?.reason === 'deadline')) status += `<p><button type="button" class="btn small" data-accept="1">${esc(t('goal.useEarliest'))}</button></p>`;
+  const comp = v.outcome?.composition, goals = v.strengths || [];
   if (comp) status += `<p>${esc(t('goal.summary', { weight: goalSigned(comp.weightDeltaKg), date: fmtDate(comp.endDate), muscle: goalNum(comp.muscleDeltaKg), fat: goalNum(comp.fatLossKg), adjust: goalSigned((comp.surplus || 0) - (comp.deficit || 0)) }))}</p>`;
-  if (str) status += `<p>${esc(t('goal.summaryStrength', { name: str.name, from: goalNum(str.startE1rm), to: goalNum(str.targetE1rm), pct: goalNum(str.pct, 0), months: goalNum(str.months) }))}</p>`;
+  for (const g of goals) {
+    if (g.startIndex) status += `<p>${esc(t('goal.summaryStrength', { name: g.label || g.name, from: goalNum(g.startIndex, 0), to: goalNum(g.targetIndex, 0), pct: goalNum(g.pct, 0), months: goalNum(g.months) }))}</p>`;
+    else if (g.startE1rm) status += `<p>${esc(t('goal.summaryStrengthKg', { name: g.name, from: goalNum(g.startE1rm), to: goalNum(g.targetE1rm), pct: goalNum(g.pct, 0), months: goalNum(g.months) }))}</p>`;
+  }
   $('#goalStatus').innerHTML = status;
-  const show = !!(comp || str);
+  const show = !!(comp || (v.strengths || []).length);
   $('#goalCharts').classList.toggle('hidden', !show);
   if (show) { drawGoalCharts(); renderGoalTable(); }
   renderGoalTile();
@@ -1986,7 +1999,7 @@ function renderGoal() {
 function drawGoalCharts() {
   const v = goalView;
   if (!v?.outcome || !$('#tab-goal').classList.contains('active')) return;
-  const comp = v.outcome.composition, str = v.outcome.strength, days = v.days || [];
+  const comp = v.outcome.composition, goals = v.strengths || [], days = v.days || [];
   $('#goalWeightCard').classList.toggle('hidden', !comp);
   $('#goalIntakeCard').classList.toggle('hidden', !comp);
   $('#goalTableCard').classList.toggle('hidden', !comp);
@@ -2013,12 +2026,17 @@ function drawGoalCharts() {
     if (is.length) lineChart($('#goalIntake'), is, { yLabel: t('goal.chart.intake') });
     else $('#goalIntake').innerHTML = '<div class="empty">' + t('goal.noIntake') + '</div>';
   }
-  $('#goalStrengthCard').classList.toggle('hidden', !str);
-  if (str) {
-    const ss = [];
-    if (v.strengthSeries?.length) ss.push({ cls: 'la', label: t('goal.legend.e1rm'), unit: 'kg', points: v.strengthSeries });
-    ss.push({ cls: 'lb', label: t('goal.legend.goal'), unit: 'kg', points: [{ x: str.startDate, y: str.startE1rm }, { x: str.endDate, y: str.targetE1rm }] });
-    lineChart($('#goalStrength'), ss, { yLabel: t('goal.chart.strength') });
+  const charts = $('#goalStrengthCharts');
+  if (charts) {
+    charts.classList.toggle('hidden', !goals.length);
+    charts.innerHTML = goals.map((g, i) => `<div class="card"><h2>${esc(g.label || g.name || t('goal.chart.strength'))}</h2><div class="chart tall" id="goalStr${i}"></div><div class="legend"><span class="dot a"></span>${esc(t('goal.legend.index'))} <span class="dot b"></span>${esc(t('goal.legend.goal'))}</div></div>`).join('');
+    goals.forEach((g, i) => {
+      const from = g.startIndex || g.startE1rm, to = g.targetIndex || g.targetE1rm;
+      const ss = [];
+      if (g.series?.length) ss.push({ cls: 'la', label: t('goal.legend.index'), points: g.series });
+      if (g.startDate && from > 0 && to > 0) ss.push({ cls: 'lb', label: t('goal.legend.goal'), points: [{ x: g.startDate, y: from }, { x: g.endDate, y: to }] });
+      if (ss.length) lineChart($('#goalStr' + i), ss, { yLabel: g.label || g.name || '' });
+    });
   }
 }
 
@@ -2044,7 +2062,29 @@ function renderGoalTable() {
 }
 
 $('#goalForm').addEventListener('submit', (ev) => { ev.preventDefault(); busy(ev.submitter || $('#goalClear'), () => saveGoal(false)); });
-$('#goalForm').exercise?.addEventListener('change', showGoalE1rm);
+$('#goalStrengthRows')?.addEventListener('click', (ev) => {
+  const rm = ev.target.closest('[data-x=rm]');
+  if (!rm) return;
+  const box = $('#goalStrengthRows');
+  if (box.querySelectorAll('.goal-str').length <= 1) {
+    const row = rm.closest('.goal-str');
+    row.querySelector('[data-muscle]').value = '';
+    row.querySelector('[data-pct]').value = '';
+    row.querySelector('[data-months]').value = '';
+    row.querySelector('[data-now]').textContent = '';
+    return;
+  }
+  rm.closest('.goal-str').remove();
+});
+$('#goalStrengthRows')?.addEventListener('change', (ev) => {
+  const sel = ev.target.closest('[data-muscle]');
+  if (!sel) return;
+  const p = sel.closest('.goal-str')?.querySelector('[data-now]');
+  if (p) p.textContent = muscleHint(sel.value);
+});
+$('#goalStrengthAdd')?.addEventListener('click', () => {
+  $('#goalStrengthRows')?.insertAdjacentHTML('beforeend', strengthRow(null, goalView?.muscles || []));
+});
 $('#goalClear').addEventListener('click', () => busy($('#goalClear'), () => saveGoal(false, true)));
 $('#goalStatus').addEventListener('click', (ev) => { const b = ev.target.closest('[data-accept]'); if (b) busy(b, () => saveGoal(true)); });
 $('#goalTableCard').addEventListener('click', (ev) => { if (!ev.target.closest('[data-goal-more]')) return; goalShowAll = !goalShowAll; renderGoalTable(); });

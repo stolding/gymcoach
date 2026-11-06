@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.11.0 — 6 november 2026
+- Een krachtdoel is een of meer spiergroepen, elk met een percentage. Het weekplan houdt het schema passend bij de andere doelen en geeft de oefeningen die zo'n spiergroep trainen zwaardere sets. Ontbreekt de groep, dan komt er één passende oefening bij.
+
 ## 2.10.1 — 6 november 2026
 - Op Doel staan het lichaamsdoel en het krachtdoel apart. Bij het lichaam zie je het huidige gewicht en de spiermassa; bij een gekozen oefening het laatste geschatte 1RM.
 

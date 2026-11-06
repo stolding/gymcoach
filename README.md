@@ -42,7 +42,7 @@ With a demo account and sample data; dark theme.
 ## Features
 
 **Planning and training**
-- **Personal weekly plan** based on your goal (muscle gain, combination, fat loss), days per week and available time; per day you can also choose a cardio circuit or outdoor cardio. On the Goal tab, *Match the plan to this goal* sets that style from the outcome and puts a strength-goal exercise in the plan with heavier sets. Cardio days stay. A workout already on the Gym Monster stays there until you send it again.
+- **Personal weekly plan** based on your goal (muscle gain, combination, fat loss), days per week and available time; per day you can also choose a cardio circuit or outdoor cardio. On the Goal tab, *Match the plan to this goal* sets that style from the outcome and gives heavier sets to the exercises that train a chosen muscle group. The rest of the plan follows the other goals. Cardio days stay. A workout already on the Gym Monster stays there until you send it again.
 - **Automatic progression**: double progression, run-in for new exercises, deload weeks.
 - **Tailored to you**: rest and volume adjusted for sex and for your own recovery; maximum heart rate with Tanaka or (for women) Gulati.
 - **Weekly focus** on muscle groups; an anatomical figure (male, female or neutral) shows what you train.
@@ -160,7 +160,7 @@ Explained in detail in the app (*Hoe GymCoach werkt*) and in [documentatie/ARCHI
 
 - **Sync.** At start-up and then at a configurable interval GymCoach fetches your workouts, with reps, weights, timings and heart rate per set.
 - **Schedule.** 2–3 days: full body; 4 days: upper/lower; 5 days: upper/lower plus full body.
-- **Prescription.** Muscle gain 8–12 reps, 90 s rest; fat loss 12–20 reps, 30–45 s rest; *combination* in between. A strength goal uses about 4–6 reps on that exercise (5–8 for beginners) and longer rest.
+- **Prescription.** Muscle gain 8–12 reps, 90 s rest; fat loss 12–20 reps, 30–45 s rest; *combination* in between. A strength goal uses about 4–6 reps on the exercises that train that muscle group (5–8 for beginners) and longer rest. The other exercises keep the plan's prescription.
 - **Progression.** All sets at the top of the range: weight goes up (+2 kg compound, +1 kg isolation). Twice below target: −10%.
 - **Run-in and deload.** New exercise: 2 sets first. Every 6 training weeks (configurable) a lighter week.
 - **Personal.** Women: 20% shorter rest and a little more volume. Everyone: longer rest when reps drop in later sets.

@@ -561,9 +561,14 @@ const routes = {
     const ctx = await context();
     const applied = goal.applyOutcome({
       settings: ctx.settings, bodyLog: ctx.bodyLog, history: ctx.history, today: goal.todayISO(),
-      composition: incoming.composition ?? null, strength: incoming.strength ?? null, accept: !!incoming.accept,
+      composition: incoming.composition ?? null,
+      strengths: Object.hasOwn(incoming, 'strengths') ? incoming.strengths : (incoming.strength ? [incoming.strength] : incoming.strength),
+      accept: !!incoming.accept,
     });
-    if (applied.error) throw err(applied.error === 'weight' ? 'goal.needWeight' : applied.error === 'muscle' ? 'goal.needMuscle' : applied.error === 'e1rm' ? 'goal.needE1rm' : 'goal.badInput');
+    if (applied.error) {
+      const key = applied.error === 'weight' ? 'goal.needWeight' : applied.error === 'muscle' ? 'goal.needMuscle' : applied.error === 'e1rm' ? 'goal.needE1rm' : applied.error === 'dup' ? 'goal.dupMuscle' : applied.error === 'many' ? 'goal.tooMany' : 'goal.badInput';
+      throw err(key, { name: applied.name || '' });
+    }
     if (!applied.saved) return { ...(await goalView(ctx)), blocked: applied.blocked, saved: false };
     const s = await store.getSettings();
     s.outcome = applied.outcome;

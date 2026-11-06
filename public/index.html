@@ -222,14 +222,9 @@
         </div>
         <div class="form-sub">
           <p class="eyebrow" data-i18n="goal.form.strengthHead">Kracht</p>
-          <p class="muted small" data-i18n="goal.form.strengthLead">Een percentage geldt voor één oefening. Het geschatte 1RM van de laatste training is het startpunt. Zolang er ook een lichaamsdoel is, verandert dit de calorieën niet.</p>
-          <label><span data-i18n="goal.form.exercise">Oefening</span>
-            <select name="exercise"><option value="" data-i18n="goal.form.none">Geen krachtdoel</option></select></label>
-          <label><span data-i18n="goal.form.pct">Extra kracht (%)</span>
-            <input name="pct" type="number" step="1" min="1" max="100" inputmode="decimal"></label>
-          <label><span data-i18n="goal.form.months">Maanden</span>
-            <input name="months" type="number" step="any" min="1" max="60" inputmode="decimal"></label>
-          <p class="muted small hidden" id="goalE1rm"></p>
+          <p class="muted small" data-i18n="goal.form.strengthLead">Kies een of meer spiergroepen en hoeveel procent ze sterker moeten worden. Het weekplan kiest daar de oefeningen bij. Zolang er ook een lichaamsdoel is, verandert dit de calorieën niet.</p>
+          <div id="goalStrengthRows"></div>
+          <p class="row"><button type="button" class="btn small ghost" id="goalStrengthAdd" data-i18n="goal.form.addMuscle">Spiergroep toevoegen</button></p>
         </div>
         <div class="span2">
           <label class="inline-check" for="goalAlign">
@@ -261,11 +256,7 @@
         <div id="goalIntake" class="chart tall"></div>
         <div class="legend"><span class="dot a"></span><span data-i18n="goal.legend.intake">Inname</span> <span class="dot b"></span><span data-i18n="goal.legend.target">Streef</span></div>
       </div>
-      <div class="card hidden" id="goalStrengthCard">
-        <h2 data-i18n="goal.chart.strength">Geschat 1RM en de rechte lijn naar het doel</h2>
-        <div id="goalStrength" class="chart tall"></div>
-        <div class="legend"><span class="dot a"></span><span data-i18n="goal.legend.e1rm">Geschat 1RM</span> <span class="dot b"></span><span data-i18n="goal.legend.goal">Doellijn</span></div>
-      </div>
+      <div id="goalStrengthCharts" class="hidden"></div>
       <div class="card" id="goalTableCard"></div>
     </div>
   </section>

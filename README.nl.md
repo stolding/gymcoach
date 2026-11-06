@@ -62,7 +62,7 @@ Met een demo-account en voorbeelddata; donker thema.
 **Gebruik**
 - **Nederlands, Engels en Duits**: kies per gebruiker met de vlaggetjes (inlogscherm, menubalk of je gebruikersmenu), of laat de app de taal van je browser volgen. Rapporten, mails en de AI-coach gebruiken dezelfde taal. Uitleg en video's van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels. Een taal toevoegen vraagt een woordenboek (`public/locales/`) en een vertaling van de uitleg en de voorwaarden.
 - **Meerdere gebruikers**, elk met eigen account, Speediance-account, plan en koppelingen; een wizard begeleidt nieuwe gebruikers.
-- **Uitleg in de app**: Instellingen → Over GymCoach → *Hoe GymCoach werkt* legt het plan en alle berekeningen uit, met bronnen. De wijzigingen per versie staan onder Instellingen → *Wijzigingen*.
+- **Uitleg in de app**: Instellingen → Over GymCoach → *Hoe GymCoach werkt* legt het plan en alle berekeningen uit, met bronnen. Op dezelfde pagina staan de wijzigingen per versie.
 - Donker en licht thema; werkt op pc, tablet en telefoon.
 
 ## Installeren met Docker (aanbevolen)

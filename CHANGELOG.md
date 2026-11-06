@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.4.2 — 6 november 2026
+- De wijzigingen per versie staan weer alleen onder Over GymCoach, zonder apart menu-item.
+
 ## 2.4.1 — 6 november 2026
 - Bij een beschikbare update zie je eerst wat die versie wijzigt, in het scherm en in de bevestiging.
 - Instellingen heeft een eigen onderdeel *Wijzigingen* met de geschiedenis per versie. Over GymCoach heeft een knop daarheen.

@@ -2644,7 +2644,6 @@ async function renderAboutPane() {
   el.innerHTML = aboutHtml(a);
   try { a = await api('GET', '/api/about'); el.innerHTML = aboutHtml(a); } catch {}
   el.querySelector('[data-go=terms]')?.addEventListener('click', (ev) => { ev.preventDefault(); showSetPane('terms'); renderTermsPane(); });
-  el.querySelector('#histBtn')?.addEventListener('click', () => { showSetPane('changes'); renderChangesPane(); });
   el.querySelector('#updBtn')?.addEventListener('click', () => {
     const btn = el.querySelector('#updBtn');
     busy(btn, async () => {
@@ -2700,12 +2699,12 @@ function aboutHtml(a) {
       <div class="about-ver">${t('app.versie', { a: esc(a.version || '—') })}</div>
       ${state?.me?.role === 'admin' ? `<p class="about-upd"><button type="button" class="btn small" id="updBtn">${t('upd.check')}</button></p><div id="updMsg" class="muted small"></div>` : ''}
       <p>${t('app.persoonlijkTrainingsdashboardVoorDe')}</p>
-      <p><button type="button" class="btn ghost small" data-explain="kort">${t('app.hoeGymcoachWerkt')}</button> <button type="button" class="btn ghost small" data-explain="meten">${t('app.hoeWeMeten')}</button> <button type="button" class="btn ghost small" id="histBtn">${t('ui.settings.wijzigingen')}</button></p>
+      <p><button type="button" class="btn ghost small" data-explain="kort">${t('app.hoeGymcoachWerkt')}</button> <button type="button" class="btn ghost small" data-explain="meten">${t('app.hoeWeMeten')}</button></p>
       <p class="muted small">${t('app.2026AStoelwinderHolding')} <a href="#" data-go="terms">${t('app.voorwaardenEnGezondheid')}</a></p>
       <table class="about-tbl"><tbody>
         ${row('GymCoach', a.version)}${row(t('app.nodeJs'), a.node)}${row('speediance-cli', a.cli)}${row(t('ui.settings.gebruikers'), a.users)}${row(t('app.serverGestart'), a.started && new Date(a.started).toLocaleString(localeOf(), { dateStyle: 'medium', timeStyle: 'short' }))}
       </tbody></table>
-    </div></div>`;
+    </div></div>${changelogHtml(a.changelog, a.version)}`;
 }
 // Eenvoudige opmaak uit het wijzigingenbestand: `code` en *cursief*, na het escapen.
 function mdLite(s) {
@@ -2720,16 +2719,14 @@ function releaseBlocks(list, openAll = false, current = '') {
       ${r.items?.length ? `<ul>${r.items.map((it) => `<li>${mdLite(it)}</li>`).join('')}</ul>` : ''}
     </details>`).join('');
 }
-// Pagina Wijzigingen: alle versies. De versie die nu draait staat open.
-async function renderChangesPane() {
-  const el = $('#changesPane'); if (!el) return;
-  let list = [];
-  try { list = (await api('GET', '/api/about')).changelog || []; } catch {}
+// Lijst met versies onder Over GymCoach. De versie die nu draait staat open, anders de nieuwste.
+function changelogHtml(list, version) {
+  if (!list?.length) return '';
   const note = getLang() === 'nl' ? '' : `<p class="muted small">${t('about.historyNl')}</p>`;
-  el.innerHTML = `<h2>${t('about.history')}</h2>${note}<div class="changelog">${releaseBlocks(list, false, state?.version)}</div>`;
+  return `<section class="changelog"><h3>${t('about.history')}</h3>${note}${releaseBlocks(list, false, version)}</section>`;
 }
-document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'settings' && setPane === 'about') renderAboutPane(); if (b.dataset.tab === 'settings' && setPane === 'changes') renderChangesPane(); }));
-$('#setNav').addEventListener('click', (ev) => { if (ev.target.closest('[data-pane=about]')) renderAboutPane(); if (ev.target.closest('[data-pane=changes]')) renderChangesPane(); });
+document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'settings' && setPane === 'about') renderAboutPane(); }));
+$('#setNav').addEventListener('click', (ev) => { if (ev.target.closest('[data-pane=about]')) renderAboutPane(); });
 
 
 // ---------- popup voor grafieken die als SVG-tekst worden gemaakt (hartslag) ----------

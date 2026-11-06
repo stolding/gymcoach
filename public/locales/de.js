@@ -275,7 +275,6 @@ export default {
   "ui.settings.gebruikers": "Benutzer",
   "ui.settings.voorwaarden": "Bedingungen",
   "ui.settings.overGymcoach": "Über GymCoach",
-  "ui.settings.wijzigingen": "Änderungen",
   "ui.settings.speedianceAccountEnToestel": "Speediance-Konto und Gerät",
   "ui.app.eMailadresVanJe": "E-Mail-Adresse deines Speediance-Kontos",
   "ui.app.wachtwoordVanJeSpeediance": "Passwort deines Speediance-Kontos",

@@ -64,7 +64,7 @@ With a demo account and sample data; dark theme.
 **Use**
 - **English, Dutch and German**: choose per user with the flag menu, or let the app follow your browser. Another language needs a dictionary file (`public/locales/`) plus a translation of the in-app explanation and terms.
 - **Multiple users**, each with their own account, Speediance account, plan and connections; a wizard guides new users.
-- **Explanations in the app**: Settings → About GymCoach → *How GymCoach works* explains the plan and every calculation, with sources. The same page lists the changes per version.
+- **Explanations in the app**: Settings → About GymCoach → *How GymCoach works* explains the plan and every calculation, with sources. The changes per version are under Settings → *Changes*.
 - Dark and light theme; works on desktop, tablet and phone.
 
 ## Install with Docker (recommended)

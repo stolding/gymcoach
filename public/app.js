@@ -2644,6 +2644,7 @@ async function renderAboutPane() {
   el.innerHTML = aboutHtml(a);
   try { a = await api('GET', '/api/about'); el.innerHTML = aboutHtml(a); } catch {}
   el.querySelector('[data-go=terms]')?.addEventListener('click', (ev) => { ev.preventDefault(); showSetPane('terms'); renderTermsPane(); });
+  el.querySelector('#histBtn')?.addEventListener('click', () => { showSetPane('changes'); renderChangesPane(); });
   el.querySelector('#updBtn')?.addEventListener('click', () => {
     const btn = el.querySelector('#updBtn');
     busy(btn, async () => {
@@ -2652,14 +2653,42 @@ async function renderAboutPane() {
       const s = await api('GET', '/api/update');
       if (!s.git) { msg.textContent = t('upd.geenGit'); return; }
       if (!s.behind) { msg.textContent = t('upd.bij', { v: s.version, sha: s.local }); return; }
-      const ok = await askConfirm(t('upd.beschikbaar', { v: s.remoteVersion || s.remote, sha: s.remote }), { okText: t('upd.nu') });
-      if (!ok) { msg.textContent = ''; return; }
+      const notes = s.notes || [];
+      msg.innerHTML = notes.length ? `<div class="upd-notes"><p><strong>${t('upd.nieuw')}</strong></p>${releaseBlocks(notes, true)}</div>` : '';
+      const ask = [t('upd.beschikbaar', { v: s.remoteVersion || s.remote, sha: s.remote })];
+      if (notes.length) ask.push(notesPlain(notes));
+      if (!await askConfirm(ask.join('\n\n'), { okText: t('upd.nu') })) return;
       const r = await api('POST', '/api/update');
-      const done = r.restarting ? t('upd.herstart') : t('upd.handmatig', { v: r.version || s.remoteVersion || '' });
+      if (r.restarting) { msg.textContent = t('upd.herstart'); toast(t('upd.herstart')); await reloadAfterRestart(s.version); return; }
+      const done = t('upd.handmatig', { v: r.version || s.remoteVersion || '' });
       msg.textContent = done;
       toast(done);
     });
   });
+}
+// Na het herstarten wachten tot de nieuwe server antwoordt, en dan de pagina opnieuw laden.
+async function reloadAfterRestart(previous) {
+  const deadline = Date.now() + 40000;
+  let down = false;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 700));
+    try {
+      const r = await fetch('/api/auth/status', { cache: 'no-store' });
+      if (!r.ok) { down = true; continue; }
+      const j = await r.json();
+      if (down || (j.version && j.version !== previous)) { location.reload(); return; }
+    } catch { down = true; }
+  }
+  toast(t('upd.herstartKlaar'), true);
+}
+// Platte tekst van de nieuwe versies, voor het bevestigingsvenster.
+function notesPlain(list) {
+  return list.map((r) => {
+    const lines = [`${r.version}${r.date ? ' — ' + r.date : ''}`];
+    if (r.lead) lines.push(r.lead.replace(/[`*]/g, ''));
+    for (const it of r.items || []) lines.push('• ' + it.replace(/[`*]/g, ''));
+    return lines.join('\n');
+  }).join('\n\n');
 }
 // Inhoud van Over GymCoach.
 function aboutHtml(a) {
@@ -2669,32 +2698,38 @@ function aboutHtml(a) {
     <div>
       <h2 style="margin:0">GymCoach</h2>
       <div class="about-ver">${t('app.versie', { a: esc(a.version || '—') })}</div>
-      ${state?.me?.role === 'admin' ? `<p class="about-upd"><button type="button" class="btn small" id="updBtn">${t('upd.check')}</button></p><p id="updMsg" class="muted small"></p>` : ''}
+      ${state?.me?.role === 'admin' ? `<p class="about-upd"><button type="button" class="btn small" id="updBtn">${t('upd.check')}</button></p><div id="updMsg" class="muted small"></div>` : ''}
       <p>${t('app.persoonlijkTrainingsdashboardVoorDe')}</p>
-      <p><button type="button" class="btn ghost small" data-explain="kort">${t('app.hoeGymcoachWerkt')}</button> <button type="button" class="btn ghost small" data-explain="meten">${t('app.hoeWeMeten')}</button></p>
+      <p><button type="button" class="btn ghost small" data-explain="kort">${t('app.hoeGymcoachWerkt')}</button> <button type="button" class="btn ghost small" data-explain="meten">${t('app.hoeWeMeten')}</button> <button type="button" class="btn ghost small" id="histBtn">${t('ui.settings.wijzigingen')}</button></p>
       <p class="muted small">${t('app.2026AStoelwinderHolding')} <a href="#" data-go="terms">${t('app.voorwaardenEnGezondheid')}</a></p>
       <table class="about-tbl"><tbody>
         ${row('GymCoach', a.version)}${row(t('app.nodeJs'), a.node)}${row('speediance-cli', a.cli)}${row(t('ui.settings.gebruikers'), a.users)}${row(t('app.serverGestart'), a.started && new Date(a.started).toLocaleString(localeOf(), { dateStyle: 'medium', timeStyle: 'short' }))}
       </tbody></table>
-    </div></div>${changelogHtml(a.changelog, a.version)}`;
+    </div></div>`;
 }
 // Eenvoudige opmaak uit het wijzigingenbestand: `code` en *cursief*, na het escapen.
 function mdLite(s) {
   return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*([^*]+)\*/g, '<em>$1</em>');
 }
-// Lijst met versies. De versie die nu draait staat open, anders de nieuwste.
-function changelogHtml(list, version) {
-  if (!list?.length) return '';
-  const hasCurrent = list.some((r) => r.version === version);
-  const blocks = list.map((r, i) => `<details${(r.version === version || (!hasCurrent && i === 0)) ? ' open' : ''}>
+// Eén versie als inklapbaar blok. openAll: alles open (bij een beschikbare update).
+function releaseBlocks(list, openAll = false, current = '') {
+  const hasCurrent = list.some((r) => r.version === current);
+  return list.map((r, i) => `<details${(openAll || r.version === current || (!hasCurrent && i === 0)) ? ' open' : ''}>
       <summary>${esc(r.version)}<span class="muted">${esc(r.date)}</span></summary>
       ${r.lead ? `<p class="cl-lead">${mdLite(r.lead)}</p>` : ''}
       ${r.items?.length ? `<ul>${r.items.map((it) => `<li>${mdLite(it)}</li>`).join('')}</ul>` : ''}
     </details>`).join('');
-  return `<section class="changelog"><h3>${t('about.history')}</h3>${getLang() === 'nl' ? '' : `<p class="muted small">${t('about.historyNl')}</p>`}${blocks}</section>`;
 }
-document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'settings' && setPane === 'about') renderAboutPane(); }));
-$('#setNav').addEventListener('click', (ev) => { if (ev.target.closest('[data-pane=about]')) renderAboutPane(); });
+// Pagina Wijzigingen: alle versies. De versie die nu draait staat open.
+async function renderChangesPane() {
+  const el = $('#changesPane'); if (!el) return;
+  let list = [];
+  try { list = (await api('GET', '/api/about')).changelog || []; } catch {}
+  const note = getLang() === 'nl' ? '' : `<p class="muted small">${t('about.historyNl')}</p>`;
+  el.innerHTML = `<h2>${t('about.history')}</h2>${note}<div class="changelog">${releaseBlocks(list, false, state?.version)}</div>`;
+}
+document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'settings' && setPane === 'about') renderAboutPane(); if (b.dataset.tab === 'settings' && setPane === 'changes') renderChangesPane(); }));
+$('#setNav').addEventListener('click', (ev) => { if (ev.target.closest('[data-pane=about]')) renderAboutPane(); if (ev.target.closest('[data-pane=changes]')) renderChangesPane(); });
 
 
 // ---------- popup voor grafieken die als SVG-tekst worden gemaakt (hartslag) ----------

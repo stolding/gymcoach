@@ -77,24 +77,12 @@ async function refreshLibrary() {
 const isAdmin = () => store.currentUser()?.role === 'admin';
 
 let changelogCache;
-// Wijzigingen uit CHANGELOG.md: per versie de datum, de inleidende alinea en de punten.
+// Wijzigingen uit CHANGELOG.md, eenmaal gelezen.
 function readChangelog() {
   if (changelogCache) return changelogCache;
-  let text = '';
-  try { text = readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8'); } catch { return []; }
-  const releases = [];
-  let cur = null;
-  for (const line of text.split(/\r?\n/)) {
-    const head = /^##\s+(\d+\.\d+\.\d+)\s+[—-]\s+(.+)$/.exec(line);
-    if (head) { cur = { version: head[1], date: head[2].trim(), lead: '', items: [] }; releases.push(cur); continue; }
-    if (!cur) continue;
-    const item = /^-\s+(.+)$/.exec(line);
-    if (item) { cur.items.push(item[1].trim()); continue; }
-    const t = line.trim();
-    if (t) cur.lead = cur.lead ? `${cur.lead} ${t}` : t;
-  }
-  changelogCache = releases;
-  return releases;
+  try { changelogCache = ghUpdate.parseChangelog(readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8')); }
+  catch { changelogCache = []; }
+  return changelogCache;
 }
 const requireAdmin = () => { if (!isAdmin()) throw Object.assign(new Error(tr('srv.alleenVoorBeheerders')), { status: 403 }); };
 

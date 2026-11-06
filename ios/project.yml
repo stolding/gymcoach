@@ -7,7 +7,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "1.5"
+    MARKETING_VERSION: "1.6"
     CURRENT_PROJECT_VERSION: "1"
 targets:
   GymCoachSync:
@@ -27,7 +27,7 @@ targets:
         CFBundleDisplayName: GymCoach Sync
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        NSHealthShareUsageDescription: GymCoach Sync leest je workouts (wandelen, fietsen enz.) met hartslag, en dagwaarden voor stappen, actieve energie, afstand, hartslag in rust, hartslagvariabiliteit (HRV) en VO2max, en stuurt die naar je eigen GymCoach-server.
+        NSHealthShareUsageDescription: GymCoach Sync leest je workouts (wandelen, fietsen enz.) met hartslag, en dagwaarden voor stappen, actieve energie, afstand, hartslag in rust, hartslagvariabiliteit (HRV), VO2max en voeding (calorieën, eiwit, koolhydraten, vet en vezels), en stuurt die naar je eigen GymCoach-server.
         NSHealthUpdateUsageDescription: GymCoach Sync schrijft niets naar Apple Health.
         NSLocalNetworkUsageDescription: Om je GymCoach-server in je thuisnetwerk te bereiken.
         NSAppTransportSecurity:

@@ -48,6 +48,7 @@
   <button class="tab" data-tab="stats" data-i18n="ui.tabs.statistieken">Statistieken</button>
   <button class="tab" data-tab="analysis" data-i18n="ui.tabs.analyse">Analyse</button>
   <button class="tab" data-tab="progress" data-i18n="ui.tabs.voortgang">Voortgang</button>
+  <button class="tab" data-tab="goal" data-i18n="ui.tabs.doel">Doel</button>
   <button class="tab" data-tab="body" data-i18n="ui.tabs.lichaam">Lichaam</button>
   <button class="tab" data-tab="settings" data-i18n="ui.tabs.instellingen">Instellingen</button>
 </nav>
@@ -196,6 +197,60 @@
     <div class="card"><div class="row between wrap gap"><h2 data-i18n="tp.title">Trainingen</h2><input type="search" id="woSearch" placeholder="Zoek op naam of datum…" data-i18n-placeholder="ui.progress.zoekOpNaamOf" aria-label="Zoek trainingen" data-i18n-aria-label="ui.progress.zoekTrainingen" style="max-width:240px"></div>
       <p class="muted small" style="margin-top:-.4rem" data-i18n="ui.progress.klikOpEenTraining">Klik op een training voor de oefeningen, sets en gewichten.</p>
       <div id="recent"></div></div>
+  </section>
+
+  <section id="tab-goal" class="panel">
+    <h1 data-i18n="goal.title">Doel</h1>
+    <p class="muted" data-i18n="goal.lead">Wat je eet tegenover wat bij je doel past. De weegschaal blijft onder Lichaam.</p>
+    <div class="card" id="goalFormula"></div>
+    <div class="card">
+      <h2 data-i18n="goal.form.title">Doel stellen</h2>
+      <p class="muted small" data-i18n="goal.form.starts">Een gewijzigd doel begint opnieuw, op de dag dat je het bewaart.</p>
+      <form id="goalForm" class="fgrid">
+        <label><span data-i18n="goal.form.weight">Gewichtsverschil (kg)</span>
+          <input name="weight" type="number" step="0.1" min="-30" max="30" inputmode="decimal">
+          <span class="muted" data-i18n="goal.form.weightHint">Negatief is afvallen, bijvoorbeeld −2. Leeg laten als je alleen een krachtdoel stelt.</span></label>
+        <label><span data-i18n="goal.form.muscle">Spier (%)</span>
+          <input name="muscle" type="number" step="1" min="0" max="40" inputmode="decimal">
+          <span class="muted" data-i18n="goal.form.muscleHint">Leeg laten als je geen spierdoel stelt. Bijvoorbeeld 15, bovenop het gewicht.</span></label>
+        <label><span data-i18n="goal.form.weeks">Weken</span>
+          <input name="weeks" type="number" step="any" min="1" max="320" inputmode="decimal"></label>
+        <label><span data-i18n="goal.form.exercise">Krachtdoel</span>
+          <select name="exercise"><option value="" data-i18n="goal.form.none">Geen krachtdoel</option></select></label>
+        <label><span data-i18n="goal.form.pct">Extra kracht (%)</span>
+          <input name="pct" type="number" step="1" min="1" max="100" inputmode="decimal"></label>
+        <label><span data-i18n="goal.form.months">Maanden</span>
+          <input name="months" type="number" step="any" min="1" max="60" inputmode="decimal"></label>
+      </form>
+      <div class="savebar">
+        <button class="btn accent" type="submit" form="goalForm" data-i18n="goal.form.save">Doel bewaren</button>
+        <button class="btn ghost" type="button" id="goalClear" data-i18n="goal.form.clear">Doel wissen</button>
+      </div>
+      <p id="goalStatus"></p>
+    </div>
+    <div id="goalCharts" class="hidden">
+      <div class="card" id="goalWeightCard">
+        <h2 data-i18n="goal.chart.weight">Gewicht en de rechte lijn naar het doel</h2>
+        <div id="goalWeight" class="chart tall"></div>
+        <div class="legend"><span class="dot a"></span><span data-i18n="goal.legend.weight">Gewicht</span> <span class="dot b"></span><span data-i18n="goal.legend.goal">Doellijn</span></div>
+      </div>
+      <div class="card hidden" id="goalMuscleCard">
+        <h2 data-i18n="goal.chart.muscle">Spiermassa en de rechte lijn naar het doel</h2>
+        <div id="goalMuscle" class="chart tall"></div>
+        <div class="legend"><span class="dot a"></span><span data-i18n="goal.legend.muscle">Spiermassa</span> <span class="dot b"></span><span data-i18n="goal.legend.goal">Doellijn</span></div>
+      </div>
+      <div class="card" id="goalIntakeCard">
+        <h2 data-i18n="goal.chart.intake">Inname en de streeflijn</h2>
+        <div id="goalIntake" class="chart tall"></div>
+        <div class="legend"><span class="dot a"></span><span data-i18n="goal.legend.intake">Inname</span> <span class="dot b"></span><span data-i18n="goal.legend.target">Streef</span></div>
+      </div>
+      <div class="card hidden" id="goalStrengthCard">
+        <h2 data-i18n="goal.chart.strength">Geschat 1RM en de rechte lijn naar het doel</h2>
+        <div id="goalStrength" class="chart tall"></div>
+        <div class="legend"><span class="dot a"></span><span data-i18n="goal.legend.e1rm">Geschat 1RM</span> <span class="dot b"></span><span data-i18n="goal.legend.goal">Doellijn</span></div>
+      </div>
+      <div class="card" id="goalTableCard"></div>
+    </div>
   </section>
 
   <section id="tab-body" class="panel">

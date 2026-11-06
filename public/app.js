@@ -77,7 +77,7 @@ applyTheme(theme);
 function setTheme(next) {
   theme = next;
   applyTheme(theme); toast(t('app.thema', { a: THEMES[theme][1] }));
-  if (state) { renderHome(); if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); }
+  if (state) { renderHome(); if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); if ($('#tab-goal').classList.contains('active')) drawGoalCharts(); }
 }
 $('#themeBtn').addEventListener('click', () => { const order = ['dark', 'light', 'auto']; setTheme(order[(order.indexOf(theme) + 1) % 3]); });
 
@@ -90,6 +90,7 @@ document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () 
   if (b.dataset.tab === 'stats') loadStats();
   if (b.dataset.tab === 'settings') { loadAccount(); loadHealth(); if (state?.me?.role === 'admin') loadUsers(); }
   if (b.dataset.tab === 'body') renderBody();
+  if (b.dataset.tab === 'goal') loadGoal();
 }));
 
 // ---------- charts (SVG, geen dependencies) ----------
@@ -1245,7 +1246,7 @@ async function loadHealth(newLink) {
       <li>${t('app.installeer')} <b>${t('app.healthAutoExportJson')}</b> ${t('app.opJeIphoneVoor')}</li>
       <li>${t('app.gaNaar')} <b>${t('app.automationsNieuweAutomatiseringRest')}</b>.</li>
       <li><b>${t('app.url')}</b>${t('app.deUrlHierbovenVoeg')} <b>${t('app.headers')}</b> ${t('app.toeSleutel')} <code>${t('app.authorization')}</code>${t('app.waarde')} <code>${t('app.bearer2')}</code> ${t('app.jeSleutel')}</li>
-      <li><b>${t('app.dataType')}</b>${t('app.workoutsMaakEventueelEen')} <i>${t('app.stepCount')}</i>, <i>${t('app.activeEnergy')}</i>, <i>${t('app.walkingRunningDistance')}</i>, <i>Resting Heart Rate</i>, <i>Heart Rate Variability</i> ${t('app.en')} <i>VO2 Max</i>.</li>
+      <li><b>${t('app.dataType')}</b>${t('app.workoutsMaakEventueelEen')} <i>${t('app.stepCount')}</i>, <i>${t('app.activeEnergy')}</i>, <i>${t('app.walkingRunningDistance')}</i>, <i>Resting Heart Rate</i>, <i>Heart Rate Variability</i> ${t('app.en')} <i>VO2 Max</i>, <i>${t('app.dietaryEnergy')}</i>, <i>${t('app.dietaryProtein')}</i>, <i>${t('app.dietaryCarbs')}</i>, <i>${t('app.dietaryFat')}</i> ${t('app.en')} <i>${t('app.dietaryFiber')}</i>.</li>
       <li><b>${t('app.exportFormat')}</b>${t('app.json')} <b>${t('app.dateRange')}</b>${t('app.laatste7Dagen')} <b>${t('app.aggregation')}</b> ${t('app.bijMetricsPerDag')}</li>
       <li>${t('app.kiesEenIntervalBijv')} <b>${t('app.manualExport')}</b> ${t('app.omHetMeteenTe')}</li>
       <li>${t('app.jeOudeHistorieDoe')}</li>
@@ -1776,6 +1777,166 @@ function openAddMeasurement() {
   dlg.showModal();
 }
 
+// Tabblad Doel: streefinname, haalbaar doel, en de dagen daarna.
+let goalView = null;
+let goalShowAll = false;
+const goalNum = (v, d = 1) => (v == null || v === '' || Number.isNaN(+v) ? '—' : (+v).toLocaleString(localeOf(), { maximumFractionDigits: d }));
+const goalInt = (v) => (v == null || v === '' || Number.isNaN(+v) ? '—' : Math.round(+v).toLocaleString(localeOf()));
+const goalSigned = (v) => { const n = Math.round(+v); return (n > 0 ? '+' : '') + n.toLocaleString(localeOf()); };
+
+async function loadGoal() {
+  try { goalView = await api('GET', '/api/goal'); renderGoal(); }
+  catch (e) { toast(e.message, true); }
+}
+
+function goalFormBody() {
+  const f = $('#goalForm');
+  const num = (el) => {
+    const s = String(el.value || '').trim().replace(',', '.');
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : NaN;
+  };
+  const weight = num(f.weight), muscle = num(f.muscle), weeks = num(f.weeks);
+  const pct = num(f.pct), months = num(f.months);
+  if ([weight, muscle, weeks, pct, months].some((n) => Number.isNaN(n))) throw new Error(t('goal.badInput'));
+  const composition = (weight != null || muscle != null || weeks != null) ? { weightDeltaKg: weight, musclePct: muscle, weeks } : null;
+  if (composition && (weight == null || weeks == null)) throw new Error(t('goal.badInput'));
+  const strength = f.exercise.value ? { exerciseId: f.exercise.value, pct, months } : null;
+  if (strength && (pct == null || months == null)) throw new Error(t('goal.badInput'));
+  if (!composition && !strength) throw new Error(t('goal.badInput'));
+  return { composition, strength };
+}
+
+async function saveGoal(accept, clear) {
+  const body = clear ? { composition: null, strength: null, accept: false } : { ...goalFormBody(), accept: !!accept };
+  goalView = await api('PUT', '/api/goal', body);
+  renderGoal();
+  if (goalView.saved) toast(!goalView.outcome ? t('goal.cleared') : t('goal.saved'));
+}
+
+function fillGoalForm(v) {
+  const f = $('#goalForm');
+  if (!f || v.blocked || f.contains(document.activeElement)) return;
+  const comp = v.outcome?.composition, str = v.outcome?.strength;
+  f.weight.value = comp ? comp.weightDeltaKg : '';
+  f.muscle.value = comp?.musclePct ?? '';
+  f.weeks.value = comp ? comp.weeks : '';
+  const opts = [`<option value="">${esc(t('goal.form.none'))}</option>`]
+    .concat((v.exercises || []).map((e) => `<option value="${esc(e.id)}">${esc(e.name)} (${esc(goalNum(e.e1rm))})</option>`));
+  f.exercise.innerHTML = opts.join('');
+  if (str && ![...f.exercise.options].some((o) => o.value === String(str.exerciseId))) {
+    f.exercise.insertAdjacentHTML('beforeend', `<option value="${esc(str.exerciseId)}">${esc(str.name)}</option>`);
+  }
+  f.exercise.value = str ? String(str.exerciseId) : '';
+  f.pct.value = str ? str.pct : '';
+  f.months.value = str ? str.months : '';
+}
+
+function renderGoal() {
+  const v = goalView;
+  const box = $('#goalFormula');
+  if (!v || !box) return;
+  const c = v.calc || {};
+  let html = `<h2>${esc(t('goal.formula'))}</h2>`;
+  if (!c.ok) {
+    html += `<p>${esc(t('goal.missing', { what: (c.missing || []).map((k) => t('goal.miss.' + k)).join(', ') }))}</p>`;
+    if ((c.missing || []).some((k) => k !== 'weight')) html += `<button type="button" class="btn small ghost" id="goalSettings">${esc(t('goal.toSettings'))}</button>`;
+  } else {
+    html += '<table class="cmp">' + c.lines.map((line) => {
+      const extra = line.key === 'active' && line.missing ? ` <span class="muted">(${esc(t('goal.activeMissing'))})</span>` : (line.floored ? ` <span class="muted">${esc(t('goal.floor'))}</span>` : '');
+      const val = line.key === 'adjust' ? goalSigned(line.kcal) : goalInt(line.kcal);
+      return `<tr><td>${esc(t('goal.line.' + line.key))}${extra}</td><td class="num">${val} kcal</td></tr>`;
+    }).join('') + `<tr><td>${esc(t('goal.line.protein'))}</td><td class="num">${esc(t('goal.proteinLine', { g: goalInt(c.protein), per: goalNum(c.proteinPerKg), lo: goalNum(c.proteinBand[0]), hi: goalNum(c.proteinBand[1]) }))}</td></tr></table>`;
+    html += `<p class="muted small">${esc(t('goal.note'))}</p>`;
+    if (v.intake) {
+      html += `<p>${esc(v.intake.protein != null ? t('goal.avg', { n: v.intake.days, kcal: goalInt(v.intake.kcal), protein: goalInt(v.intake.protein) }) : t('goal.avgKcal', { n: v.intake.days, kcal: goalInt(v.intake.kcal) }))}</p>`;
+      if (v.intake.source) html += `<p class="muted small">${esc(t('goal.source', { name: v.intake.source }))}</p>`;
+    } else html += `<p class="muted">${esc(t('goal.noIntake'))}</p>`;
+  }
+  box.innerHTML = html;
+  $('#goalSettings')?.addEventListener('click', () => goSettings('body'));
+  fillGoalForm(v);
+  const b = v.blocked;
+  let status = '';
+  if (b?.composition?.limiter === 'muscle') status += `<p class="warn-text">${esc(t('goal.blockedMuscle', { weeks: goalNum(b.composition.requestedWeeks, 0), muscle: goalNum(b.composition.maxMuscleKg), ceiling: goalNum(b.composition.ceilingKgMonth, 2), date: fmtDate(b.composition.earliest) }))}</p>`;
+  else if (b?.composition) status += `<p class="warn-text">${esc(t('goal.blockedFat', { fatWeek: goalNum(b.composition.fatPerWeek, 2), date: fmtDate(b.composition.earliest) }))}</p>`;
+  if (b?.strength) status += `<p class="warn-text">${esc(t('goal.blockedStrength', { pct: goalNum(b.strength.pct, 0), months: goalNum(b.strength.requestedMonths, 0), per: b.strength.perMonth, minMonths: goalNum(b.strength.minMonths) }))}</p>`;
+  if (b?.composition?.reason === 'deadline' || b?.strength?.reason === 'deadline') status += `<p><button type="button" class="btn small" data-accept="1">${esc(t('goal.useEarliest'))}</button></p>`;
+  const comp = v.outcome?.composition, str = v.outcome?.strength;
+  if (comp) status += `<p>${esc(t('goal.summary', { weight: goalSigned(comp.weightDeltaKg), date: fmtDate(comp.endDate), muscle: goalNum(comp.muscleDeltaKg), fat: goalNum(comp.fatLossKg), adjust: goalSigned((comp.surplus || 0) - (comp.deficit || 0)) }))}</p>`;
+  if (str) status += `<p>${esc(t('goal.summaryStrength', { name: str.name, from: goalNum(str.startE1rm), to: goalNum(str.targetE1rm), pct: goalNum(str.pct, 0), months: goalNum(str.months) }))}</p>`;
+  $('#goalStatus').innerHTML = status;
+  const show = !!(comp || str);
+  $('#goalCharts').classList.toggle('hidden', !show);
+  if (show) { drawGoalCharts(); renderGoalTable(); }
+}
+
+function drawGoalCharts() {
+  const v = goalView;
+  if (!v?.outcome || !$('#tab-goal').classList.contains('active')) return;
+  const comp = v.outcome.composition, str = v.outcome.strength, days = v.days || [];
+  $('#goalWeightCard').classList.toggle('hidden', !comp);
+  $('#goalIntakeCard').classList.toggle('hidden', !comp);
+  $('#goalTableCard').classList.toggle('hidden', !comp);
+  if (comp) {
+    const pts = days.filter((d) => d.kg != null).map((d) => ({ x: d.date, y: d.kg }));
+    const series = [];
+    if (pts.length) series.push({ cls: 'la', label: t('goal.legend.weight'), unit: 'kg', points: pts });
+    series.push({ cls: 'lb', label: t('goal.legend.goal'), unit: 'kg', points: [{ x: comp.startDate, y: comp.startWeight }, { x: comp.endDate, y: Math.round((comp.startWeight + comp.weightDeltaKg) * 10) / 10 }] });
+    lineChart($('#goalWeight'), series, { yLabel: t('goal.chart.weight') });
+    const muscleGoal = !!(comp.musclePct && comp.startMuscle > 0);
+    $('#goalMuscleCard').classList.toggle('hidden', !muscleGoal);
+    if (muscleGoal) {
+      const mp = days.filter((d) => d.muscle != null).map((d) => ({ x: d.date, y: d.muscle }));
+      const ms = [];
+      if (mp.length) ms.push({ cls: 'la', label: t('goal.legend.muscle'), unit: 'kg', points: mp });
+      ms.push({ cls: 'lb', label: t('goal.legend.goal'), unit: 'kg', points: [{ x: comp.startDate, y: comp.startMuscle }, { x: comp.endDate, y: Math.round((comp.startMuscle + comp.muscleDeltaKg) * 10) / 10 }] });
+      lineChart($('#goalMuscle'), ms, { yLabel: t('goal.chart.muscle') });
+    }
+    const ip = days.filter((d) => d.intake != null).map((d) => ({ x: d.date, y: d.intake }));
+    const tp = days.filter((d) => d.target != null).map((d) => ({ x: d.date, y: d.target }));
+    const is = [];
+    if (ip.length) is.push({ cls: 'la', label: t('goal.legend.intake'), unit: 'kcal', points: ip });
+    if (tp.length) is.push({ cls: 'lb', label: t('goal.legend.target'), unit: 'kcal', points: tp });
+    if (is.length) lineChart($('#goalIntake'), is, { yLabel: t('goal.chart.intake') });
+    else $('#goalIntake').innerHTML = '<div class="empty">' + t('goal.noIntake') + '</div>';
+  }
+  $('#goalStrengthCard').classList.toggle('hidden', !str);
+  if (str) {
+    const ss = [];
+    if (v.strengthSeries?.length) ss.push({ cls: 'la', label: t('goal.legend.e1rm'), unit: 'kg', points: v.strengthSeries });
+    ss.push({ cls: 'lb', label: t('goal.legend.goal'), unit: 'kg', points: [{ x: str.startDate, y: str.startE1rm }, { x: str.endDate, y: str.targetE1rm }] });
+    lineChart($('#goalStrength'), ss, { yLabel: t('goal.chart.strength') });
+  }
+}
+
+function renderGoalTable() {
+  const card = $('#goalTableCard');
+  const days = goalView?.days || [];
+  if (!days.length) { card.innerHTML = `<h2>${esc(t('goal.table'))}</h2><p class="muted">${esc(t('goal.emptyDays'))}</p>`; return; }
+  const shown = goalShowAll ? days : days.slice(-14);
+  const rows = shown.map((d) => `<tr>
+    <td>${esc(fmtDate(d.date))}${d.open ? ` <span class="muted">(${esc(t('goal.open'))})</span>` : ''}</td>
+    <td class="num">${goalNum(d.kg)}</td><td class="num">${goalNum(d.muscle)}</td>
+    <td class="num">${goalInt(d.intake)}</td><td class="num">${goalInt(d.target)}</td><td class="num">${d.diff == null ? '—' : goalSigned(d.diff)}</td>
+    <td class="num">${d.protein == null ? '—' : `${goalInt(d.protein)} g${d.proteinPerKg != null ? ' · ' + goalNum(d.proteinPerKg) + '/kg' : ''}`}</td>
+    <td class="num">${goalInt(d.active)}</td></tr>`).join('');
+  const more = days.length > 14 ? `<button type="button" class="btn small ghost" data-goal-more="1">${esc(goalShowAll ? t('goal.showLess') : t('goal.showAll'))}</button>` : '';
+  const fiber = [...days].reverse().find((d) => d.fiber != null);
+  card.innerHTML = `<div class="row between wrap gap"><h2>${esc(t('goal.table'))}</h2>${more}</div>
+    <div style="overflow:auto"><table class="cmp"><thead><tr>
+      <th>${esc(t('goal.col.date'))}</th><th>${esc(t('goal.col.weight'))}</th><th>${esc(t('goal.col.muscle'))}</th>
+      <th>${esc(t('goal.col.intake'))}</th><th>${esc(t('goal.col.target'))}</th><th>${esc(t('goal.col.diff'))}</th>
+      <th>${esc(t('goal.col.protein'))}</th><th>${esc(t('goal.col.active'))}</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>` + (fiber ? `<p class="muted small">${esc(t('goal.fiber', { g: goalNum(fiber.fiber) }))}</p>` : '');
+}
+
+$('#goalForm').addEventListener('submit', (ev) => { ev.preventDefault(); busy(ev.submitter || $('#goalClear'), () => saveGoal(false)); });
+$('#goalClear').addEventListener('click', () => busy($('#goalClear'), () => saveGoal(false, true)));
+$('#goalStatus').addEventListener('click', (ev) => { const b = ev.target.closest('[data-accept]'); if (b) busy(b, () => saveGoal(true)); });
+$('#goalTableCard').addEventListener('click', (ev) => { if (!ev.target.closest('[data-goal-more]')) return; goalShowAll = !goalShowAll; renderGoalTable(); });
+
 // Tabblad Lichaam.
 function renderBody() {
   renderWithings();
@@ -2131,10 +2292,12 @@ async function load() {
   renderCoach(state.meta?.coach || null);
   if ($('#tab-progress').classList.contains('active')) renderProgress();
   if ($('#tab-body').classList.contains('active')) renderBody();
+  if ($('#tab-goal').classList.contains('active')) loadGoal();
+  startUpdateWatch();
   // een nieuwe gebruiker kiest eerst zijn voorkeuren; pas daarna een plan
   if (!state.plan && !state.setup?.needed) { state.plan = (await api('POST', '/api/plan/generate')).plan; renderPlan(); }
 }
-let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!state) return; if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); }, 150); });
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!state) return; if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); if ($('#tab-goal').classList.contains('active')) drawGoalCharts(); }, 150); });
 boot().catch((e) => toast(e.message, true));
 
 // ---------- extra grafieken ----------
@@ -2692,19 +2855,11 @@ async function renderAboutPane() {
     busy(btn, async () => {
       const msg = el.querySelector('#updMsg');
       msg.textContent = t('upd.bezig');
-      const s = await api('GET', '/api/update');
+      const s = await api('GET', '/api/update?fresh=1');
       if (!s.git) { msg.textContent = t('upd.geenGit'); return; }
       if (!s.behind) { msg.textContent = t('upd.bij', { v: s.version, sha: s.local }); return; }
-      const notes = s.notes || [];
-      msg.innerHTML = notes.length ? `<div class="upd-notes"><p><strong>${t('upd.nieuw')}</strong></p>${releaseBlocks(notes, true)}</div>` : '';
-      const ask = [t('upd.beschikbaar', { v: s.remoteVersion || s.remote, sha: s.remote })];
-      if (notes.length) ask.push(notesPlain(notes));
-      if (!await askConfirm(ask.join('\n\n'), { okText: t('upd.nu') })) return;
-      const r = await api('POST', '/api/update');
-      if (r.restarting) { msg.textContent = t('upd.herstart'); toast(t('upd.herstart')); await reloadAfterRestart(s.version); return; }
-      const done = t('upd.handmatig', { v: r.version || s.remoteVersion || '' });
-      msg.textContent = done;
-      toast(done);
+      msg.textContent = '';
+      openUpdateOffer(s);
     });
   });
 }
@@ -2723,14 +2878,71 @@ async function reloadAfterRestart(previous) {
   }
   toast(t('upd.herstartKlaar'), true);
 }
-// Platte tekst van de nieuwe versies, voor het bevestigingsvenster.
-function notesPlain(list) {
-  return list.map((r) => {
-    const lines = [`${r.version}${r.date ? ' — ' + r.date : ''}`];
-    if (r.lead) lines.push(r.lead.replace(/[`*]/g, ''));
-    for (const it of r.items || []) lines.push('• ' + it.replace(/[`*]/g, ''));
-    return lines.join('\n');
-  }).join('\n\n');
+// Na het inloggen en daarna elk uur, zolang het venster open is. Alleen de beheerder.
+const UPDATE_EVERY = 60 * 60 * 1000;
+let updateWatchStarted = false;
+let lastUpdateCheck = 0;
+let updateChecking = null;
+let offeredRemote = '';
+let offeredAt = 0;
+
+function startUpdateWatch() {
+  if (updateWatchStarted || state?.me?.role !== 'admin') return;
+  updateWatchStarted = true;
+  checkUpdateAuto(true);
+  setInterval(() => checkUpdateAuto(false), UPDATE_EVERY);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdateAuto(false); });
+}
+
+// force: meteen, na inloggen of bij het openen van een bestaande sessie. Daarna alleen als de app zichtbaar is en het uur om is.
+function checkUpdateAuto(force) {
+  if (state?.me?.role !== 'admin') return;
+  if (!force && (document.hidden || Date.now() - lastUpdateCheck < UPDATE_EVERY)) return;
+  lastUpdateCheck = Date.now();
+  if (updateChecking) return;
+  updateChecking = api('GET', '/api/update').then((s) => {
+    if (!s?.behind) return;
+    const key = s.remote || '';
+    if ($('#updOffer')?.open) return;
+    if (key === offeredRemote && Date.now() - offeredAt < UPDATE_EVERY) return;
+    openUpdateOffer(s);
+  }).catch(() => {}).finally(() => { updateChecking = null; });
+}
+
+// Venster met de wijzigingen en de knop om die versie binnen te halen.
+function openUpdateOffer(s) {
+  offeredRemote = s.remote || '';
+  offeredAt = Date.now();
+  let dlg = $('#updOffer');
+  if (!dlg) {
+    dlg = document.createElement('dialog'); dlg.id = 'updOffer'; dlg.className = 'terms-dlg changelog-dlg'; document.body.appendChild(dlg);
+    dlg.addEventListener('cancel', (ev) => { ev.preventDefault(); dlg.close(); });
+  }
+  const v = s.remoteVersion || s.remote || '';
+  const notes = s.notes || [];
+  const nlNote = getLang() === 'nl' || !notes.length ? '' : `<p class="muted small">${t('about.historyNl')}</p>`;
+  dlg.innerHTML = `<form class="terms" id="updOfferForm">
+      <div class="exd-head"><h2>${t('upd.titel', { v: esc(v) })}</h2><button type="button" class="btn ghost small" data-x="later" aria-label="${t('pk.close')}">✕</button></div>
+      <p class="muted" style="margin:0">${t('upd.herstartKort')}</p>
+      <div class="terms-body changelog">${nlNote}${notes.length ? releaseBlocks(notes, true) : ''}</div>
+      <div class="row end gap"><button type="button" class="btn ghost" data-x="later">${t('upd.later')}</button><button type="button" class="btn accent" data-x="go">${t('upd.nu')}</button></div>
+    </form>`;
+  const close = () => { if (dlg.open) dlg.close(); };
+  dlg.querySelectorAll('[data-x=later]').forEach((b) => b.addEventListener('click', close));
+  dlg.querySelector('[data-x=go]').addEventListener('click', async (ev) => {
+    const btn = ev.currentTarget;
+    btn.disabled = true;
+    try {
+      const r = await api('POST', '/api/update');
+      if (r.restarting) { close(); toast(t('upd.herstart')); await reloadAfterRestart(s.version); return; }
+      if (!r.updated) { close(); toast(t('upd.bij', { v: r.version || s.version, sha: r.remote || s.remote })); return; }
+      const done = t('upd.handmatig', { v: r.version || s.remoteVersion || '' });
+      close();
+      toast(done);
+    } catch (e) { toast(e.message, true); btn.disabled = false; }
+  });
+  if (!dlg.open) dlg.showModal();
+  dlg.querySelector('[data-x=go]').focus();
 }
 // Inhoud van Over GymCoach.
 function aboutHtml(a) {

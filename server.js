@@ -13,6 +13,7 @@ import { tr, userLang, parseAccept, err } from './lib/lang.js';
 const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'en');
 import * as insights from './lib/insights.js';
 import * as signals from './lib/signals.js';
+import * as goal from './lib/goal.js';
 import { TERMS_VERSION } from './public/terms.js';
 import * as ai from './lib/ai.js';
 import * as withings from './lib/withings.js';
@@ -227,7 +228,19 @@ function refreshMuscles(plan) {
 // Herstelscore en afvaltempo voor de huidige gebruiker (zie lib/signals.js).
 async function userSignals(ctx) {
   const daily = await store.getHealthDaily();
-  return { recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }), weightLoss: signals.weightLoss(ctx.bodyLog) };
+  const view = await goalView(ctx, daily);
+  const intake = view.intake && view.calc?.ok ? { kcal: view.intake.kcal, target: view.calc.target, protein: view.intake.protein, proteinTarget: view.calc.protein, days: view.intake.days, below: view.below } : null;
+  return { recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }), weightLoss: signals.weightLoss(ctx.bodyLog), ...(intake && { intake }) };
+}
+
+// Streefinname en het opgeslagen doel. Lengte uit Withings telt mee als die niet zelf is ingevuld.
+async function goalView(ctx, daily = null) {
+  const w = await store.getWithings();
+  const heightCm = ctx.settings.heightCm || (w.height ? Math.round(w.height * 100) : null);
+  return goal.assemble({
+    settings: { ...ctx.settings, heightCm },
+    bodyLog: ctx.bodyLog, daily: daily || await store.getHealthDaily(), history: ctx.history, today: goal.todayISO(),
+  });
 }
 
 // Maakt een nieuw weekplan met de regels-engine en bewaart het.
@@ -473,9 +486,9 @@ const routes = {
     version: VERSION, node: process.version, cli: await cli.version().catch(() => null),
     started: STARTED, users: (await store.getUsers()).length, changelog: readChangelog(),
   }),
-  'GET /api/update': async () => {
+  'GET /api/update': async (req, url) => {
     if (!isAdmin()) throw err('upd.alleenBeheerder', {}, 403);
-    return ghUpdate.status();
+    return ghUpdate.status({ fresh: url.searchParams.get('fresh') === '1' });
   },
   'POST /api/update': async () => {
     if (!isAdmin()) throw err('upd.alleenBeheerder', {}, 403);
@@ -540,6 +553,22 @@ const routes = {
       scheduleAutoSync(ng);
     }
     return { settings: maskSettings(await store.getSettings()) };
+  },
+  'GET /api/goal': async () => goalView(await context()),
+  'PUT /api/goal': async (req) => {
+    const incoming = await body(req);
+    const ctx = await context();
+    const applied = goal.applyOutcome({
+      settings: ctx.settings, bodyLog: ctx.bodyLog, history: ctx.history, today: goal.todayISO(),
+      composition: incoming.composition ?? null, strength: incoming.strength ?? null, accept: !!incoming.accept,
+    });
+    if (applied.error) throw err(applied.error === 'weight' ? 'goal.needWeight' : applied.error === 'muscle' ? 'goal.needMuscle' : applied.error === 'e1rm' ? 'goal.needE1rm' : 'goal.badInput');
+    if (!applied.saved) return { ...(await goalView(ctx)), blocked: applied.blocked, saved: false };
+    const s = await store.getSettings();
+    s.outcome = applied.outcome;
+    await store.saveSettings(s);
+    ctx.settings = s;
+    return { ...(await goalView(ctx)), saved: true };
   },
   'POST /api/swap': async (req) => {
     const { pattern, variant, id } = await body(req);

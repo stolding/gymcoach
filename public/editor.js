@@ -47,6 +47,18 @@ function estMinutes(s) {
   const cool = s.cooldown?.length ? 4 : 0;
   return Math.round(sec / 60) + warm + cool;
 }
+// Laatste lichaamsgewicht (kg) uit het logboek.
+function bodyKg(state) {
+  const log = state?.bodyLog || [];
+  for (let i = log.length - 1; i >= 0; i--) if (log[i].kg > 0) return log[i].kg;
+  return null;
+}
+// Geschat verbruik. Krachtcircuit is ongeveer 8 MET: kcal = 8 × kg × uren.
+// Bij ~75 kg is dat 10 kcal per minuut, in de buurt van de schatting op de Gym Monster.
+function estKcal(minutes, kg) {
+  if (!(kg > 0) || !(minutes > 0)) return null;
+  return Math.round(8 * kg * (minutes / 60));
+}
 // Seconden uit een dosering als "30 s per kant". Zonder seconden (oude "10 herh.") is het 30 s.
 const secsOf = (dose) => { const m = /(\d+)\s*s\b/i.exec(dose || ''); return m ? Number(m[1]) : 30; };
 const sideOf = (dose) => { const m = String(dose || '').match(/per (kant|been|arm)/i); return m ? `per ${m[1].toLowerCase()}` : ''; };
@@ -84,6 +96,7 @@ export function openEditor(key, ctx) {
     }
     if (tpl) for (const [k, v] of Object.entries(sc)) week[k] = (week[k] || 0) + v; // sjabloon: alsof hij erbij komt
     const min = estMinutes(draft), target = Number(state.settings?.minutesPerSession) || 45;
+    const kg = bodyKg(state), kcal = estKcal(min, kg);
     const sets = draft.exercises.reduce((n, e) => n + e.sets.length, 0);
     const vf = state.volFactors || { byId: {}, def: 1 };
     const vol = draft.exercises.reduce((v, e) => v + (vf.byId[e.id] || vf.def) * e.sets.reduce((a, x) => a + x.reps * x.weight, 0), 0);
@@ -106,6 +119,7 @@ export function openEditor(key, ctx) {
         ${tile(t('ed.duration'), `~${min} min`, t('ed.durationSub', { min: target }), min > target + 2)}
         ${tile(t('ed.sets'), sets, t('ed.setsSub', { n: draft.exercises.length }))}
         ${tile(t('ed.volume'), `${Math.round(vol).toLocaleString(localeOf())} kg`, t('ed.volumeSub'))}
+        ${tile(t('ed.kcal'), kcal != null ? `~${Math.round(kcal).toLocaleString(localeOf())} kcal` : '—', kcal != null ? t('ed.kcalSub', { kg: nlNum(Math.round(kg * 10) / 10) }) : t('ed.kcalNone'))}
         ${tile(t('ed.pushPull'), ratio, t('ed.pushPullSub'), push >= 6 && pull * 2 < push)}
       </div>
       <div class="card ed-week"><div class="row between"><span class="eyebrow" style="margin:0">${t('ed.week')}</span><span class="muted small">${t('ed.weekHint')}</span></div>

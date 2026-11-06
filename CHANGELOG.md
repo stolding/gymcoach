@@ -5,6 +5,18 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.8.0 — 6 november 2026
+- Na het inloggen, en daarna elk uur zolang GymCoach openstaat, kijkt de beheerder of `main` op GitHub nieuwer is. Zo ja, dan een venster met de wijzigingen en een knop *Bijwerken*.
+
+## 2.7.0 — 6 november 2026
+- Nieuw tabblad Doel. De streefinname staat er regel voor regel: Mifflin-St Jeor, × 1,2, plus het gemiddelde van je beweging uit Apple Health. Zonder lengte, geslacht (man of vrouw), geboortejaar of gewicht stopt de som.
+- Een doel kan gewicht en spier tegelijk zijn. Het tekort wordt gerekend op het vet, niet op de weegschaal. Een te korte datum wordt niet bewaard; je ziet de vroegste datum die nog past. Spierplafond: 0,25 kg per maand als beginner, 0,1 kg als gevorderd, en hooguit 0,5% van je gewicht aan vet per week.
+- Per dag vanaf de startdatum: gewicht, spier, inname, streefgetal, verschil, eiwit en beweging. Vandaag telt nog niet mee in het gemiddelde.
+- GymCoach Sync 1.6 leest calorieën, eiwit, koolhydraten, vet en vezels per uur uit Apple Health en stuurt één dagtotaal van één bron. De app vraagt daar opnieuw toestemming voor. Dezelfde waarden staan in de uitleg bij Health Auto Export.
+
+## 2.6.3 — 6 november 2026
+- De editor schat het calorieverbruik van een training: 8 MET × je lichaamsgewicht × de geschatte duur. Zonder gewicht in het logboek blijft het vak leeg.
+
 ## 2.6.2 — 6 november 2026
 - Chest Stretch in de cooldown gaat per kant: 30 seconden links en 30 seconden rechts. Ook in een plan dat nog één set van 30 seconden had.
 

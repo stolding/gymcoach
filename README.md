@@ -96,7 +96,7 @@ cd ~/gymcoach
 bash install.sh
 ```
 
-The script checks Node.js, installs `speediance-cli` in `~/.local/bin` and starts GymCoach as a systemd user service on port 8765. Update: Settings → About GymCoach → *Check for updates* (administrator only). That fetches `main` from GitHub and restarts the service. The directory must be a git clone (`git clone`, as above); `data/` and `.env` stay in place.
+The script checks Node.js, installs `speediance-cli` in `~/.local/bin` and starts GymCoach as a systemd user service on port 8765. Update: after login, and then every hour while GymCoach is open, the administrator gets a window when `main` on GitHub is newer, with the changes and an *Update* button. The same check is under Settings → About GymCoach → *Check for updates*. That fetches `main` from GitHub and restarts the service. The directory must be a git clone (`git clone`, as above); `data/` and `.env` stay in place.
 
 ## Settings
 

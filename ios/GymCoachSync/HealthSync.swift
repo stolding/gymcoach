@@ -70,6 +70,11 @@ final class SyncModel: ObservableObject {
             HKQuantityType(.restingHeartRate),
             HKQuantityType(.heartRateVariabilitySDNN),
             HKQuantityType(.vo2Max),
+            HKQuantityType(.dietaryEnergyConsumed),
+            HKQuantityType(.dietaryProtein),
+            HKQuantityType(.dietaryCarbohydrates),
+            HKQuantityType(.dietaryFatTotal),
+            HKQuantityType(.dietaryFiber),
         ]
     }
 
@@ -315,6 +320,69 @@ final class SyncModel: ObservableObject {
                 if let q = stats.averageQuantity() { data.append(["date": self.fmt(stats.startDate), "qty": q.doubleValue(for: unit)] as [String: Any]) }
             }
             if !data.isEmpty { out.append(["name": name, "units": units, "data": data] as [String: Any]) }
+        }
+        out.append(contentsOf: await fetchNutrition(since: anchor))
+        return out
+    }
+
+    /// Inname per uur, daarna één dagtotaal. Eén bron: de app met de meeste dagen energie, zodat twee apps hetzelfde eten niet dubbel tellen.
+    private func fetchNutrition(since: Date) async -> [[String: Any]] {
+        let defs: [(String, HKQuantityTypeIdentifier, HKUnit, String)] = [
+            ("dietary_energy", .dietaryEnergyConsumed, .kilocalorie(), "kcal"),
+            ("dietary_protein", .dietaryProtein, .gram(), "g"),
+            ("dietary_carbohydrates", .dietaryCarbohydrates, .gram(), "g"),
+            ("dietary_fat", .dietaryFatTotal, .gram(), "g"),
+            ("dietary_fiber", .dietaryFiber, .gram(), "g"),
+        ]
+        let cal = Calendar.current
+        var byMetric: [String: [String: (name: String, days: [String: Double])]] = [:]
+        for (name, id, unit, _) in defs {
+            let type = HKQuantityType(id)
+            let descriptor = HKStatisticsCollectionQueryDescriptor(
+                predicate: .quantitySample(type: type, predicate: HKQuery.predicateForSamples(withStart: since, end: nil)),
+                options: [.cumulativeSum, .separateBySource],
+                anchorDate: since,
+                intervalComponents: DateComponents(hour: 1))
+            guard let collection = try? await descriptor.result(for: store) else { continue }
+            var sources: [String: (name: String, days: [String: Double])] = [:]
+            collection.enumerateStatistics(from: since, to: Date()) { stats, _ in
+                let day = self.fmt(cal.startOfDay(for: stats.startDate))
+                let list = stats.sources ?? []
+                if list.isEmpty {
+                    if let q = stats.sumQuantity() {
+                        let v = q.doubleValue(for: unit)
+                        if v > 0 {
+                            var row = sources[""] ?? (name: "", days: [:])
+                            row.days[day, default: 0] += v
+                            sources[""] = row
+                        }
+                    }
+                    return
+                }
+                for src in list {
+                    guard let q = stats.sumQuantity(for: src) else { continue }
+                    let v = q.doubleValue(for: unit)
+                    if v <= 0 { continue }
+                    let key = src.bundleIdentifier
+                    var row = sources[key] ?? (name: src.name, days: [:])
+                    row.days[day, default: 0] += v
+                    sources[key] = row
+                }
+            }
+            if !sources.isEmpty { byMetric[name] = sources }
+        }
+        let energy = byMetric["dietary_energy"] ?? [:]
+        guard let winner = energy.max(by: { a, b in
+            if a.value.days.count != b.value.days.count { return a.value.days.count < b.value.days.count }
+            return a.value.days.values.reduce(0, +) < b.value.days.values.reduce(0, +)
+        })?.key else { return [] }
+        var out: [[String: Any]] = []
+        for (name, _, _, units) in defs {
+            guard let row = byMetric[name]?[winner], !row.days.isEmpty else { continue }
+            let data = row.days.keys.sorted().map { ["date": $0, "qty": row.days[$0]!] as [String: Any] }
+            var item: [String: Any] = ["name": name, "units": units, "data": data]
+            if !row.name.isEmpty { item["source"] = row.name }
+            out.append(item)
         }
         return out
     }

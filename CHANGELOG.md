@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.12.0 — 6 november 2026
+- GymCoach Sync toont onderweg het schema met sets en gewichten, de week, stappen, inname, herstel, voortgang, lichaam en doel. Alleen lezen; het plan en de instellingen wijzig je op de computer. Apple Health synchroniseert zoals voorheen.
+
 ## 2.11.1 — 6 november 2026
 - Het stappendoel per dag stel je op Doel. Opslaan daarvan laat het lichaams- en krachtdoel staan.
 

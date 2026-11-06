@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// De app: start de achtergrondsync en toont het instellingenscherm.
+/// De app: scherm onderweg, en Apple Health naar de eigen server.
 @main
 struct GymCoachSyncApp: App {
     @StateObject private var model = SyncModel.shared
+    @StateObject private var phone = PhoneModel.shared
     @Environment(\.scenePhase) private var phase
 
     init() {
@@ -14,8 +15,9 @@ struct GymCoachSyncApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .environmentObject(model)
+                .environmentObject(phone)
                 .preferredColorScheme(.dark)
                 .tint(Color(red: 1.0, green: 0.48, blue: 0.18))
         }
@@ -27,14 +29,13 @@ struct GymCoachSyncApp: App {
     }
 }
 
-/// Het enige scherm: serveradres, koppelsleutel, testen en synchroniseren.
-struct ContentView: View {
+/// Apple Health: serveradres, koppelsleutel, testen en synchroniseren.
+struct SyncSettingsView: View {
     @EnvironmentObject var model: SyncModel
     @State private var showToken = false
 
     var body: some View {
-        NavigationStack {
-            Form {
+        Form {
                 Section {
                     TextField("http://192.168.1.50:8765", text: $model.serverURL)
                         .keyboardType(.URL)
@@ -99,7 +100,7 @@ struct ContentView: View {
                     Text("Wat wordt gedeeld")
                 }
             }
-            .navigationTitle("GymCoach Sync")
-        }
+            .navigationTitle("Synchroniseren")
+            .navigationBarTitleDisplayMode(.inline)
     }
 }

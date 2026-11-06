@@ -14,6 +14,7 @@ const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'e
 import * as insights from './lib/insights.js';
 import * as signals from './lib/signals.js';
 import * as goal from './lib/goal.js';
+import * as phone from './lib/phone.js';
 import { TERMS_VERSION } from './public/terms.js';
 import * as ai from './lib/ai.js';
 import * as withings from './lib/withings.js';
@@ -556,6 +557,18 @@ const routes = {
     return { settings: maskSettings(await store.getSettings()) };
   },
   'GET /api/goal': async () => goalView(await context()),
+  // iPhone, onderweg: schema, voortgang, lichaam en doel in één klein antwoord. Alleen lezen.
+  'GET /api/phone': async () => {
+    const ctx = await context();
+    const [rawPlan, daily] = await Promise.all([store.getPlan(), store.getHealthDaily()]);
+    const gv = await goalView(ctx, daily);
+    return phone.view({
+      version: VERSION, name: auth.publicUser(store.currentUser())?.name || '', today: goal.todayISO(),
+      plan: rawPlan, settings: ctx.settings, workouts: ctx.workouts, sessions: ctx.sessions,
+      history: ctx.history, bodyLog: ctx.bodyLog, daily, goalView: gv,
+      recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }),
+    });
+  },
   'PUT /api/goal': async (req) => {
     const incoming = await body(req);
     const ctx = await context();

@@ -1,9 +1,14 @@
 # GymCoach Sync (iPhone)
 
-Kleine iPhone-app die uit Apple Health precies leest wat GymCoach nodig heeft en het naar je eigen GymCoach-server stuurt:
+iPhone-app bij GymCoach. Twee dingen:
+
+- **Onderweg, alleen lezen.** Na inloggen met je GymCoach-account: het schema van vandaag met sets en gewichten, de rest van de week, stappen tegenover je stappendoel, inname, herstel, voortgang, lichaam en doel. Het plan en de instellingen wijzig je op de computer. Zonder verbinding blijft de laatst geladen stand zichtbaar.
+- **Apple Health** naar je eigen server. Het scherm onderweg heeft GymCoach 2.12.0 of nieuwer nodig. De Health-sync werkt ook met een oudere server.
+
+Uit Apple Health leest de app precies wat GymCoach nodig heeft:
 
 - **Workouts** (iPhone en Apple Watch): soort, start/eind, duur, afstand, actieve energie, gemiddelde en maximale hartslag, het hartslagverloop tijdens de workout (ook in de rust tussen sets), bron.
-- **Dagwaarden**: stappen, actieve energie, wandel-/loopafstand, hartslag in rust, hartslagvariabiliteit (HRV, SDNN) en VO2max-schatting (Apple Watch).
+- **Dagwaarden**: stappen, actieve energie, wandel-/loopafstand, hartslag in rust, hartslagvariabiliteit (HRV, SDNN), VO2max-schatting (Apple Watch) en voeding (calorieën, eiwit, koolhydraten, vet, vezels).
 
 Nieuwe workouts gaan automatisch, ook op de achtergrond (HealthKit background delivery), hooguit één keer per uur. Met *Automatisch alleen thuis* (standaard aan) alleen op wifi en als de server bereikbaar is; zet dit uit als GymCoach via internet bereikbaar is. Gym Monster-trainingen die Speediance zelf naar Apple Health schrijft, slaat de server over; het hartslagverloop ervan wordt wel aan de training gekoppeld voor het rapport.
 
@@ -31,8 +36,11 @@ Gebruik je eigen bundle-ID: pas `bundleIdPrefix` en `PRODUCT_BUNDLE_IDENTIFIER` 
 
 ## Gebruik
 
-1. GymCoach → Instellingen → Apple Health → *Koppelsleutel maken*.
-2. In de app: serveradres (bijv. `http://192.168.1.50:8765` thuis, of `https://gymcoach.example.com` via je VPS) en de sleutel. *Test verbinding*.
-3. *Volledige historie versturen* (eenmalig), daarna gaat het vanzelf.
+1. Serveradres (bijv. `http://192.168.1.50:8765` thuis, of `https://gymcoach.example.com` via je VPS) en je GymCoach-gebruikersnaam en wachtwoord. Het wachtwoord wordt niet bewaard; de sessie wel.
+2. GymCoach → Instellingen → Apple Health → *Koppelsleutel maken*.
+3. In de app, bij *Apple Health* of *Meer → Synchroniseren*: de sleutel. *Test verbinding*.
+4. *Volledige historie versturen* (eenmalig), daarna gaat het vanzelf.
+
+*Automatisch alleen thuis* geldt alleen voor de Health-sync. Het scherm met je schema probeert de server te bereiken zodra je de app opent, ook buitenshuis.
 
 Gewone `http://` naar je thuisnetwerk is toegestaan; buitenshuis heb je een bereikbaar adres nodig (VPS met tunnel, zie de hoofd-README, of Tailscale).

@@ -264,6 +264,7 @@ async function generatePlan(prefs) {
     const i = plan.sessions.findIndex((x) => x.key === ls.key);
     if (i >= 0) plan.sessions[i] = kept; else plan.sessions.push(kept);
   }
+  engine.placeStrengthLift(plan, { settings: ctx.settings, library: ctx.library, history: ctx.history });
   refreshMuscles(plan);
   await store.savePlan(plan);
   // advies van de AI-coach hoorde bij het vorige plan
@@ -566,6 +567,11 @@ const routes = {
     if (!applied.saved) return { ...(await goalView(ctx)), blocked: applied.blocked, saved: false };
     const s = await store.getSettings();
     s.outcome = applied.outcome;
+    if (incoming.alignPlan != null) s.alignPlan = !!incoming.alignPlan;
+    if (s.alignPlan && applied.outcome) {
+      const style = goal.trainingStyle(applied.outcome);
+      if (style?.goal) s.goal = style.goal;
+    }
     await store.saveSettings(s);
     ctx.settings = s;
     return { ...(await goalView(ctx)), saved: true };

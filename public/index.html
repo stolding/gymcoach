@@ -45,11 +45,11 @@
 <nav class="tabs" role="tablist">
   <button class="tab active" data-tab="home" data-i18n="ui.tabs.overzicht">Overzicht</button>
   <button class="tab" data-tab="plan" data-i18n="ui.tabs.plan">Plan</button>
-  <button class="tab" data-tab="stats" data-i18n="ui.tabs.statistieken">Statistieken</button>
-  <button class="tab" data-tab="analysis" data-i18n="ui.tabs.analyse">Analyse</button>
-  <button class="tab" data-tab="progress" data-i18n="ui.tabs.voortgang">Voortgang</button>
   <button class="tab" data-tab="goal" data-i18n="ui.tabs.doel">Doel</button>
   <button class="tab" data-tab="body" data-i18n="ui.tabs.lichaam">Lichaam</button>
+  <button class="tab" data-tab="progress" data-i18n="ui.tabs.voortgang">Voortgang</button>
+  <button class="tab" data-tab="stats" data-i18n="ui.tabs.statistieken">Statistieken</button>
+  <button class="tab" data-tab="analysis" data-i18n="ui.tabs.analyse">Analyse</button>
   <button class="tab" data-tab="settings" data-i18n="ui.tabs.instellingen">Instellingen</button>
 </nav>
 
@@ -67,6 +67,7 @@
       <article class="card tile" id="tVolume"></article>
       <article class="card tile" id="tMinutes"></article>
       <article class="card tile" id="tBody"></article>
+      <article class="card full hidden" id="goalTile"></article>
       <article class="card wide" id="strength"></article>
       <article class="card" id="prs"></article>
       <article class="card half" id="heat"></article>
@@ -221,6 +222,13 @@
           <input name="pct" type="number" step="1" min="1" max="100" inputmode="decimal"></label>
         <label><span data-i18n="goal.form.months">Maanden</span>
           <input name="months" type="number" step="any" min="1" max="60" inputmode="decimal"></label>
+        <div class="span2">
+          <label class="inline-check" for="goalAlign">
+            <input type="checkbox" id="goalAlign">
+            <span data-i18n="goal.form.align">Stem het schema af op dit doel</span>
+          </label>
+          <p class="muted small" data-i18n="goal.form.alignHint">Afvallen krijgt kortere rust, spier erbij wordt combinatie, aankomen of alleen kracht wordt spieropbouw. Het krachtdoel komt in het schema met zwaardere sets. Cardio-dagen blijven staan.</p>
+        </div>
       </form>
       <div class="savebar">
         <button class="btn accent" type="submit" form="goalForm" data-i18n="goal.form.save">Doel bewaren</button>
@@ -314,6 +322,7 @@
           <option value="combinatie" data-i18n="ui.setTraining.combinatieAfvallenSpierBehouden">Combinatie (afvallen + spier behouden/opbouwen)</option>
           <option value="afvallen" data-i18n="ui.setTraining.afvallenHogereDichtheidKorte">Afvallen (hogere dichtheid, korte rust)</option>
         </select>
+        <span class="muted" data-i18n="goal.form.settingsHint">Op het tabblad Doel kun je dit door het doel laten volgen.</span>
       </label>
       <label><span data-i18n="ui.progress.trainingenPerWeek">Trainingen per week</span> <output id="daysOut"></output>
         <input type="range" name="daysPerWeek" min="2" max="5" step="1">

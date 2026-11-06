@@ -894,6 +894,20 @@ function spark(values, { w = 120, h = 32, cls = 'sp' } = {}) {
   const last = pts.split(' ').pop().split(',');
   return `<svg class="${cls}" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}"/><circle cx="${last[0]}" cy="${last[1]}" r="2.6"/></svg>`;
 }
+function goalSpark(rows) {
+  const pts = (rows || []).filter((row) => row.intake > 0 || row.target > 0);
+  if (pts.length < 2) return '';
+  const vals = pts.flatMap((row) => [row.intake, row.target].filter((v) => v > 0));
+  if (vals.length < 2) return '';
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1, w = 168, h = 48;
+  const xy = (v, i) => `${(i / (pts.length - 1)) * w},${h - 4 - ((v - lo) / span) * (h - 8)}`;
+  const line = (key, cls) => {
+    const p = pts.map((row, i) => (row[key] > 0 ? xy(row[key], i) : null)).filter(Boolean);
+    return p.length > 1 ? `<polyline class="${cls}" points="${p.join(' ')}"/>` : '';
+  };
+  const drawn = line('target', 'b') + line('intake', '');
+  return drawn ? `<svg class="goal-sp" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">${drawn}</svg>` : '';
+}
 // Voortgangsring (SVG), bijv. trainingen deze week.
 function ring(done, target) {
   const R = 52, C = 2 * Math.PI * R, f = Math.min(1, target ? done / target : 0);
@@ -1066,6 +1080,52 @@ function renderHome() {
   $('#prs').innerHTML = `<div class="eyebrow">${t('app.records14Dagen')}</div>` + (o.prs.length
     ? o.prs.slice(0, 3).map((p) => `<div class="pr"><span class="medal">★</span><div class="pr-body"><div class="str-name">${esc(p.name)}</div><div class="muted">${t('app.kgKg1rm', { a: esc(p.date), top: p.top, e1rm: p.e1rm })}</div></div></div>`).join('')
     : '<div class="empty small-empty">' + t('app.nogGeenNieuweRecords') + '</div>');
+  renderGoalTile();
+}
+
+const PACE_KEY = { on: 'goal.tile.paceOn', ahead: 'goal.tile.paceAhead', behind: 'goal.tile.paceBehind', wait: 'goal.tile.paceWait' };
+
+function renderGoalTile() {
+  const el = $('#goalTile');
+  if (!el) return;
+  const comp = goalView?.outcome?.composition, str = goalView?.outcome?.strength, board = goalView?.board;
+  if (!comp && !str) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+  el.classList.remove('hidden');
+  const pace = comp ? board?.weight : board?.strength;
+  const paceCls = pace?.state === 'behind' ? 'down' : pace?.state === 'on' || pace?.state === 'ahead' ? 'up' : 'muted';
+  const lines = [];
+  if (comp) lines.push(t('goal.tile.weight', { weight: goalSigned(comp.weightDeltaKg), date: fmtDate(comp.endDate) }));
+  if (comp?.muscleDeltaKg > 0) lines.push(t('goal.tile.muscle', { muscle: goalNum(comp.muscleDeltaKg) }));
+  if (str) lines.push(t('goal.tile.strength', { name: str.name, from: goalNum(str.startE1rm), to: goalNum(str.targetE1rm) }));
+  const food = board?.food || { state: 'none' };
+  const note = food.state === 'notarget' ? t('goal.tile.noTarget')
+    : food.state === 'over' ? t('goal.tile.over', { over: goalInt(food.over) })
+    : food.state === 'protein' ? t('goal.tile.protein', { g: goalInt(food.protein), target: goalInt(food.proteinTarget) })
+    : food.state === 'on' ? t('goal.tile.on', { left: goalInt(food.left) })
+    : t('goal.tile.none');
+  const bar = (have, target, warn) => !(target > 0) ? '' : `<div class="ht"><div class="hf${warn ? ' over' : ''}" style="width:${Math.max(4, Math.min(100, Math.round(((have || 0) / target) * 100)))}%"></div></div>`;
+  const intakeSvg = goalSpark(board?.spark);
+  const svg = intakeSvg || (board?.weightSpark?.length > 1 ? spark(board.weightSpark, { w: 168, h: 48 }) : '');
+  const legend = intakeSvg
+    ? `<span class="lg"><i style="background:var(--a)"></i>${esc(t('goal.legend.intake'))}</span> <span class="lg"><i style="background:var(--b)"></i>${esc(t('goal.legend.target'))}</span>`
+    : (svg ? `<span class="lg"><i style="background:var(--a)"></i>${esc(t('goal.legend.weight'))}</span>` : '');
+  el.innerHTML = `<div class="goal-home">
+      <div>
+        <div class="row between wrap gap"><div class="eyebrow" style="margin:0">${esc(t('goal.tile.title'))}</div>
+          <button type="button" class="btn small ghost" id="goalTileOpen">${esc(t('goal.tile.open'))}</button></div>
+        <div class="mid ${paceCls}">${esc(t(PACE_KEY[pace?.state] || 'goal.tile.paceWait'))}</div>
+        <div class="small">${lines.map((x) => esc(x)).join(' · ')}</div>
+        <p class="small" style="margin:.45rem 0 0">${esc(note)}</p>
+      </div>
+      <div>
+        ${svg ? `<div class="goal-spark">${svg}<div class="legend small">${legend}</div></div>` : ''}
+        <div class="goal-bars">
+          <div class="gbar"><span>${esc(t('goal.tile.kcal', { have: goalInt(food.intake), target: goalInt(food.target) }))}</span>${bar(food.intake, food.target, food.state === 'over')}</div>
+          <div class="gbar"><span>${esc(t('goal.tile.prot', { have: goalInt(food.protein), target: goalInt(food.proteinTarget) }))}</span>${bar(food.protein, food.proteinTarget, food.state === 'protein')}</div>
+        </div>
+      </div>
+    </div>`;
+  $('#goalTileOpen')?.addEventListener('click', () => document.querySelector('.tab[data-tab=goal]').click());
 }
 
 
@@ -1809,10 +1869,34 @@ function goalFormBody() {
 }
 
 async function saveGoal(accept, clear) {
-  const body = clear ? { composition: null, strength: null, accept: false } : { ...goalFormBody(), accept: !!accept };
+  const alignPlan = !!$('#goalAlign')?.checked;
+  const body = clear ? { composition: null, strength: null, accept: false, alignPlan } : { ...goalFormBody(), accept: !!accept, alignPlan };
   goalView = await api('PUT', '/api/goal', body);
+  if (state?.settings && goalView.alignPlan != null) state.settings.alignPlan = !!goalView.alignPlan;
+  if (state?.settings && goalView.saved && goalView.outcome && goalView.alignPlan && goalView.style?.goal) {
+    state.settings.goal = goalView.style.goal;
+    const sel = $('#settingsForm')?.elements?.goal;
+    if (sel) sel.value = goalView.style.goal;
+  }
   renderGoal();
+  if (state?.overview) renderHome();
   if (goalView.saved) toast(!goalView.outcome ? t('goal.cleared') : t('goal.saved'));
+  if (goalView.saved && goalView.outcome && goalView.alignPlan) await offerAlignedPlan();
+}
+
+async function offerAlignedPlan() {
+  const style = goalView?.style?.goal;
+  if (!style) return;
+  const pushed = (state.plan?.sessions || []).some((s) => s.pushedAt);
+  const ok = await askConfirm(t(pushed ? 'goal.align.confirmDevice' : 'goal.align.confirm', { goal: GOAL[style] || style }), { okText: t('goal.align.rebuild') });
+  if (!ok) return;
+  const prev = state.plan?.dayTypes || [];
+  const body = { focus: state.plan?.focus || [], wish: state.plan?.wish || '' };
+  if (prev.length) body.dayTypes = prev.map((d) => (d === 'circuit' || d === 'buiten' ? d : style));
+  state.plan = (await api('POST', '/api/plan/generate', body)).plan;
+  renderPlan();
+  if ($('#tab-home').classList.contains('active')) renderHome();
+  toast(t('goal.align.done'));
 }
 
 function fillGoalForm(v) {
@@ -1831,6 +1915,8 @@ function fillGoalForm(v) {
   f.exercise.value = str ? String(str.exerciseId) : '';
   f.pct.value = str ? str.pct : '';
   f.months.value = str ? str.months : '';
+  const align = $('#goalAlign');
+  if (align) align.checked = !!v.alignPlan;
 }
 
 function renderGoal() {
@@ -1870,6 +1956,7 @@ function renderGoal() {
   const show = !!(comp || str);
   $('#goalCharts').classList.toggle('hidden', !show);
   if (show) { drawGoalCharts(); renderGoalTable(); }
+  renderGoalTile();
 }
 
 function drawGoalCharts() {
@@ -2277,7 +2364,9 @@ $('#syncBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async () 
 
 // Laadt de toestand van de gebruiker en tekent de app opnieuw.
 async function load() {
-  state = await api('GET', '/api/state');
+  const [st, gv] = await Promise.all([api('GET', '/api/state'), api('GET', '/api/goal').catch(() => null)]);
+  state = st;
+  if (gv) goalView = gv;
   // taal: eigen keuze, anders die van de browser; daarna alle vaste teksten in de pagina vullen
   setLang(resolveLang(state.settings?.lang || storedLang(), navigator.languages || [navigator.language]));
   applyI18n();
@@ -2292,7 +2381,7 @@ async function load() {
   renderCoach(state.meta?.coach || null);
   if ($('#tab-progress').classList.contains('active')) renderProgress();
   if ($('#tab-body').classList.contains('active')) renderBody();
-  if ($('#tab-goal').classList.contains('active')) loadGoal();
+  if ($('#tab-goal').classList.contains('active')) renderGoal();
   startUpdateWatch();
   // een nieuwe gebruiker kiest eerst zijn voorkeuren; pas daarna een plan
   if (!state.plan && !state.setup?.needed) { state.plan = (await api('POST', '/api/plan/generate')).plan; renderPlan(); }

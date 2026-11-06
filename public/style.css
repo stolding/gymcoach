@@ -199,6 +199,16 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .hbar { display: grid; grid-template-columns: 150px 1fr 140px; gap: .75rem; align-items: center; font-size: .88rem; }
 .ht { background: var(--bg); border-radius: 6px; height: 18px; overflow: hidden; }
 .hf { height: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, var(--surface)), var(--accent)); border-radius: 6px; transition: width .4s ease; }
+.hf.over { background: var(--warn); }
+.goal-home { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(220px, .85fr); gap: .8rem 1.5rem; align-items: center; }
+.goal-bars { display: flex; flex-direction: column; gap: .45rem; margin-top: .55rem; }
+.gbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: .2rem; font-size: .82rem; }
+.gbar .ht { height: 8px; }
+.goal-spark { display: flex; flex-direction: column; align-items: flex-end; gap: .2rem; }
+.goal-sp polyline { fill: none; stroke: var(--a); stroke-width: 2; stroke-linejoin: round; }
+.goal-sp polyline.b { stroke: var(--b); stroke-dasharray: 3 3; }
+#goalForm .inline-check { color: var(--ink); align-items: flex-start; }
+@media (max-width: 700px) { .goal-home { grid-template-columns: 1fr; } .goal-spark { align-items: flex-start; } }
 .hv { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
 .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .sortable th { cursor: pointer; user-select: none; white-space: nowrap; }

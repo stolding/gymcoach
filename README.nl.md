@@ -40,7 +40,7 @@ Met een demo-account en voorbeelddata; donker thema.
 ## Functies
 
 **Plannen en trainen**
-- **Persoonlijk weekplan** op basis van doel (spieropbouw, combinatie, afvallen), dagen per week en beschikbare tijd; per dag kun je ook een cardio-circuit of cardio buiten kiezen.
+- **Persoonlijk weekplan** op basis van doel (spieropbouw, combinatie, afvallen), dagen per week en beschikbare tijd; per dag kun je ook een cardio-circuit of cardio buiten kiezen. Op het tabblad Doel zet *Stem het schema af op dit doel* die stijl vanuit het doel, en zet een krachtdoel met zwaardere sets in het schema. Cardio-dagen blijven staan. Een training die al op de Gym Monster staat, blijft daar tot je hem opnieuw zet.
 - **Automatische progressie**: dubbele progressie, inloop bij nieuwe oefeningen, deloadweken.
 - **Persoonlijk afgestemd**: rust en volume per geslacht en op je eigen herstel; maximale hartslag met Tanaka of (voor vrouwen) Gulati.
 - **Weekfocus** op spiergroepen; een anatomisch figuur (man, vrouw of neutraal) laat zien wat er getraind wordt.
@@ -158,7 +158,7 @@ Uitgebreid in de app (*Hoe GymCoach werkt*) en in [documentatie/ARCHITECTUUR.md]
 
 - **Sync.** Na de start en daarna op een instelbaar interval haalt GymCoach je trainingen op, met herhalingen, gewichten, tijden en hartslag per set.
 - **Schema.** 2–3 dagen: full body; 4 dagen: upper/lower; 5 dagen: upper/lower plus full body.
-- **Voorschrift.** Spieropbouw 8–12 herhalingen, 90 s rust; afvallen 12–20 herhalingen, 30–45 s rust; *combinatie* daartussen.
+- **Voorschrift.** Spieropbouw 8–12 herhalingen, 90 s rust; afvallen 12–20 herhalingen, 30–45 s rust; *combinatie* daartussen. Een krachtdoel gebruikt op die oefening ongeveer 4–6 herhalingen (5–8 als beginner) en langere rust.
 - **Progressie.** Alle sets op de bovenkant: gewicht omhoog (+2 kg samengesteld, +1 kg isolatie). Twee keer onder het doel: −10%.
 - **Inloop en deload.** Nieuwe oefening: eerst 2 sets. Elke 6 trainingsweken (instelbaar) een lichtere week.
 - **Persoonlijk.** Vrouwen: 20% kortere rust en wat meer volume. Iedereen: langere rust als je herhalingen in latere sets zakken.

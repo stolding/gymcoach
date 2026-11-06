@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.5.0 — 6 november 2026
+- Noors (bokmål) als vierde taal, met vlag. De browsercodes `no`, `nb` en `nn` kiezen die taal. Uitleg en voorwaarden zijn meevertaald; bij verschil geldt de Nederlandse tekst van de voorwaarden. Oefeningen van Speediance blijven Engels of Duits.
+
 ## 2.4.3 — 6 november 2026
 - Over GymCoach heeft een knop *Wijzigingen* die de geschiedenis per versie in een venster opent.
 

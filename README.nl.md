@@ -60,7 +60,7 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal, plus HRV en de VO2max-schatting van de Apple Watch.
 
 **Gebruik**
-- **Nederlands, Engels en Duits**: kies per gebruiker met de vlaggetjes (inlogscherm, menubalk of je gebruikersmenu), of laat de app de taal van je browser volgen. Rapporten, mails en de AI-coach gebruiken dezelfde taal. Uitleg en video's van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels. Een taal toevoegen vraagt een woordenboek (`public/locales/`) en een vertaling van de uitleg en de voorwaarden.
+- **Nederlands, Engels, Duits en Noors**: kies per gebruiker met de vlaggetjes (inlogscherm, menubalk of je gebruikersmenu), of laat de app de taal van je browser volgen. Rapporten, mails en de AI-coach gebruiken dezelfde taal. Uitleg en video's van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels. Een taal toevoegen vraagt een woordenboek (`public/locales/`) en een vertaling van de uitleg en de voorwaarden.
 - **Meerdere gebruikers**, elk met eigen account, Speediance-account, plan en koppelingen; een wizard begeleidt nieuwe gebruikers.
 - **Uitleg in de app**: Instellingen → Over GymCoach → *Hoe GymCoach werkt* legt het plan en alle berekeningen uit, met bronnen. *Wijzigingen* op dezelfde pagina opent de geschiedenis per versie.
 - Donker en licht thema; werkt op pc, tablet en telefoon.

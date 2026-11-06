@@ -8,7 +8,7 @@
   Zet er een regel bij in `CHANGELOG.md`.
 - De iOS-app (GymCoach Sync, `ios/project.yml`, MARKETING_VERSION) heeft een eigen versienummer.
 - Logo: `public/logo.svg` is hetzelfde ontwerp als het app-icoon van GymCoach Sync. PNG-iconen (`icon-180/192/512.png`, `favicon-32.png`) opnieuw maken als het logo verandert.
-- UI is Nederlands, Engels en Duits (Nederlands is de bron); donker thema is de standaard. Meertalig (issue #1): nieuwe tekst altijd via `t('sleutel')` met de sleutel in `public/locales/nl.js` (vaste HTML: `data-i18n`), nooit los in de code; zet de vertalingen in `public/locales/en.js` en `public/locales/de.js`. `node tools/i18n-check.mjs` moet slagen; na het verplaatsen van tekst naar het woordenboek de baseline bijwerken met `--update-baseline`.
+- UI is Nederlands, Engels, Duits en Noors (Nederlands is de bron); donker thema is de standaard. Meertalig (issue #1): nieuwe tekst altijd via `t('sleutel')` met de sleutel in `public/locales/nl.js` (vaste HTML: `data-i18n`), nooit los in de code; zet de vertalingen in `public/locales/en.js`, `public/locales/de.js` en `public/locales/no.js`. `node tools/i18n-check.mjs` moet slagen; na het verplaatsen van tekst naar het woordenboek de baseline bijwerken met `--update-baseline`.
 - Copyright: © A. Stoelwinder Holding B.V., open source onder de MIT-licentie (zie LICENSE).
 - README in twee talen: `README.md` (Engels) en `README.nl.md` (Nederlands) samen bijwerken. Brochure-PDF's (nl, en, de) en `documentatie/afbeeldingen/` (Nederlands; `en/` voor de Engelse README) samen bijwerken.
 - Commits: geen `Co-Authored-By`- of `Claude-Session`-regels; commits staan alleen op naam van de eigenaar.

@@ -3,12 +3,13 @@
 import nl from './locales/nl.js';
 import en from './locales/en.js';
 import de from './locales/de.js';
+import no from './locales/no.js';
 
-export const DICTS = { nl, en, de };
+export const DICTS = { nl, en, de, no };
 // Talen die gebruikers kunnen kiezen. Een nieuwe taal komt hier pas bij als zijn woordenboek compleet is.
-export const LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }, { code: 'de', name: 'Deutsch', locale: 'de-DE' }];
+export const LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }, { code: 'de', name: 'Deutsch', locale: 'de-DE' }, { code: 'no', name: 'Norsk', locale: 'nb-NO' }];
 // Alle talen met een woordenboek, ook die nog niet te kiezen zijn (voor het controlescript en tests).
-export const ALL_LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }, { code: 'de', name: 'Deutsch', locale: 'de-DE' }];
+export const ALL_LANGS = [{ code: 'nl', name: 'Nederlands', locale: 'nl-NL' }, { code: 'en', name: 'English', locale: 'en-GB' }, { code: 'de', name: 'Deutsch', locale: 'de-DE' }, { code: 'no', name: 'Norsk', locale: 'nb-NO' }];
 const LOCALE = Object.fromEntries(ALL_LANGS.map((l) => [l.code, l.locale]));
 const FALLBACK = ['en', 'nl'];
 
@@ -20,10 +21,13 @@ export const getLang = () => lang;
 export const localeOf = (l = lang) => LOCALE[l] || 'nl-NL';
 
 // Welke taal een gebruiker krijgt: zijn eigen keuze, anders de taal van de browser als die er is, anders de terugval.
+// nb en nn (bokmål en nynorsk) horen bij het Noorse woordenboek (bokmål).
+const ALIAS = { nb: 'no', nn: 'no' };
+const norm = (c) => { const x = String(c || '').slice(0, 2).toLowerCase(); return ALIAS[x] || x; };
 export function resolveLang(pref, browser = [], fallback = 'en') {
   const ok = (c) => LANGS.some((x) => x.code === c);
-  if (ok(pref)) return pref;
-  for (const b of browser) { const c = String(b || '').slice(0, 2).toLowerCase(); if (ok(c)) return c; }
+  if (ok(norm(pref))) return norm(pref);
+  for (const b of browser) { const c = norm(b); if (ok(c)) return c; }
   return ok(fallback) ? fallback : 'nl';
 }
 

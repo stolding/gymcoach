@@ -8,6 +8,7 @@ const FLAGS = {
   en: '<clipPath id="ukc"><rect width="30" height="20"/></clipPath><g clip-path="url(#ukc)"><rect width="30" height="20" fill="#012169"/>'
     + '<path d="M0,0 30,20 M30,0 0,20" stroke="#fff" stroke-width="4"/><path d="M0,0 30,20 M30,0 0,20" stroke="#c8102e" stroke-width="1.6"/>'
     + '<path d="M15,0 V20 M0,10 H30" stroke="#fff" stroke-width="6"/><path d="M15,0 V20 M0,10 H30" stroke="#c8102e" stroke-width="3.6"/></g>',
+  no: '<rect width="30" height="20" fill="#ba0c2f"/><rect x="8.18" width="5.45" height="20" fill="#fff"/><rect y="7.5" width="30" height="5" fill="#fff"/><rect x="9.55" width="2.73" height="20" fill="#00205b"/><rect y="8.75" width="30" height="2.5" fill="#00205b"/>',
 };
 export const flagSvg = (code) => (FLAGS[code]
   ? `<svg class="flag" viewBox="0 0 30 20" width="22" height="15" aria-hidden="true">${FLAGS[code]}</svg>`

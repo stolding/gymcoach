@@ -6,7 +6,7 @@
 
 GymCoach is a self-hosted training dashboard. It reads your workouts through the unofficial [`speediance-cli`](https://github.com/stozo04/speediance-cli), builds a personal plan every week and puts it on your Gym Monster as a program with one click. Measurements from a Withings scale and activities from Apple Health are added automatically.
 
-> **Language:** the app is available in **English**, **Dutch** and **German**: pick a flag on the login screen, in the menu bar or in your user menu (*Automatic* follows your browser). Reports, emails and the AI coach use the same language. Exercise videos and instructions come from Speediance in your language when Speediance has it, otherwise in English. The brochure is available in English, Dutch and German.
+> **Language:** the app is available in **English**, **Dutch**, **German** and **Norwegian**: pick a flag on the login screen, in the menu bar or in your user menu (*Automatic* follows your browser). Reports, emails and the AI coach use the same language. Exercise videos and instructions come from Speediance in your language when Speediance has it, otherwise in English. The brochure is available in English, Dutch and German.
 
 ![GymCoach](public/icon-192.png)
 
@@ -62,7 +62,7 @@ With a demo account and sample data; dark theme.
 - **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …), plus HRV and the VO2max estimate of the Apple Watch.
 
 **Use**
-- **English, Dutch and German**: choose per user with the flag menu, or let the app follow your browser. Another language needs a dictionary file (`public/locales/`) plus a translation of the in-app explanation and terms.
+- **English, Dutch, German and Norwegian**: choose per user with the flag menu, or let the app follow your browser. Another language needs a dictionary file (`public/locales/`) plus a translation of the in-app explanation and terms.
 - **Multiple users**, each with their own account, Speediance account, plan and connections; a wizard guides new users.
 - **Explanations in the app**: Settings → About GymCoach → *How GymCoach works* explains the plan and every calculation, with sources. *Changes* on the same page opens the history per version.
 - Dark and light theme; works on desktop, tablet and phone.

@@ -78,7 +78,7 @@ docker compose up -d
 Open daarna `http://<ip-van-je-server>:8765`. De eerste keer maak je het beheerdersaccount aan; daarna helpt een wizard je met de voorwaarden, je Speediance-account, je voorkeuren en je eerste plan.
 
 - Alle gegevens staan in de map `data/` naast `docker-compose.yml` (database en Speediance-logins). Maak daar een back-up van.
-- **Bijwerken:** `docker compose pull && docker compose up -d`
+- **Bijwerken:** `docker compose pull && docker compose up -d`. Na het inloggen, en daarna elk uur zolang GymCoach openstaat, krijgt de beheerder ook een venster als er een nieuwere versie op GitHub staat, met dat commando. De map `data/` blijft staan.
 - **Logs:** `docker compose logs -f`
 - **Zelf bouwen** in plaats van het kant-en-klare image: clone de repository en draai `docker compose up -d --build`.
 - Het image (`ghcr.io/stolding/gymcoach`) wordt automatisch gebouwd voor amd64 en arm64 (bijv. Raspberry Pi 4/5).

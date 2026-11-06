@@ -19,6 +19,7 @@ COPY --chown=node:node . .
 RUN mkdir -p /data && chown node:node /data
 
 ENV NODE_ENV=production \
+    GYMCOACH_RUNTIME=docker \
     GYMCOACH_DATA=/data \
     SPEEDIANCE_BIN=/usr/local/bin/speediance-cli \
     HOST=0.0.0.0 \

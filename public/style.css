@@ -627,6 +627,7 @@ body.is-admin .fgrid .form-sub.admin-only { display: grid !important; }
 .changelog-dlg .terms-body { flex: 1; min-height: 0; }
 .changelog-dlg .changelog { margin-top: 0; max-width: none; }
 .changelog-dlg .changelog ul { display: block; padding-left: 1.15rem; }
+.upd-cmd { margin: .8rem 0; padding: .7rem .85rem; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .88rem; }
 .changelog h3 { margin: 0 0 .35rem; }
 .changelog details { border-top: 1px solid var(--line); padding: .45rem 0; }
 .changelog summary { cursor: pointer; font-weight: 650; }

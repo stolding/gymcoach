@@ -80,7 +80,7 @@ docker compose up -d
 Then open `http://<your-server-ip>:8765`. The first time you create the admin account; a wizard then walks you through the terms, your Speediance account, your preferences and your first plan.
 
 - All data lives in the `data/` folder next to `docker-compose.yml` (database and Speediance logins). Back that folder up.
-- **Update:** `docker compose pull && docker compose up -d`
+- **Update:** `docker compose pull && docker compose up -d`. After login, and then every hour while GymCoach is open, the admin also gets a window when a newer version is on GitHub, with that command. The `data/` folder stays.
 - **Logs:** `docker compose logs -f`
 - **Build it yourself** instead of using the ready-made image: clone the repository and run `docker compose up -d --build`.
 - The image (`ghcr.io/stolding/gymcoach`) is built automatically for amd64 and arm64 (e.g. Raspberry Pi 4/5).

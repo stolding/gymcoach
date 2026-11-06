@@ -2945,8 +2945,8 @@ async function renderAboutPane() {
       const msg = el.querySelector('#updMsg');
       msg.textContent = t('upd.bezig');
       const s = await api('GET', '/api/update?fresh=1');
-      if (!s.git) { msg.textContent = t('upd.geenGit'); return; }
-      if (!s.behind) { msg.textContent = t('upd.bij', { v: s.version, sha: s.local }); return; }
+      if (!s.git && !s.docker) { msg.textContent = t('upd.geenGit'); return; }
+      if (!s.behind) { msg.textContent = s.docker ? t('upd.bijDocker', { v: s.version }) : t('upd.bij', { v: s.version, sha: s.local }); return; }
       msg.textContent = '';
       openUpdateOffer(s);
     });
@@ -3010,15 +3010,29 @@ function openUpdateOffer(s) {
   const v = s.remoteVersion || s.remote || '';
   const notes = s.notes || [];
   const nlNote = getLang() === 'nl' || !notes.length ? '' : `<p class="muted small">${t('about.historyNl')}</p>`;
+  const docker = !!s.docker;
+  const actions = docker
+    ? `<pre class="upd-cmd"><code>${esc(s.command || '')}</code></pre>
+      <p class="muted small">${esc(t('upd.dockerData'))}</p>
+      <p class="muted small">${esc(t('upd.dockerBuild'))}</p>
+      <div class="row end gap"><button type="button" class="btn ghost" data-x="later">${t('upd.later')}</button><button type="button" class="btn accent" data-x="copy">${t('upd.kopieer')}</button></div>`
+    : `<div class="row end gap"><button type="button" class="btn ghost" data-x="later">${t('upd.later')}</button><button type="button" class="btn accent" data-x="go">${t('upd.nu')}</button></div>`;
   dlg.innerHTML = `<form class="terms" id="updOfferForm">
       <div class="exd-head"><h2>${t('upd.titel', { v: esc(v) })}</h2><button type="button" class="btn ghost small" data-x="later" aria-label="${t('pk.close')}">✕</button></div>
-      <p class="muted" style="margin:0">${t('upd.herstartKort')}</p>
+      <p class="muted" style="margin:0">${docker ? t('upd.dockerLead') : t('upd.herstartKort')}</p>
       <div class="terms-body changelog">${nlNote}${notes.length ? releaseBlocks(notes, true) : ''}</div>
-      <div class="row end gap"><button type="button" class="btn ghost" data-x="later">${t('upd.later')}</button><button type="button" class="btn accent" data-x="go">${t('upd.nu')}</button></div>
+      ${actions}
     </form>`;
   const close = () => { if (dlg.open) dlg.close(); };
   dlg.querySelectorAll('[data-x=later]').forEach((b) => b.addEventListener('click', close));
-  dlg.querySelector('[data-x=go]').addEventListener('click', async (ev) => {
+  dlg.querySelector('[data-x=copy]')?.addEventListener('click', async (ev) => {
+    const btn = ev.currentTarget;
+    try {
+      await navigator.clipboard.writeText(s.command || '');
+      btn.textContent = t('upd.gekopieerd');
+    } catch { btn.textContent = t('upd.kopieer'); }
+  });
+  dlg.querySelector('[data-x=go]')?.addEventListener('click', async (ev) => {
     const btn = ev.currentTarget;
     btn.disabled = true;
     try {
@@ -3031,7 +3045,7 @@ function openUpdateOffer(s) {
     } catch (e) { toast(e.message, true); btn.disabled = false; }
   });
   if (!dlg.open) dlg.showModal();
-  dlg.querySelector('[data-x=go]').focus();
+  (dlg.querySelector('[data-x=copy]') || dlg.querySelector('[data-x=go]'))?.focus();
 }
 // Inhoud van Over GymCoach.
 function aboutHtml(a) {

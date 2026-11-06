@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.10.0 — 6 november 2026
+- Een Docker-installatie laat ook zien of er een nieuwere versie op GitHub staat, na het inloggen en daarna elk uur. Bijwerken gaat daar niet met de knop: het venster geeft het commando `docker compose pull && docker compose up -d`. De map `data/` blijft staan.
+
 ## 2.9.0 — 6 november 2026
 - Het weekplan kan het doel volgen. Afvallen wordt kortere rust, spier erbij wordt combinatie, aankomen of alleen kracht wordt spieropbouw. Een krachtdoel komt in het schema met zwaardere sets. Cardio-dagen en vastgezette trainingen blijven staan. Wat al op de Gym Monster staat, blijft daar tot je een training opnieuw zet.
 - Op Overzicht staat een tegel zolang er een doel is: of je op de lijn ligt, de inname en het eiwit van vandaag, en een lijntje van de laatste dagen.

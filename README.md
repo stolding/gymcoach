@@ -144,7 +144,7 @@ Then set `TRUST_PROXY=1` in `.env` and restart GymCoach.
 
 ## Connections
 
-**Apple Health.** With *Health Auto Export – JSON+CSV* from the App Store (REST API to `/api/health/ingest`), or with the iPhone app [GymCoach Sync](ios/README.md) (workouts, heart-rate curve, steps, energy, resting heart rate; automatically in the background). The same app shows your plan, progress, body and goal away from home, read-only. GymCoach Sync is not in the App Store: you build it with your own Apple developer account via GitHub Actions (see its guide). Create the pairing key under Settings → Apple Health. Strength workouts that Speediance writes to Apple Health itself are skipped, so nothing is counted twice.
+**Apple Health.** With *Health Auto Export – JSON+CSV* from the App Store (REST API to `/api/health/ingest`), or with the iPhone app [GymCoach Sync](ios/README.md) (workouts, heart-rate curve, steps, energy, resting heart rate; automatically in the background). The same app opens on your overview away from home and also shows plan, progress, body and goal, read-only. GymCoach Sync is not in the App Store: you build it with your own Apple developer account via GitHub Actions (see its guide). Create the pairing key under Settings → Apple Health. Strength workouts that Speediance writes to Apple Health itself are skipped, so nothing is counted twice.
 
 **Withings.** The admin creates one Withings developer app (up to 10 users) and enters its details under Settings → Withings. Each user then clicks *Koppel Withings* (connect).
 

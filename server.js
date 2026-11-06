@@ -557,7 +557,7 @@ const routes = {
     return { settings: maskSettings(await store.getSettings()) };
   },
   'GET /api/goal': async () => goalView(await context()),
-  // iPhone, onderweg: schema, voortgang, lichaam en doel in één klein antwoord. Alleen lezen.
+  // iPhone, onderweg: overzicht, schema, voortgang, lichaam en doel in één klein antwoord. Alleen lezen.
   'GET /api/phone': async () => {
     const ctx = await context();
     const [rawPlan, daily] = await Promise.all([store.getPlan(), store.getHealthDaily()]);

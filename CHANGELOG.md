@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.12.3 — 6 november 2026
+- GymCoach Sync opent op een overzicht: herstel, de volgende training, het weekdoel, streak, volume, trainingstijd, gewicht, het doel en het plan van deze week.
+
 ## 2.12.2 — 6 november 2026
 - In GymCoach Sync staan het adres voor het scherm en het adres voor Apple Health los van elkaar. Het scherm begint op https://gymcoach.stolding.com.
 

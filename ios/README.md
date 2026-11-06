@@ -2,8 +2,8 @@
 
 iPhone-app bij GymCoach. Twee dingen:
 
-- **Onderweg, alleen lezen.** Na inloggen met je GymCoach-account: het schema van vandaag met sets en gewichten, de rest van de week, stappen tegenover je stappendoel, inname, herstel, voortgang, lichaam en doel. Het plan en de instellingen wijzig je op de computer. Zonder verbinding blijft de laatst geladen stand zichtbaar.
-- **Apple Health** naar je eigen server. Het scherm onderweg heeft GymCoach 2.12.0 of nieuwer nodig. De Health-sync werkt ook met een oudere server.
+- **Onderweg, alleen lezen.** De app opent op het overzicht: herstel, de volgende training, het weekdoel, streak, volume, trainingstijd, gewicht, het doel en het plan van deze week. Daarnaast het schema met sets en gewichten, stappen, inname, voortgang en lichaam. Het plan en de instellingen wijzig je op de computer. Zonder verbinding blijft de laatst geladen stand zichtbaar.
+- **Apple Health** naar je eigen server. Het scherm onderweg heeft GymCoach 2.12.3 of nieuwer nodig. De Health-sync werkt ook met een oudere server.
 
 Uit Apple Health leest de app precies wat GymCoach nodig heeft:
 

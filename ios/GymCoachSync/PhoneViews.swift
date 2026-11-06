@@ -125,8 +125,11 @@ struct SessionCard: View {
     }
 }
 
-struct TodayView: View {
+struct DashboardView: View {
     @EnvironmentObject var phone: PhoneModel
+    var openPlan: () -> Void
+
+    private let orange = Color(red: 1, green: 0.48, blue: 0.18)
 
     var body: some View {
         NavigationStack {
@@ -134,118 +137,201 @@ struct TodayView: View {
                 if let snap = phone.snapshot {
                     VStack(alignment: .leading, spacing: 12) {
                         StaleBanner()
-                        header(snap)
-                        weekStrip(snap)
-                        if let s = snap.sessions.first(where: { $0.key == snap.nextKey }) {
-                            SessionCard(session: s, expanded: true)
-                        } else if !snap.sessions.isEmpty {
-                            PhoneCard {
-                                Text("Deze week staat alles op gedaan.")
-                                    .font(.headline)
-                                if !snap.tip.isEmpty { Text(snap.tip).font(.subheadline).foregroundStyle(.secondary) }
-                            }
-                        } else {
-                            PhoneCard {
-                                Text("Er staat nog geen weekplan. Dat maak je op de computer.")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        metrics(snap)
-                        if snap.nextKey != nil, !snap.tip.isEmpty {
-                            Text(snap.tip).font(.footnote).foregroundStyle(.secondary)
-                        }
+                        Text(snap.name.isEmpty ? snap.today : snap.name).font(.title2.weight(.semibold))
+                        Text(snap.today).font(.subheadline).foregroundStyle(.secondary)
+                        recoveryCard(snap)
+                        nextCard(snap)
+                        statGrid(snap)
+                        goalCard(snap)
+                        weekPlanCard(snap)
                     }
                     .padding(16)
                 }
             }
             .background(PhoneChrome.bg.ignoresSafeArea())
-            .navigationTitle("Vandaag")
+            .navigationTitle("Overzicht")
             .refreshable { await phone.refresh() }
         }
     }
 
-    private func header(_ snap: PhoneSnapshot) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(snap.name.isEmpty ? "Vandaag" : snap.name).font(.title2.weight(.semibold))
-            HStack(spacing: 8) {
-                Text(snap.today).foregroundStyle(.secondary)
-                if snap.deload {
-                    Text("Deload-week")
-                        .font(.caption.weight(.semibold))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(Color.orange.opacity(0.25), in: Capsule())
-                }
+    @ViewBuilder private func recoveryCard(_ snap: PhoneSnapshot) -> some View {
+        if let rec = snap.recovery {
+            PhoneCard {
+                Text("Herstel").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text(rec.label).font(.title3.weight(.semibold)).foregroundStyle(recoveryColor(rec.state))
+                if !rec.detail.isEmpty { Text(rec.detail).font(.subheadline) }
+                if !rec.note.isEmpty { Text(rec.note).font(.footnote).foregroundStyle(.secondary) }
             }
-            .font(.subheadline)
         }
     }
 
-    private func weekStrip(_ snap: PhoneSnapshot) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("\(snap.week.done) van \(snap.week.target)")
-                    .font(.subheadline.weight(.semibold))
-                if snap.week.minutes > 0 {
-                    Text("\(snap.week.minutes) min").font(.caption).foregroundStyle(.secondary)
-                }
-                Spacer()
-                if snap.week.streak > 0 {
-                    Text("\(snap.week.streak) weken op rij").font(.caption).foregroundStyle(.secondary)
+    @ViewBuilder private func nextCard(_ snap: PhoneSnapshot) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            PhoneCard {
+                Text("Volgende training").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                if let s = snap.sessions.first(where: { $0.key == snap.nextKey }) {
+                    Text(s.name).font(.title3.weight(.semibold))
+                    metaLine(s, snap)
+                    if s.outdoor {
+                        Text(s.advice.isEmpty ? "Buiten." : s.advice).font(.subheadline).foregroundStyle(.secondary)
+                    } else {
+                        VStack(alignment: .leading, spacing: 2) {
+                            ForEach(Array(s.exercises.prefix(6).enumerated()), id: \.offset) { i, e in
+                                Text("\(i + 1). \(e.title)").font(.subheadline).lineLimit(1)
+                            }
+                        }
+                    }
+                    Button("Bekijk in plan", action: openPlan).font(.subheadline)
+                } else if snap.sessions.isEmpty {
+                    Text("Er staat nog geen weekplan. Dat maak je op de computer.").foregroundStyle(.secondary)
+                } else {
+                    Text("Deze week staat alles op gedaan.").font(.headline)
                 }
             }
-            if !snap.sessions.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
+            weekRing(snap.week)
+        }
+    }
+
+    private func metaLine(_ s: PhoneSession, _ snap: PhoneSnapshot) -> some View {
+        HStack(spacing: 8) {
+            if let m = s.minutes { Text("~\(m) min") }
+            if !s.outdoor { Text("\(s.exercises.count) oefeningen") }
+            if !snap.weekPlan.goal.isEmpty { Text(snap.weekPlan.goal) }
+            if s.onDevice { Text("op toestel").font(.caption.weight(.semibold)).padding(.horizontal, 6).padding(.vertical, 2).background(Color.green.opacity(0.2), in: Capsule()) }
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+
+    private func weekRing(_ week: PhoneWeek) -> some View {
+        VStack(spacing: 6) {
+            ZStack {
+                Circle().stroke(Color.white.opacity(0.12), lineWidth: 8)
+                Circle()
+                    .trim(from: 0, to: week.target > 0 ? min(1, CGFloat(week.done) / CGFloat(week.target)) : 0)
+                    .stroke(orange, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                Text("\(week.done)/\(week.target)").font(.headline.monospacedDigit())
+            }
+            .frame(width: 84, height: 84)
+            Text("Weekdoel").font(.caption2).foregroundStyle(.secondary)
+            Text("deze week").font(.caption2).foregroundStyle(.secondary)
+        }
+        .frame(width: 96)
+    }
+
+    private func statGrid(_ snap: PhoneSnapshot) -> some View {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+            PhoneCard {
+                Text("Streak").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text("\(snap.week.streak)").font(.title.monospacedDigit()) + Text(snap.week.streak == 1 ? " week" : " weken").font(.subheadline)
+                Text("op rij je weekdoel gehaald").font(.caption2).foregroundStyle(.secondary)
+            }
+            PhoneCard {
+                Text("Volume deze week").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text("\(phoneInt(snap.week.volume)) kg").font(.title3.monospacedDigit())
+                Text(snap.week.volumeNote).font(.caption).foregroundStyle(.secondary)
+            }
+            PhoneCard {
+                Text("Trainingstijd").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text("\(snap.week.minutes) min").font(.title3.monospacedDigit())
+                Text("\(phoneInt(snap.week.kcal)) kcal deze week").font(.caption).foregroundStyle(.secondary)
+            }
+            PhoneCard {
+                Text("Lichaamsgewicht").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                if let body = snap.body, let kg = body.kg {
+                    Text(body.fat != nil ? "\(phoneKg(kg)) kg · \(phoneKg(body.fat ?? 0))% vet" : "\(phoneKg(kg)) kg")
+                        .font(.title3.monospacedDigit())
+                    Text(body.slopeNote).font(.caption).foregroundStyle(.secondary)
+                    if body.spark.count > 1 { Sparkline(values: body.spark) }
+                } else {
+                    Text("Nog geen weging.").font(.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private func goalCard(_ snap: PhoneSnapshot) -> some View {
+        if let goal = snap.goal {
+            PhoneCard {
+                Text("Doel").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text(goal.pace).font(.headline).foregroundStyle(paceColor(goal.paceState))
+                ForEach(Array(goal.lines.enumerated()), id: \.offset) { _, line in
+                    Text(line).font(.subheadline)
+                }
+                if let food = snap.food {
+                    if let kcal = food.kcal, let target = food.target, target > 0 {
+                        meter("\(phoneInt(kcal)) / \(phoneInt(target)) kcal", value: kcal, total: target)
+                    }
+                    if let protein = food.protein, let target = food.proteinTarget, target > 0 {
+                        meter("\(phoneInt(protein)) / \(phoneInt(target)) g eiwit", value: protein, total: target)
+                    }
+                    if !food.line.isEmpty { Text(food.line).font(.footnote).foregroundStyle(.secondary) }
+                }
+            }
+        }
+    }
+
+    private func meter(_ label: String, value: Int, total: Int) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label).font(.caption.monospacedDigit())
+            ProgressView(value: Double(value), total: Double(max(total, 1))).tint(orange)
+        }
+    }
+
+    private func weekPlanCard(_ snap: PhoneSnapshot) -> some View {
+        let plan = snap.weekPlan
+        return PhoneCard {
+            HStack {
+                Text(plan.week > 0 ? "Plan deze week · week \(plan.week)" : "Plan deze week")
+                    .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Spacer()
+                Button("Open plan", action: openPlan).font(.caption)
+            }
+            if snap.deload {
+                Text("deload-week").font(.caption.weight(.semibold))
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Color.orange.opacity(0.25), in: Capsule())
+            }
+            if !plan.focus.isEmpty {
+                Text(plan.focus.joined(separator: "  ·  ")).font(.caption).foregroundStyle(.secondary)
+            }
+            if plan.sessions > 0 {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                    miniStat("Trainingen", "\(plan.sessions) × ~\(plan.avgMinutes) min")
+                    miniStat("Werksets", "\(plan.sets) · \(plan.exercises) oef.")
+                    miniStat("Gepland volume", "\(phoneInt(plan.volume)) kg")
+                    miniStat("Zwaarder", "\(plan.heavier) oefeningen ↑")
+                }
+                ForEach(Array(plan.muscles.enumerated()), id: \.offset) { _, m in
                     HStack(spacing: 8) {
-                        ForEach(snap.sessions) { s in
-                            VStack(spacing: 4) {
-                                Image(systemName: s.done ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(s.done ? Color.green : (s.key == snap.nextKey ? Color(red: 1, green: 0.48, blue: 0.18) : .secondary))
-                                Text(s.name).font(.caption2).lineLimit(2).multilineTextAlignment(.center)
-                            }
-                            .frame(width: 76)
+                        Text(m.name).font(.caption).frame(width: 110, alignment: .leading).lineLimit(1)
+                        ProgressView(value: min(1.0, m.share)).tint(orange)
+                        Text(phoneKg(m.value)).font(.caption.monospacedDigit()).frame(width: 36, alignment: .trailing)
+                    }
+                }
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 8)], alignment: .leading, spacing: 8) {
+                    ForEach(snap.sessions) { s in
+                        HStack(spacing: 4) {
+                            if s.done { Image(systemName: "checkmark").font(.caption2) }
+                            Text(s.name).lineLimit(1)
+                            if s.superset { Text("superset").font(.caption2) }
                         }
+                        .font(.caption)
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background((s.done ? Color.green : Color.white).opacity(0.12), in: Capsule())
                     }
                 }
             }
         }
     }
 
-    @ViewBuilder private func metrics(_ snap: PhoneSnapshot) -> some View {
-        PhoneCard {
-            HStack {
-                Text("Stappen").font(.subheadline.weight(.semibold))
-                Spacer()
-                Text(stepText(snap.steps)).font(.subheadline.monospacedDigit())
-            }
-            ProgressView(value: Double(snap.steps.today ?? 0), total: Double(max(snap.steps.goal, 1)))
-                .tint(Color(red: 1, green: 0.48, blue: 0.18))
+    private func miniStat(_ title: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title).font(.caption2).foregroundStyle(.secondary)
+            Text(value).font(.subheadline.weight(.semibold))
         }
-        if let food = snap.food {
-            PhoneCard {
-                Text("Inname").font(.subheadline.weight(.semibold))
-                if let kcal = food.kcal, let target = food.target {
-                    Text("\(phoneInt(kcal)) / \(phoneInt(target)) kcal").font(.title3.monospacedDigit())
-                }
-                if let protein = food.protein, let target = food.proteinTarget {
-                    Text("\(phoneInt(protein)) / \(phoneInt(target)) g eiwit").font(.subheadline).foregroundStyle(.secondary)
-                }
-                if !food.line.isEmpty { Text(food.line).font(.footnote).foregroundStyle(.secondary) }
-            }
-        }
-        if let rec = snap.recovery {
-            PhoneCard {
-                Text("Herstel").font(.subheadline.weight(.semibold))
-                Text(rec.label).font(.title3).foregroundStyle(recoveryColor(rec.state))
-                if !rec.detail.isEmpty { Text(rec.detail).font(.footnote).foregroundStyle(.secondary) }
-            }
-        }
-    }
-
-    private func stepText(_ s: PhoneSteps) -> String {
-        let goal = phoneInt(s.goal)
-        guard let today = s.today else { return "— / \(goal)" }
-        return "\(phoneInt(today)) / \(goal)"
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -515,14 +601,16 @@ struct MoreView: View {
 }
 
 struct MainTabs: View {
+    @State private var tab = 0
+
     var body: some View {
-        TabView {
-            TodayView().tabItem { Label("Vandaag", systemImage: "sun.max") }
-            PlanView().tabItem { Label("Plan", systemImage: "list.bullet.rectangle") }
-            ProgressViewScreen().tabItem { Label("Voortgang", systemImage: "chart.line.uptrend.xyaxis") }
-            BodyView().tabItem { Label("Lichaam", systemImage: "figure.stand") }
-            GoalView().tabItem { Label("Doel", systemImage: "flag") }
-            MoreView().tabItem { Label("Meer", systemImage: "ellipsis.circle") }
+        TabView(selection: $tab) {
+            DashboardView(openPlan: { tab = 1 }).tabItem { Label("Overzicht", systemImage: "square.grid.2x2") }.tag(0)
+            PlanView().tabItem { Label("Plan", systemImage: "list.bullet.rectangle") }.tag(1)
+            ProgressViewScreen().tabItem { Label("Voortgang", systemImage: "chart.line.uptrend.xyaxis") }.tag(2)
+            BodyView().tabItem { Label("Lichaam", systemImage: "figure.stand") }.tag(3)
+            GoalView().tabItem { Label("Doel", systemImage: "flag") }.tag(4)
+            MoreView().tabItem { Label("Meer", systemImage: "ellipsis.circle") }.tag(5)
         }
     }
 }

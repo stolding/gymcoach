@@ -9,7 +9,7 @@ enum PhoneError: LocalizedError {
         switch self {
         case .badURL: return "Vul een geldig adres in voor het scherm. Voorbeeld: https://gymcoach.stolding.com"
         case .unauthorized: return "Log opnieuw in."
-        case .oldServer: return "Deze GymCoach-server kent het scherm onderweg nog niet. Werk de server bij naar 2.12.0 of nieuwer."
+        case .oldServer: return "Deze GymCoach-server kent het scherm onderweg nog niet. Werk de server bij naar 2.12.3 of nieuwer."
         case .decode: return "Het antwoord van de server was niet te lezen."
         case let .server(_, msg): return msg
         }
@@ -35,6 +35,7 @@ struct PhoneSnapshot: Codable {
     var recent: [PhoneRecent]
     var progress: [PhoneProgress]
     var records: [PhoneRecord]
+    var weekPlan: PhoneWeekPlan
 }
 
 struct PhoneWeek: Codable {
@@ -43,12 +44,15 @@ struct PhoneWeek: Codable {
     var minutes: Int
     var streak: Int
     var kcal: Int
+    var volume: Int
+    var volumeNote: String
 }
 
 struct PhoneRecovery: Codable {
     var state: String
     var label: String
     var detail: String
+    var note: String
 }
 
 struct PhoneSteps: Codable {
@@ -74,6 +78,8 @@ struct PhoneSession: Codable, Identifiable {
     var advice: String
     var done: Bool
     var doneDate: String
+    var onDevice: Bool
+    var superset: Bool
     var exercises: [PhoneExercise]
     var id: String { key }
 }
@@ -105,7 +111,27 @@ struct PhoneBody: Codable {
     var muscleDate: String
     var fat: Double?
     var slope: Double?
+    var slopeNote: String
     var spark: [Double]
+}
+
+struct PhoneWeekPlan: Codable {
+    var week: Int
+    var goal: String
+    var focus: [String]
+    var sessions: Int
+    var avgMinutes: Int
+    var sets: Int
+    var exercises: Int
+    var volume: Int
+    var heavier: Int
+    var muscles: [PhoneMuscle]
+}
+
+struct PhoneMuscle: Codable {
+    var name: String
+    var value: Double
+    var share: Double
 }
 
 struct PhoneRecent: Codable {

@@ -142,7 +142,7 @@ Zet daarna `TRUST_PROXY=1` in `.env` en herstart GymCoach.
 
 ## Koppelingen
 
-**Apple Health.** Met *Health Auto Export – JSON+CSV* uit de App Store (REST API naar `/api/health/ingest`), of met de iPhone-app [GymCoach Sync](ios/README.md) (workouts, hartslagverloop, stappen, energie, rusthartslag; automatisch op de achtergrond). Dezelfde app toont onderweg je schema, voortgang, lichaam en doel, alleen om te lezen. GymCoach Sync staat niet in de App Store: je bouwt hem met je eigen Apple-ontwikkelaarsaccount via GitHub Actions (zie de handleiding). De koppelsleutel maak je bij Instellingen → Apple Health. Krachttrainingen die Speediance zelf naar Apple Health schrijft, worden overgeslagen, zodat niets dubbel telt.
+**Apple Health.** Met *Health Auto Export – JSON+CSV* uit de App Store (REST API naar `/api/health/ingest`), of met de iPhone-app [GymCoach Sync](ios/README.md) (workouts, hartslagverloop, stappen, energie, rusthartslag; automatisch op de achtergrond). Dezelfde app opent onderweg op je overzicht en toont daarnaast schema, voortgang, lichaam en doel, alleen om te lezen. GymCoach Sync staat niet in de App Store: je bouwt hem met je eigen Apple-ontwikkelaarsaccount via GitHub Actions (zie de handleiding). De koppelsleutel maak je bij Instellingen → Apple Health. Krachttrainingen die Speediance zelf naar Apple Health schrijft, worden overgeslagen, zodat niets dubbel telt.
 
 **Withings.** De beheerder maakt één Withings-ontwikkelaarsapp (tot 10 gebruikers) en vult de gegevens in bij Instellingen → Withings. Iedere gebruiker klikt daarna op *Koppel Withings*.
 

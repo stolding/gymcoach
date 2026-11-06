@@ -1501,4 +1501,6 @@ export default {
   "upd.alleenBeheerder": "Only the administrator can update.",
   "upd.geenGitServer": "This install is not a git checkout.",
   "upd.resetMislukt": "The update failed.",
+  "about.history": "Changes",
+  "about.historyNl": "The change notes are in Dutch.",
 };

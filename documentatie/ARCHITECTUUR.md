@@ -107,7 +107,7 @@ Nieuwe kolommen worden bij het opstarten toegevoegd (zie "kolommen die later zij
 Alle routes staan in het object `routes` in `server.js`, als `'METHODE /pad': async (req, url) => …`. Een route geeft een object terug (wordt JSON), of `{ __binary }` voor een bestand, of `{ __redirect }`. Fouten zijn `Error`-objecten met een `status`.
 
 Groepen:
-- **Toestand en weergave**: `/api/state`, `/api/stats`, `/api/analysis`, `/api/workouts`, `/api/workout`, `/api/workout/pdf`, `/api/activities`, `/api/about`.
+- **Toestand en weergave**: `/api/state`, `/api/stats`, `/api/analysis`, `/api/workouts`, `/api/workout`, `/api/workout/pdf`, `/api/activities`, `/api/about` (inclusief de wijzigingen uit `CHANGELOG.md`).
 - **Plan**: `/api/plan/generate`, `/api/plan` (PUT), `/api/plan/session` (POST: nieuwe eigen training; DELETE), `/api/plan/push`, `/api/focus`, `/api/swap`, `/api/avoid`, `/api/alternatives`, `/api/coach`, `/api/coach/apply`, `/api/coach/dismiss`.
 - **Vorige weken**: `/api/plan/weeks` (bewaarde weken met samenvatting), `/api/plan/week?w=2026-W44` (gepland tegenover gedaan per oefening, `engine.planWeekReport`).
 - **Oefeningen en sjablonen**: `/api/library` (catalogus met je historie), `/api/exercise/info` (uitleg en beelden, gecachet), `/api/exercise/template`, `/api/media` (foto's en video's uit de cache, met Range), `/api/templates` (GET, POST, DELETE), `/api/template`, `/api/templates/share`.

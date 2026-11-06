@@ -75,6 +75,27 @@ async function refreshLibrary() {
   return lib.length;
 }
 const isAdmin = () => store.currentUser()?.role === 'admin';
+
+let changelogCache;
+// Wijzigingen uit CHANGELOG.md: per versie de datum, de inleidende alinea en de punten.
+function readChangelog() {
+  if (changelogCache) return changelogCache;
+  let text = '';
+  try { text = readFileSync(path.join(ROOT, 'CHANGELOG.md'), 'utf8'); } catch { return []; }
+  const releases = [];
+  let cur = null;
+  for (const line of text.split(/\r?\n/)) {
+    const head = /^##\s+(\d+\.\d+\.\d+)\s+[—-]\s+(.+)$/.exec(line);
+    if (head) { cur = { version: head[1], date: head[2].trim(), lead: '', items: [] }; releases.push(cur); continue; }
+    if (!cur) continue;
+    const item = /^-\s+(.+)$/.exec(line);
+    if (item) { cur.items.push(item[1].trim()); continue; }
+    const t = line.trim();
+    if (t) cur.lead = cur.lead ? `${cur.lead} ${t}` : t;
+  }
+  changelogCache = releases;
+  return releases;
+}
 const requireAdmin = () => { if (!isAdmin()) throw Object.assign(new Error(tr('srv.alleenVoorBeheerders')), { status: 403 }); };
 
 // Alles wat de engine nodig heeft voor de huidige gebruiker: instellingen, catalogus, historie, trainingen, metingen.
@@ -458,7 +479,7 @@ const routes = {
   },
   'GET /api/about': async () => ({
     version: VERSION, node: process.version, cli: await cli.version().catch(() => null),
-    started: STARTED, users: (await store.getUsers()).length,
+    started: STARTED, users: (await store.getUsers()).length, changelog: readChangelog(),
   }),
   'GET /api/update': async () => {
     if (!isAdmin()) throw err('upd.alleenBeheerder', {}, 403);

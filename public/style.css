@@ -609,6 +609,13 @@ body.is-admin .fgrid .form-sub.admin-only { display: grid !important; }
 .about p { line-height: 1.55; }
 .about-tbl { border-collapse: collapse; font-size: .88rem; margin-top: .4rem; }
 .about-tbl td { padding: .3rem 1.2rem .3rem 0; border-bottom: 1px solid var(--line); }
+.changelog { margin-top: 1.4rem; max-width: 760px; }
+.changelog h3 { margin: 0 0 .35rem; }
+.changelog details { border-top: 1px solid var(--line); padding: .45rem 0; }
+.changelog summary { cursor: pointer; font-weight: 650; }
+.changelog summary .muted { font-weight: 450; margin-left: .5rem; }
+.changelog ul { margin: .3rem 0 .1rem 1.15rem; }
+.changelog li, .changelog .cl-lead { margin: .2rem 0; line-height: 1.45; }
 @media (max-width: 560px) { .about { grid-template-columns: 1fr; } }
 
 /* training uit het plan die al gedaan is */

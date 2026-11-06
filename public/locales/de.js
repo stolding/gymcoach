@@ -1501,4 +1501,6 @@ export default {
   "upd.alleenBeheerder": "Nur der Verwalter kann aktualisieren.",
   "upd.geenGitServer": "Diese Installation ist kein Git-Checkout.",
   "upd.resetMislukt": "Aktualisieren ist fehlgeschlagen.",
+  "about.history": "Änderungen",
+  "about.historyNl": "Der Text der Änderungen ist auf Niederländisch.",
 };

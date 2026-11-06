@@ -1502,4 +1502,6 @@ export default {
   "upd.alleenBeheerder": "Alleen de beheerder kan bijwerken.",
   "upd.geenGitServer": "Deze installatie is geen git-checkout.",
   "upd.resetMislukt": "Bijwerken is mislukt.",
+  "about.history": "Wijzigingen",
+  "about.historyNl": "De tekst van de wijzigingen is in het Nederlands.",
 };

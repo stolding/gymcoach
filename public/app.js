@@ -2676,7 +2676,22 @@ function aboutHtml(a) {
       <table class="about-tbl"><tbody>
         ${row('GymCoach', a.version)}${row(t('app.nodeJs'), a.node)}${row('speediance-cli', a.cli)}${row(t('ui.settings.gebruikers'), a.users)}${row(t('app.serverGestart'), a.started && new Date(a.started).toLocaleString(localeOf(), { dateStyle: 'medium', timeStyle: 'short' }))}
       </tbody></table>
-    </div></div>`;
+    </div></div>${changelogHtml(a.changelog, a.version)}`;
+}
+// Eenvoudige opmaak uit het wijzigingenbestand: `code` en *cursief*, na het escapen.
+function mdLite(s) {
+  return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*([^*]+)\*/g, '<em>$1</em>');
+}
+// Lijst met versies. De versie die nu draait staat open, anders de nieuwste.
+function changelogHtml(list, version) {
+  if (!list?.length) return '';
+  const hasCurrent = list.some((r) => r.version === version);
+  const blocks = list.map((r, i) => `<details${(r.version === version || (!hasCurrent && i === 0)) ? ' open' : ''}>
+      <summary>${esc(r.version)}<span class="muted">${esc(r.date)}</span></summary>
+      ${r.lead ? `<p class="cl-lead">${mdLite(r.lead)}</p>` : ''}
+      ${r.items?.length ? `<ul>${r.items.map((it) => `<li>${mdLite(it)}</li>`).join('')}</ul>` : ''}
+    </details>`).join('');
+  return `<section class="changelog"><h3>${t('about.history')}</h3>${getLang() === 'nl' ? '' : `<p class="muted small">${t('about.historyNl')}</p>`}${blocks}</section>`;
 }
 document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'settings' && setPane === 'about') renderAboutPane(); }));
 $('#setNav').addEventListener('click', (ev) => { if (ev.target.closest('[data-pane=about]')) renderAboutPane(); });

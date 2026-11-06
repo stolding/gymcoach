@@ -114,7 +114,7 @@ Optional: a Withings scale with your own Withings developer app; an iPhone with 
 
 ## Access from outside your home
 
-GymCoach runs at home and is only reachable on your own network by default; there is no central server. To use it away from home (also the iPhone app: Health sync and the plan), set that up yourself, for example with:
+GymCoach runs at home and is only reachable on your own network by default; there is no central server. To use it away from home (also the iPhone Health sync), set that up yourself, for example with:
 
 - **Tailscale** or another VPN: the simplest option, nothing exposed to the internet;
 - a **reverse proxy** with https on your own domain (Caddy, nginx, Traefik, Nginx Proxy Manager) with `TRUST_PROXY=1`;

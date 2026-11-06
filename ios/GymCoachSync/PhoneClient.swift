@@ -7,7 +7,7 @@ enum PhoneError: LocalizedError {
     case server(Int, String)
     var errorDescription: String? {
         switch self {
-        case .badURL: return "Vul een geldig serveradres in. Voorbeeld: http://192.168.1.50:8765"
+        case .badURL: return "Vul een geldig adres in voor het scherm. Voorbeeld: https://gymcoach.stolding.com"
         case .unauthorized: return "Log opnieuw in."
         case .oldServer: return "Deze GymCoach-server kent het scherm onderweg nog niet. Werk de server bij naar 2.12.0 of nieuwer."
         case .decode: return "Het antwoord van de server was niet te lezen."
@@ -128,9 +128,17 @@ struct PhoneRecord: Codable {
 }
 
 enum GymServer {
+    static let defaultsKey = "phoneServerURL"
+    static let defaultAddress = "https://gymcoach.stolding.com"
+
+    static func storedAddress() -> String {
+        UserDefaults.standard.string(forKey: defaultsKey) ?? defaultAddress
+    }
+
     static func baseURL() throws -> URL {
-        var s = (UserDefaults.standard.string(forKey: "serverURL") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        if !s.lowercased().hasPrefix("http") { s = "http://" + s }
+        var s = storedAddress().trimmingCharacters(in: .whitespacesAndNewlines)
+        if s.isEmpty { throw PhoneError.badURL }
+        if !s.lowercased().hasPrefix("http") { s = "https://" + s }
         while s.hasSuffix("/") { s.removeLast() }
         guard let url = URL(string: s), let host = url.host, !host.isEmpty else { throw PhoneError.badURL }
         return url
@@ -194,6 +202,9 @@ enum PhoneClient {
 @MainActor
 final class PhoneModel: ObservableObject {
     static let shared = PhoneModel()
+    @Published var serverURL: String = GymServer.storedAddress() {
+        didSet { UserDefaults.standard.set(serverURL, forKey: GymServer.defaultsKey) }
+    }
     @Published var phase: PhonePhase = .login
     @Published var snapshot: PhoneSnapshot?
     @Published var stale = false

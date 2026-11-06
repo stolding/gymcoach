@@ -36,11 +36,11 @@ Gebruik je eigen bundle-ID: pas `bundleIdPrefix` en `PRODUCT_BUNDLE_IDENTIFIER` 
 
 ## Gebruik
 
-1. Serveradres (bijv. `http://192.168.1.50:8765` thuis, of `https://gymcoach.example.com` via je VPS) en je GymCoach-gebruikersnaam en wachtwoord. Het wachtwoord wordt niet bewaard; de sessie wel.
+1. Inloggen voor het scherm: adres (standaard `https://gymcoach.stolding.com`), gebruikersnaam en wachtwoord. Het wachtwoord wordt niet bewaard; de sessie wel.
 2. GymCoach → Instellingen → Apple Health → *Koppelsleutel maken*.
-3. In de app, bij *Apple Health* of *Meer → Synchroniseren*: de sleutel. *Test verbinding*.
+3. In de app, bij *Apple Health* of *Meer → Synchroniseren*: een **apart** serveradres voor de sync (thuis vaak `http://192.168.1.50:8765`) en de sleutel. *Test verbinding*.
 4. *Volledige historie versturen* (eenmalig), daarna gaat het vanzelf.
 
-*Automatisch alleen thuis* geldt alleen voor de Health-sync. Het scherm met je schema probeert de server te bereiken zodra je de app opent, ook buitenshuis.
+De twee adressen worden niet gedeeld. *Automatisch alleen thuis* geldt alleen voor de Health-sync. Het scherm probeert zijn eigen adres zodra je de app opent.
 
-Gewone `http://` naar je thuisnetwerk is toegestaan; buitenshuis heb je een bereikbaar adres nodig (VPS met tunnel, zie de hoofd-README, of Tailscale).
+Gewone `http://` naar je thuisnetwerk is toegestaan voor de sync. Het scherm onderweg gebruikt het adres dat je daar invult.

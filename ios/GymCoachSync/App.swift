@@ -55,9 +55,9 @@ struct SyncSettingsView: View {
                     Button("Test verbinding") { Task { await model.testConnection() } }
                         .disabled(model.busy || !model.isConfigured)
                 } header: {
-                    Text("GymCoach-server")
+                    Text("Apple Health")
                 } footer: {
-                    Text("Het adres waarop je GymCoach opent. De koppelsleutel maak je in GymCoach bij Instellingen → Apple Health.")
+                    Text("Alleen voor de Health-sync, los van het adres bij inloggen. Thuis vaak http://192.168.1.50:8765. De koppelsleutel maak je in GymCoach bij Instellingen → Apple Health.")
                 }
 
                 Section {

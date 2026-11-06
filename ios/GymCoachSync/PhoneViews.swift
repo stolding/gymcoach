@@ -484,6 +484,16 @@ struct MoreView: View {
         NavigationStack {
             List {
                 Section {
+                    TextField("https://gymcoach.stolding.com", text: $phone.serverURL)
+                        .keyboardType(.URL)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                } header: {
+                    Text("Scherm")
+                } footer: {
+                    Text("Adres voor schema, voortgang, lichaam en doel. Los van het adres voor Apple Health.")
+                }
+                Section {
                     NavigationLink("Synchroniseren") { SyncSettingsView() }
                     NavigationLink("Over GymCoach") { AboutView() }
                 }
@@ -519,7 +529,6 @@ struct MainTabs: View {
 
 struct LoginView: View {
     @EnvironmentObject var phone: PhoneModel
-    @EnvironmentObject var sync: SyncModel
     @State private var password = ""
 
     var body: some View {
@@ -528,7 +537,7 @@ struct LoginView: View {
                 Section {
                     HStack { Spacer(); Mark(size: 72); Spacer() }
                         .listRowBackground(Color.clear)
-                    TextField("http://192.168.1.50:8765", text: $sync.serverURL)
+                    TextField("https://gymcoach.stolding.com", text: $phone.serverURL)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -545,9 +554,9 @@ struct LoginView: View {
                             if phone.busy { Spacer(); ProgressView() }
                         }
                     }
-                    .disabled(phone.busy || sync.serverURL.trimmingCharacters(in: .whitespaces).isEmpty || phone.username.isEmpty || password.count < 8)
+                    .disabled(phone.busy || phone.serverURL.trimmingCharacters(in: .whitespaces).isEmpty || phone.username.isEmpty || password.count < 8)
                 } footer: {
-                    Text("Zelfde account als op de computer. Het wachtwoord wordt niet bewaard.")
+                    Text("Adres van GymCoach voor dit scherm. Standaard gymcoach.stolding.com. Apple Health heeft een eigen adres. Het wachtwoord wordt niet bewaard.")
                 }
                 if !phone.error.isEmpty {
                     Section { Text(phone.error).foregroundStyle(.red) }

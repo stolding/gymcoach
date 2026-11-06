@@ -112,7 +112,7 @@ Optioneel: een Withings-weegschaal met een eigen Withings-ontwikkelaarsapp; een 
 
 ## Bereikbaar van buitenaf
 
-GymCoach draait thuis en is standaard alleen in je eigen netwerk bereikbaar; er is geen centrale server. Wil je het buitenshuis gebruiken (ook de iPhone-app: Health-sync en het schema), dan regel je dat zelf, bijvoorbeeld met:
+GymCoach draait thuis en is standaard alleen in je eigen netwerk bereikbaar; er is geen centrale server. Wil je het buitenshuis gebruiken (ook de Health-sync van de iPhone), dan regel je dat zelf, bijvoorbeeld met:
 
 - **Tailscale** of een andere VPN: het eenvoudigst, niets open naar internet;
 - een **reverse proxy** met https op je eigen domein (Caddy, nginx, Traefik, Nginx Proxy Manager) met `TRUST_PROXY=1`;

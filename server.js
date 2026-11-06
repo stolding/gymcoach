@@ -522,7 +522,7 @@ const routes = {
     if (next.birthYear != null && !(next.birthYear >= 1920 && next.birthYear <= new Date().getFullYear() - 10)) throw Object.assign(new Error(tr('srv.ongeldigGeboortejaar')), { status: 400 });
     next.hrMax = next.hrMax === '' || next.hrMax == null || !(+next.hrMax) ? null : Math.round(+next.hrMax);
     if (next.hrMax != null && !(next.hrMax >= 120 && next.hrMax <= 230)) throw Object.assign(new Error(tr('srv.maximaleHartslagMoetTussen')), { status: 400 });
-    next.stepGoal = Math.min(40000, Math.max(1000, Math.round(+next.stepGoal || 8000)));
+    if (Object.hasOwn(incoming, 'stepGoal')) next.stepGoal = Math.min(40000, Math.max(1000, Math.round(+incoming.stepGoal || 8000)));
     if (next.heightCm != null && !(next.heightCm >= 100 && next.heightCm <= 250)) throw Object.assign(new Error(tr('srv.lengteMoetTussen100')), { status: 400 });
     next.email = String(next.email || '').trim();
     if (next.email && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(next.email)) throw Object.assign(new Error(tr('srv.ongeldigEMailadres')), { status: 400 });
@@ -559,6 +559,14 @@ const routes = {
   'PUT /api/goal': async (req) => {
     const incoming = await body(req);
     const ctx = await context();
+    const clampSteps = (n) => Math.min(40000, Math.max(1000, Math.round(+n || 8000)));
+    if (incoming.stepsOnly) {
+      const s = await store.getSettings();
+      if (Object.hasOwn(incoming, 'stepGoal')) s.stepGoal = clampSteps(incoming.stepGoal);
+      await store.saveSettings(s);
+      ctx.settings = s;
+      return { ...(await goalView(ctx)), saved: true };
+    }
     const applied = goal.applyOutcome({
       settings: ctx.settings, bodyLog: ctx.bodyLog, history: ctx.history, today: goal.todayISO(),
       composition: incoming.composition ?? null,
@@ -569,9 +577,18 @@ const routes = {
       const key = applied.error === 'weight' ? 'goal.needWeight' : applied.error === 'muscle' ? 'goal.needMuscle' : applied.error === 'e1rm' ? 'goal.needE1rm' : applied.error === 'dup' ? 'goal.dupMuscle' : applied.error === 'many' ? 'goal.tooMany' : 'goal.badInput';
       throw err(key, { name: applied.name || '' });
     }
-    if (!applied.saved) return { ...(await goalView(ctx)), blocked: applied.blocked, saved: false };
+    if (!applied.saved) {
+      if (Object.hasOwn(incoming, 'stepGoal')) {
+        const s = await store.getSettings();
+        s.stepGoal = clampSteps(incoming.stepGoal);
+        await store.saveSettings(s);
+        ctx.settings = s;
+      }
+      return { ...(await goalView(ctx)), blocked: applied.blocked, saved: false };
+    }
     const s = await store.getSettings();
     s.outcome = applied.outcome;
+    if (Object.hasOwn(incoming, 'stepGoal')) s.stepGoal = clampSteps(incoming.stepGoal);
     if (incoming.alignPlan != null) s.alignPlan = !!incoming.alignPlan;
     if (s.alignPlan && applied.outcome) {
       const style = goal.trainingStyle(applied.outcome);

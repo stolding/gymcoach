@@ -1869,8 +1869,11 @@ function goalFormBody() {
     if (Number.isNaN(pct) || Number.isNaN(months) || pct == null || months == null) throw new Error(t('goal.badInput'));
     return { muscle: muscleKey, pct, months };
   }).filter(Boolean);
-  if (!composition && !strengths.length) throw new Error(t('goal.badInput'));
-  return { composition, strengths: strengths.length ? strengths : null };
+  const steps = num(f.steps);
+  if (Number.isNaN(steps)) throw new Error(t('goal.badInput'));
+  const stepGoal = steps == null ? 8000 : steps;
+  if (!composition && !strengths.length) return { stepsOnly: true, stepGoal };
+  return { composition, strengths: strengths.length ? strengths : null, stepGoal };
 }
 
 async function saveGoal(accept, clear) {
@@ -1878,6 +1881,7 @@ async function saveGoal(accept, clear) {
   const body = clear ? { composition: null, strengths: null, accept: false, alignPlan } : { ...goalFormBody(), accept: !!accept, alignPlan };
   goalView = await api('PUT', '/api/goal', body);
   if (state?.settings && goalView.alignPlan != null) state.settings.alignPlan = !!goalView.alignPlan;
+  if (state?.settings && goalView.stepGoal != null) state.settings.stepGoal = goalView.stepGoal;
   if (state?.settings && goalView.saved && goalView.outcome && goalView.alignPlan && goalView.style?.goal) {
     state.settings.goal = goalView.style.goal;
     const sel = $('#settingsForm')?.elements?.goal;
@@ -1885,7 +1889,7 @@ async function saveGoal(accept, clear) {
   }
   renderGoal();
   if (state?.overview) renderHome();
-  if (goalView.saved) toast(!goalView.outcome ? t('goal.cleared') : t('goal.saved'));
+  if (goalView.saved) toast(clear ? t('goal.cleared') : t('goal.saved'));
   if (goalView.saved && goalView.outcome && goalView.alignPlan) await offerAlignedPlan();
 }
 
@@ -1937,6 +1941,7 @@ function fillGoalForm(v) {
   if (box) box.innerHTML = goals.map((g) => strengthRow(g.muscle ? g : null, v.muscles)).join('');
   const align = $('#goalAlign');
   if (align) align.checked = !!v.alignPlan;
+  if (f.steps) f.steps.value = v.stepGoal ?? '';
 }
 
 function showGoalNow(v) {

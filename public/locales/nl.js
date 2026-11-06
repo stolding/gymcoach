@@ -197,7 +197,7 @@ export default {
   'mus.Adductors': 'Adductoren', 'mus.Calves': 'Kuiten', 'mus.Abs': 'Buik / core', 'mus.Back Extensors': 'Onderrug', 'mus.Full Body': 'Hele lichaam',
 
   // index.html (vaste teksten van de pagina)
-  'ui.setBody.voorDeRichtwaardenIn': 'Voor de richtwaarden in de grafieken, BMI, hartslagzones, rust en volume in je plan en je stappendoel. <a href="#" data-explain="persoonlijk">Waarom?</a>',
+  'ui.setBody.voorDeRichtwaardenIn': 'Voor de richtwaarden in de grafieken, BMI, hartslagzones, rust en volume in je plan. <a href="#" data-explain="persoonlijk">Waarom?</a>',
   'ui.setMail.bijvoorbeeldEenMailboxUit': 'Bijvoorbeeld een mailbox uit Plesk: server <code>mail.jouwdomein.nl</code>, poort 587 met STARTTLS (of 465 met TLS).',
   'ui.top.voorGymMonster': 'voor Gym Monster',
   'ui.top.sync': 'Sync',
@@ -262,6 +262,9 @@ export default {
   'goal.form.muscle': 'Spier (%)',
   'goal.form.muscleHint': 'Leeg laten als je geen spierdoel stelt. Bijvoorbeeld 15, bovenop het gewicht.',
   'goal.form.weeks': 'Weken',
+  'goal.form.stepsHead': 'Stappen',
+  'goal.form.steps': 'Stappendoel per dag',
+  'goal.form.stepsHint': 'Hoeveel stappen je per dag wilt zetten. Dit verandert het lichaams- en krachtdoel niet.',
   'goal.form.exercise': 'Oefening',
   'goal.form.none': 'Geen krachtdoel',
   'goal.form.pct': 'Groei (%)',

@@ -437,49 +437,25 @@ struct ProgressViewScreen: View {
 
 struct BodyView: View {
     @EnvironmentObject var phone: PhoneModel
+    @State private var metric = "fat"
+    @State private var range = "all"
+    @State private var showMarks = true
+    @State private var showTrend = true
+
+    private let orange = Color(red: 1, green: 0.48, blue: 0.18)
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 if let snap = phone.snapshot {
-                    VStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 12) {
                         StaleBanner()
-                        if let measure = snap.body {
-                            PhoneCard {
-                                Text("Gewicht").font(.subheadline.weight(.semibold))
-                                if let kg = measure.kg {
-                                    Text("\(phoneKg(kg)) kg").font(.title.monospacedDigit())
-                                }
-                                if !measure.date.isEmpty { Text(measure.date).font(.caption).foregroundStyle(.secondary) }
-                                if let slope = measure.slope {
-                                    Text("\(signedKg(slope)) kg per week").font(.subheadline).foregroundStyle(.secondary)
-                                }
-                                if measure.spark.count > 1 { Sparkline(values: measure.spark) }
-                            }
-                            if measure.muscle != nil || measure.fat != nil {
-                                PhoneCard {
-                                    if let muscle = measure.muscle {
-                                        LabeledContent("Spiermassa") { Text("\(phoneKg(muscle)) kg") }
-                                        if !measure.muscleDate.isEmpty {
-                                            Text(measure.muscleDate).font(.caption).foregroundStyle(.secondary)
-                                        }
-                                    }
-                                    if let fat = measure.fat {
-                                        LabeledContent("Vet") { Text("\(phoneKg(fat))%") }
-                                    }
-                                }
-                            }
-                        } else {
-                            PhoneCard {
-                                Text("Nog geen weging. Die komt van de weegschaal of van Lichaam op de computer.")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
+                        composition(snap.composition)
                         PhoneCard {
                             Text("Stappen vandaag").font(.subheadline.weight(.semibold))
                             Text(stepLine(snap.steps)).font(.title3.monospacedDigit())
                             ProgressView(value: Double(snap.steps.today ?? 0), total: Double(max(snap.steps.goal, 1)))
-                                .tint(Color(red: 1, green: 0.48, blue: 0.18))
+                                .tint(orange)
                         }
                     }
                     .padding(16)
@@ -491,10 +467,255 @@ struct BodyView: View {
         }
     }
 
+    @ViewBuilder private func composition(_ comp: PhoneComposition) -> some View {
+        if comp.metrics.isEmpty {
+            PhoneCard {
+                Text("Nog geen weging. Die komt van de weegschaal of van Lichaam op de computer.")
+                    .foregroundStyle(.secondary)
+            }
+        } else {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Lichaamssamenstelling").font(.headline)
+                Spacer()
+                if !comp.measured.isEmpty {
+                    Text(comp.measured).font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
+                }
+            }
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                ForEach(comp.metrics) { m in
+                    Button { metric = m.key } label: { tile(m, on: chosen(comp).key == m.key) }
+                        .buttonStyle(.plain)
+                }
+            }
+            chartCard(comp)
+        }
+    }
+
+    private func chosen(_ comp: PhoneComposition) -> PhoneMetric {
+        comp.metrics.first { $0.key == metric } ?? comp.metrics[0]
+    }
+
+    private func tile(_ m: PhoneMetric, on: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(m.label).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
+            Text("\(phoneKg(m.value)) \(m.unit)").font(.title3.monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
+            Text(deltaLine(m)).font(.caption2).foregroundStyle(deltaColor(m)).lineLimit(2)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(PhoneChrome.card, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2).fill(zoneColor(m.zone)).frame(width: 3).padding(.vertical, 8)
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(on ? orange : Color.white.opacity(0.08), lineWidth: on ? 1.5 : 1)
+        }
+    }
+
+    private func deltaLine(_ m: PhoneMetric) -> String {
+        guard let d = m.delta else { return " " }
+        let n = (d > 0 ? "+" : "") + phoneKg(d)
+        return m.since.isEmpty ? "\(n) \(m.unit)" : "\(n) \(m.unit) sinds \(m.since)"
+    }
+
+    private func deltaColor(_ m: PhoneMetric) -> Color {
+        if m.better == true { return .green }
+        if m.better == false { return Color(red: 1, green: 0.42, blue: 0.42) }
+        return .secondary
+    }
+
+    private func zoneColor(_ zone: String) -> Color {
+        switch zone {
+        case "ok": return Color(red: 0.30, green: 0.76, blue: 0.42)
+        case "warn": return Color(red: 0.90, green: 0.72, blue: 0.29)
+        case "bad": return Color(red: 1, green: 0.42, blue: 0.42)
+        default: return .clear
+        }
+    }
+
+    private func chartCard(_ comp: PhoneComposition) -> some View {
+        let m = chosen(comp)
+        let visible = filtered(m.points, range: range)
+        let trend = showTrend ? filtered(trendLine(m.points), range: range) : []
+        let marks = showMarks ? comp.marks.filter { mark in visibleRange(mark.d, points: m.points, range: range) } : []
+        let kinds = Set(marks.map(\.kind))
+        return PhoneCard {
+            Text("\(m.label) over tijd").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Picker("Periode", selection: $range) {
+                Text("3 mnd").tag("3m")
+                Text("Jaar").tag("1y")
+                Text("Alles").tag("all")
+            }
+            .pickerStyle(.segmented)
+            HStack(spacing: 8) {
+                chartChip("Activiteiten", on: showMarks) { showMarks.toggle() }
+                chartChip("Trendlijn", on: showTrend) { showTrend.toggle() }
+            }
+            if visible.count < 2 {
+                Text("Geen metingen in deze periode.").font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity, minHeight: 120)
+            } else {
+                CompChart(points: visible, trend: trend, marks: marks, legend: comp.legend, bands: m.bands)
+                    .frame(height: 210)
+            }
+            if !m.note.isEmpty {
+                Text(bandCaption(m) + m.note).font(.caption2).foregroundStyle(.secondary)
+            }
+            if showMarks && !kinds.isEmpty {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 6)], alignment: .leading, spacing: 4) {
+                    ForEach(comp.legend.filter { kinds.contains($0.kind) }) { item in
+                        HStack(spacing: 4) {
+                            Circle().fill(colorHex(item.color)).frame(width: 7, height: 7)
+                            Text(item.label).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func bandCaption(_ m: PhoneMetric) -> String {
+        m.bands.isEmpty ? "" : "goed · let op · niet goed · "
+    }
+
+    private func chartChip(_ title: String, on: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Circle().fill(on ? orange : Color.white.opacity(0.25)).frame(width: 7, height: 7)
+                Text(title).font(.caption)
+            }
+            .padding(.horizontal, 8).padding(.vertical, 5)
+            .background((on ? orange : Color.white).opacity(on ? 0.16 : 0.06), in: Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
     private func stepLine(_ s: PhoneSteps) -> String {
         guard let today = s.today else { return "Nog geen stappen · doel \(phoneInt(s.goal))" }
         return "\(phoneInt(today)) / \(phoneInt(s.goal))"
     }
+}
+
+private func filtered(_ points: [PhonePoint], range: String) -> [PhonePoint] {
+    guard let last = points.last?.d, let from = rangeStart(last, range) else { return points }
+    return points.filter { $0.d >= from }
+}
+
+private func visibleRange(_ date: String, points: [PhonePoint], range: String) -> Bool {
+    guard let last = points.last?.d, let first = filtered(points, range: range).first?.d else { return false }
+    return date >= first && date <= last
+}
+
+private func rangeStart(_ last: String, _ range: String) -> String? {
+    let days = range == "3m" ? 91 : range == "1y" ? 365 : 0
+    guard days > 0 else { return nil }
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+    guard let date = PhoneDates.day(last), let from = cal.date(byAdding: .day, value: -days, to: date) else { return nil }
+    return PhoneDates.text(from)
+}
+
+private func trendLine(_ points: [PhonePoint]) -> [PhonePoint] {
+    guard points.count > 2 else { return [] }
+    var start = 0
+    var sum = 0.0
+    return points.enumerated().map { i, p in
+        sum += p.y
+        let cut = PhoneDates.shift(p.d, days: -13) ?? p.d
+        while points[start].d < cut {
+            sum -= points[start].y
+            start += 1
+        }
+        let y = (sum / Double(i - start + 1) * 100).rounded() / 100
+        return PhonePoint(d: p.d, y: y)
+    }
+}
+
+private enum PhoneDates {
+    static let parser: DateFormatter = {
+        let f = DateFormatter()
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(secondsFromGMT: 0)
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+    static func day(_ s: String) -> Date? { parser.date(from: String(s.prefix(10))) }
+    static func text(_ d: Date) -> String { parser.string(from: d) }
+    static func shift(_ s: String, days: Int) -> String? {
+        guard let d = day(s) else { return nil }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+        guard let n = cal.date(byAdding: .day, value: days, to: d) else { return nil }
+        return text(n)
+    }
+}
+
+struct CompChart: View {
+    var points: [PhonePoint]
+    var trend: [PhonePoint]
+    var marks: [PhoneMark]
+    var legend: [PhoneLegend]
+    var bands: [PhoneBand]
+
+    var body: some View {
+        Canvas { ctx, size in
+            let gutter: CGFloat = marks.isEmpty ? 16 : 28
+            let plot = CGRect(x: 0, y: 4, width: size.width, height: size.height - gutter)
+            guard let first = PhoneDates.day(points[0].d), let last = PhoneDates.day(points[points.count - 1].d) else { return }
+            let spanT = max(last.timeIntervalSince(first), 86400)
+            let ys = points.map(\.y) + trend.map(\.y)
+            let lo = (ys.min() ?? 0)
+            let hi = (ys.max() ?? 1)
+            let pad = max((hi - lo) * 0.08, 0.05)
+            let y0 = lo - pad, y1 = hi + pad
+            let spanY = max(y1 - y0, 0.001)
+            func xOf(_ d: String) -> CGFloat? {
+                guard let t = PhoneDates.day(d) else { return nil }
+                return plot.minX + plot.width * CGFloat(t.timeIntervalSince(first) / spanT)
+            }
+            func yOf(_ v: Double) -> CGFloat { plot.minY + plot.height * CGFloat(1 - (v - y0) / spanY) }
+            for band in bands where band.to > y0 && band.from < y1 {
+                let top = yOf(min(band.to, y1))
+                let bot = yOf(max(band.from, y0))
+                let rect = CGRect(x: plot.minX, y: top, width: plot.width, height: max(bot - top, 0))
+                ctx.fill(Path(rect), with: .color(zoneFill(band.cls)))
+            }
+            stroke(ctx, points, xOf, yOf, Color(red: 1, green: 0.48, blue: 0.18), 2)
+            if trend.count > 2 { stroke(ctx, trend, xOf, yOf, Color(red: 0.62, green: 0.78, blue: 1), 1.5) }
+            let byKind = Dictionary(uniqueKeysWithValues: legend.map { ($0.kind, $0.color) })
+            for mark in marks {
+                guard let x = xOf(mark.d), x >= plot.minX, x <= plot.maxX else { continue }
+                let rect = CGRect(x: x - 1, y: size.height - 10, width: 2, height: 8)
+                ctx.fill(Path(rect), with: .color(colorHex(byKind[mark.kind] ?? "#9a9ca1")))
+            }
+        }
+    }
+
+    private func stroke(_ ctx: GraphicsContext, _ pts: [PhonePoint], _ xOf: (String) -> CGFloat?, _ yOf: (Double) -> CGFloat, _ color: Color, _ width: CGFloat) {
+        var path = Path()
+        var started = false
+        for p in pts {
+            guard let x = xOf(p.d) else { continue }
+            let y = yOf(p.y)
+            if started { path.addLine(to: CGPoint(x: x, y: y)) } else { path.move(to: CGPoint(x: x, y: y)); started = true }
+        }
+        ctx.stroke(path, with: .color(color), style: StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round))
+    }
+
+    private func zoneFill(_ cls: String) -> Color {
+        switch cls {
+        case "ok": return Color(red: 0.30, green: 0.76, blue: 0.42).opacity(0.16)
+        case "warn": return Color(red: 0.90, green: 0.72, blue: 0.29).opacity(0.14)
+        default: return Color(red: 1, green: 0.42, blue: 0.42).opacity(0.12)
+        }
+    }
+}
+
+private func colorHex(_ s: String) -> Color {
+    var n: UInt64 = 0
+    Scanner(string: s.trimmingCharacters(in: CharacterSet(charactersIn: "#"))).scanHexInt64(&n)
+    return Color(red: Double((n >> 16) & 255) / 255, green: Double((n >> 8) & 255) / 255, blue: Double(n & 255) / 255)
 }
 
 struct GoalView: View {

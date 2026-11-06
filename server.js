@@ -560,12 +560,12 @@ const routes = {
   // iPhone, onderweg: overzicht, schema, voortgang, lichaam en doel in één klein antwoord. Alleen lezen.
   'GET /api/phone': async () => {
     const ctx = await context();
-    const [rawPlan, daily] = await Promise.all([store.getPlan(), store.getHealthDaily()]);
+    const [rawPlan, daily, activities] = await Promise.all([store.getPlan(), store.getHealthDaily(), store.getActivities()]);
     const gv = await goalView(ctx, daily);
     return phone.view({
       version: VERSION, name: auth.publicUser(store.currentUser())?.name || '', today: goal.todayISO(),
       plan: rawPlan, settings: ctx.settings, workouts: ctx.workouts, sessions: ctx.sessions,
-      history: ctx.history, bodyLog: ctx.bodyLog, daily, goalView: gv,
+      history: ctx.history, bodyLog: ctx.bodyLog, daily, goalView: gv, activities,
       recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }),
     });
   },

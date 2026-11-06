@@ -9,7 +9,7 @@ enum PhoneError: LocalizedError {
         switch self {
         case .badURL: return "Vul een geldig adres in voor het scherm. Voorbeeld: https://gymcoach.stolding.com"
         case .unauthorized: return "Log opnieuw in."
-        case .oldServer: return "Deze GymCoach-server kent het scherm onderweg nog niet. Werk de server bij naar 2.12.3 of nieuwer."
+        case .oldServer: return "Deze GymCoach-server kent het scherm onderweg nog niet. Werk de server bij naar 2.13.0 of nieuwer."
         case .decode: return "Het antwoord van de server was niet te lezen."
         case let .server(_, msg): return msg
         }
@@ -32,6 +32,7 @@ struct PhoneSnapshot: Codable {
     var nextKey: String?
     var goal: PhoneGoal?
     var body: PhoneBody?
+    var composition: PhoneComposition
     var recent: [PhoneRecent]
     var progress: [PhoneProgress]
     var records: [PhoneRecord]
@@ -113,6 +114,51 @@ struct PhoneBody: Codable {
     var slope: Double?
     var slopeNote: String
     var spark: [Double]
+}
+
+struct PhoneComposition: Codable {
+    var measured: String
+    var metrics: [PhoneMetric]
+    var marks: [PhoneMark]
+    var legend: [PhoneLegend]
+}
+
+struct PhoneMetric: Codable, Identifiable {
+    var key: String
+    var label: String
+    var unit: String
+    var value: Double
+    var delta: Double?
+    var since: String
+    var better: Bool?
+    var zone: String
+    var note: String
+    var bands: [PhoneBand]
+    var points: [PhonePoint]
+    var id: String { key }
+}
+
+struct PhonePoint: Codable {
+    var d: String
+    var y: Double
+}
+
+struct PhoneBand: Codable {
+    var from: Double
+    var to: Double
+    var cls: String
+}
+
+struct PhoneMark: Codable {
+    var d: String
+    var kind: String
+}
+
+struct PhoneLegend: Codable, Identifiable {
+    var kind: String
+    var label: String
+    var color: String
+    var id: String { kind }
 }
 
 struct PhoneWeekPlan: Codable {

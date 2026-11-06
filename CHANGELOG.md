@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.13.0 — 6 november 2026
+- Op Lichaam in GymCoach Sync staan zeven tegels (gewicht, vet, spiermassa, vetvrije massa, spiermassa-percentage en hartslag in rust) met een grafiek van de gekozen tegel.
+
 ## 2.12.3 — 6 november 2026
 - GymCoach Sync opent op een overzicht: herstel, de volgende training, het weekdoel, streak, volume, trainingstijd, gewicht, het doel en het plan van deze week.
 

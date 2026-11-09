@@ -9,7 +9,7 @@ enum PhoneError: LocalizedError {
         switch self {
         case .badURL: return "Vul een geldig adres in voor het scherm. Voorbeeld: https://gymcoach.stolding.com"
         case .unauthorized: return "Log opnieuw in."
-        case .oldServer: return "Deze GymCoach-server kent het scherm onderweg nog niet. Werk de server bij naar 2.13.0 of nieuwer."
+        case .oldServer: return "Deze GymCoach-server kent het scherm onderweg nog niet. Werk de server bij naar 2.13.1 of nieuwer."
         case .decode: return "Het antwoord van de server was niet te lezen."
         case let .server(_, msg): return msg
         }
@@ -165,13 +165,21 @@ struct PhoneWeekPlan: Codable {
     var week: Int
     var goal: String
     var focus: [String]
+    var figure: String
     var sessions: Int
     var avgMinutes: Int
     var sets: Int
     var exercises: Int
     var volume: Int
     var heavier: Int
+    var scores: [PhoneScore]
     var muscles: [PhoneMuscle]
+}
+
+struct PhoneScore: Codable, Identifiable {
+    var key: String
+    var value: Double
+    var id: String { key }
 }
 
 struct PhoneMuscle: Codable {

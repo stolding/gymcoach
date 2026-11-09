@@ -686,6 +686,13 @@ function openExercise(session, i) {
   });
   if (!dlg.open) dlg.showModal();
 }
+// Staande video's houden hun eigen verhouding; het kader volgt breedte en hoogte van het bestand.
+document.addEventListener('loadedmetadata', (ev) => {
+  const v = ev.target;
+  if (!(v instanceof HTMLVideoElement) || !v.closest('.pk-media') || !(v.videoWidth > 0) || !(v.videoHeight > 0)) return;
+  v.style.aspectRatio = `${v.videoWidth} / ${v.videoHeight}`;
+}, true);
+
 // Instructies van Speediance: tekst, foto's en video, boven het oefeningenvenster.
 async function openInstructions(ex) {
   let dlg = $('#infoDlg');

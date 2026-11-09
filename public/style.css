@@ -778,7 +778,8 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .pk-detail { display: flex; flex-direction: column; gap: .8rem; }
 .pk-detail h3 { margin: 0; font-size: 1.2rem; }
 .pk-media { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: .8rem; }
-.pk-media video, .pk-media img { width: 100%; border-radius: 10px; background: #000; aspect-ratio: 16 / 10; object-fit: cover; }
+.pk-media img { width: 100%; border-radius: 10px; background: #000; aspect-ratio: 16 / 10; object-fit: cover; }
+.pk-media video { width: auto; max-width: 100%; height: auto; max-height: min(62vh, 560px); align-self: start; justify-self: start; border-radius: 10px; background: #000; object-fit: contain; }
 .pk-mus { background: var(--bg); border-radius: 10px; padding: .7rem .8rem; display: flex; flex-direction: column; gap: .35rem; font-size: .88rem; }
 .pk-text { white-space: pre-line; margin: .2rem 0 0; font-size: .9rem; line-height: 1.55; }
 .pk-kps { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .6rem; }

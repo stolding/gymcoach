@@ -137,13 +137,16 @@ struct DashboardView: View {
                 if let snap = phone.snapshot {
                     VStack(alignment: .leading, spacing: 12) {
                         StaleBanner()
-                        Text(snap.name.isEmpty ? snap.today : snap.name).font(.title2.weight(.semibold))
-                        Text(snap.today).font(.subheadline).foregroundStyle(.secondary)
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(snap.name.isEmpty ? "Overzicht" : snap.name).font(.title2.weight(.semibold))
+                            Spacer()
+                            Text(snap.today).font(.subheadline).foregroundStyle(.secondary)
+                        }
                         recoveryCard(snap)
-                        nextCard(snap)
-                        statGrid(snap)
-                        goalCard(snap)
                         weekPlanCard(snap)
+                        nextRow(snap)
+                        goalCard(snap)
+                        statGrid(snap)
                     }
                     .padding(16)
                 }
@@ -165,42 +168,53 @@ struct DashboardView: View {
         }
     }
 
-    @ViewBuilder private func nextCard(_ snap: PhoneSnapshot) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            PhoneCard {
-                Text("Volgende training").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                if let s = snap.sessions.first(where: { $0.key == snap.nextKey }) {
-                    Text(s.name).font(.title3.weight(.semibold))
-                    metaLine(s, snap)
-                    if s.outdoor {
-                        Text(s.advice.isEmpty ? "Buiten." : s.advice).font(.subheadline).foregroundStyle(.secondary)
-                    } else {
-                        VStack(alignment: .leading, spacing: 2) {
-                            ForEach(Array(s.exercises.prefix(6).enumerated()), id: \.offset) { i, e in
-                                Text("\(i + 1). \(e.title)").font(.subheadline).lineLimit(1)
+    private func nextRow(_ snap: PhoneSnapshot) -> some View {
+        Grid(horizontalSpacing: 12, verticalSpacing: 12) {
+            GridRow {
+                PhoneCard {
+                    Text("Volgende training").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    if let s = snap.sessions.first(where: { $0.key == snap.nextKey }) {
+                        Text(s.name).font(.title3.weight(.semibold)).lineLimit(2)
+                        metaLine(s, snap)
+                        if s.outdoor {
+                            Text(s.advice.isEmpty ? "Buiten." : s.advice).font(.subheadline).foregroundStyle(.secondary)
+                        } else {
+                            VStack(alignment: .leading, spacing: 2) {
+                                ForEach(Array(s.exercises.prefix(4).enumerated()), id: \.offset) { i, e in
+                                    Text("\(i + 1). \(e.title)").font(.subheadline).lineLimit(1)
+                                }
                             }
                         }
+                        Button("Bekijk in plan", action: openPlan).font(.subheadline)
+                    } else if snap.sessions.isEmpty {
+                        Text("Er staat nog geen weekplan. Dat maak je op de computer.").foregroundStyle(.secondary)
+                    } else {
+                        Text("Deze week staat alles op gedaan.").font(.headline)
                     }
-                    Button("Bekijk in plan", action: openPlan).font(.subheadline)
-                } else if snap.sessions.isEmpty {
-                    Text("Er staat nog geen weekplan. Dat maak je op de computer.").foregroundStyle(.secondary)
-                } else {
-                    Text("Deze week staat alles op gedaan.").font(.headline)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                PhoneCard { weekRing(snap.week) }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
-            weekRing(snap.week)
         }
     }
 
     private func metaLine(_ s: PhoneSession, _ snap: PhoneSnapshot) -> some View {
-        HStack(spacing: 8) {
-            if let m = s.minutes { Text("~\(m) min") }
-            if !s.outdoor { Text("\(s.exercises.count) oefeningen") }
-            if !snap.weekPlan.goal.isEmpty { Text(snap.weekPlan.goal) }
-            if s.onDevice { Text("op toestel").font(.caption.weight(.semibold)).padding(.horizontal, 6).padding(.vertical, 2).background(Color.green.opacity(0.2), in: Capsule()) }
+        var bits: [String] = []
+        if let m = s.minutes { bits.append("~\(m) min") }
+        if !s.outdoor { bits.append("\(s.exercises.count) oefeningen") }
+        if !snap.weekPlan.goal.isEmpty { bits.append(snap.weekPlan.goal) }
+        return VStack(alignment: .leading, spacing: 4) {
+            Text(bits.joined(separator: " · "))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if s.onDevice {
+                Text("op toestel").font(.caption.weight(.semibold))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(Color.green.opacity(0.2), in: Capsule())
+            }
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
     }
 
     private func weekRing(_ week: PhoneWeek) -> some View {
@@ -214,41 +228,46 @@ struct DashboardView: View {
                 Text("\(week.done)/\(week.target)").font(.headline.monospacedDigit())
             }
             .frame(width: 84, height: 84)
-            Text("Weekdoel").font(.caption2).foregroundStyle(.secondary)
+            Text("Weekdoel").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             Text("deze week").font(.caption2).foregroundStyle(.secondary)
         }
-        .frame(width: 96)
+        .frame(maxWidth: .infinity)
     }
 
     private func statGrid(_ snap: PhoneSnapshot) -> some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
-            PhoneCard {
-                Text("Streak").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                Text("\(snap.week.streak)").font(.title.monospacedDigit()) + Text(snap.week.streak == 1 ? " week" : " weken").font(.subheadline)
-                Text("op rij je weekdoel gehaald").font(.caption2).foregroundStyle(.secondary)
-            }
-            PhoneCard {
-                Text("Volume deze week").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                Text("\(phoneInt(snap.week.volume)) kg").font(.title3.monospacedDigit())
-                Text(snap.week.volumeNote).font(.caption).foregroundStyle(.secondary)
-            }
-            PhoneCard {
-                Text("Trainingstijd").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                Text("\(snap.week.minutes) min").font(.title3.monospacedDigit())
-                Text("\(phoneInt(snap.week.kcal)) kcal deze week").font(.caption).foregroundStyle(.secondary)
-            }
-            PhoneCard {
-                Text("Lichaamsgewicht").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                if let body = snap.body, let kg = body.kg {
-                    Text(body.fat != nil ? "\(phoneKg(kg)) kg · \(phoneKg(body.fat ?? 0))% vet" : "\(phoneKg(kg)) kg")
-                        .font(.title3.monospacedDigit())
-                    Text(body.slopeNote).font(.caption).foregroundStyle(.secondary)
-                    if body.spark.count > 1 { Sparkline(values: body.spark) }
-                } else {
-                    Text("Nog geen weging.").font(.caption).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Voortgang deze week").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Grid(horizontalSpacing: 12, verticalSpacing: 12) {
+                GridRow {
+                    statTile("Streak", "\(snap.week.streak) \(snap.week.streak == 1 ? "week" : "weken")", "op rij je weekdoel gehaald")
+                    statTile("Volume deze week", "\(phoneInt(snap.week.volume)) kg", snap.week.volumeNote)
+                }
+                GridRow {
+                    statTile("Trainingstijd", "\(snap.week.minutes) min", "\(phoneInt(snap.week.kcal)) kcal deze week")
+                    PhoneCard {
+                        Text("Lichaamsgewicht").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        if let body = snap.body, let kg = body.kg {
+                            Text(body.fat != nil ? "\(phoneKg(kg)) kg · \(phoneKg(body.fat ?? 0))% vet" : "\(phoneKg(kg)) kg")
+                                .font(.title3.monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
+                            Text(body.slopeNote).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                            if body.spark.count > 1 { Sparkline(values: body.spark).frame(height: 28) }
+                        } else {
+                            Text("Nog geen weging.").font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 }
             }
         }
+    }
+
+    private func statTile(_ title: String, _ value: String, _ note: String) -> some View {
+        PhoneCard {
+            Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            Text(value).font(.title3.monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
+            Text(note).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     @ViewBuilder private func goalCard(_ snap: PhoneSnapshot) -> some View {
@@ -297,20 +316,29 @@ struct DashboardView: View {
                 Text(plan.focus.joined(separator: "  ·  ")).font(.caption).foregroundStyle(.secondary)
             }
             if plan.sessions > 0 {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                    miniStat("Trainingen", "\(plan.sessions) × ~\(plan.avgMinutes) min")
-                    miniStat("Werksets", "\(plan.sets) · \(plan.exercises) oef.")
-                    miniStat("Gepland volume", "\(phoneInt(plan.volume)) kg")
-                    miniStat("Zwaarder", "\(plan.heavier) oefeningen ↑")
+                HStack(alignment: .center, spacing: 12) {
+                    BodyFigure(scores: plan.scores, figure: plan.figure)
+                        .frame(width: 136)
+                    Grid(horizontalSpacing: 8, verticalSpacing: 8) {
+                        GridRow {
+                            planStat("Trainingen", "\(plan.sessions) × ~\(plan.avgMinutes) min")
+                            planStat("Werksets", "\(plan.sets) · \(plan.exercises) oef.")
+                        }
+                        GridRow {
+                            planStat("Gepland volume", plannedAmount(plan.volume))
+                            planStat("Zwaarder", "\(plan.heavier) oefeningen ↑")
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .top)
                 }
                 ForEach(Array(plan.muscles.enumerated()), id: \.offset) { _, m in
                     HStack(spacing: 8) {
-                        Text(m.name).font(.caption).frame(width: 110, alignment: .leading).lineLimit(1)
+                        Text(m.name).font(.caption).lineLimit(1).minimumScaleFactor(0.75).frame(width: 118, alignment: .leading)
                         ProgressView(value: min(1.0, m.share)).tint(orange)
                         Text(phoneKg(m.value)).font(.caption.monospacedDigit()).frame(width: 36, alignment: .trailing)
                     }
                 }
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 108), spacing: 8)], alignment: .leading, spacing: 8) {
+                ChipFlow(spacing: 8) {
                     ForEach(snap.sessions) { s in
                         HStack(spacing: 4) {
                             if s.done { Image(systemName: "checkmark").font(.caption2) }
@@ -322,16 +350,68 @@ struct DashboardView: View {
                         .background((s.done ? Color.green : Color.white).opacity(0.12), in: Capsule())
                     }
                 }
+            } else {
+                Text("Er staat nog geen weekplan. Dat maak je op de computer.").foregroundStyle(.secondary)
             }
         }
     }
 
-    private func miniStat(_ title: String, _ value: String) -> some View {
+    private func planStat(_ title: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.caption2).foregroundStyle(.secondary)
-            Text(value).font(.subheadline.weight(.semibold))
+            Text(title).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+            Text(value).font(.subheadline.weight(.semibold)).lineLimit(2).minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(8)
+        .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private func plannedAmount(_ n: Int) -> String {
+        guard n >= 10000 else { return "\(phoneInt(n)) kg" }
+        let tonnes = (Double(n) / 1000).formatted(.number.precision(.fractionLength(0...1)))
+        return "\(tonnes) t"
+    }
+}
+
+struct ChipFlow: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let rows = rows(in: proposal.width ?? 0, subviews: subviews)
+        let height = rows.reduce(CGFloat(0)) { $0 + ($1.map(\.height).max() ?? 0) } + spacing * CGFloat(max(rows.count - 1, 0))
+        return CGSize(width: proposal.width ?? 0, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let rows = rows(in: bounds.width, subviews: subviews)
+        var y = bounds.minY
+        var index = 0
+        for row in rows {
+            let rowH = row.map(\.height).max() ?? 0
+            let used = row.reduce(CGFloat(0)) { $0 + $1.width } + spacing * CGFloat(max(row.count - 1, 0))
+            var x = bounds.minX + max(0, (bounds.width - used) / 2)
+            for size in row {
+                subviews[index].place(at: CGPoint(x: x, y: y), anchor: .topLeading, proposal: ProposedViewSize(size))
+                x += size.width + spacing
+                index += 1
+            }
+            y += rowH + spacing
+        }
+    }
+
+    private func rows(in width: CGFloat, subviews: Subviews) -> [[CGSize]] {
+        var lines: [[CGSize]] = [[]]
+        var x: CGFloat = 0
+        for view in subviews {
+            let size = view.sizeThatFits(.unspecified)
+            if x > 0, x + size.width > width, width > 0 {
+                lines.append([])
+                x = 0
+            }
+            lines[lines.count - 1].append(size)
+            x += size.width + spacing
+        }
+        return lines.filter { !$0.isEmpty }
     }
 }
 

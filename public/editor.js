@@ -469,7 +469,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
         <div class="muted small">${esc(musName(e.muscle))} · ${esc(tabName(e.tab))}${info?.barbell ? ' · ' + t('pk.barbell') : ''}${info?.unilateral ? ' · ' + t('pk.perSide') : ''}</div>
         ${err ? `<div class="note">${esc(t('pk.infoError', { msg: err }))}</div>` : !info ? `<div class="muted">${t('pk.loading')}</div>` : `
         <div class="pk-media">
-          ${info.video ? `<video controls preload="none" playsinline ${info.poster || info.img ? `poster="${esc(info.poster || info.img)}"` : ''} src="${esc(info.video)}"></video>` : info.img ? `<img src="${esc(info.img)}" alt="">` : ''}
+          ${info.video ? `<video controls preload="metadata" playsinline ${info.poster || info.img ? `poster="${esc(info.poster || info.img)}"` : ''} src="${esc(info.video)}"></video>` : info.img ? `<img src="${esc(info.img)}" alt="">` : ''}
           <div class="pk-mus"><div class="eyebrow">${t('pk.muscles')}</div>
             ${info.main.map((m) => `<div class="row between"><span>${esc(musName(m))}</span><span class="accent-text small">${t('pk.main')}</span></div>`).join('')}
             ${info.aux.map((m) => `<div class="row between"><span>${esc(musName(m))}</span><span class="muted small">${t('pk.aux')}</span></div>`).join('')}

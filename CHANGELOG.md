@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.13.2 — 9 november 2026
+- De videovoorbeeld van een oefening speelt in de verhouding van het bestand, ook als de video hoger is dan breed.
+
+## 2.13.1 — 9 november 2026
+- Het overzicht in GymCoach Sync toont het lichaamsschema bij het weekplan. Herstel en het plan staan bovenaan, de voortgang van de week onderaan, in gelijke vakken.
+
 ## 2.13.0 — 6 november 2026
 - Op Lichaam in GymCoach Sync staan zeven tegels (gewicht, vet, spiermassa, vetvrije massa, spiermassa-percentage en hartslag in rust) met een grafiek van de gekozen tegel.
 

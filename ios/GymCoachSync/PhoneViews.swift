@@ -568,6 +568,138 @@ struct PlanView: View {
     }
 }
 
+struct GoalChart: View {
+    var line: [PhonePoint]
+    var points: [PhonePoint]
+    var unit: String
+
+    private let orange = Color(red: 1, green: 0.48, blue: 0.18)
+
+    var body: some View {
+        Canvas { ctx, size in
+            paint(&ctx, size)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessLabel)
+    }
+
+    private var accessLabel: String {
+        guard line.count >= 2, let from = PhoneDates.day(line[0].d), let to = PhoneDates.day(line[line.count - 1].d) else { return "Grafiek" }
+        let dec = AxisFormat.decimals(span: abs(line[line.count - 1].y - line[0].y), unit: unit)
+        let a = AxisFormat.tick(line[0].y, decimals: dec, unit: unit)
+        let b = AxisFormat.tick(line[line.count - 1].y, decimals: dec, unit: unit)
+        return "Streeflijn van \(a) naar \(b), \(AxisFormat.dayMonth(from)) tot \(AxisFormat.dayMonth(to))"
+    }
+
+    private func paint(_ ctx: inout GraphicsContext, _ size: CGSize) {
+        guard line.count >= 2, size.width > 48, size.height > 48 else { return }
+        guard let from = PhoneDates.day(line[0].d), let to = PhoneDates.day(line[line.count - 1].d), to >= from else { return }
+        let ys = line.map(\.y) + points.map(\.y)
+        let lo = ys.min() ?? line[0].y
+        let hi = ys.max() ?? lo
+        let pad = max((hi - lo) * 0.1, max(abs(hi) * 0.02, 0.4))
+        let y0 = lo - pad
+        let y1 = hi + pad
+        let spanY = max(y1 - y0, 0.001)
+        let nice = AxisFormat.niceTicks(lo: y0, hi: y1)
+        let yValues = nice.count >= 2 ? nice : [lo, hi]
+        let step = yValues.count >= 2 ? abs(yValues[1] - yValues[0]) : 0.1
+        let dec = AxisFormat.decimals(step: step, unit: unit)
+        let yTexts = yValues.map { AxisFormat.tick($0, decimals: dec, unit: unit) }
+        let font = Font.system(size: 11).monospacedDigit()
+        let box = CGSize(width: 240, height: 32)
+        var widest: CGFloat = 28
+        for text in yTexts {
+            let w = ctx.resolve(Text(text).font(font).foregroundColor(.secondary)).measure(in: box).width
+            if w > widest { widest = w }
+        }
+        let gutter = min(max(widest + 8, 8), size.width * 0.48)
+        let top: CGFloat = 8
+        let xBand: CGFloat = 16
+        let plotH = size.height - top - xBand
+        guard plotH > 24 else { return }
+        let plot = CGRect(x: gutter, y: top, width: max(size.width - gutter - 2, 1), height: plotH)
+        let spanT = max(to.timeIntervalSince(from), 1)
+        func xOf(_ d: String) -> CGFloat? {
+            guard let t = PhoneDates.day(d) else { return nil }
+            return plot.minX + plot.width * CGFloat(t.timeIntervalSince(from) / spanT)
+        }
+        func yOf(_ v: Double) -> CGFloat { plot.minY + plot.height * CGFloat(1 - (v - y0) / spanY) }
+        stroke(&ctx, line, xOf, yOf, Color.secondary.opacity(0.85), 1.6, dashed: true)
+        let drawn = points.filter { PhoneDates.day($0.d) != nil }
+        if drawn.count >= 2 {
+            stroke(&ctx, drawn, xOf, yOf, orange, 2.2, dashed: false)
+        }
+        for p in drawn {
+            guard let x = xOf(p.d) else { continue }
+            let y = yOf(p.y)
+            let r: CGFloat = 3.2
+            ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)), with: .color(orange))
+        }
+        var yKept: [(y: CGFloat, text: String)] = []
+        let yRows: [(y: CGFloat, text: String)] = zip(yValues, yTexts).map { (y: yOf($0.0), text: $0.1) }.sorted { $0.y < $1.y }
+        if let topRow = yRows.first {
+            yKept.append(topRow)
+            if yRows.count > 1, let bottomRow = yRows.last {
+                for row in yRows.dropFirst().dropLast() {
+                    let prev = yKept[yKept.count - 1]
+                    if abs(row.y - prev.y) < 13 || abs(row.y - bottomRow.y) < 13 || prev.text == row.text { continue }
+                    yKept.append(row)
+                }
+                let prev = yKept[yKept.count - 1]
+                if abs(bottomRow.y - prev.y) >= 13, prev.text != bottomRow.text { yKept.append(bottomRow) }
+            }
+        }
+        for row in yKept {
+            let text = ctx.resolve(Text(row.text).font(font).foregroundColor(.secondary))
+            ctx.draw(text, at: CGPoint(x: plot.minX - 4, y: row.y), anchor: .trailing)
+        }
+        let days = to.timeIntervalSince(from) / 86400
+        var ticks = AxisFormat.xLabels(first: from, last: to, count: 3, range: days <= 100 ? "3m" : "all")
+        var shrinks = 0
+        while ticks.count >= 3 && shrinks < 2 {
+            var slot: CGFloat = 36
+            for tick in ticks {
+                let w = ctx.resolve(Text(tick.text).font(font).foregroundColor(.secondary)).measure(in: box).width
+                if w + 10 > slot { slot = w + 10 }
+            }
+            if plot.width >= slot * 3.05 { break }
+            ticks = AxisFormat.xLabels(first: from, last: to, count: 2, range: days <= 100 ? "3m" : "all")
+            shrinks += 1
+        }
+        for (i, tick) in ticks.enumerated() {
+            let anchor: UnitPoint
+            let x: CGFloat
+            if i == 0 {
+                anchor = .bottomLeading
+                x = plot.minX
+            } else if i == ticks.count - 1 {
+                anchor = .bottomTrailing
+                x = plot.maxX
+            } else {
+                anchor = .bottom
+                x = plot.minX + plot.width * CGFloat(tick.date.timeIntervalSince(from) / spanT)
+            }
+            let text = ctx.resolve(Text(tick.text).font(font).foregroundColor(.secondary))
+            ctx.draw(text, at: CGPoint(x: x, y: size.height - 1), anchor: anchor)
+        }
+    }
+
+    private func stroke(_ ctx: inout GraphicsContext, _ pts: [PhonePoint], _ xOf: (String) -> CGFloat?, _ yOf: (Double) -> CGFloat, _ color: Color, _ width: CGFloat, dashed: Bool) {
+        var path = Path()
+        var started = false
+        for p in pts {
+            guard let x = xOf(p.d) else { continue }
+            let y = yOf(p.y)
+            if started { path.addLine(to: CGPoint(x: x, y: y)) } else { path.move(to: CGPoint(x: x, y: y)); started = true }
+        }
+        let style = dashed
+            ? StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round, dash: [5, 4])
+            : StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round)
+        ctx.stroke(path, with: .color(color), style: style)
+    }
+}
+
 struct ProgressViewScreen: View {
     @EnvironmentObject var phone: PhoneModel
     @State private var seriesOpen = false
@@ -614,6 +746,21 @@ struct ProgressViewScreen: View {
             }
             if !row.note.isEmpty {
                 Text(row.note).font(.caption2).foregroundStyle(.secondary)
+            }
+            if let line = row.line, line.count >= 2 {
+                GoalChart(line: line, points: row.points ?? [], unit: row.unit)
+                    .frame(height: 168)
+                HStack(spacing: 14) {
+                    HStack(spacing: 4) {
+                        Circle().fill(Color(red: 1, green: 0.48, blue: 0.18)).frame(width: 7, height: 7)
+                        Text(row.name).font(.caption2).foregroundStyle(.secondary)
+                    }
+                    HStack(spacing: 4) {
+                        Capsule().stroke(Color.secondary, style: StrokeStyle(lineWidth: 1.5, dash: [3, 2]))
+                            .frame(width: 16, height: 2)
+                        Text("Streeflijn").font(.caption2).foregroundStyle(.secondary)
+                    }
+                }
             }
         }
     }

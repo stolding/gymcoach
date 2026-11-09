@@ -387,6 +387,7 @@ export default {
   "ui.progress.volumePerWeekKg": "Volume per week (kg)",
   "ui.progress.klikOpEenTraining": "Click a workout for its exercises, sets and weights.",
   "ui.progress.series": "Measurements",
+  "ui.progress.goalLine": "Target line",
   "ui.progress.start": "Start",
   "ui.progress.now": "Now",
   "ui.progress.target": "Goal",

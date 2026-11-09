@@ -387,6 +387,7 @@ export default {
   "ui.progress.volumePerWeekKg": "Volum per uke (kg)",
   "ui.progress.klikOpEenTraining": "Klikk en treningsøkt for øvelser, sett og vekter.",
   "ui.progress.series": "Målinger",
+  "ui.progress.goalLine": "Mållinje",
   "ui.progress.start": "Start",
   "ui.progress.now": "Nå",
   "ui.progress.target": "Mål",

@@ -370,6 +370,7 @@ export default {
   'ui.progress.volumePerWeekKg': 'Volume per week (kg)',
   'ui.progress.klikOpEenTraining': 'Klik op een training voor de oefeningen, sets en gewichten.',
   'ui.progress.series': 'Metingen',
+  'ui.progress.goalLine': 'Streeflijn',
   'ui.progress.start': 'Start',
   'ui.progress.now': 'Nu',
   'ui.progress.target': 'Doel',

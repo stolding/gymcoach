@@ -343,6 +343,7 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .goal-track .track-status { font-size: 1.05rem; font-weight: 700; }
 .track-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; margin-top: .7rem; }
 .track-nums .mid { font-size: 1.2rem; }
+.goal-track .chart { height: 168px; margin-top: .7rem; }
 .progress-series { margin-top: .85rem; }
 details.collapse summary { cursor: pointer; font-weight: 650; list-style: none; display: flex; gap: .4rem; align-items: center; }
 details.collapse summary::-webkit-details-marker { display: none; }

@@ -140,6 +140,8 @@ struct PhoneTrack: Codable {
     var state: String
     var pace: String
     var place: String
+    var line: [PhonePoint]?
+    var points: [PhonePoint]?
 }
 
 struct PhoneBody: Codable {

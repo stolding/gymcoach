@@ -101,7 +101,7 @@ const axisUnit = (u) => ({ '%-punt': '%-pt' }[u] ?? u ?? '');
 const fmtTick = (v, dec, unit) => `${v.toLocaleString(localeOf(), { minimumFractionDigits: dec, maximumFractionDigits: dec })}${unit ? (/^[%×]/.test(unit) ? '' : ' ') + unit : ''}`;
 
 // Lijngrafiek (SVG) met een of meer reeksen, as-labels en tooltip.
-function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, zoneColor = null } = {}) {
+function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, zoneColor = null, spanDates = false } = {}) {
   const pts = series.flatMap((s) => s.points);
   if (pts.length < 1) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   // eenheid op de y-as: expliciet, of de gemeenschappelijke eenheid van alle reeksen
@@ -153,7 +153,22 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
   const multiYear = /^\d{4}-/.test(xs[0]) && String(xs[0]).slice(0, 4) !== String(xs[xs.length - 1]).slice(0, 4);
   const MND = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
   const xl = (x) => multiYear ? `${MND[+String(x).slice(5, 7) - 1]} '${String(x).slice(2, 4)}` : String(x).slice(5);
-  if (isDate && xs.length > 1) {
+  const spanLab = (iso, long) => {
+    const month = MND[Math.max(0, +String(iso).slice(5, 7) - 1)] || '';
+    return long ? `${month} ${String(iso).slice(0, 4)}` : `${+String(iso).slice(8, 10)} ${month}`;
+  };
+  if (spanDates && isDate && xs.length > 1 && t1 > t0) {
+    const a = xs[0], b = xs[xs.length - 1];
+    const long = a.slice(0, 4) !== b.slice(0, 4) || (t1 - t0) > 366 * 864e5;
+    const ticks = [{ x: a, anchor: 'start' }];
+    if (W - L > 260) {
+      const mid = new Date(t0 + (t1 - t0) / 2);
+      const iso = `${mid.getFullYear()}-${String(mid.getMonth() + 1).padStart(2, '0')}-${String(mid.getDate()).padStart(2, '0')}`;
+      if (iso > a && iso < b) ticks.push({ x: iso, anchor: 'middle' });
+    }
+    ticks.push({ x: b, anchor: 'end' });
+    for (const m of ticks) g += `<text x="${X(m.x)}" y="${H - 6}" text-anchor="${m.anchor}">${esc(spanLab(m.x, long))}</text>`;
+  } else if (isDate && xs.length > 1) {
     for (let k = 0; k <= 5; k++) {
       const d = new Date(t0 + ((t1 - t0) * k) / 5).toISOString().slice(0, 10);
       g += `<text x="${L + ((W - L - R) * k) / 5}" y="${H - 6}" text-anchor="${k === 0 ? 'start' : k === 5 ? 'end' : 'middle'}">${esc(xl(d))}</text>`;
@@ -1394,19 +1409,30 @@ function renderProgressGoals() {
   if (!box) return;
   const rows = (goalView?.tracks || []).filter((row) => row.kind === 'weight' || row.kind === 'muscle' || row.name);
   if (!rows.length) { box.innerHTML = ''; return; }
-  box.innerHTML = `<div class="progress-goals">${rows.map((row) => {
+  box.innerHTML = `<div class="progress-goals">${rows.map((row, i) => {
     const name = row.kind === 'weight' ? t('goal.legend.weight') : row.kind === 'muscle' ? t('goal.legend.muscle') : (row.name || '');
     if (!name) return '';
     const paceCls = row.state === 'behind' ? 'down' : row.state === 'on' || row.state === 'ahead' ? 'up' : 'muted';
     const place = trackPlace(row);
     const cell = (key, v) => `<div><div class="eyebrow">${esc(t(key))}</div><div class="mid">${esc(trackNum(v, row.unit))}</div></div>`;
+    const chart = row.line?.length === 2;
     return `<article class="card goal-track">
       <div class="row between wrap gap"><h2>${esc(name)}</h2><div class="track-status ${paceCls}">${esc(t(PACE_KEY[row.state] || 'goal.tile.paceWait'))}</div></div>
       ${place ? `<p class="muted small" style="margin:.35rem 0 0">${esc(place)}</p>` : ''}
       <div class="track-nums">${cell('ui.progress.start', row.start)}${cell('ui.progress.now', row.now)}${cell('ui.progress.target', row.target)}</div>
       ${row.kind === 'strength' && row.unit !== 'kg' ? `<p class="muted small" style="margin:.45rem 0 0">${esc(t('goal.legend.index'))}</p>` : ''}
+      ${chart ? `<div class="chart" id="goalChart${i}"></div><div class="legend"><span class="dot a"></span>${esc(name)} <span class="dot b"></span>${esc(t('ui.progress.goalLine'))}</div>` : ''}
     </article>`;
   }).join('')}</div>`;
+  rows.forEach((row, i) => {
+    const el = document.getElementById('goalChart' + i);
+    if (!el || row.line?.length !== 2) return;
+    const name = row.kind === 'weight' ? t('goal.legend.weight') : row.kind === 'muscle' ? t('goal.legend.muscle') : (row.name || '');
+    const unit = row.unit === 'kg' ? 'kg' : '';
+    const series = [{ cls: 'lb', label: t('ui.progress.goalLine'), unit, points: row.line }];
+    if (row.points?.length) series.push({ cls: 'la', label: name, unit, points: row.points });
+    lineChart(el, series, { yLabel: name, yUnit: unit, spanDates: true });
+  });
 }
 function renderProgress() {
   renderProgressGoals();

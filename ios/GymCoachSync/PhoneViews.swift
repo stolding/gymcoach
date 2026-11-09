@@ -31,21 +31,58 @@ struct StaleBanner: View {
 
 struct Sparkline: View {
     var values: [Double]
+    var unit: String = ""
+    /// Overzichtstegel: alleen min en max, binnen de bestaande hoogte.
+    var minimal: Bool = false
+
     var body: some View {
-        GeometryReader { geo in
-            let lo = values.min() ?? 0
-            let hi = values.max() ?? 1
-            let span = max(hi - lo, 0.001)
-            Path { p in
-                for (i, v) in values.enumerated() {
-                    let x = geo.size.width * CGFloat(i) / CGFloat(max(values.count - 1, 1))
-                    let y = geo.size.height * (1 - CGFloat((v - lo) / span))
-                    if i == 0 { p.move(to: CGPoint(x: x, y: y)) } else { p.addLine(to: CGPoint(x: x, y: y)) }
-                }
+        Canvas { ctx, size in
+            let ys = values.filter(\.isFinite)
+            guard ys.count > 1, size.width > 12, size.height > 8 else { return }
+            let lo = ys.min() ?? 0
+            let hi = ys.max() ?? lo
+            let shownUnit = minimal ? "" : unit
+            var dec = AxisFormat.decimals(span: hi - lo, unit: unit)
+            var hiText = AxisFormat.tick(hi, decimals: dec, unit: shownUnit)
+            var loText = AxisFormat.tick(lo, decimals: dec, unit: shownUnit)
+            if hiText == loText, hi - lo > 0.000_001, dec < 2 {
+                dec = 2
+                hiText = AxisFormat.tick(hi, decimals: dec, unit: shownUnit)
+                loText = AxisFormat.tick(lo, decimals: dec, unit: shownUnit)
             }
-            .stroke(Color(red: 1, green: 0.48, blue: 0.18), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+            let font = Font.system(size: CGFloat(minimal ? 9.0 : 10.5)).monospacedDigit()
+            let hiRes = ctx.resolve(Text(hiText).font(font).foregroundColor(.secondary))
+            let loRes = ctx.resolve(Text(loText).font(font).foregroundColor(.secondary))
+            let box = CGSize(width: 220, height: 32)
+            let gutter = min(max(hiRes.measure(in: box).width, loRes.measure(in: box).width) + 4, size.width * 0.46)
+            let plot = CGRect(x: gutter, y: 2, width: max(size.width - gutter, 1), height: max(size.height - 4, 1))
+            let flat = hi - lo < 0.000_001
+            let span = max(hi - lo, 0.001)
+            var path = Path()
+            for (i, v) in ys.enumerated() {
+                let x = plot.minX + plot.width * CGFloat(i) / CGFloat(ys.count - 1)
+                let y = flat ? plot.midY : plot.minY + plot.height * CGFloat(1 - (v - lo) / span)
+                if i == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
+            }
+            ctx.stroke(path, with: .color(Color(red: 1, green: 0.48, blue: 0.18)), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+            if hiText == loText {
+                ctx.draw(hiRes, at: CGPoint(x: gutter - 3, y: plot.midY), anchor: .trailing)
+            } else {
+                ctx.draw(hiRes, at: CGPoint(x: gutter - 3, y: plot.minY), anchor: .topTrailing)
+                ctx.draw(loRes, at: CGPoint(x: gutter - 3, y: plot.maxY), anchor: .bottomTrailing)
+            }
         }
-        .frame(height: 44)
+        .frame(height: minimal ? 28 : 44)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(scaleLabel)
+    }
+
+    private var scaleLabel: String {
+        let ys = values.filter(\.isFinite)
+        guard let lo = ys.min(), let hi = ys.max() else { return "Geen verloop" }
+        let dec = AxisFormat.decimals(span: hi - lo, unit: unit)
+        if hi - lo < 0.000_001 { return AxisFormat.tick(lo, decimals: dec, unit: unit) }
+        return "\(AxisFormat.tick(lo, decimals: dec, unit: unit)) tot \(AxisFormat.tick(hi, decimals: dec, unit: unit))"
     }
 }
 
@@ -250,7 +287,7 @@ struct DashboardView: View {
                             Text(body.fat != nil ? "\(phoneKg(kg)) kg · \(phoneKg(body.fat ?? 0))% vet" : "\(phoneKg(kg)) kg")
                                 .font(.title3.monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
                             Text(body.slopeNote).font(.caption).foregroundStyle(.secondary).lineLimit(2)
-                            if body.spark.count > 1 { Sparkline(values: body.spark).frame(height: 28) }
+                            if body.spark.count > 1 { Sparkline(values: body.spark, unit: "kg", minimal: true) }
                         } else {
                             Text("Nog geen weging.").font(.caption).foregroundStyle(.secondary)
                         }
@@ -473,7 +510,7 @@ struct ProgressViewScreen: View {
                                         .foregroundStyle(p.delta < 0 ? Color.orange : Color.green)
                                 }
                                 Text("\(phoneKg(p.e1rm)) kg 1RM").font(.subheadline).foregroundStyle(.secondary)
-                                if p.spark.count > 1 { Sparkline(values: p.spark) }
+                                if p.spark.count > 1 { Sparkline(values: p.spark, unit: "kg") }
                             }
                         }
                         if !snap.records.isEmpty {
@@ -632,10 +669,10 @@ struct BodyView: View {
                 chartChip("Activiteiten", on: showMarks) { showMarks.toggle() }
                 chartChip("Trendlijn", on: showTrend) { showTrend.toggle() }
             }
-            if visible.count < 2 {
+            if visible.isEmpty {
                 Text("Geen metingen in deze periode.").font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity, minHeight: 120)
             } else {
-                CompChart(points: visible, trend: trend, marks: marks, legend: comp.legend, bands: m.bands)
+                CompChart(points: visible, trend: trend, marks: marks, legend: comp.legend, bands: m.bands, unit: m.unit, range: range)
                     .frame(height: 210)
             }
             if !m.note.isEmpty {
@@ -737,42 +774,155 @@ struct CompChart: View {
     var marks: [PhoneMark]
     var legend: [PhoneLegend]
     var bands: [PhoneBand]
+    var unit: String
+    var range: String
 
     var body: some View {
         Canvas { ctx, size in
-            let gutter: CGFloat = marks.isEmpty ? 16 : 28
-            let plot = CGRect(x: 0, y: 4, width: size.width, height: size.height - gutter)
-            guard let first = PhoneDates.day(points[0].d), let last = PhoneDates.day(points[points.count - 1].d) else { return }
-            let spanT = max(last.timeIntervalSince(first), 86400)
-            let ys = points.map(\.y) + trend.map(\.y)
-            let lo = (ys.min() ?? 0)
-            let hi = (ys.max() ?? 1)
-            let pad = max((hi - lo) * 0.08, 0.05)
-            let y0 = lo - pad, y1 = hi + pad
-            let spanY = max(y1 - y0, 0.001)
-            func xOf(_ d: String) -> CGFloat? {
-                guard let t = PhoneDates.day(d) else { return nil }
-                return plot.minX + plot.width * CGFloat(t.timeIntervalSince(first) / spanT)
-            }
-            func yOf(_ v: Double) -> CGFloat { plot.minY + plot.height * CGFloat(1 - (v - y0) / spanY) }
-            for band in bands where band.to > y0 && band.from < y1 {
-                let top = yOf(min(band.to, y1))
-                let bot = yOf(max(band.from, y0))
-                let rect = CGRect(x: plot.minX, y: top, width: plot.width, height: max(bot - top, 0))
-                ctx.fill(Path(rect), with: .color(zoneFill(band.cls)))
-            }
-            stroke(ctx, points, xOf, yOf, Color(red: 1, green: 0.48, blue: 0.18), 2)
-            if trend.count > 2 { stroke(ctx, trend, xOf, yOf, Color(red: 0.62, green: 0.78, blue: 1), 1.5) }
-            let byKind = Dictionary(uniqueKeysWithValues: legend.map { ($0.kind, $0.color) })
+            paint(&ctx, size)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessLabel)
+    }
+
+    private var accessLabel: String {
+        let series = points.sorted { $0.d < $1.d }
+        guard let first = series.first, let last = series.last else { return "Grafiek" }
+        let lo = series.map(\.y).min() ?? first.y
+        let hi = series.map(\.y).max() ?? last.y
+        let dec = AxisFormat.decimals(span: hi - lo, unit: unit)
+        let value = hi - lo < 0.000_001
+            ? AxisFormat.tick(lo, decimals: dec, unit: unit)
+            : "\(AxisFormat.tick(lo, decimals: dec, unit: unit)) tot \(AxisFormat.tick(hi, decimals: dec, unit: unit))"
+        guard let from = PhoneDates.day(first.d) else { return value }
+        let start = AxisFormat.dayMonth(from)
+        guard series.count > 1, let to = PhoneDates.day(last.d), to != from else { return "\(value), \(start)" }
+        return "\(value), \(start) tot \(AxisFormat.dayMonth(to))"
+    }
+
+    private func paint(_ ctx: inout GraphicsContext, _ size: CGSize) {
+        let series = points.sorted { $0.d < $1.d }
+        guard !series.isEmpty, size.width > 48, size.height > 48 else { return }
+        guard let first = PhoneDates.day(series[0].d), let last = PhoneDates.day(series[series.count - 1].d) else { return }
+        let ys = series.map(\.y) + trend.map(\.y)
+        let lo = ys.min() ?? 0
+        let hi = ys.max() ?? lo
+        let flat = hi - lo < 0.000_001
+        let single = series.count < 2
+        let pad = max((hi - lo) * 0.08, 0.05)
+        let y0 = lo - pad
+        let y1 = hi + pad
+        let spanY = max(y1 - y0, 0.001)
+        let yValues: [Double]
+        if single || flat {
+            yValues = [lo]
+        } else {
+            let nice = AxisFormat.niceTicks(lo: y0, hi: y1)
+            yValues = nice.count >= 2 ? nice : [lo, hi]
+        }
+        let step = yValues.count >= 2 ? abs(yValues[1] - yValues[0]) : 0.1
+        let dec = AxisFormat.decimals(step: step, unit: unit)
+        let yTexts = yValues.map { AxisFormat.tick($0, decimals: dec, unit: unit) }
+        let font = Font.system(size: 11).monospacedDigit()
+        let box = CGSize(width: 240, height: 32)
+        var widest: CGFloat = 28
+        for text in yTexts {
+            let w = ctx.resolve(Text(text).font(font).foregroundColor(.secondary)).measure(in: box).width
+            if w > widest { widest = w }
+        }
+        let gutter = min(max(widest + 8, 8), size.width * 0.48)
+        let xBand: CGFloat = 18
+        let markBand: CGFloat = marks.isEmpty ? 0 : 14
+        let top: CGFloat = 11
+        let plotH = size.height - top - xBand - markBand
+        guard plotH > 24 else { return }
+        let plot = CGRect(x: gutter, y: top, width: max(size.width - gutter - 2, 1), height: plotH)
+        let spanT = last.timeIntervalSince(first)
+        func xOf(_ d: String) -> CGFloat? {
+            guard let t = PhoneDates.day(d) else { return nil }
+            if spanT < 1 { return plot.midX }
+            return plot.minX + plot.width * CGFloat(t.timeIntervalSince(first) / spanT)
+        }
+        func yOf(_ v: Double) -> CGFloat { plot.minY + plot.height * CGFloat(1 - (v - y0) / spanY) }
+        for band in bands where band.to > y0 && band.from < y1 {
+            let bandTop = yOf(min(band.to, y1))
+            let bandBot = yOf(max(band.from, y0))
+            let rect = CGRect(x: plot.minX, y: bandTop, width: plot.width, height: max(bandBot - bandTop, 0))
+            ctx.fill(Path(rect), with: .color(zoneFill(band.cls)))
+        }
+        let orange = Color(red: 1, green: 0.48, blue: 0.18)
+        let drawable = series.filter { PhoneDates.day($0.d) != nil }
+        if drawable.count == 1, let p = drawable.first, let x = xOf(p.d) {
+            let y = yOf(p.y)
+            let r: CGFloat = 3.5
+            ctx.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)), with: .color(orange))
+        } else {
+            stroke(&ctx, series, xOf, yOf, orange, 2)
+        }
+        if trend.count > 2 { stroke(&ctx, trend, xOf, yOf, Color(red: 0.62, green: 0.78, blue: 1), 1.5) }
+        let byKind = Dictionary(uniqueKeysWithValues: legend.map { ($0.kind, $0.color) })
+        if !marks.isEmpty {
             for mark in marks {
                 guard let x = xOf(mark.d), x >= plot.minX, x <= plot.maxX else { continue }
-                let rect = CGRect(x: x - 1, y: size.height - 10, width: 2, height: 8)
+                let rect = CGRect(x: x - 1, y: plot.maxY + 3, width: 2, height: 8)
                 ctx.fill(Path(rect), with: .color(colorHex(byKind[mark.kind] ?? "#9a9ca1")))
             }
         }
+        var yKept: [(y: CGFloat, text: String)] = []
+        let yRows: [(y: CGFloat, text: String)] = zip(yValues, yTexts).map { (y: yOf($0.0), text: $0.1) }.sorted { $0.y < $1.y }
+        if let topRow = yRows.first {
+            yKept.append(topRow)
+            if yRows.count > 1, let bottomRow = yRows.last {
+                for row in yRows.dropFirst().dropLast() {
+                    let prev = yKept[yKept.count - 1]
+                    if abs(row.y - prev.y) < 13 || abs(row.y - bottomRow.y) < 13 || prev.text == row.text { continue }
+                    yKept.append(row)
+                }
+                let prev = yKept[yKept.count - 1]
+                if abs(bottomRow.y - prev.y) >= 13, prev.text != bottomRow.text {
+                    yKept.append(bottomRow)
+                }
+            }
+        }
+        for row in yKept {
+            let text = ctx.resolve(Text(row.text).font(font).foregroundColor(.secondary))
+            ctx.draw(text, at: CGPoint(x: plot.minX - 4, y: row.y), anchor: .trailing)
+        }
+        var ticks = AxisFormat.xLabels(first: first, last: last, count: 4, range: range)
+        var shrinks = 0
+        while ticks.count >= 3 && shrinks < 3 {
+            var slot: CGFloat = 36
+            for tick in ticks {
+                let w = ctx.resolve(Text(tick.text).font(font).foregroundColor(.secondary)).measure(in: box).width
+                if w + 10 > slot { slot = w + 10 }
+            }
+            let need = ticks.count >= 4 ? slot * 4.5 : slot * 3.05
+            if plot.width >= need { break }
+            ticks = AxisFormat.xLabels(first: first, last: last, count: ticks.count - 1, range: range)
+            shrinks += 1
+        }
+        for (i, tick) in ticks.enumerated() {
+            let anchor: UnitPoint
+            let x: CGFloat
+            if ticks.count == 1 || spanT < 1 {
+                anchor = .bottom
+                x = plot.midX
+            } else if i == 0 {
+                anchor = .bottomLeading
+                x = plot.minX
+            } else if i == ticks.count - 1 {
+                anchor = .bottomTrailing
+                x = plot.maxX
+            } else {
+                anchor = .bottom
+                x = plot.minX + plot.width * CGFloat(tick.date.timeIntervalSince(first) / spanT)
+            }
+            let text = ctx.resolve(Text(tick.text).font(font).foregroundColor(.secondary))
+            ctx.draw(text, at: CGPoint(x: x, y: size.height - 1), anchor: anchor)
+        }
     }
 
-    private func stroke(_ ctx: GraphicsContext, _ pts: [PhonePoint], _ xOf: (String) -> CGFloat?, _ yOf: (Double) -> CGFloat, _ color: Color, _ width: CGFloat) {
+    private func stroke(_ ctx: inout GraphicsContext, _ pts: [PhonePoint], _ xOf: (String) -> CGFloat?, _ yOf: (Double) -> CGFloat, _ color: Color, _ width: CGFloat) {
         var path = Path()
         var started = false
         for p in pts {
@@ -789,6 +939,162 @@ struct CompChart: View {
         case "warn": return Color(red: 0.90, green: 0.72, blue: 0.29).opacity(0.14)
         default: return Color(red: 1, green: 0.42, blue: 0.42).opacity(0.12)
         }
+    }
+}
+
+private enum AxisFormat {
+    static let months = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"]
+
+    static func tick(_ v: Double, decimals: Int, unit: String) -> String {
+        let n = number(v, decimals: decimals)
+        if unit.isEmpty { return n }
+        if unit == "%" { return n + unit }
+        return n + " " + unit
+    }
+
+    static func number(_ v: Double, decimals: Int) -> String {
+        let f = NumberFormatter()
+        f.locale = Locale(identifier: "nl_NL")
+        f.numberStyle = .decimal
+        f.usesGroupingSeparator = true
+        f.roundingMode = .halfUp
+        f.minimumFractionDigits = 0
+        f.maximumFractionDigits = decimals > 0 ? decimals : 0
+        return f.string(from: NSNumber(value: v)) ?? "0"
+    }
+
+    static func decimals(span: Double, unit: String) -> Int {
+        decimals(step: span > 0 ? span / 3 : 1, unit: unit)
+    }
+
+    static func decimals(step: Double, unit: String) -> Int {
+        if unit == "bpm" || unit == "kcal" || unit == "g" { return step < 0.999 ? 1 : 0 }
+        if step >= 0.999 { return 0 }
+        if step >= 0.099 { return 1 }
+        return 2
+    }
+
+    static func niceTicks(lo: Double, hi: Double) -> [Double] {
+        guard lo.isFinite, hi.isFinite, hi - lo > 0.000_001 else { return [lo] }
+        let rough = (hi - lo) / 3
+        guard rough > 0, rough.isFinite else { return [lo, hi] }
+        var mag = 1.0
+        var hops = 0
+        if rough >= 1 {
+            while mag * 10 <= rough && hops < 12 {
+                mag *= 10
+                hops += 1
+            }
+        } else {
+            while mag > rough && hops < 12 {
+                mag /= 10
+                hops += 1
+            }
+        }
+        guard mag.isFinite, mag > 0 else { return [lo, hi] }
+        let norm = rough / mag
+        let nice: Double
+        if norm <= 1.6 { nice = 1 }
+        else if norm <= 3 { nice = 2 }
+        else if norm <= 7.5 { nice = 5 }
+        else { nice = 10 }
+        let step = nice * mag
+        guard step.isFinite, step > 0 else { return [lo, hi] }
+        var out: [Double] = []
+        let start = (lo / step).rounded(.up) * step
+        var i = 0
+        while i < 8 {
+            let raw = start + Double(i) * step
+            if raw > hi + step * 0.01 { break }
+            if raw >= lo - step * 0.001 {
+                out.append((raw / step).rounded() * step)
+            }
+            i += 1
+        }
+        return out.isEmpty ? [lo, hi] : out
+    }
+
+    enum DateStyle { case dayMonth, monthYear, year }
+
+    static func xLabels(first: Date, last: Date, count: Int, range: String) -> [(date: Date, text: String)] {
+        let span = last.timeIntervalSince(first)
+        let days = span / 86400
+        let n = count < 1 ? 1 : count
+        if n == 1 || span < 1 {
+            return [(first, format(first, dateStyle(range: range, days: days)))]
+        }
+        var dates: [Date] = []
+        for i in 0..<n {
+            if i == 0 { dates.append(first) }
+            else if i == n - 1 { dates.append(last) }
+            else { dates.append(first.addingTimeInterval(span * Double(i) / Double(n - 1))) }
+        }
+        var style = dateStyle(range: range, days: days)
+        var texts = dates.map { format($0, style) }
+        var hops = 0
+        while Set(texts).count < 2, hops < 3 {
+            guard let next = finer(style) else { break }
+            style = next
+            texts = dates.map { format($0, style) }
+            hops += 1
+        }
+        var kept: [(date: Date, text: String)] = []
+        for pair in zip(dates, texts) {
+            if kept.last?.text == pair.1 { continue }
+            kept.append((date: pair.0, text: pair.1))
+        }
+        if kept.isEmpty { return [(first, format(first, style))] }
+        return kept
+    }
+
+    static func dateStyle(range: String, days: Double) -> DateStyle {
+        if range == "3m" { return .dayMonth }
+        if days >= 1825 { return .year }
+        if range == "1y" { return .monthYear }
+        if days <= 100 { return .dayMonth }
+        return .monthYear
+    }
+
+    static func finer(_ style: DateStyle) -> DateStyle? {
+        switch style {
+        case .year: return .monthYear
+        case .monthYear: return .dayMonth
+        case .dayMonth: return nil
+        }
+    }
+
+    static func format(_ date: Date, _ style: DateStyle) -> String {
+        switch style {
+        case .dayMonth: return dayMonth(date)
+        case .monthYear: return monthYear(date)
+        case .year: return yearText(date)
+        }
+    }
+
+    static func dayMonth(_ date: Date) -> String {
+        let p = parts(date)
+        return "\(p.day ?? 1) \(monthName(p.month))"
+    }
+
+    static func monthYear(_ date: Date) -> String {
+        let p = parts(date)
+        return "\(monthName(p.month)) \(p.year ?? 0)"
+    }
+
+    static func yearText(_ date: Date) -> String {
+        "\(parts(date).year ?? 0)"
+    }
+
+    static func monthName(_ month: Int?) -> String {
+        guard let month, month >= 1, month <= 12 else { return months[0] }
+        return months[month - 1]
+    }
+
+    static func parts(_ date: Date) -> DateComponents {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+        cal.locale = Locale(identifier: "nl_NL")
+        return cal.dateComponents([.year, .month, .day], from: date)
     }
 }
 

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.13.3 — 9 november 2026
+- De grafieken in GymCoach Sync hebben aslabels voor de waarde (met eenheid) en de tijd.
+
 ## 2.13.2 — 9 november 2026
 - De videovoorbeeld van een oefening speelt in de verhouding van het bestand, ook als de video hoger is dan breed.
 

@@ -967,46 +967,125 @@ function renderSignals() {
   }));
 }
 let recKey = null;
+let recTip = null;
+let recTipTouch = false;
 function renderMuscleRecovery() {
   const el = $('#muscleRec');
   if (!el) return;
   const rec = state.muscleRecovery;
-  if (!rec || state.setup?.needed) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+  if (!rec || state.setup?.needed) { el.classList.add('hidden'); el.innerHTML = ''; recTip = null; recTipTouch = false; return; }
   el.classList.remove('hidden');
   const muscles = Array.isArray(rec.muscles) ? rec.muscles : [];
   if (!muscles.length) {
     el.innerHTML = `<div class="eyebrow">${esc(t('rec.title'))}</div><p class="muted small">${esc(t('rec.note'))}</p><div class="empty">${esc(t('rec.empty'))}</div>`;
+    recTip = null; recTipTouch = false;
     return;
   }
   if (!muscles.some((m) => m.key === recKey)) recKey = muscles[0].key;
-  const fresh = Number(rec.fresh) > 0 ? Number(rec.fresh) : 90;
+  const known = new Map(muscles.map((m) => [m.key, m]));
+  if (recTip && !known.has(recTip)) { recTip = null; recTipTouch = false; }
   const nameOf = (m) => MUSCLE_LABELS[m.key] || m.name || m.key;
-  const row = (m) => `<button type="button" class="mbar${m.key === recKey ? ' on' : ''}" data-rec="${esc(m.key)}"><span>${esc(nameOf(m))}</span><div class="ht"><div class="hf${m.pct >= fresh ? ' rest' : ''}" style="width:${Math.max(0, Math.min(100, m.pct))}%"></div></div><b>${esc(t('rec.pct', { n: m.pct }))}</b></button>`;
-  const group = (title, list) => list.length ? `<div class="eyebrow">${esc(title)}</div><div class="mbars">${list.map(row).join('')}</div>` : '';
-  const tired = muscles.filter((m) => m.pct < fresh);
-  const rested = muscles.filter((m) => m.pct >= fresh);
-  const fatigue = Object.fromEntries(muscles.map((m) => [m.key, 100 - m.pct]));
+  const recovery = Object.fromEntries(muscles.map((m) => [m.key, m.pct]));
   const chips = muscles.map((m) => `<button type="button" data-rec="${esc(m.key)}" class="${m.key === recKey ? 'on' : ''}">${esc(nameOf(m))}</button>`).join('');
   el.innerHTML = `<div class="eyebrow">${esc(t('rec.title'))}</div><p class="muted small" style="margin-top:0">${esc(t('rec.note'))}</p>
     <div class="rec-grid">
-      <div>${bodyMap(fatigue, { height: 220, title: t('rec.title'), selected: recKey, figure: figureFor(state.settings || {}), scale: 'fatigue', caption: (k, v) => muscles.some((m) => m.key === k) ? t('rec.tip', { name: MUSCLE_LABELS[k] || k, n: 100 - v }) : (MUSCLE_LABELS[k] || k) })}
-        <p class="muted small">${esc(t('rec.legend'))}</p>
-        ${group(t('rec.tired'), tired)}${group(t('rec.rested'), rested)}</div>
-      <div><div class="chips sgchips" role="group" aria-label="${esc(t('rec.pick'))}">${chips}</div><div id="recChart" class="chart tall"></div></div>
-    </div>`;
+      <div class="rec-fig">${bodyMap(recovery, { height: 260, title: t('rec.title'), selected: recKey, figure: figureFor(state.settings || {}), scale: 'recovery' })}
+        <p class="muted small">${esc(t('rec.legend'))}</p></div>
+      <div><div class="chips sgchips" role="group" aria-label="${esc(t('rec.pick'))}">${chips}</div><p class="muted small rec-axis">${esc(t('rec.chart'))}</p><div id="recChart" class="chart tall"></div></div>
+    </div>
+    <div class="rec-tip hidden" role="tooltip"></div>`;
   const chosen = muscles.find((m) => m.key === recKey) || muscles[0];
   const ser = (rec.series || []).find((s) => s.key === chosen.key);
   const host = el.querySelector('#recChart');
   if (host && ser?.points?.length) lineChart(host, [{ label: nameOf(chosen), unit: '%', points: ser.points.map((p) => ({ x: p.d, y: p.y })) }], { yLabel: t('rec.chart'), yUnit: '%' });
   else if (host) host.innerHTML = '<div class="empty">' + t('rec.empty') + '</div>';
+  const tip = el.querySelector('.rec-tip');
+  const muscleKey = (node) => {
+    const path = node?.closest?.('.rec-fig path[data-m]');
+    const key = path?.dataset.m;
+    return key && known.has(key) ? key : null;
+  };
+  const hideTip = () => { recTip = null; recTipTouch = false; tip?.classList.add('hidden'); };
+  const placeTip = (clientX, clientY) => {
+    const m = known.get(recTip);
+    if (!m || !tip) return;
+    const pct = Math.max(0, Math.min(100, Math.round(Number(m.pct) || 0)));
+    const mix = `color-mix(in srgb, var(--ok) ${pct}%, var(--accent))`;
+    tip.setAttribute('aria-label', t('rec.tip', { name: nameOf(m), n: pct }));
+    tip.innerHTML = `<div class="rec-tip-name">${esc(nameOf(m))}</div><div class="rec-tip-label">${esc(t('rec.chart'))}</div><div class="rec-tip-row"><div class="ht"><div class="hf" style="width:${pct}%;background:${mix}"></div></div><b>${esc(t('rec.pct', { n: pct }))}</b></div>`;
+    tip.classList.remove('hidden');
+    const card = el.getBoundingClientRect();
+    const fig = el.querySelector('.rec-fig')?.getBoundingClientRect();
+    let x = clientX, y = clientY;
+    if (x == null || y == null) {
+      const path = el.querySelector(`.rec-fig path[data-m="${CSS.escape(m.key)}"]`);
+      const r = path?.getBoundingClientRect();
+      x = r ? r.left + r.width / 2 : card.left + 28;
+      y = r ? r.top : card.top + 28;
+    }
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    let left = x - card.left + 14;
+    let top = y - card.top + 14;
+    const figLeft = fig ? fig.left - card.left : 8;
+    const figRight = fig ? fig.right - card.left : card.width;
+    const figTop = fig ? fig.top - card.top : 8;
+    const figBottom = fig ? fig.bottom - card.top : card.height;
+    if (left + tw > figRight - 4) left = x - card.left - tw - 12;
+    if (top + th > figBottom - 4) top = y - card.top - th - 12;
+    left = Math.max(figLeft + 4, Math.min(left, Math.max(figLeft + 4, figRight - tw - 4)));
+    top = Math.max(figTop + 4, Math.min(top, Math.max(figTop + 4, figBottom - th - 4)));
+    tip.style.left = Math.max(8, Math.min(left, card.width - tw - 8)) + 'px';
+    tip.style.top = Math.max(8, Math.min(top, card.height - th - 8)) + 'px';
+  };
+  el.onpointerover = (ev) => {
+    if (ev.pointerType === 'touch') return;
+    const key = muscleKey(ev.target);
+    if (!key) return;
+    recTipTouch = false;
+    recTip = key;
+    placeTip(ev.clientX, ev.clientY);
+  };
+  el.onpointermove = (ev) => {
+    if (ev.pointerType === 'touch' || recTipTouch) return;
+    if (!ev.target.closest?.('.rec-fig')) return;
+    const key = muscleKey(ev.target);
+    if (!key) { hideTip(); return; }
+    recTip = key;
+    placeTip(ev.clientX, ev.clientY);
+  };
+  el.onpointerout = (ev) => {
+    if (ev.pointerType === 'touch' || recTipTouch) return;
+    if (!muscleKey(ev.target)) return;
+    if (muscleKey(ev.relatedTarget)) return;
+    hideTip();
+  };
+  el.onpointerdown = (ev) => {
+    if (ev.pointerType !== 'touch') return;
+    const key = muscleKey(ev.target);
+    if (key) {
+      recTipTouch = true;
+      recTip = recTip === key ? null : key;
+      if (recTip) placeTip(ev.clientX, ev.clientY); else tip?.classList.add('hidden');
+    } else if (!ev.target.closest?.('.sgchips')) hideTip();
+  };
   el.onclick = (ev) => {
-    const hit = ev.target.closest('[data-rec], [data-m]');
-    if (!hit) return;
-    const key = hit.dataset.rec || hit.dataset.m;
-    if (!muscles.some((m) => m.key === key) || key === recKey) return;
+    const chip = ev.target.closest('[data-rec]');
+    const key = chip?.dataset.rec || muscleKey(ev.target);
+    if (!key || !known.has(key) || key === recKey) return;
     recKey = key;
     renderMuscleRecovery();
   };
+  if (recTip && known.has(recTip)) placeTip(null, null);
+  if (!renderMuscleRecovery.outside) {
+    renderMuscleRecovery.outside = (ev) => {
+      const host = document.getElementById('muscleRec');
+      if (!host || host.contains(ev.target) || !recTipTouch) return;
+      recTip = null;
+      recTipTouch = false;
+      host.querySelector('.rec-tip')?.classList.add('hidden');
+    };
+    document.addEventListener('pointerdown', renderMuscleRecovery.outside, true);
+  }
 }
 function renderHome() {
   const o = state.overview; if (!o) return;

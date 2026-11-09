@@ -112,30 +112,35 @@ let defaultFigure = 'neutraal';
 // Het figuur dat bodyMap gebruikt als er geen wordt meegegeven.
 export const setDefaultFigure = (f) => { defaultFigure = FIGURES[f] !== undefined ? f : 'neutraal'; };
 
-// Kleurniveau 0–3 van een spiergroep ten opzichte van de drukste.
+// Kleurniveau 0–3 van een spiergroep ten opzichte van de drukste. Het weekplan gebruikt dit (geplande sets).
 export function level(v, max) {
   if (!v) return 0;
   const r = v / max;
   return r > 0.66 ? 3 : r > 0.33 ? 2 : 1;
 }
 
-// Zelfde grenzen als het iOS-figuur: vermoeidheid in punten (100 − herstel). Tot 10 is uitgerust.
-export function fatigueLevel(v) {
-  if (!(v > 10)) return 0;
-  if (v < 25) return 1;
-  if (v < 50) return 2;
-  return 3;
+// Herstelpercentage 0–100 als vulkleur: 0 is oranje (vermoeid), 100 is groen (hersteld), daartussen rechtlijnig.
+function recoveryFill(pct) {
+  const n = Math.max(0, Math.min(100, Math.round(Number.isFinite(pct) ? pct : 0)));
+  return `color-mix(in srgb, var(--ok) ${n}%, var(--accent))`;
 }
 
-// Spierkaart als SVG (voor- en achteraanzicht). Standaard: geplande sets. scale 'fatigue': absolute vermoeidheid.
+// Spierkaart als SVG (voor- en achteraanzicht). Standaard: geplande sets.
+// scale 'recovery': scores zijn herstelpercentages. Alleen sleutels die erin staan worden gekleurd.
 export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Getrainde spiergroepen', selected = null, figure = defaultFigure, scale = 'relative', caption = null } = {}) {
   const { FRONT, FRONT_BASE, BACK, BACK_BASE } = bodyShapes(figure);
   const max = Math.max(1, ...Object.values(scores));
   const shape = ([k, d]) => {
+    if (scale === 'recovery') {
+      const sel = selected && k === selected ? ' sel' : '';
+      if (!Object.prototype.hasOwnProperty.call(scores, k)) return `<path d="${d}" class="bm m0${sel}" data-m="${k}"/>`;
+      const raw = Number(scores[k]);
+      const pct = Math.max(0, Math.min(100, Math.round(Number.isFinite(raw) ? raw : 0)));
+      return `<path d="${d}" class="bm rec${sel}" data-m="${k}" style="fill:${recoveryFill(pct)}"/>`;
+    }
     const value = scores[k] || 0;
-    const lv = scale === 'fatigue' ? fatigueLevel(value) : level(scores[k], max);
-    // Bij herstel blijft de kleur van elke spier staan; de gekozen spier krijgt alleen een rand.
-    const sel = !selected ? '' : (scale === 'fatigue' ? (k === selected ? ' sel' : '') : (k === selected ? ' sel' : ' dim'));
+    const lv = level(value, max);
+    const sel = !selected ? '' : (k === selected ? ' sel' : ' dim');
     const text = caption ? caption(k, value) : `${MUSCLE_LABELS[k]}${scores[k] ? `: ${Math.round(scores[k] * 10) / 10} sets` : ''}`;
     return `<path d="${d}" class="bm m${lv}${sel}" data-m="${k}"><title>${text}</title></path>`;
   };

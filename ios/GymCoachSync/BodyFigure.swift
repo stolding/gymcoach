@@ -1,15 +1,36 @@
 import SwiftUI
 
 /// Voor- en achteraanzicht uit public/bodymap.js.
-/// Standaard gekleurd naar de geplande sets van het weekplan. Met fatigue naar absolute vermoeidheid.
+/// Standaard gekleurd naar de geplande sets van het weekplan (oranje niveaus).
+/// Met fatigue kleurt alleen het herstelfiguur: oranje bij 0% hersteld, groen bij 100%, daartussen rechtlijnig.
 struct BodyFigure: View {
     var scores: [PhoneScore]
     var figure: String
-    /// Herstelkaart: absolute vermoeidheid. Het weekplan laat dit uit en kleurt naar geplande sets.
+    /// Herstelkaart. Het weekplan laat dit uit en kleurt naar geplande sets.
     var fatigue: Bool = false
     var accessLabel: String = "Getrainde spiergroepen"
+    /// Tik op een spierpad. nil is leeg weefsel of een spier zonder score.
+    var onSelect: ((String?) -> Void)? = nil
 
     var body: some View {
+        if let onSelect {
+            canvas
+                .accessibilityLabel(accessLabel)
+                .overlay {
+                    GeometryReader { geo in
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .gesture(SpatialTapGesture().onEnded { value in
+                                onSelect(BodyShapes.hitMuscle(figure: figure, size: geo.size, point: value.location))
+                            })
+                    }
+                }
+        } else {
+            canvas.accessibilityLabel(accessLabel)
+        }
+    }
+
+    private var canvas: some View {
         Canvas { ctx, size in
             let shapes = BodyShapes.make(figure)
             let vb = CGSize(width: 400, height: 424)
@@ -23,10 +44,20 @@ struct BodyFigure: View {
                     ctx.fill(BodyShapes.path(d, scale: s, ox: ox + dx * s, oy: oy), with: .color(Color.white.opacity(0.08)))
                 }
                 for (key, d) in parts {
-                    let value = byKey[key] ?? 0
-                    let lv = fatigue ? BodyShapes.fatigueLevel(value) : BodyShapes.level(value, maxScore)
                     let path = BodyShapes.path(d, scale: s, ox: ox + dx * s, oy: oy)
-                    ctx.fill(path, with: .color(BodyShapes.fill(lv)))
+                    let color: Color
+                    if fatigue {
+                        if let points = byKey[key] {
+                            let pct = 100.0 - points
+                            color = BodyShapes.recoveryFill(pct)
+                        } else {
+                            color = Color.white.opacity(0.16)
+                        }
+                    } else {
+                        let value = byKey[key] ?? 0
+                        color = BodyShapes.fill(BodyShapes.level(value, maxScore))
+                    }
+                    ctx.fill(path, with: .color(color))
                     ctx.stroke(path, with: .color(Color(red: 0.07, green: 0.07, blue: 0.08)), lineWidth: max(0.6, 1.1 * s))
                 }
                 let label = Text(caption).font(.system(size: 11)).foregroundColor(.secondary)
@@ -36,7 +67,6 @@ struct BodyFigure: View {
             paint(shapes.back, shapes.base, 200, "achter")
         }
         .aspectRatio(400 / 424, contentMode: .fit)
-        .accessibilityLabel(accessLabel)
     }
 }
 
@@ -71,12 +101,33 @@ enum BodyShapes {
         return r > 0.66 ? 3 : r > 0.33 ? 2 : 1
     }
 
-    // Zelfde grenzen als public/bodymap.js fatigueLevel: punten vermoeidheid, tot 10 is uitgerust.
-    static func fatigueLevel(_ value: Double) -> Int {
-        if value <= 10 { return 0 }
-        if value < 25 { return 1 }
-        if value < 50 { return 2 }
-        return 3
+    /// 0% hersteld is oranje, 100% is groen. De menging is rechtlijnig in sRGB, zonder stap bij 90%.
+    static func recoveryFill(_ pct: Double) -> Color {
+        let raw = pct.isFinite ? pct : 0
+        let t = min(1.0, max(0.0, raw / 100.0))
+        let r = 1.0 + (0.30 - 1.0) * t
+        let g = 0.478 + (0.76 - 0.478) * t
+        let b = 0.18 + (0.42 - 0.18) * t
+        return Color(red: r, green: g, blue: b)
+    }
+
+    /// Bovenste spierpad onder het punt, in dezelfde schaal als het canvas. nil is leeg weefsel.
+    static func hitMuscle(figure: String, size: CGSize, point: CGPoint) -> String? {
+        guard size.width > 1, size.height > 1 else { return nil }
+        let shapes = make(figure)
+        let vb = CGSize(width: 400, height: 424)
+        let s = min(size.width / vb.width, size.height / vb.height)
+        let ox = (size.width - vb.width * s) / 2
+        let oy = (size.height - vb.height * s) / 2
+        var found: String?
+        let views: [([(String, String)], CGFloat)] = [(shapes.front, 0), (shapes.back, 200)]
+        for (parts, dx) in views {
+            for (key, d) in parts {
+                let path = self.path(d, scale: s, ox: ox + dx * s, oy: oy)
+                if path.contains(point) { found = key }
+            }
+        }
+        return found
     }
 
     static func fill(_ level: Int) -> Color {

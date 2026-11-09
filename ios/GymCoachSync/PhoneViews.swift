@@ -168,6 +168,7 @@ struct DashboardView: View {
 
     private let orange = Color(red: 1, green: 0.48, blue: 0.18)
     @State private var recKey = ""
+    @State private var recTip: String? = nil
 
     var body: some View {
         NavigationStack {
@@ -233,20 +234,23 @@ struct DashboardView: View {
 
     private func muscleBody(_ rec: PhoneMuscleRecovery) -> some View {
         let key = chosenRecKey(rec)
-        let tired = rec.muscles.filter { $0.pct < rec.fresh }
-        let rested = rec.muscles.filter { $0.pct >= rec.fresh }
         let series = rec.series.first { $0.key == key }
+        let tip = rec.muscles.first { $0.key == recTip }
         return VStack(alignment: .leading, spacing: 8) {
             if !rec.legend.isEmpty {
                 Text(rec.legend).font(.caption2).foregroundStyle(.secondary)
+                    .onTapGesture { recTip = nil }
             }
-            HStack(alignment: .top, spacing: 10) {
-                BodyFigure(scores: rec.scores, figure: rec.figure, fatigue: true, accessLabel: "Spierherstel")
-                    .frame(width: 112)
-                VStack(alignment: .leading, spacing: 6) {
-                    muscleGroup("Nog vermoeid", tired, fresh: rec.fresh)
-                    muscleGroup("Uitgerust", rested, fresh: rec.fresh)
+            BodyFigure(scores: rec.scores, figure: rec.figure, fatigue: true, accessLabel: "Spierherstel", onSelect: { hit in
+                guard let hit, rec.muscles.contains(where: { $0.key == hit }) else {
+                    recTip = nil
+                    return
                 }
+                recTip = recTip == hit ? nil : hit
+            })
+            .frame(maxWidth: 280)
+            .overlay(alignment: .topLeading) {
+                if let tip { recoveryCallout(tip).padding(6) }
             }
             Picker("Spiergroep", selection: Binding(get: { key }, set: { recKey = $0 })) {
                 ForEach(rec.muscles) { m in
@@ -254,9 +258,13 @@ struct DashboardView: View {
                 }
             }
             .pickerStyle(.menu)
+            Text("percentage hersteld").font(.caption2).foregroundStyle(.secondary)
+                .onTapGesture { recTip = nil }
             if let line = series, !line.points.isEmpty {
                 CompChart(points: line.points, trend: [], marks: [], legend: [], bands: [], unit: "%", range: "28d")
                     .frame(height: 180)
+                    .contentShape(Rectangle())
+                    .onTapGesture { recTip = nil }
             } else {
                 Text(rec.empty ?? "Geen verloop om te tekenen.").font(.footnote).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 80)
@@ -264,20 +272,20 @@ struct DashboardView: View {
         }
     }
 
-    @ViewBuilder private func muscleGroup(_ title: String, _ rows: [PhoneMuscleNow], fresh: Double) -> some View {
-        if !rows.isEmpty {
-            Text(title).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-            ForEach(rows) { m in
-                HStack(spacing: 8) {
-                    Text(m.name).font(.caption).lineLimit(1).minimumScaleFactor(0.75)
-                    ProgressView(value: min(100.0, max(0.0, m.pct.isFinite ? m.pct : 0)), total: 100.0)
-                        .tint(m.pct < fresh ? orange : Color(red: 0.30, green: 0.76, blue: 0.42))
-                    Text("\(recoveryPct(m.pct))%")
-                        .font(.caption.monospacedDigit())
-                        .frame(width: 40, alignment: .trailing)
-                }
-            }
+    private func recoveryCallout(_ m: PhoneMuscleNow) -> some View {
+        let pct = min(100.0, max(0.0, m.pct.isFinite ? m.pct : 0))
+        return VStack(alignment: .leading, spacing: 3) {
+            Text(m.name).font(.subheadline.weight(.semibold))
+            Text("percentage hersteld").font(.caption2).foregroundStyle(.secondary)
+            ProgressView(value: pct, total: 100.0)
+                .tint(BodyShapes.recoveryFill(pct))
+            Text("\(recoveryPct(pct))%")
+                .font(.caption.monospacedDigit())
         }
+        .padding(8)
+        .frame(maxWidth: 180, alignment: .leading)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .allowsHitTesting(false)
     }
 
     private func nextRow(_ snap: PhoneSnapshot) -> some View {

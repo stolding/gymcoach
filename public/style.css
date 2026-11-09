@@ -301,9 +301,17 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .chip-check input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
 .chip-check.wide span { border-radius: 10px; }
 .rec-grid { display: grid; grid-template-columns: minmax(240px, 340px) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
-.rec-grid .chart { margin-top: .6rem; }
-#muscleRec .mbar { grid-template-columns: minmax(0, 1.1fr) minmax(48px, 1fr) 46px; }
-#muscleRec .hf.rest { background: var(--ok); }
+.rec-grid .chart { margin-top: .35rem; }
+#muscleRec { position: relative; }
+.rec-axis { margin: .55rem 0 0; }
+.rec-fig .bm.m0 { cursor: default; }
+.rec-tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); border-radius: 8px; padding: .4rem .6rem; font-size: .8rem; line-height: 1.35; box-shadow: 0 4px 14px rgba(0,0,0,.25); z-index: 4; min-width: 9.5rem; }
+.rec-tip-name { font-weight: 650; }
+.rec-tip-label { opacity: .75; font-size: .75rem; }
+.rec-tip-row { display: flex; align-items: center; gap: .4rem; margin-top: .25rem; }
+.rec-tip .ht { flex: 1; height: 8px; background: color-mix(in srgb, var(--bg) 22%, transparent); border-radius: 6px; min-width: 64px; }
+.rec-tip .hf { border-radius: 6px; }
+.rec-tip b { font-variant-numeric: tabular-nums; }
 @media (max-width: 800px) { .rec-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) {
   .week-map { grid-template-columns: 1fr; }

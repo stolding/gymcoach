@@ -966,6 +966,48 @@ function renderSignals() {
     toast(t('sig.lightenedToast', { name: next.name })); renderSignals(); renderPlan();
   }));
 }
+let recKey = null;
+function renderMuscleRecovery() {
+  const el = $('#muscleRec');
+  if (!el) return;
+  const rec = state.muscleRecovery;
+  if (!rec || state.setup?.needed) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+  el.classList.remove('hidden');
+  const muscles = Array.isArray(rec.muscles) ? rec.muscles : [];
+  if (!muscles.length) {
+    el.innerHTML = `<div class="eyebrow">${esc(t('rec.title'))}</div><p class="muted small">${esc(t('rec.note'))}</p><div class="empty">${esc(t('rec.empty'))}</div>`;
+    return;
+  }
+  if (!muscles.some((m) => m.key === recKey)) recKey = muscles[0].key;
+  const fresh = Number(rec.fresh) > 0 ? Number(rec.fresh) : 90;
+  const nameOf = (m) => MUSCLE_LABELS[m.key] || m.name || m.key;
+  const row = (m) => `<button type="button" class="mbar${m.key === recKey ? ' on' : ''}" data-rec="${esc(m.key)}"><span>${esc(nameOf(m))}</span><div class="ht"><div class="hf${m.pct >= fresh ? ' rest' : ''}" style="width:${Math.max(0, Math.min(100, m.pct))}%"></div></div><b>${esc(t('rec.pct', { n: m.pct }))}</b></button>`;
+  const group = (title, list) => list.length ? `<div class="eyebrow">${esc(title)}</div><div class="mbars">${list.map(row).join('')}</div>` : '';
+  const tired = muscles.filter((m) => m.pct < fresh);
+  const rested = muscles.filter((m) => m.pct >= fresh);
+  const fatigue = Object.fromEntries(muscles.map((m) => [m.key, 100 - m.pct]));
+  const chips = muscles.map((m) => `<button type="button" data-rec="${esc(m.key)}" class="${m.key === recKey ? 'on' : ''}">${esc(nameOf(m))}</button>`).join('');
+  el.innerHTML = `<div class="eyebrow">${esc(t('rec.title'))}</div><p class="muted small" style="margin-top:0">${esc(t('rec.note'))}</p>
+    <div class="rec-grid">
+      <div>${bodyMap(fatigue, { height: 220, title: t('rec.title'), selected: recKey, figure: figureFor(state.settings || {}), scale: 'fatigue', caption: (k, v) => muscles.some((m) => m.key === k) ? t('rec.tip', { name: MUSCLE_LABELS[k] || k, n: 100 - v }) : (MUSCLE_LABELS[k] || k) })}
+        <p class="muted small">${esc(t('rec.legend'))}</p>
+        ${group(t('rec.tired'), tired)}${group(t('rec.rested'), rested)}</div>
+      <div><div class="chips sgchips" role="group" aria-label="${esc(t('rec.pick'))}">${chips}</div><div id="recChart" class="chart tall"></div></div>
+    </div>`;
+  const chosen = muscles.find((m) => m.key === recKey) || muscles[0];
+  const ser = (rec.series || []).find((s) => s.key === chosen.key);
+  const host = el.querySelector('#recChart');
+  if (host && ser?.points?.length) lineChart(host, [{ label: nameOf(chosen), unit: '%', points: ser.points.map((p) => ({ x: p.d, y: p.y })) }], { yLabel: t('rec.chart'), yUnit: '%' });
+  else if (host) host.innerHTML = '<div class="empty">' + t('rec.empty') + '</div>';
+  el.onclick = (ev) => {
+    const hit = ev.target.closest('[data-rec], [data-m]');
+    if (!hit) return;
+    const key = hit.dataset.rec || hit.dataset.m;
+    if (!muscles.some((m) => m.key === key) || key === recKey) return;
+    recKey = key;
+    renderMuscleRecovery();
+  };
+}
 function renderHome() {
   const o = state.overview; if (!o) return;
   const now = new Date();
@@ -978,6 +1020,7 @@ function renderHome() {
   const n = o.next;
   document.querySelector('.dash').classList.toggle('setup-mode', !!state.setup?.needed);
   if (state.setup?.needed) { renderSetup(); return; }
+  renderMuscleRecovery();
   $('#nextCard').classList.remove('setup');
   // cardio buiten: geen programma voor het toestel, wel het advies
   const nOut = n && (state.plan?.sessions || []).find((x) => x.name === n.name && x.outdoor);
@@ -2463,7 +2506,7 @@ async function load() {
   // een nieuwe gebruiker kiest eerst zijn voorkeuren; pas daarna een plan
   if (!state.plan && !state.setup?.needed) { state.plan = (await api('POST', '/api/plan/generate')).plan; renderPlan(); }
 }
-let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!state) return; if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); if ($('#tab-goal').classList.contains('active')) drawGoalCharts(); }, 150); });
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!state) return; if ($('#tab-home').classList.contains('active')) renderMuscleRecovery(); if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); if ($('#tab-goal').classList.contains('active')) drawGoalCharts(); }, 150); });
 boot().catch((e) => toast(e.message, true));
 
 // ---------- extra grafieken ----------

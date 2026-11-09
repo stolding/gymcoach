@@ -1,9 +1,13 @@
 import SwiftUI
 
-/// Voor- en achteraanzicht uit public/bodymap.js, gekleurd naar de sets van deze week.
+/// Voor- en achteraanzicht uit public/bodymap.js.
+/// Standaard gekleurd naar de geplande sets van het weekplan. Met fatigue naar absolute vermoeidheid.
 struct BodyFigure: View {
     var scores: [PhoneScore]
     var figure: String
+    /// Herstelkaart: absolute vermoeidheid. Het weekplan laat dit uit en kleurt naar geplande sets.
+    var fatigue: Bool = false
+    var accessLabel: String = "Getrainde spiergroepen"
 
     var body: some View {
         Canvas { ctx, size in
@@ -19,7 +23,8 @@ struct BodyFigure: View {
                     ctx.fill(BodyShapes.path(d, scale: s, ox: ox + dx * s, oy: oy), with: .color(Color.white.opacity(0.08)))
                 }
                 for (key, d) in parts {
-                    let lv = BodyShapes.level(byKey[key] ?? 0, maxScore)
+                    let value = byKey[key] ?? 0
+                    let lv = fatigue ? BodyShapes.fatigueLevel(value) : BodyShapes.level(value, maxScore)
                     let path = BodyShapes.path(d, scale: s, ox: ox + dx * s, oy: oy)
                     ctx.fill(path, with: .color(BodyShapes.fill(lv)))
                     ctx.stroke(path, with: .color(Color(red: 0.07, green: 0.07, blue: 0.08)), lineWidth: max(0.6, 1.1 * s))
@@ -31,7 +36,7 @@ struct BodyFigure: View {
             paint(shapes.back, shapes.base, 200, "achter")
         }
         .aspectRatio(400 / 424, contentMode: .fit)
-        .accessibilityLabel("Getrainde spiergroepen")
+        .accessibilityLabel(accessLabel)
     }
 }
 
@@ -64,6 +69,14 @@ enum BodyShapes {
         guard value > 0 else { return 0 }
         let r = value / max
         return r > 0.66 ? 3 : r > 0.33 ? 2 : 1
+    }
+
+    // Zelfde grenzen als public/bodymap.js fatigueLevel: punten vermoeidheid, tot 10 is uitgerust.
+    static func fatigueLevel(_ value: Double) -> Int {
+        if value <= 10 { return 0 }
+        if value < 25 { return 1 }
+        if value < 50 { return 2 }
+        return 3
     }
 
     static func fill(_ level: Int) -> Color {

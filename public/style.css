@@ -300,6 +300,11 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .chip-check input:checked + span { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .chip-check input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
 .chip-check.wide span { border-radius: 10px; }
+.rec-grid { display: grid; grid-template-columns: minmax(240px, 340px) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
+.rec-grid .chart { margin-top: .6rem; }
+#muscleRec .mbar { grid-template-columns: minmax(0, 1.1fr) minmax(48px, 1fr) 46px; }
+#muscleRec .hf.rest { background: var(--ok); }
+@media (max-width: 800px) { .rec-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) {
   .week-map { grid-template-columns: 1fr; }
   .wm-fig { position: static; }

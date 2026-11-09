@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.14.0 — 9 november 2026
+- Op Overzicht staat per spiergroep hoe uitgerust die nog is, gerekend uit je afgeronde trainingen, met een grafiek van de laatste weken. GymCoach Sync toont hetzelfde bij Herstel. Het lichaamsschema van het weekplan blijft de geplande belasting.
+
 ## 2.13.3 — 9 november 2026
 - De grafieken in GymCoach Sync hebben aslabels voor de waarde (met eenheid) en de tijd.
 

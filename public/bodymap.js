@@ -119,14 +119,25 @@ export function level(v, max) {
   return r > 0.66 ? 3 : r > 0.33 ? 2 : 1;
 }
 
-// Spierkaart als SVG (voor- en achteraanzicht), gekleurd naar sets per spiergroep.
-export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Getrainde spiergroepen', selected = null, figure = defaultFigure } = {}) {
+// Zelfde grenzen als het iOS-figuur: vermoeidheid in punten (100 − herstel). Tot 10 is uitgerust.
+export function fatigueLevel(v) {
+  if (!(v > 10)) return 0;
+  if (v < 25) return 1;
+  if (v < 50) return 2;
+  return 3;
+}
+
+// Spierkaart als SVG (voor- en achteraanzicht). Standaard: geplande sets. scale 'fatigue': absolute vermoeidheid.
+export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Getrainde spiergroepen', selected = null, figure = defaultFigure, scale = 'relative', caption = null } = {}) {
   const { FRONT, FRONT_BASE, BACK, BACK_BASE } = bodyShapes(figure);
   const max = Math.max(1, ...Object.values(scores));
   const shape = ([k, d]) => {
-    const lv = level(scores[k], max);
-    const sel = selected ? (k === selected ? ' sel' : ' dim') : '';
-    return `<path d="${d}" class="bm m${lv}${sel}" data-m="${k}"><title>${MUSCLE_LABELS[k]}${scores[k] ? `: ${Math.round(scores[k] * 10) / 10} sets` : ''}</title></path>`;
+    const value = scores[k] || 0;
+    const lv = scale === 'fatigue' ? fatigueLevel(value) : level(scores[k], max);
+    // Bij herstel blijft de kleur van elke spier staan; de gekozen spier krijgt alleen een rand.
+    const sel = !selected ? '' : (scale === 'fatigue' ? (k === selected ? ' sel' : '') : (k === selected ? ' sel' : ' dim'));
+    const text = caption ? caption(k, value) : `${MUSCLE_LABELS[k]}${scores[k] ? `: ${Math.round(scores[k] * 10) / 10} sets` : ''}`;
+    return `<path d="${d}" class="bm m${lv}${sel}" data-m="${k}"><title>${text}</title></path>`;
   };
   const base = (arr) => arr.map((d) => `<path d="${d}" class="bm-base"/>`).join('');
   const view = (dx, parts, baseParts, label) => `<g transform="translate(${dx} 0)">${base(baseParts)}${parts.map(shape).join('')}${labels ? `<text x="100" y="416" text-anchor="middle" class="bm-lbl">${label}</text>` : ''}</g>`;

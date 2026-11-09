@@ -26,6 +26,7 @@ struct PhoneSnapshot: Codable {
     var tip: String
     var deload: Bool
     var recovery: PhoneRecovery?
+    var muscleRecovery: PhoneMuscleRecovery?
     var steps: PhoneSteps
     var food: PhoneFood?
     var sessions: [PhoneSession]
@@ -54,6 +55,29 @@ struct PhoneRecovery: Codable {
     var label: String
     var detail: String
     var note: String
+}
+
+struct PhoneMuscleNow: Codable, Identifiable {
+    var key: String
+    var name: String
+    var pct: Double
+    var id: String { key }
+}
+
+struct PhoneMuscleSeries: Codable {
+    var key: String
+    var points: [PhonePoint]
+}
+
+struct PhoneMuscleRecovery: Codable {
+    var note: String
+    var legend: String
+    var empty: String?
+    var fresh: Double
+    var muscles: [PhoneMuscleNow]
+    var series: [PhoneMuscleSeries]
+    var scores: [PhoneScore]
+    var figure: String
 }
 
 struct PhoneSteps: Codable {

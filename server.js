@@ -13,6 +13,7 @@ import { tr, userLang, parseAccept, err } from './lib/lang.js';
 const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'en');
 import * as insights from './lib/insights.js';
 import * as signals from './lib/signals.js';
+import * as muscleRec from './lib/muscleRecovery.js';
 import * as goal from './lib/goal.js';
 import * as phone from './lib/phone.js';
 import { TERMS_VERSION } from './public/terms.js';
@@ -320,6 +321,7 @@ const routes = {
       library: await libraryStatus(),
       withings: await withings.status(),
       overview: engine.overview({ workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, plan, settings: ctx.settings }),
+      muscleRecovery: muscleRec.report(ctx.history, goal.todayISO()),
       week: engine.weekNumber(ctx.sessions),
       signals: await userSignals(ctx),
       // dagwaarden van de Apple Watch voor Lichaam (rusthartslag, HRV, VO2max), het laatste jaar

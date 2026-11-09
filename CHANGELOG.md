@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.15.0 — 9 november 2026
+- Op Voortgang staan de gestelde doelen bovenaan: start, waar je nu bent, het doel, en of je op schema, voor of achter ligt. De metingen (volume, geschat 1RM en trainingen) blijven, maar staan dicht tot je ze opent. In GymCoach Sync staat hetzelfde op het tabblad Voortgang.
+
 ## 2.14.2 — 9 november 2026
 - Bij meer dan 50% vermoeidheid kleurt het herstelfiguur weer met het oranje verloop; vanaf 50% hersteld loopt de kleur naar groen.
 

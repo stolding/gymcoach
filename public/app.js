@@ -1376,7 +1376,40 @@ function renderSortable(id, rows, cols) {
 }
 
 // ---------- voortgang ----------
+function trackNum(v, unit) {
+  if (!(v > 0)) return '—';
+  const digits = unit === 'kg' || Math.abs(v - Math.round(v)) >= 0.05 ? 1 : 0;
+  const body = goalNum(v, digits);
+  return unit === 'kg' ? `${body} kg` : body;
+}
+function trackPlace(row) {
+  const bits = [];
+  if (row.week > 0 && row.weeks > 0) bits.push(t('ui.progress.weekOf', { week: row.week, weeks: row.weeks }));
+  if (row.pct != null) bits.push(t('ui.progress.pctOf', { pct: goalNum(row.pct, 1) }));
+  if (row.startDate && row.endDate) bits.push(t('ui.progress.span', { from: fmtDate(row.startDate), to: fmtDate(row.endDate) }));
+  return bits.join(' · ');
+}
+function renderProgressGoals() {
+  const box = $('#progressGoals');
+  if (!box) return;
+  const rows = (goalView?.tracks || []).filter((row) => row.kind === 'weight' || row.kind === 'muscle' || row.name);
+  if (!rows.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="progress-goals">${rows.map((row) => {
+    const name = row.kind === 'weight' ? t('goal.legend.weight') : row.kind === 'muscle' ? t('goal.legend.muscle') : (row.name || '');
+    if (!name) return '';
+    const paceCls = row.state === 'behind' ? 'down' : row.state === 'on' || row.state === 'ahead' ? 'up' : 'muted';
+    const place = trackPlace(row);
+    const cell = (key, v) => `<div><div class="eyebrow">${esc(t(key))}</div><div class="mid">${esc(trackNum(v, row.unit))}</div></div>`;
+    return `<article class="card goal-track">
+      <div class="row between wrap gap"><h2>${esc(name)}</h2><div class="track-status ${paceCls}">${esc(t(PACE_KEY[row.state] || 'goal.tile.paceWait'))}</div></div>
+      ${place ? `<p class="muted small" style="margin:.35rem 0 0">${esc(place)}</p>` : ''}
+      <div class="track-nums">${cell('ui.progress.start', row.start)}${cell('ui.progress.now', row.now)}${cell('ui.progress.target', row.target)}</div>
+      ${row.kind === 'strength' && row.unit !== 'kg' ? `<p class="muted small" style="margin:.45rem 0 0">${esc(t('goal.legend.index'))}</p>` : ''}
+    </article>`;
+  }).join('')}</div>`;
+}
 function renderProgress() {
+  renderProgressGoals();
   barChart($('#chartSessions'), state.weekly.map((w) => ({ x: w.week, y: w.sessions })), { unit: '×' });
   barChart($('#chartVolume'), state.weekly.map((w) => ({ x: w.week, y: Math.round(w.volume) })), { unit: 'kg' });
   const sel = $('#exSelect');
@@ -1575,6 +1608,10 @@ function drawExercise() {
   ], { yLabel: 'kg' });
 }
 $('#exSelect').addEventListener('change', drawExercise);
+$('#progressSeries')?.addEventListener('toggle', () => {
+  if (!$('#progressSeries').open || !state) return;
+  requestAnimationFrame(() => { if ($('#tab-progress').classList.contains('active')) renderProgress(); });
+});
 
 
 // ---------- lichaamssamenstelling ----------

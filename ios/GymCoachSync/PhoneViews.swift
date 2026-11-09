@@ -570,6 +570,7 @@ struct PlanView: View {
 
 struct ProgressViewScreen: View {
     @EnvironmentObject var phone: PhoneModel
+    @State private var seriesOpen = false
 
     var body: some View {
         NavigationStack {
@@ -577,53 +578,12 @@ struct ProgressViewScreen: View {
                 if let snap = phone.snapshot {
                     VStack(spacing: 12) {
                         StaleBanner()
-                        if snap.progress.isEmpty && snap.records.isEmpty && snap.recent.isEmpty {
-                            PhoneCard {
-                                Text("Nog te weinig trainingen voor een lijn of een record.")
-                                    .foregroundStyle(.secondary)
+                        if let tracks = snap.tracks, !tracks.isEmpty {
+                            ForEach(Array(tracks.enumerated()), id: \.offset) { _, row in
+                                goalTrack(row)
                             }
                         }
-                        ForEach(Array(snap.progress.enumerated()), id: \.offset) { _, p in
-                            PhoneCard {
-                                HStack {
-                                    Text(p.name).font(.headline)
-                                    Spacer()
-                                    Text(signedPct(p.delta))
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(p.delta < 0 ? Color.orange : Color.green)
-                                }
-                                Text("\(phoneKg(p.e1rm)) kg 1RM").font(.subheadline).foregroundStyle(.secondary)
-                                if p.spark.count > 1 { Sparkline(values: p.spark, unit: "kg") }
-                            }
-                        }
-                        if !snap.records.isEmpty {
-                            PhoneCard {
-                                Text("Records, 14 dagen").font(.subheadline.weight(.semibold))
-                                ForEach(Array(snap.records.enumerated()), id: \.offset) { _, r in
-                                    HStack {
-                                        Text(r.name).font(.subheadline)
-                                        Spacer()
-                                        Text("\(phoneKg(r.e1rm)) kg").font(.subheadline.monospacedDigit())
-                                    }
-                                    Text(r.date).font(.caption).foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                        if !snap.recent.isEmpty {
-                            PhoneCard {
-                                Text("Laatste trainingen").font(.subheadline.weight(.semibold))
-                                ForEach(Array(snap.recent.enumerated()), id: \.offset) { _, w in
-                                    HStack {
-                                        VStack(alignment: .leading) {
-                                            Text(w.title).font(.subheadline)
-                                            Text(w.date).font(.caption).foregroundStyle(.secondary)
-                                        }
-                                        Spacer()
-                                        if let m = w.minutes { Text("\(m) min").font(.subheadline).foregroundStyle(.secondary) }
-                                    }
-                                }
-                            }
-                        }
+                        seriesBlock(snap)
                     }
                     .padding(16)
                 }
@@ -631,6 +591,108 @@ struct ProgressViewScreen: View {
             .background(PhoneChrome.bg.ignoresSafeArea())
             .navigationTitle("Voortgang")
             .refreshable { await phone.refresh() }
+        }
+    }
+
+    private func goalTrack(_ row: PhoneTrack) -> some View {
+        PhoneCard {
+            HStack(alignment: .firstTextBaseline) {
+                Text(row.name).font(.headline)
+                Spacer()
+                Text(row.pace)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(paceColor(row.state))
+                    .multilineTextAlignment(.trailing)
+            }
+            if !row.place.isEmpty {
+                Text(row.place).font(.caption).foregroundStyle(.secondary)
+            }
+            HStack(alignment: .top, spacing: 8) {
+                trackStat("Start", row.start, row.unit)
+                trackStat("Nu", row.now, row.unit)
+                trackStat("Doel", row.target, row.unit)
+            }
+            if !row.note.isEmpty {
+                Text(row.note).font(.caption2).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func trackStat(_ label: String, _ value: Double?, _ unit: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+            Text(trackValue(value, unit)).font(.title3.monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func trackValue(_ n: Double?, _ unit: String) -> String {
+        guard let n, n > 0 else { return "—" }
+        return unit == "kg" ? "\(phoneKg(n)) kg" : phoneKg(n)
+    }
+
+    @ViewBuilder private func seriesBlock(_ snap: PhoneSnapshot) -> some View {
+        if !snap.progress.isEmpty || !snap.records.isEmpty || !snap.recent.isEmpty {
+            DisclosureGroup(isExpanded: $seriesOpen) {
+                VStack(spacing: 12) {
+                    seriesCards(snap)
+                }
+                .padding(.top, 8)
+            } label: {
+                Text("Metingen").font(.headline)
+            }
+            .tint(PhoneChrome.ink)
+            .padding(14)
+            .background(PhoneChrome.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        } else if (snap.tracks ?? []).isEmpty {
+            PhoneCard {
+                Text("Nog te weinig trainingen voor een lijn of een record.")
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder private func seriesCards(_ snap: PhoneSnapshot) -> some View {
+        ForEach(Array(snap.progress.enumerated()), id: \.offset) { _, p in
+            PhoneCard {
+                HStack {
+                    Text(p.name).font(.headline)
+                    Spacer()
+                    Text(signedPct(p.delta))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(p.delta < 0 ? Color.orange : Color.green)
+                }
+                Text("\(phoneKg(p.e1rm)) kg 1RM").font(.subheadline).foregroundStyle(.secondary)
+                if p.spark.count > 1 { Sparkline(values: p.spark, unit: "kg") }
+            }
+        }
+        if !snap.records.isEmpty {
+            PhoneCard {
+                Text("Records, 14 dagen").font(.subheadline.weight(.semibold))
+                ForEach(Array(snap.records.enumerated()), id: \.offset) { _, r in
+                    HStack {
+                        Text(r.name).font(.subheadline)
+                        Spacer()
+                        Text("\(phoneKg(r.e1rm)) kg").font(.subheadline.monospacedDigit())
+                    }
+                    Text(r.date).font(.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
+        if !snap.recent.isEmpty {
+            PhoneCard {
+                Text("Laatste trainingen").font(.subheadline.weight(.semibold))
+                ForEach(Array(snap.recent.enumerated()), id: \.offset) { _, w in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(w.title).font(.subheadline)
+                            Text(w.date).font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if let m = w.minutes { Text("\(m) min").font(.subheadline).foregroundStyle(.secondary) }
+                    }
+                }
+            }
         }
     }
 }

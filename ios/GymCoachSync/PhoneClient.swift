@@ -32,6 +32,7 @@ struct PhoneSnapshot: Codable {
     var sessions: [PhoneSession]
     var nextKey: String?
     var goal: PhoneGoal?
+    var tracks: [PhoneTrack]?
     var body: PhoneBody?
     var composition: PhoneComposition
     var recent: [PhoneRecent]
@@ -127,6 +128,18 @@ struct PhoneGoal: Codable {
     var lines: [String]
     var pace: String
     var paceState: String
+}
+
+struct PhoneTrack: Codable {
+    var name: String
+    var unit: String
+    var note: String
+    var start: Double?
+    var now: Double?
+    var target: Double?
+    var state: String
+    var pace: String
+    var place: String
 }
 
 struct PhoneBody: Codable {

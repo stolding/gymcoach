@@ -119,10 +119,26 @@ export function level(v, max) {
   return r > 0.66 ? 3 : r > 0.33 ? 2 : 1;
 }
 
-// Herstelpercentage 0–100 als vulkleur: 0 is oranje (vermoeid), 100 is groen (hersteld), daartussen rechtlijnig.
-function recoveryFill(pct) {
+// Zelfde grenzen als vóór 2.14.1 (commit 505e22b): vermoeidheid in punten. Tot 10 is de donkere tint, daarboven het oranje verloop.
+export function fatigueLevel(v) {
+  if (!(v > 10)) return 0;
+  if (v < 25) return 1;
+  if (v < 50) return 2;
+  return 3;
+}
+const FATIGUE_FILL = [
+  'color-mix(in srgb, var(--ink) 16%, var(--surface))',
+  'color-mix(in srgb, var(--accent) 38%, var(--surface))',
+  'color-mix(in srgb, var(--accent) 70%, var(--surface))',
+  'var(--accent)',
+];
+
+// Onder 50% hersteld (meer dan 50% vermoeid): het oude oranje verloop. Vanaf 50% loopt alleen die helft van oranje naar groen.
+export function recoveryFill(pct) {
   const n = Math.max(0, Math.min(100, Math.round(Number.isFinite(pct) ? pct : 0)));
-  return `color-mix(in srgb, var(--ok) ${n}%, var(--accent))`;
+  if (n < 50) return FATIGUE_FILL[fatigueLevel(100 - n)];
+  const t = Math.round((n - 50) * 2);
+  return `color-mix(in srgb, var(--ok) ${t}%, var(--accent))`;
 }
 
 // Spierkaart als SVG (voor- en achteraanzicht). Standaard: geplande sets.
@@ -136,6 +152,7 @@ export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Get
       if (!Object.prototype.hasOwnProperty.call(scores, k)) return `<path d="${d}" class="bm m0${sel}" data-m="${k}"/>`;
       const raw = Number(scores[k]);
       const pct = Math.max(0, Math.min(100, Math.round(Number.isFinite(raw) ? raw : 0)));
+      if (pct < 50) return `<path d="${d}" class="bm m${fatigueLevel(100 - pct)}${sel}" data-m="${k}"/>`;
       return `<path d="${d}" class="bm rec${sel}" data-m="${k}" style="fill:${recoveryFill(pct)}"/>`;
     }
     const value = scores[k] || 0;

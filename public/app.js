@@ -1,7 +1,7 @@
 // GymCoach — de app in de browser (één bestand, geen framework).
 // Tabbladen: Overzicht, Plan, Statistieken, Analyse, Voortgang, Lichaam en Instellingen.
 // Alle gegevens komen van de eigen server via api(); grafieken zijn zelfgemaakte SVG's.
-import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure } from './bodymap.js';
+import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure, recoveryFill } from './bodymap.js';
 import { TERMS_VERSION, termsHtml } from './terms.js';
 import { explain } from './explain.js';
 import { openEditor } from './editor.js';
@@ -1010,7 +1010,7 @@ function renderMuscleRecovery() {
     const m = known.get(recTip);
     if (!m || !tip) return;
     const pct = Math.max(0, Math.min(100, Math.round(Number(m.pct) || 0)));
-    const mix = `color-mix(in srgb, var(--ok) ${pct}%, var(--accent))`;
+    const mix = recoveryFill(pct);
     tip.setAttribute('aria-label', t('rec.tip', { name: nameOf(m), n: pct }));
     tip.innerHTML = `<div class="rec-tip-name">${esc(nameOf(m))}</div><div class="rec-tip-label">${esc(t('rec.chart'))}</div><div class="rec-tip-row"><div class="ht"><div class="hf" style="width:${pct}%;background:${mix}"></div></div><b>${esc(t('rec.pct', { n: pct }))}</b></div>`;
     tip.classList.remove('hidden');

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Voor- en achteraanzicht uit public/bodymap.js.
 /// Standaard gekleurd naar de geplande sets van het weekplan (oranje niveaus).
-/// Met fatigue kleurt alleen het herstelfiguur: oranje bij 0% hersteld, groen bij 100%, daartussen rechtlijnig.
+/// Met fatigue kleurt alleen het herstelfiguur: onder 50% hersteld het oude oranje verloop, daarboven naar groen.
 struct BodyFigure: View {
     var scores: [PhoneScore]
     var figure: String
@@ -101,10 +101,20 @@ enum BodyShapes {
         return r > 0.66 ? 3 : r > 0.33 ? 2 : 1
     }
 
-    /// 0% hersteld is oranje, 100% is groen. De menging is rechtlijnig in sRGB, zonder stap bij 90%.
+    /// Zelfde grenzen als public/bodymap.js fatigueLevel vóór 2.14.1: punten vermoeidheid.
+    static func fatigueLevel(_ value: Double) -> Int {
+        if value <= 10 { return 0 }
+        if value < 25 { return 1 }
+        if value < 50 { return 2 }
+        return 3
+    }
+
+    /// Onder 50% hersteld het oude oranje verloop (fill van fatigueLevel). Vanaf 50% loopt alleen die helft naar groen.
     static func recoveryFill(_ pct: Double) -> Color {
         let raw = pct.isFinite ? pct : 0
-        let t = min(1.0, max(0.0, raw / 100.0))
+        let n = min(100.0, max(0.0, raw.rounded()))
+        if n < 50 { return fill(fatigueLevel(100.0 - n)) }
+        let t = min(1.0, max(0.0, (n - 50.0) / 50.0))
         let r = 1.0 + (0.30 - 1.0) * t
         let g = 0.478 + (0.76 - 0.478) * t
         let b = 0.18 + (0.42 - 0.18) * t

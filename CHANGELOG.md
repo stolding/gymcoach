@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.14.2 — 9 november 2026
+- Bij meer dan 50% vermoeidheid kleurt het herstelfiguur weer met het oranje verloop; vanaf 50% hersteld loopt de kleur naar groen.
+
 ## 2.14.1 — 9 november 2026
 - Op Spierherstel kleurt het lichaamsschema van oranje (vermoeid) naar groen (hersteld), geleidelijk met het percentage. Naam en percentage hersteld verschijnen als je de spier aanwijst of aantikt; de lijst met balkjes is weg. De grafiek blijft. In GymCoach Sync doet een tik hetzelfde. Het lichaamsschema van het weekplan blijft de geplande belasting.
 

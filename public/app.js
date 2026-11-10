@@ -1736,7 +1736,7 @@ function workoutHtml(d) {
     const spanText = (vals, unit) => { const nums = vals.filter((v) => v > 0); return unit === 'cm' ? `${cm(nums[0])}–${cm(nums[nums.length - 1])}` : `${nl1(nums[0])}–${nl1(nums[nums.length - 1])} ${unit}`; };
     const sideRows = (L, R, fL, fR, unit, cls) => {
       const scale = Math.max(...[...(L || []), ...(R || [])].filter((v) => v > 0), 0.001);
-      const row = (label, vals, fade, extra) => vals ? `<div class="set-side"><span class="k">${esc(label)}${fade != null ? ` · ${fade}%` : ''}</span>${bars(vals, cls + (extra || ''), scale)} <span class="muted">${spanText(vals, unit)}</span></div>` : '';
+      const row = (label, vals, fade, extra) => vals ? `<div class="set-side"><span class="k">${esc(label)}${fade != null ? ` · ${fade}%` : ''}</span><div class="set-line">${bars(vals, cls + (extra || ''), scale)} <span class="muted">${spanText(vals, unit)}</span></div></div>` : '';
       return `<div class="set-sides">${row(t('app.set.left'), L, fL, '')}${row(t('app.set.right'), R, fR, ' right')}</div>`;
     };
     const scores = e.scores ? [['app.set.force', e.scores.force], ['app.set.balance', e.scores.balance], ['app.set.romScore', e.scores.rom], ['app.set.done', e.scores.done], ['app.set.total', e.scores.total]].filter(([, v]) => v != null) : [];

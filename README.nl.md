@@ -53,7 +53,7 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Optionele AI-coach** via de Claude API of een lokaal taalmodel (OpenAI-compatibel). Aanpassingen worden gecontroleerd en alleen toegepast als jij erop klikt.
 
 **Terugkijken**
-- **Trainingsrapport** na elke training (in de app, als PDF en per mail): vergelijking met de laatste 4 keer, hartslag per set en over de hele training met zones, tijd onder spanning en rust.
+- **Trainingsrapport** na elke training (in de app, als PDF en per mail): vergelijking met de laatste 4 keer, hartslag per set en over de hele training met zones, tijd onder spanning en rust. Een klik op een set toont het vermogen en de bewegingsuitslag per herhaling van Speediance, met het verval daarin. De herstelscore blijft de tijd per herhaling gebruiken.
 - **Training**: het logboek. Bovenaan het aantal trainingen, het volume en de minuten per week, en per oefening het geschatte 1RM.
 - **Terugkijken**: één periode voor de cijfers (spiergroepen, krachtindex, balans, spiermassa tegen volume, km en stappen) en de patronen (kalender, wanneer je traint, records, energie tegen gewicht, herstel).
 - **Lichaam** via Withings: gewicht, vet%, spiermassa, segmenten per arm/been/romp, vasculaire leeftijd, met richtwaarden.

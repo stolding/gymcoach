@@ -1725,13 +1725,28 @@ function workoutHtml(d) {
       const reps = e.sets.reduce((t, x) => t + (x.reps || 0), 0);
       return `<div class="wo-ex light"><div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small muted">${t('app.zonderGewicht', { a: e.sets.length ? ` · ${t('app.setsN', { n: e.sets.length })}${reps ? ` · ${t('app.repsTotal', { reps })}` : ''}` : '' })}</div></div></div>`;
     }
-    // vertraging binnen de set (laatste herhalingen tegenover de eerste): tot 25% fris, 25–40% zwaar, vanaf 40% tot het uiterste
-    const hasSlow = e.sets.some((x) => x.slow != null);
-    const slowCell = (p) => (p == null ? '<td class="num muted">—</td>' : `<td class="num ${p >= 40 ? 'down' : p >= 25 ? 'balwarn' : 'up'}">${p}%</td>`);
+    // verval: vermogen als Speediance dat per herhaling stuurt, anders de uitslag, anders de tijd
+    const fadeKind = e.sets.some((x) => x.wattFade != null) ? 'watt' : e.sets.some((x) => x.ampFade != null) ? 'amp' : e.sets.some((x) => x.slow != null) ? 'time' : null;
+    const fadeVal = (x) => fadeKind === 'watt' ? x.wattFade : fadeKind === 'amp' ? x.ampFade : x.slow;
+    const fadeHead = fadeKind === 'watt' ? t('app.set.powerCol') : fadeKind === 'amp' ? t('app.set.romCol') : t('sig.slowCol');
+    const fadeCell = (p) => (p == null ? '<td class="num muted">—</td>' : `<td class="num ${p >= 40 ? 'down' : p >= 25 ? 'balwarn' : 'up'}">${p}%</td>`);
+    const cols = 4 + (fadeKind ? 1 : 0);
+    const bars = (vals, cls) => { const max = Math.max(...vals, 0.001); return `<span class="repbars ${cls}">${vals.map((v) => `<i style="height:${Math.max(12, Math.round((v / max) * 100))}%"></i>`).join('')}</span>`; };
+    const cm = (v) => `${Math.round(v * (v < 3 ? 100 : 1))} cm`;
+    const scores = e.scores ? [['app.set.force', e.scores.force], ['app.set.balance', e.scores.balance], ['app.set.romScore', e.scores.rom], ['app.set.done', e.scores.done], ['app.set.total', e.scores.total]].filter(([, v]) => v != null) : [];
     return `<div class="wo-ex">
       <div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small">${t('app.zwaarsteSetKg', { a: nl1(e.top), delta })}</div></div>
-      <table class="wo-sets"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ui.stats.herhalingen')}</th><th class="num">${t('ui.setTraining.doel')}</th><th class="num">${t('app.gewicht')}</th>${hasSlow ? `<th class="num" title="${t('sig.slowHint')}">${t('sig.slowCol')}</th>` : ''}</tr></thead><tbody>
-        ${e.sets.map((x, j) => `<tr><td>${j + 1}</td><td class="num ${x.target && x.reps < x.target ? 'down' : x.target && x.reps >= x.target ? 'up' : ''}">${x.reps}</td><td class="num muted">${x.target ?? '—'}</td><td class="num">${nl1(x.weight)} kg${x.min != null && x.max !== x.min ? ` <span class="muted small">(${nl1(x.min)}–${nl1(x.max)})</span>` : ''}</td>${hasSlow ? slowCell(x.slow) : ''}</tr>`).join('')}
+      ${scores.length ? `<div class="small muted">${esc(t('app.set.fromDevice'))}: ${scores.map(([k, v]) => `${esc(t(k))} ${esc(String(v))}`).join(' · ')}</div>` : ''}
+      <table class="wo-sets"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ui.stats.herhalingen')}</th><th class="num">${t('ui.setTraining.doel')}</th><th class="num">${t('app.gewicht')}</th>${fadeKind ? `<th class="num" title="${esc(t(fadeKind === 'time' ? 'sig.slowHint' : 'app.set.fadeHint'))}">${esc(fadeHead)}</th>` : ''}</tr></thead><tbody>
+        ${e.sets.map((x, j) => {
+          const open = !!(x.watts || x.amp || x.hr);
+          const bits = [];
+          if (x.watts) bits.push(`<div><div class="eyebrow">${esc(t('app.set.power'))}${x.wattFade != null ? ` · ${x.wattFade}%` : ''}</div><div class="set-line">${bars(x.watts, 'watt')} <span class="muted">${nl1(x.watts[0])}–${nl1(x.watts[x.watts.length - 1])} W</span></div></div>`);
+          if (x.amp) bits.push(`<div><div class="eyebrow">${esc(t('app.set.rom'))}${x.ampFade != null ? ` · ${x.ampFade}%` : ''}</div><div class="set-line">${bars(x.amp, 'rom')} <span class="muted">${cm(x.amp[0])}–${cm(x.amp[x.amp.length - 1])}</span></div></div>`);
+          if (x.slow != null) bits.push(`<div><div class="eyebrow">${esc(t('sig.slowCol'))}</div><div>${x.slow}%</div></div>`);
+          if (x.hr) bits.push(`<div><div class="eyebrow">${esc(t('app.set.hrSet'))}</div><div>${x.hr}</div></div>`);
+          return `<tr class="${open ? 'click' : ''}" ${open ? `data-set="1" tabindex="0" aria-expanded="false"` : ''}><td>${j + 1}</td><td class="num ${x.target && x.reps < x.target ? 'down' : x.target && x.reps >= x.target ? 'up' : ''}">${x.reps}</td><td class="num muted">${x.target ?? '—'}</td><td class="num">${nl1(x.weight)} kg${x.min != null && x.max !== x.min ? ` <span class="muted small">(${nl1(x.min)}–${nl1(x.max)})</span>` : ''}</td>${fadeKind ? fadeCell(fadeVal(x)) : ''}</tr>${open ? `<tr class="set-detail hidden"><td colspan="${cols}">${bits.join('')}</td></tr>` : ''}`;
+        }).join('')}
       </tbody></table>
       <div class="small muted">${t('app.volumeKgGeschat1rm', { a: e.volume.toLocaleString(localeOf()), b: nl1(e.e1rm), c: e.prev ? t('app.vorigeKeer2', { a: esc(fmtDate(e.prev.date)), b: esc(doneSetsSummary(e.prev.sets)) }) : '' })}</div>
     </div>`;
@@ -1815,6 +1830,16 @@ async function openWorkouts(ids, acts = [], date = null) {
       ${woTiles(d)}
       <div class="row gap"><a class="btn small ghost" href="/api/workout/pdf?id=${encodeURIComponent(d.id)}" target="_blank" rel="noopener">PDF</a><button type="button" class="btn small ghost" data-mail="${esc(d.id)}">${t('app.mailNaarMij')}</button></div></div>
       ${workoutHtml(d)}`).join('<hr class="wo-sep">')}${actHtml && all.length ? '<hr class="wo-sep">' + actHtml : ''}</form>`;
+    dlg.querySelectorAll('tr[data-set]').forEach((tr) => {
+      const toggle = () => {
+        const row = tr.nextElementSibling;
+        if (!row?.classList.contains('set-detail')) return;
+        const closed = row.classList.toggle('hidden');
+        tr.setAttribute('aria-expanded', closed ? 'false' : 'true');
+      };
+      tr.addEventListener('click', toggle);
+      tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(); } });
+    });
     dlg.querySelectorAll('[data-mail]').forEach((b) => b.addEventListener('click', () => busy(b, async () => {
       if (!state.settings.email) { toast(t('app.vulEerstJeE'), true); return; }
       try { const r = await api('POST', '/api/workout/mail', { id: b.dataset.mail }); toast(t('app.samenvattingGemaildNaar', { to: r.to })); } catch (er) { toast(er.message, true); }

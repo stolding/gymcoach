@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.21.6 — 10 november 2026
+- Een klik op een uitgevoerde set toont het vermogen en de bewegingsuitslag per herhaling van Speediance, met het verval daarin. De kolom gebruikt dat verval; de herstelscore blijft de tijd per herhaling.
+
 ## 2.21.5 — 10 november 2026
 - In de tabel Per dag staat elke kolomkop boven de getallen, met dezelfde uitlijning.
 

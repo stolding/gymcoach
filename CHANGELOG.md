@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.20.0 — 10 november 2026
+- Een klik op een training in het plan opent het overzicht van die training: spiergroepen en intensiteit, vermoeidheid, tijd en volume. Een oefening toont de details, met foto's en video.
+
 ## 2.19.0 — 10 november 2026
 - Op Training staan de weekgrafieken bovenaan: aantal trainingen, volume en het totaal aantal minuten van de Gym Monster-trainingen.
 

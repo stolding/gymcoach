@@ -418,14 +418,14 @@ function renderPlan() {
 
   wrap.innerHTML = plan.sessions.map((s) => s.outdoor ? `
     <article class="card session outdoor" data-key="${esc(s.key)}">
-      <header><div><h3>${esc(s.name)}</h3><div class="muted small">${t('app.min', { estMinutes: s.estMinutes })} <span class="badge">${esc(DAY_SHORT.buiten)}</span></div></div>
+      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}</h3><div class="muted small">${t('app.min', { estMinutes: s.estMinutes })} <span class="badge">${esc(DAY_SHORT.buiten)}</span></div></div>
         <div class="out-ico" aria-hidden="true">🚶‍♂️🚴</div></header>
       <p class="small">${esc(s.advice || '')}</p>
       ${outdoorDone(s)}
       <p class="muted small">${t('app.geenProgrammaVoorDe')}</p>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
-      <header><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
+      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div></header>
       ${s.warmup && (s.warmup.mobility.length + s.warmup.cable.length) ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: s.warmup.mobility.length + s.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
       ${s.exercises.map((e, i) => `
@@ -598,11 +598,91 @@ function savePlanSoon() {
   }, 300);
 }
 
+// Gepland volume van een training: herhalingen × gewicht van elke set.
+function sessionVolume(s) {
+  return (s.exercises || []).reduce((n, e) => n + (e.sets || []).reduce((t, x) => t + (Number(x.reps) || 0) * (Number(x.weight) || 0), 0), 0);
+}
+const sessionSets = (s) => (s.exercises || []).reduce((n, e) => n + (e.sets?.length || 0), 0);
+// Vermoeidheid van de spieren in deze training. Alleen spieren met afgeronde sets hebben een percentage.
+function sessionFatigue(s) {
+  const known = new Map((state.muscleRecovery?.muscles || []).map((m) => [m.key, m.pct]));
+  const scores = {};
+  const rows = Object.entries(s.muscles || {}).filter(([, v]) => v > 0).map(([k, load]) => {
+    const pct = known.has(k) ? known.get(k) : null;
+    if (pct != null) scores[k] = pct;
+    return { k, pct, load };
+  });
+  rows.sort((a, b) => (a.pct ?? 101) - (b.pct ?? 101) || b.load - a.load);
+  return { scores, rows };
+}
+// Overzicht van één training: spieren en intensiteit, vermoeidheid, tijd en volume, en de oefeningen.
+function openSession(session) {
+  const dlg = $('#planDlg');
+  if (!dlg || !session) return;
+  const vol = sessionVolume(session);
+  const sets = sessionSets(session);
+  const done = session.outdoor ? null : doneOf(session);
+  const tile = (label, value, sub) => `<div><div class="eyebrow">${esc(label)}</div><div class="mid">${esc(String(value))}</div>${sub ? `<div class="muted small">${esc(sub)}</div>` : ''}</div>`;
+  const tiles = [
+    tile(t('app.tijd'), session.estMinutes != null ? `${session.estMinutes} min` : '—', t('app.gepland')),
+    tile(t('ed.volume'), vol ? `${Math.round(vol).toLocaleString(localeOf())} kg` : '—', t('app.gepland')),
+    tile(t('ed.sets'), sets || '—', ''),
+    tile(t('ed.exercises'), (session.exercises || []).length, ''),
+  ];
+  if (done?.minutes) tiles.push(tile(t('app.tijd'), `${done.minutes} min`, t('app.gedaan2')));
+  if (done?.volume) tiles.push(tile(t('ed.volume'), `${Number(done.volume).toLocaleString(localeOf())} kg`, t('app.gedaan2')));
+  const muscles = Object.entries(session.muscles || {}).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  const fat = sessionFatigue(session);
+  const figs = muscles.length ? `<div class="plan-figs">
+      <div>
+        <div class="eyebrow">${esc(t('ui.plan.intensity'))}</div>
+        ${bodyMap(session.muscles || {}, { height: 240, title: t('ui.plan.intensity'), figure: figureFor(state.settings || {}) })}
+        <p class="muted small">${esc(t('ui.plan.intensityNote'))}</p>
+        <div class="mbars">${muscles.map(([k, v]) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / muscles[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>`).join('')}</div>
+        <div class="legend"><span class="sq m1"></span>${t('app.licht')} <span class="sq m2"></span>${t('app.gemiddeld')} <span class="sq m3"></span>${t('app.veel')}</div>
+      </div>
+      <div>
+        <div class="eyebrow">${esc(t('ui.plan.fatigue'))}</div>
+        ${bodyMap(fat.scores, { height: 240, title: t('ui.plan.fatigue'), figure: figureFor(state.settings || {}), scale: 'recovery' })}
+        <p class="muted small">${esc(t('ui.plan.fatigueNote'))}</p>
+        <div class="mbars">${fat.rows.map((r) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[r.k] || r.k)}</span><div class="ht"><div class="hf" style="width:${r.pct == null ? 0 : r.pct}%;background:${r.pct == null ? 'transparent' : recoveryFill(r.pct)}"></div></div><b>${r.pct == null ? '—' : esc(t('rec.pct', { n: Math.round(r.pct) }))}</b></div>`).join('')}</div>
+      </div>
+    </div>` : '';
+  const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}` : `
+    ${session.warmup && (session.warmup.mobility.length + session.warmup.cable.length) ? `<button type="button" class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: session.warmup.mobility.length + session.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
+    ${(session.exercises || []).map((e, i) => `<button type="button" class="row-item${exDone(session, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
+        ${exDone(session, e) ? '<span class="ri-check" title="' + t('app.gedaan3') + '">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}"></span>`}
+        <span class="ri-name">${e.group ? `<span class="badge ss">${esc(e.group)}</span> ` : ''}${esc(e.title)}</span>
+        <span class="ri-sum">${e.sets?.length ? setsSummary(e) : '—'}</span>
+        <span class="ri-chev" aria-hidden="true">›</span>
+      </button>`).join('')}
+    ${session.cooldown?.length ? `<button type="button" class="row-item wc" data-open="cool"><span class="ri-dot cool"></span><span class="ri-name">${t('ed.cooldown')}</span><span class="ri-sum">${t('app.stretchesMin', { n: session.cooldown.length, a: coolMin(session.cooldown) })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}`;
+  dlg.innerHTML = `<form method="dialog" class="exd">
+    <div class="exd-head"><div><div class="eyebrow">${esc(t('ui.plan.weekplan'))}</div><h2>${esc(session.name)}</h2></div>
+      <button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
+    <div class="wo-tiles">${tiles.join('')}</div>
+    ${figs}
+    <div>${rows}</div>
+  </form>`;
+  dlg.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.open === 'ex') openExercise(session, +b.dataset.i);
+    else openWarmCool(session, b.dataset.open);
+  }));
+  if (!dlg.open) dlg.showModal();
+}
+$('#sessions').addEventListener('keydown', (ev) => {
+  if (ev.key !== 'Enter' && ev.key !== ' ') return;
+  const head = ev.target.closest('header[data-open="plan"]');
+  if (!head || ev.target !== head) return;
+  ev.preventDefault();
+  head.click();
+});
 $('#sessions').addEventListener('click', async (ev) => {
   const card = ev.target.closest('.session'); if (!card) return;
   const session = state.plan.sessions.find((s) => s.key === card.dataset.key);
   const open = ev.target.closest('[data-open]');
   if (open) {
+    if (open.dataset.open === 'plan') { openSession(session); return; }
     if (open.dataset.open === 'ex') openExercise(session, +open.dataset.i);
     else openWarmCool(session, open.dataset.open);
     return;
@@ -678,8 +758,11 @@ function openExercise(session, i) {
         </tbody></table>
       </div>
     </div>
+    <div>
+      <div class="eyebrow">${esc(t('app.instructies'))}</div>
+      <div class="info-body" data-info></div>
+    </div>
     <div class="row gap wrap end">
-      ${e.id ? `<button type="button" class="btn ghost" data-x="info">${t('app.instructies')}</button>` : ''}
       <button type="button" class="btn ghost" data-x="avoid">${t('pk.avoid')}</button>
       <button type="button" class="btn ghost" data-x="swap">${t('app.wisselOefening')}</button>
       <button value="close" class="btn accent">${t('app.klaar')}</button>
@@ -692,7 +775,11 @@ function openExercise(session, i) {
     savePlanSoon();
     openExercise(session, i);
   }));
-  dlg.querySelector('[data-x=info]')?.addEventListener('click', () => openInstructions(e));
+  fillInstructions(dlg.querySelector('[data-info]'), e);
+  dlg.onclose = () => {
+    dlg.querySelectorAll('video').forEach((v) => v.pause());
+    if ($('#planDlg')?.open) openSession(session);
+  };
   dlg.querySelector('[data-x=swap]').addEventListener('click', () => { dlg.close(); openSwap(e); });
   dlg.querySelector('[data-x=avoid]').addEventListener('click', async () => {
     if (!await askConfirm(t('app.nietMeerVoorstellen', { title: e.title }))) return;
@@ -708,23 +795,21 @@ document.addEventListener('loadedmetadata', (ev) => {
   v.style.aspectRatio = `${v.videoWidth} / ${v.videoHeight}`;
 }, true);
 
-// Instructies van Speediance: tekst, foto's en video, boven het oefeningenvenster.
-async function openInstructions(ex) {
-  let dlg = $('#infoDlg');
-  if (!dlg) {
-    dlg = document.createElement('dialog'); dlg.id = 'infoDlg'; dlg.className = 'wide-dlg info-dlg'; document.body.appendChild(dlg);
-    dlg.addEventListener('close', () => dlg.querySelector('video')?.pause());
+// Instructies van Speediance: tekst, foto's en video, in het oefeningenvenster.
+const instructionCache = new Map();
+async function fillInstructions(box, ex) {
+  if (!box) return;
+  if (!ex?.id) { box.innerHTML = `<p class="muted">${t('app.geenInstructies')}</p>`; return; }
+  const hit = instructionCache.get(String(ex.id));
+  if (hit) { box.innerHTML = instructionHtml(hit); return; }
+  box.innerHTML = `<p class="muted">${t('pk.loading')}</p>`;
+  try {
+    const info = (await api('GET', '/api/exercise/info?id=' + encodeURIComponent(ex.id))).info;
+    if (info) instructionCache.set(String(ex.id), info);
+    if (box.isConnected) box.innerHTML = info ? instructionHtml(info) : `<p class="muted">${t('app.geenInstructies')}</p>`;
+  } catch (e) {
+    if (box.isConnected) box.innerHTML = `<div class="note">${esc(e.message || t('app.geenInstructies'))}</div>`;
   }
-  dlg.innerHTML = `<form method="dialog" class="exd">
-    <div class="exd-head"><div><h2>${esc(ex.title)}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
-    <div class="info-body"><p class="muted">${t('pk.loading')}</p></div>
-  </form>`;
-  dlg.showModal();
-  let info = null, err = '';
-  try { info = (await api('GET', '/api/exercise/info?id=' + encodeURIComponent(ex.id))).info; }
-  catch (e) { err = e.message; }
-  if (!dlg.open) return;
-  dlg.querySelector('.info-body').innerHTML = info ? instructionHtml(info) : `<div class="note">${esc(err || t('app.geenInstructies'))}</div>`;
 }
 function instructionHtml(info) {
   const kps = (info.keyPoints || []).filter((k) => k.text || k.img);
@@ -756,6 +841,7 @@ const coolMin = (list) => Math.max(1, Math.round((list || []).reduce((t, c) => {
 // Venster met de warming-up of cooldown van een training.
 function openWarmCool(session, which) {
   const dlg = $('#exDlg');
+  dlg.onclose = null;
   const bothSides = (dose) => /per (kant|been|arm)/i.test(dose || '');
   const items = which === 'warm'
     ? [...session.warmup.mobility.map((m) => ({ t: m.title, d: doseText(m.dose), dev: pushMob(), both: bothSides(m.dose) })), ...session.warmup.cable.map((c) => ({ t: c.title, d: `2 × ${c.reps} @ ${c.weight} kg`, dev: true }))]

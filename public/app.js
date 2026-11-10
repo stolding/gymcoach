@@ -630,6 +630,8 @@ function sessionAfter(s, done) {
   rows.sort((a, b) => (a.pct ?? 101) - (b.pct ?? 101) || b.load - a.load);
   return { scores, rows };
 }
+// Gekozen spiergroep in het trainingsoverzicht, zodat een klik de rest dimt.
+let planPick = { key: null, muscle: null };
 // Overzicht van één training: spieren en intensiteit, vermoeidheid, tijd en volume, en de oefeningen.
 function openSession(session) {
   const dlg = $('#planDlg');
@@ -651,35 +653,46 @@ function openSession(session) {
   const after = sessionAfter(session, done);
   const fatBy = new Map(fat.rows.map((r) => [r.k, r.pct]));
   const afterBy = new Map(after.rows.map((r) => [r.k, r.pct]));
+  if (planPick.key !== session.key) planPick = { key: session.key, muscle: null };
+  if (planPick.muscle && !muscles.some(([k]) => k === planPick.muscle)) planPick.muscle = null;
+  const pick = planPick.muscle;
+  const fig = figureFor(state.settings || {});
   // pct is herstel (100 = uitgerust). De balk toont vermoeidheid in oranje en de rest in groen.
-  const splitBar = (k, rest) => {
-    const name = esc(MUSCLE_LABELS[k] || k);
-    if (rest == null) return `<div class="mbar static"><span>${name}</span><div class="ht split"></div><b>—</b></div>`;
+  const splitCell = (rest) => {
+    if (rest == null) return '<div class="cell"><div class="ht split"></div><b>—</b></div>';
     const fresh = Math.round(Math.max(0, Math.min(100, rest)));
     const tired = 100 - fresh;
-    return `<div class="mbar static"><span>${name}</span><div class="ht split"><div class="hf tired" style="width:${tired}%"></div><div class="hf fresh" style="width:${fresh}%"></div></div><b>${esc(t('rec.pct', { n: tired }))}</b></div>`;
+    return `<div class="cell"><div class="ht split"><div class="hf tired" style="width:${tired}%"></div><div class="hf fresh" style="width:${fresh}%"></div></div><b>${esc(t('rec.pct', { n: tired }))}</b></div>`;
   };
-  const figs = muscles.length ? `<div class="plan-figs">
+  const figs = muscles.length ? `<div class="plan-board">
+    <div class="plan-figs">
       <div>
         <div class="eyebrow">${esc(t('ui.plan.intensity'))}</div>
-        ${bodyMap(session.muscles || {}, { height: 220, title: t('ui.plan.intensity'), figure: figureFor(state.settings || {}) })}
+        ${bodyMap(session.muscles || {}, { height: 200, title: t('ui.plan.intensity'), figure: fig, selected: pick })}
         <p class="muted small">${esc(t('ui.plan.intensityNote'))}</p>
-        <div class="mbars">${muscles.map(([k, v]) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / muscles[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>`).join('')}</div>
         <div class="legend"><span class="sq m1"></span>${t('app.licht')} <span class="sq m2"></span>${t('app.gemiddeld')} <span class="sq m3"></span>${t('app.veel')}</div>
       </div>
       <div>
         <div class="eyebrow">${esc(t('ui.plan.fatigue'))}</div>
-        ${bodyMap(fat.scores, { height: 220, title: t('ui.plan.fatigue'), figure: figureFor(state.settings || {}), scale: 'recovery' })}
+        ${bodyMap(fat.scores, { height: 200, title: t('ui.plan.fatigue'), figure: fig, scale: 'recovery', selected: pick })}
         <p class="muted small">${esc(t('ui.plan.fatigueNote'))}</p>
-        <div class="mbars">${muscles.map(([k]) => splitBar(k, fatBy.has(k) ? fatBy.get(k) : null)).join('')}</div>
       </div>
       <div>
         <div class="eyebrow">${esc(t('ui.plan.after'))}</div>
-        ${bodyMap(after.scores, { height: 220, title: t('ui.plan.after'), figure: figureFor(state.settings || {}), scale: 'recovery' })}
+        ${bodyMap(after.scores, { height: 200, title: t('ui.plan.after'), figure: fig, scale: 'recovery', selected: pick })}
         <p class="muted small">${esc(t(done ? 'ui.plan.afterDone' : 'ui.plan.afterNote'))}</p>
-        <div class="mbars">${muscles.map(([k]) => splitBar(k, afterBy.has(k) ? afterBy.get(k) : null)).join('')}</div>
       </div>
-    </div>` : '';
+    </div>
+    <div class="plan-rows">
+      <div class="plan-row head"><span></span><span>${esc(t('ui.plan.intensity'))}</span><span>${esc(t('ui.plan.fatigue'))}</span><span>${esc(t('ui.plan.after'))}</span></div>
+      ${muscles.map(([k, v]) => `<button type="button" class="plan-row${pick === k ? ' on' : pick ? ' off' : ''}" data-m="${esc(k)}" aria-pressed="${pick === k}">
+        <span>${esc(MUSCLE_LABELS[k] || k)}</span>
+        <div class="cell"><div class="ht"><div class="hf" style="width:${(v / muscles[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>
+        ${splitCell(fatBy.has(k) ? fatBy.get(k) : null)}
+        ${splitCell(afterBy.has(k) ? afterBy.get(k) : null)}
+      </button>`).join('')}
+    </div>
+  </div>` : '';
   const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}` : `
     ${session.warmup && (session.warmup.mobility.length + session.warmup.cable.length) ? `<button type="button" class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: session.warmup.mobility.length + session.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
     ${(session.exercises || []).map((e, i) => `<button type="button" class="row-item${exDone(session, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
@@ -700,6 +713,20 @@ function openSession(session) {
     if (b.dataset.open === 'ex') openExercise(session, +b.dataset.i);
     else openWarmCool(session, b.dataset.open);
   }));
+  if (!dlg.dataset.bound) {
+    dlg.dataset.bound = '1';
+    dlg.addEventListener('click', (ev) => {
+      const hit = ev.target.closest('[data-m]');
+      if (!hit || ev.target.closest('[data-open]')) return;
+      const key = hit.dataset.m;
+      const s = state.plan?.sessions?.find((x) => x.key === planPick.key);
+      if (!key || !s || !(s.muscles?.[key] > 0)) return;
+      planPick.muscle = planPick.muscle === key ? null : key;
+      const top = dlg.scrollTop;
+      openSession(s);
+      dlg.scrollTop = top;
+    });
+  }
   if (!dlg.open) dlg.showModal();
 }
 $('#sessions').addEventListener('keydown', (ev) => {

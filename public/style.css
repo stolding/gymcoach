@@ -286,12 +286,19 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .plan-dlg { width: min(1040px, 96vw); }
 .plan-figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: start; }
 .plan-figs > div > .muted.small { min-height: 2.7em; }
-.plan-figs .mbar { grid-template-columns: minmax(0, 1.2fr) minmax(52px, 1fr) 2.8rem; gap: .35rem; min-height: 1.35rem; }
-.plan-figs .mbar > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.plan-figs .ht.split { display: flex; }
-.plan-figs .ht.split .hf { border-radius: 0; background: none; }
-.plan-figs .ht.split .hf.tired { background: var(--accent); }
-.plan-figs .ht.split .hf.fresh { background: var(--ok); }
+.plan-rows { display: flex; flex-direction: column; gap: .15rem; }
+.plan-row { display: grid; grid-template-columns: minmax(7.2rem, 1.05fr) repeat(3, minmax(0, 1fr)); gap: .45rem .7rem; align-items: center; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0; border-radius: 8px; padding: .28rem .4rem; cursor: pointer; }
+.plan-row.head { cursor: default; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 650; padding-bottom: .15rem; }
+.plan-row .cell { display: grid; grid-template-columns: minmax(0, 1fr) 2.6rem; gap: .35rem; align-items: center; min-width: 0; }
+.plan-row b { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
+.plan-row > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plan-row.on { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.plan-row.off { opacity: .38; }
+.plan-row .ht.split { display: flex; }
+.plan-row .ht.split .hf { border-radius: 0; background: none; }
+.plan-row .ht.split .hf.tired { background: var(--accent); }
+.plan-row .ht.split .hf.fresh { background: var(--ok); }
+.plan-figs .bm { cursor: pointer; }
 .session header[data-open="plan"] { cursor: pointer; margin: -.35rem -.35rem .15rem; padding: .35rem; border-radius: 10px; }
 .session header[data-open="plan"]:hover, .session header[data-open="plan"]:focus-visible { background: color-mix(in srgb, var(--ink) 5%, transparent); outline: none; }
 .info-dlg { width: min(860px, 96vw); }

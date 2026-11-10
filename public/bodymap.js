@@ -148,7 +148,7 @@ export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Get
   const max = Math.max(1, ...Object.values(scores));
   const shape = ([k, d]) => {
     if (scale === 'recovery') {
-      const sel = selected && k === selected ? ' sel' : '';
+      const sel = !selected ? '' : (k === selected ? ' sel' : ' dim');
       if (!Object.prototype.hasOwnProperty.call(scores, k)) return `<path d="${d}" class="bm m0${sel}" data-m="${k}"/>`;
       const raw = Number(scores[k]);
       const pct = Math.max(0, Math.min(100, Math.round(Number.isFinite(raw) ? raw : 0)));

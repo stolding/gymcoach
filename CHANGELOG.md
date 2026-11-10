@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.17.1 — 10 november 2026
+- De PDF van een dag bevat ook de Apple Health-activiteiten van die dag, zoals een wandeling, met duur, afstand, tempo, calorieën en hartslag.
+
 ## 2.17.0 — 10 november 2026
 - In het trainingsrapport is een lagere gemiddelde hartslag groen en een hogere rood. Duur, calorieën en hartslag tellen de Apple Health-trainingen van die dag mee; de vergelijking met de vorige keer zet dezelfde samenstelling tegen elkaar (krachttraining plus de Apple Health-trainingen van die dag). Sets en volume blijven de krachtsets.
 

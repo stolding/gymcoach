@@ -135,10 +135,16 @@ async function workoutDetailFor(id, ctx) {
   d.cardioBefore = s ? signals.cardioBefore(signals.sessionStart(s, wh[String(id)]), activities) : null;
   return d;
 }
+// Apple Health-activiteiten van dezelfde dag, voor de PDF. Het scherm laadt ze apart.
+async function withDayActs(d, settings) {
+  const acts = await store.getActivitiesOn(String(d.date || '').slice(0, 10));
+  d.dayActs = acts.map((a) => ({ ...a, heart: insights.heart({}, { hrSeries: a.hrSeries }, settings) }));
+  return d;
+}
 // Mailt het trainingsrapport (met PDF) naar de gebruiker.
 async function mailWorkout(id, ctx) {
   const settings = ctx?.settings || await store.getSettings();
-  const d = await workoutDetailFor(id, ctx);
+  const d = await withDayActs(await workoutDetailFor(id, ctx), settings);
   const user = store.currentUser();
   const m = workoutMail(d, { userName: user.name, appUrl: settings.smtp.appUrl });
   await mail.send(settings.smtp, {
@@ -374,8 +380,9 @@ const routes = {
     };
   },
   'GET /api/workout/pdf': async (req, url) => {
-    const d = await workoutDetailFor(url.searchParams.get('id') || '');
-    return { __binary: { type: 'application/pdf', data: workoutPdf(d, { userName: store.currentUser().name, figure: figureFor(await store.getSettings()) }), filename: `GymCoach ${d.date} ${d.title.replace(/[^\w .-]+/g, '')}.pdf` } };
+    const settings = await store.getSettings();
+    const d = await withDayActs(await workoutDetailFor(url.searchParams.get('id') || ''), settings);
+    return { __binary: { type: 'application/pdf', data: workoutPdf(d, { userName: store.currentUser().name, figure: figureFor(settings) }), filename: `GymCoach ${d.date} ${d.title.replace(/[^\w .-]+/g, '')}.pdf` } };
   },
   'POST /api/workout/mail': async (req) => {
     const { id } = await body(req);

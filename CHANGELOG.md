@@ -5,6 +5,15 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.17.4 — 10 november 2026
+- Op Voortgang staan de doelgrafieken onder elkaar, elk over de volle breedte.
+
+## 2.17.3 — 10 november 2026
+- In de trainingskalender is het getal op een dag de hele dag: de Gym Monster-training plus de Apple Health-activiteiten, zoals een wandeling. Elke training in het rapport toont zijn eigen tijd.
+
+## 2.17.2 — 10 november 2026
+- In het rapport van een dag staat het totaal (duur, calorieën, hartslag) apart bovenaan. Elke training, ook de Gym Monster-training, toont daaronder alleen zijn eigen cijfers. De vergelijking met de vorige keer blijft de hele dag.
+
 ## 2.17.1 — 10 november 2026
 - De PDF van een dag bevat ook de Apple Health-activiteiten van die dag, zoals een wandeling, met duur, afstand, tempo, calorieën en hartslag.
 

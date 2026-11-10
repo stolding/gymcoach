@@ -1167,13 +1167,19 @@ function renderHome() {
       const dt = new Date(ws); dt.setDate(ws.getDate() + d);
       const info = o.days[keyOf(dt)];
       const future = dt > today, isToday = keyOf(dt) === keyOf(today);
-      const lvl = !info ? '' : info.min < 25 ? 'l1' : info.min < 45 ? 'l2' : 'l3';
-      if (info) { count += Math.max(1, info.titles.length); trainedDays++; }
       const dayActs = (state.activities || []).filter((a) => a.date === keyOf(dt));
-      const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long' })}${info ? ` — ${info.titles.join(', ') || t('app.training')}${info.min ? ` (${info.min} min)` : ''}` : future || dayActs.length ? '' : ' — ' + t('app.rustdag')}${dayActs.length ? ' — ' + dayActs.map(actLine).join(', ') : ''}`;
-      const acts = (state.activities || []).filter((a) => a.date === keyOf(dt));
-      const actDots = acts.length ? `<span class="cd-acts">${acts.slice(0, 3).map((a) => `<i style="background:${actColor(a.type)}"></i>`).join('')}</span>` : '';
-      cells += `<div class="cd ${lvl} ${future ? 'fut' : ''} ${isToday ? 'today' : ''}${info || acts.length ? ' click" data-date="' + keyOf(dt) + '" tabindex="0" role="button' : ''}" data-day="${keyOf(dt)}" title="${esc(tip)}"><span class="dn">${dt.getDate()}</span>${info?.min ? `<span class="dm">${info.min}′</span>` : ''}${actDots}</div>`;
+      // het getal in het vak is de hele dag: Gym Monster plus Apple Health
+      const min = info ? Math.round((info.min || 0) + dayActs.reduce((s, a) => s + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0)) : 0;
+      const lvl = !info ? '' : min < 25 ? 'l1' : min < 45 ? 'l2' : 'l3';
+      if (info) { count += Math.max(1, info.titles.length); trainedDays++; }
+      const tipParts = [];
+      if (min) tipParts.push(t('fmt.minutes', { m: min }));
+      if (info) tipParts.push(info.titles.join(', ') || t('app.training'));
+      if (dayActs.length) tipParts.push(dayActs.map(actLine).join(', '));
+      else if (!info && !future) tipParts.push(t('app.rustdag'));
+      const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long' })}${tipParts.length ? ' — ' + tipParts.join(' — ') : ''}`;
+      const actDots = dayActs.length ? `<span class="cd-acts">${dayActs.slice(0, 3).map((a) => `<i style="background:${actColor(a.type)}"></i>`).join('')}</span>` : '';
+      cells += `<div class="cd ${lvl} ${future ? 'fut' : ''} ${isToday ? 'today' : ''}${info || dayActs.length ? ' click" data-date="' + keyOf(dt) + '" tabindex="0" role="button' : ''}" data-day="${keyOf(dt)}" title="${esc(tip)}"><span class="dn">${dt.getDate()}</span>${min ? `<span class="dm">${min}′</span>` : ''}${actDots}</div>`;
     }
     const hit = count >= o.week.target;
     rows += `<div class="cw">${wk === 0 ? t('ui.stats.dezeWeek') : `${short(ws)} – ${short(we)}`}</div>${cells}<div class="cs ${hit ? 'hit' : ''}">${count}/${o.week.target}</div>`;
@@ -1573,7 +1579,6 @@ function workoutHtml(d) {
   }).join('');
   return `${d.hrSource ? `<p class="muted small" style="margin:0">${t('app.hartslagGemiddeldMaximaalUit', { a: esc(d.hrSource) })}</p>` : ''}
     ${d.cardioBefore ? `<div class="sig-note small">${t('sig.cardioBefore', { what: actLabel(d.cardioBefore.type), gap: d.cardioBefore.gapMin })} <a href="#" data-explain="signalen">${t('sig.why')}</a></div>` : ''}
-    ${d.dayHealth ? `<p class="muted small">${t('app.reportDayHealth')}</p>` : ''}
     ${Object.keys(d.muscles || {}).length ? `<div class="wo-map"><div>${bodyMap(d.muscles, { height: 170, title: t('app.getraindeSpiergroepen') })}</div><div class="mbars">${Object.entries(d.muscles).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v], i, arr) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / arr[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>`).join('')}</div></div>` : ''}
     ${insightsHtml(d)}
     ${d.hasDetail ? exs : '<div class="empty">' + t('app.geenDetailsVoorDeze') + '</div>'}`;
@@ -1605,6 +1610,38 @@ function activityHtml(a, first) {
     ${Array.isArray(a.hrSeries) && a.hrSeries.length >= 3 ? (() => { const ref = hrRefClient(); return heartHtml({ source: 'Apple Health', series: a.hrSeries, ref, zones: zonesFor(a.hrSeries, ref) }); })() : ''}
     <p class="muted small" style="margin:0">${t('app.uitAppleHealth', { a: a.name && a.name !== actName(a) && !/^other/i.test(a.name) ? ` · ${esc(a.name)}` : '', b: a.source ? t('app.bron2', { a: esc(a.source) }) : '' })}</p>`;
 }
+// Totaal van wat er in dit venster staat, alleen als er meer dan één training met een duur is.
+function dayTotalHtml(workouts, acts) {
+  const pos = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : 0; };
+  const parts = [
+    ...workouts.map((d) => ({ minutes: d.minutes, calories: d.calories ?? d.healthKcal, hrAvg: d.hrAvg, hrMax: d.hrMax })),
+    ...acts.map((a) => ({ minutes: a.minutes, calories: a.kcal, hrAvg: a.hrAvg, hrMax: a.hrMax })),
+  ];
+  if (parts.filter((p) => pos(p.minutes)).length < 2) return '';
+  const summed = () => {
+    const hrParts = parts.filter((p) => pos(p.hrAvg)).map((p) => ({ hr: Number(p.hrAvg), w: pos(p.minutes) }));
+    const w = hrParts.reduce((s, p) => s + p.w, 0);
+    const hrAvg = hrParts.length ? (w > 0 && hrParts.every((p) => p.w > 0) ? hrParts.reduce((s, p) => s + p.hr * p.w, 0) / w : hrParts.reduce((s, p) => s + p.hr, 0) / hrParts.length) : null;
+    const maxes = parts.map((p) => Number(p.hrMax)).filter((v) => v > 0);
+    return {
+      minutes: Math.round(parts.reduce((s, p) => s + pos(p.minutes), 0)) || null,
+      calories: Math.round(parts.reduce((s, p) => s + pos(p.calories), 0)) || null,
+      hrAvg: hrAvg != null ? Math.round(hrAvg) : null,
+      hrMax: maxes.length ? Math.max(...maxes) : null,
+    };
+  };
+  const day = workouts.length === 1 && workouts[0].day ? workouts[0].day : summed();
+  const tiles = [];
+  if (day.minutes != null) tiles.push([t('app.c.duur'), `${Math.round(day.minutes)} min`]);
+  if (day.calories != null) tiles.push(['kcal', Math.round(day.calories)]);
+  if (day.hrAvg || day.hrMax) tiles.push(hrTile(day.hrAvg, day.hrMax));
+  if (!tiles.length) return '';
+  const date = String(workouts[0]?.date || acts[0]?.date || '').slice(0, 10);
+  const head = date ? new Date(date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  return `<div class="wo-sticky wo-day"><div class="exd-head"><div><div class="eyebrow">${esc(head)}</div><h2>${esc(t('app.dayTotal'))}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
+    <div class="wo-tiles">${tiles.map(([l, v, zc]) => `<div class="zoned"${zoneStyle(zc)}><div class="eyebrow">${esc(String(l))}</div><div class="mid">${esc(String(v))}</div></div>`).join('')}</div>
+    <p class="muted small" style="margin:0">${t('app.dayTotalNote')}</p></div>`;
+}
 // Venster met de trainingen en activiteiten van een dag.
 async function openWorkouts(ids, acts = [], date = null) {
   const dlg = $('#woDlg');
@@ -1612,8 +1649,9 @@ async function openWorkouts(ids, acts = [], date = null) {
   if (!dlg.open) dlg.showModal();
   try {
     const all = await Promise.all(ids.map((id) => api('GET', '/api/workout?id=' + encodeURIComponent(id))));
-    const actHtml = acts.map((a, i) => activityHtml(a, !all.length && i === 0)).join('<hr class="wo-sep">');
-    dlg.innerHTML = `<form method="dialog" class="exd">${actHtml && !all.length ? actHtml : ''}${all.map((d, i) => `
+    const head = dayTotalHtml(all, acts);
+    const actHtml = acts.map((a, i) => activityHtml(a, !head && !all.length && i === 0)).join('<hr class="wo-sep">');
+    dlg.innerHTML = `<form method="dialog" class="exd">${head}${head ? '<hr class="wo-sep">' : ''}${actHtml && !all.length ? actHtml : ''}${all.map((d, i) => `
       <div class="wo-sticky"><div class="exd-head"><div><div class="eyebrow">${esc(new Date(d.date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}</div><h2>${esc(d.title)}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
       ${woTiles(d)}
       <div class="row gap"><a class="btn small ghost" href="/api/workout/pdf?id=${encodeURIComponent(d.id)}" target="_blank" rel="noopener">PDF</a><button type="button" class="btn small ghost" data-mail="${esc(d.id)}">${t('app.mailNaarMij')}</button></div></div>
@@ -2763,7 +2801,8 @@ function timeHtml(t) {
 // Alle extra blokken van het rapport samen.
 function insightsHtml(d) {
   const parts = [compareHtml(d.compare), timeHtml(d.time)].filter(Boolean);
-  return `${parts.length ? `<div class="ins-grid">${parts.join('')}</div>` : ''}${heartHtml(d.heart)}`;
+  const note = d.compare?.day ? `<p class="muted small">${t('app.reportDayHealth')}</p>` : '';
+  return `${parts.length ? `<div class="ins-grid">${parts.join('')}</div>` : ''}${note}${heartHtml(d.heart)}`;
 }
 
 // staafjes (eventueel gestapeld) met optioneel een lijn op een tweede as en een doellijn
@@ -2962,7 +3001,8 @@ function renderBigCal() {
   if (calCursor < minM) calCursor = new Date(minM); if (calCursor > maxM) calCursor = new Date(maxM);
   const target = state.settings?.daysPerWeek || 3;
   const gymMin = (d) => (d?.gym || []).reduce((t, w) => t + (w.min || 0), 0);
-  const lvl = (d) => { if (!d?.gym.length) return ''; const m = gymMin(d); return m && m < 25 ? 'l1' : m && m < 45 ? 'l2' : 'l3'; };
+  const shownMin = (d) => Math.round(gymMin(d) + (d?.acts || []).reduce((t, a) => t + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0));
+  const lvl = (d) => { if (!d?.gym.length) return ''; const m = shownMin(d); return m && m < 25 ? 'l1' : m && m < 45 ? 'l2' : 'l3'; };
   const dots = (d) => (d?.acts.length ? `<span class="bc-acts">${d.acts.slice(0, 4).map((a) => `<i style="background:${actColor(a.type)}" title="${esc(actLine(a))}"></i>`).join('')}</span>` : '');
   const totalGym = (state.trainingDays || []).length, gymDays = Object.values(days).filter((d) => d.gym.length).length;
 
@@ -2977,11 +3017,12 @@ function renderBigCal() {
       for (let i = 0; i < 7; i++) {
         const dt = new Date(ws); dt.setDate(ws.getDate() + i);
         const k = ymd(dt), d = days[k], inM = dt.getMonth() === m, fut = dt > today;
-        if (d) { wkCount += d.gym.length; if (inM) { mGym += d.gym.length; mMin += gymMin(d); mActs += d.acts.length; } }
+        if (d) { wkCount += d.gym.length; if (inM) { mGym += d.gym.length; mMin += shownMin(d); mActs += d.acts.length; } }
         const titles = (d?.gym || []).map((w) => w.title.replace(/^GC\s+W\d+\s+/i, '')).join(' + ');
-        const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${d?.gym.length ? ' — ' + d.gym.map((w) => `${w.title}${w.min ? ` (${w.min} min)` : ''}`).join(', ') : ''}${d?.acts.length ? ' — ' + d.acts.map(actLine).join(', ') : ''}`;
+        const mins = d ? shownMin(d) : 0;
+        const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${mins ? ` — ${t('fmt.minutes', { m: mins })}` : ''}${d?.gym.length ? ' — ' + d.gym.map((w) => `${w.title}${w.min ? ` (${w.min} min)` : ''}`).join(', ') : ''}${d?.acts.length ? ' — ' + d.acts.map(actLine).join(', ') : ''}`;
         cells += `<div class="bc-d ${lvl(d)}${inM ? '' : ' out'}${fut ? ' fut' : ''}${k === ymd(today) ? ' today' : ''}${d ? ' click' : ''}" data-day="${k}" ${d ? `data-date="${k}" tabindex="0" role="button"` : ''}>
-          <span class="bc-n">${dt.getDate()}</span>${d?.gym.length ? `<span class="bc-t">${esc(titles)}</span><span class="bc-m">${gymMin(d) ? gymMin(d) + '′' : ''}</span>` : ''}${dots(d)}</div>`;
+          <span class="bc-n">${dt.getDate()}</span>${d?.gym.length ? `<span class="bc-t">${esc(titles)}</span><span class="bc-m">${mins ? mins + '′' : ''}</span>` : ''}${dots(d)}</div>`;
       }
       const thisWeek = ws <= today;
       rows += `${cells}<div class="bc-w ${wkCount >= target ? 'hit' : ''}">${thisWeek ? `${wkCount}/${target}` : ''}</div>`;
@@ -3045,12 +3086,14 @@ function dayTipHtml(date) {
   const acts = (state.activities || []).filter((a) => a.date === date);
   const d = new Date(date + 'T12:00:00'), today = new Date(); today.setHours(23, 59, 59);
   const head = d.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const totalMin = Math.round(gym.reduce((s, w) => s + (Number(w.min) > 0 ? Number(w.min) : 0), 0) + acts.reduce((s, a) => s + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0));
+  const totalHtml = gym.length && acts.length && totalMin ? `<div class="dt-meta">${esc(t('app.dayTotal'))} · ${esc(t('fmt.minutes', { m: totalMin }))}</div>` : '';
   const gymHtml = gym.map((w) => `<div class="dt-row"><span class="dt-dot" style="background:var(--accent)"></span><div><b>${esc(w.title)}</b>
     <div class="dt-meta">${[w.min ? `${w.min} min` : null, w.ex ? t('app.oefeningen', { count: w.ex }) : null, w.vol ? `${w.vol.toLocaleString(localeOf())} kg` : null, w.kcal ? `${w.kcal} kcal` : null, w.hr ? `♥ ${w.hr} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
   const actHtml = acts.map((a) => `<div class="dt-row"><span class="dt-dot" style="background:${actColor(a.type)}"></span><div><b>${esc(actName(a))}</b>
     <div class="dt-meta">${[a.km ? `${n1nl(a.km)} km` : null, a.minutes ? `${a.minutes} min` : null, a.kcal ? `${Math.round(a.kcal)} kcal` : null, a.hrAvg ? `♥ ${a.hrAvg} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
   const empty = d > today ? t('app.notYet') : t('app.restDay');
-  return `<div class="dt-head">${esc(head.charAt(0).toUpperCase() + head.slice(1))}</div>${gymHtml + actHtml || `<div class="dt-meta">${empty}</div>`}${gym.length || acts.length ? '<div class="dt-foot">' + t('app.klikVoorDetails') + '</div>' : ''}`;
+  return `<div class="dt-head">${esc(head.charAt(0).toUpperCase() + head.slice(1))}</div>${totalHtml}${gymHtml + actHtml || `<div class="dt-meta">${empty}</div>`}${gym.length || acts.length ? '<div class="dt-foot">' + t('app.klikVoorDetails') + '</div>' : ''}`;
 }
 // Plaatst de popup naast de dag, binnen het scherm.
 function placeDayTip(target) {

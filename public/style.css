@@ -337,7 +337,7 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .progtable input { width: 18px; height: 18px; accent-color: var(--accent); }
 
 /* lichaam: inklapbare lijst, segmentkleuren */
-.progress-goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.progress-goals { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin-top: 1rem; }
 .progress-goals .card { margin-top: 0; }
 .goal-track h2 { margin: 0; }
 .goal-track .track-status { font-size: 1.05rem; font-weight: 700; }

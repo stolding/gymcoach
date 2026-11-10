@@ -119,16 +119,19 @@ async function workoutDetailFor(id, ctx) {
   const d = engine.workoutDetail(w, s, ctx.library, ctx.history, wh[String(id)]);
   d.compare = insights.compare(d, { workouts: ctx.workouts, sessions: ctx.sessions, health: wh, activities });
   d.heart = insights.heart(d, wh[String(id)], ctx.settings);
-  // duur, calorieën en hartslag van het rapport: deze gymsessie plus Apple Health-workouts van dezelfde kalenderdag
+  // dagtotaal apart: de tegels van deze gymsessie blijven de sessie zelf.
+  // Duur, calorieën en hartslag van de dag (sessie plus Apple Health) staan in d.day.
   const sets = d.exercises.reduce((n, e) => n + e.sets.length, 0);
   const day = insights.dayTotals({
     date: d.date, minutes: d.minutes, calories: d.calories ?? d.healthKcal, hrAvg: d.hrAvg, hrMax: d.hrMax, sets, volume: d.volume,
   }, activities);
   if (day.included) {
-    if (day.minutes != null) d.minutes = Math.round(day.minutes);
-    if (day.calories != null) d.calories = Math.round(day.calories);
-    if (day.hrAvg != null) d.hrAvg = Math.round(day.hrAvg);
-    if (day.hrMax != null) d.hrMax = Math.round(day.hrMax);
+    d.day = {
+      minutes: day.minutes != null ? Math.round(day.minutes) : null,
+      calories: day.calories != null ? Math.round(day.calories) : null,
+      hrAvg: day.hrAvg != null ? Math.round(day.hrAvg) : null,
+      hrMax: day.hrMax != null ? Math.round(day.hrMax) : null,
+    };
     d.dayHealth = true;
   }
   // cardio die eindigde binnen 3 uur vóór deze training (Apple Health)

@@ -1573,6 +1573,7 @@ function workoutHtml(d) {
   }).join('');
   return `${d.hrSource ? `<p class="muted small" style="margin:0">${t('app.hartslagGemiddeldMaximaalUit', { a: esc(d.hrSource) })}</p>` : ''}
     ${d.cardioBefore ? `<div class="sig-note small">${t('sig.cardioBefore', { what: actLabel(d.cardioBefore.type), gap: d.cardioBefore.gapMin })} <a href="#" data-explain="signalen">${t('sig.why')}</a></div>` : ''}
+    ${d.dayHealth ? `<p class="muted small">${t('app.reportDayHealth')}</p>` : ''}
     ${Object.keys(d.muscles || {}).length ? `<div class="wo-map"><div>${bodyMap(d.muscles, { height: 170, title: t('app.getraindeSpiergroepen') })}</div><div class="mbars">${Object.entries(d.muscles).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v], i, arr) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / arr[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>`).join('')}</div></div>` : ''}
     ${insightsHtml(d)}
     ${d.hasDetail ? exs : '<div class="empty">' + t('app.geenDetailsVoorDeze') + '</div>'}`;
@@ -2743,8 +2744,10 @@ function heartHtml(h) {
 function compareHtml(c) {
   if (!c) return '';
   const fmtV = (r, v) => `${Math.round(v).toLocaleString(localeOf())}${r.unit ? ' ' + r.unit : ''}`;
+  // up = groen (gunstig), down = rood (ongunstig). Hartslag: lager is beter. Binnen 2% neutraal.
+  const tone = (r) => r.tone || (Math.abs(r.pct) <= 2 ? 'muted' : ((r.pct > 0) !== !!r.lowerBetter ? 'up' : 'down'));
   return `<div class="ins-block"><div class="eyebrow">${t('app.vergelekenMet', { a: c.basis === 'same' ? t('app.deLaatsteKeerDeze', { n: c.n }) : t('app.jeLaatsteTrainingen', { n: c.n }) })}</div>
-    <table class="cmp"><tbody>${c.rows.map((r) => `<tr><td>${esc(r.label)}</td><td class="num"><b>${fmtV(r, r.cur)}</b></td><td class="num muted">${t('app.gem2', { a: fmtV(r, r.ref) })}</td><td class="num ${r.label === 'Gem. hartslag' ? 'muted' : r.pct > 2 ? 'up' : r.pct < -2 ? 'down' : 'muted'}">${r.pct > 0 ? '+' : ''}${r.pct}%</td></tr>`).join('')}</tbody></table></div>`;
+    <table class="cmp"><tbody>${c.rows.map((r) => `<tr><td>${esc(r.label)}</td><td class="num"><b>${fmtV(r, r.cur)}</b></td><td class="num muted">${t('app.gem2', { a: fmtV(r, r.ref) })}</td><td class="num ${tone(r)}">${r.pct > 0 ? '+' : ''}${r.pct}%</td></tr>`).join('')}</tbody></table></div>`;
 }
 // Tijd onder spanning en rust in het rapport.
 function timeHtml(t) {

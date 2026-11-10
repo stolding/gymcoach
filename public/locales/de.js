@@ -1467,6 +1467,7 @@ export default {
   "sum.col.heaviest": "Schwerster",
   "sum.col.vsPrev": "ggü. letztem Mal",
   "ins.avgHr": "Ø Herzfrequenz",
+  "app.reportDayHealth": "Dauer, Kalorien und Herzfrequenz zählen die Trainings aus Apple Health von diesem Tag mit.",
   "ins.hrSet": "von dir eingestellt",
   "ins.hrGulati": "geschätzt: 206 − 0,88 × {age} Jahre (Gulati, für Frauen)",
   "ins.hrTanaka": "geschätzt: 208 − 0,7 × {age} Jahre (Tanaka)",

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.17.0 — 10 november 2026
+- In het trainingsrapport is een lagere gemiddelde hartslag groen en een hogere rood. Duur, calorieën en hartslag tellen de Apple Health-trainingen van die dag mee; de vergelijking met de vorige keer zet dezelfde samenstelling tegen elkaar (krachttraining plus de Apple Health-trainingen van die dag). Sets en volume blijven de krachtsets.
+
 ## 2.16.0 — 9 november 2026
 - Op Voortgang staat per gesteld doel een grafiek van de startdatum tot de einddatum, met de metingen en een streeflijn van vertrek naar doel. De metingen blijven dicht tot je ze opent. In GymCoach Sync staat dezelfde grafiek op de doelkaart.
 

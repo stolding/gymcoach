@@ -115,11 +115,24 @@ async function workoutDetailFor(id, ctx) {
   const s = ctx.sessions[String(id)];
   if (!w && !s) throw Object.assign(new Error(tr('srv.trainingNietGevonden')), { status: 404 });
   const wh = await store.getWorkoutHealth();
+  const activities = await store.getActivities();
   const d = engine.workoutDetail(w, s, ctx.library, ctx.history, wh[String(id)]);
-  d.compare = insights.compare(d, { workouts: ctx.workouts, sessions: ctx.sessions, health: wh });
+  d.compare = insights.compare(d, { workouts: ctx.workouts, sessions: ctx.sessions, health: wh, activities });
   d.heart = insights.heart(d, wh[String(id)], ctx.settings);
+  // duur, calorieën en hartslag van het rapport: deze gymsessie plus Apple Health-workouts van dezelfde kalenderdag
+  const sets = d.exercises.reduce((n, e) => n + e.sets.length, 0);
+  const day = insights.dayTotals({
+    date: d.date, minutes: d.minutes, calories: d.calories ?? d.healthKcal, hrAvg: d.hrAvg, hrMax: d.hrMax, sets, volume: d.volume,
+  }, activities);
+  if (day.included) {
+    if (day.minutes != null) d.minutes = Math.round(day.minutes);
+    if (day.calories != null) d.calories = Math.round(day.calories);
+    if (day.hrAvg != null) d.hrAvg = Math.round(day.hrAvg);
+    if (day.hrMax != null) d.hrMax = Math.round(day.hrMax);
+    d.dayHealth = true;
+  }
   // cardio die eindigde binnen 3 uur vóór deze training (Apple Health)
-  d.cardioBefore = s ? signals.cardioBefore(signals.sessionStart(s, wh[String(id)]), await store.getActivities()) : null;
+  d.cardioBefore = s ? signals.cardioBefore(signals.sessionStart(s, wh[String(id)]), activities) : null;
   return d;
 }
 // Mailt het trainingsrapport (met PDF) naar de gebruiker.

@@ -1467,6 +1467,7 @@ export default {
   "sum.col.heaviest": "Heaviest",
   "sum.col.vsPrev": "vs. last time",
   "ins.avgHr": "Avg. heart rate",
+  "app.reportDayHealth": "Duration, calories and heart rate include the Apple Health workouts of this day.",
   "ins.hrSet": "set by you",
   "ins.hrGulati": "estimated: 206 − 0.88 × {age} years (Gulati, for women)",
   "ins.hrTanaka": "estimated: 208 − 0.7 × {age} years (Tanaka)",

@@ -1467,6 +1467,7 @@ export default {
   "sum.col.heaviest": "Tyngst",
   "sum.col.vsPrev": "mot forrige gang",
   "ins.avgHr": "Snittpuls",
+  "app.reportDayHealth": "Varighet, kalorier og puls tar med Apple Health-øktene fra denne dagen.",
   "ins.hrSet": "satt av deg",
   "ins.hrGulati": "estimert: 206 − 0,88 × {age} år (Gulati, for kvinner)",
   "ins.hrTanaka": "estimert: 208 − 0,7 × {age} år (Tanaka)",

@@ -1467,6 +1467,7 @@ export default {
   'sum.col.vsPrev': 't.o.v. vorige keer',
   // lib/insights.js
   'ins.avgHr': 'Gem. hartslag',
+  'app.reportDayHealth': 'Duur, calorieën en hartslag tellen de Apple Health-trainingen van deze dag mee.',
   'ins.hrSet': 'ingesteld',
   'ins.hrGulati': 'geschat: 206 − 0,88 × {age} jaar (Gulati, voor vrouwen)',
   'ins.hrTanaka': 'geschat: 208 − 0,7 × {age} jaar (Tanaka)',

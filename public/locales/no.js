@@ -1631,6 +1631,8 @@ export default {
   "app.set.fadeHint": "Fall fra de to første repetisjonene til de to siste. Opptil 25 % opplagt, 25–40 % tungt, fra 40 % til grensen.",
   "app.set.hrSet": "Puls dette settet",
   "app.set.fromDevice": "Fra apparatet",
+  "app.set.left": "Venstre",
+  "app.set.right": "Høyre",
   "app.set.force": "kraftkontroll",
   "app.set.balance": "venstre/høyre",
   "app.set.romScore": "utslag stabilt",

@@ -1632,6 +1632,8 @@ export default {
   "app.set.fadeHint": "Daling van de laatste twee herhalingen tegenover de eerste twee. Tot 25% fris, 25–40% zwaar, vanaf 40% tot het uiterste.",
   "app.set.hrSet": "Hartslag deze set",
   "app.set.fromDevice": "Van het toestel",
+  "app.set.left": "Links",
+  "app.set.right": "Rechts",
   "app.set.force": "krachtcontrole",
   "app.set.balance": "links/rechts",
   "app.set.romScore": "uitslag stabiel",

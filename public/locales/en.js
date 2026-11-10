@@ -1631,6 +1631,8 @@ export default {
   "app.set.fadeHint": "Drop from the first two reps to the last two. Up to 25% fresh, 25–40% hard, from 40% to the limit.",
   "app.set.hrSet": "Heart rate this set",
   "app.set.fromDevice": "From the machine",
+  "app.set.left": "Left",
+  "app.set.right": "Right",
   "app.set.force": "force control",
   "app.set.balance": "left/right",
   "app.set.romScore": "range steady",

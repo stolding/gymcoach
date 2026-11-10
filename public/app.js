@@ -1731,18 +1731,26 @@ function workoutHtml(d) {
     const fadeHead = fadeKind === 'watt' ? t('app.set.powerCol') : fadeKind === 'amp' ? t('app.set.romCol') : t('sig.slowCol');
     const fadeCell = (p) => (p == null ? '<td class="num muted">—</td>' : `<td class="num ${p >= 40 ? 'down' : p >= 25 ? 'balwarn' : 'up'}">${p}%</td>`);
     const cols = 4 + (fadeKind ? 1 : 0);
-    const bars = (vals, cls) => { const max = Math.max(...vals, 0.001); return `<span class="repbars ${cls}">${vals.map((v) => `<i style="height:${Math.max(12, Math.round((v / max) * 100))}%"></i>`).join('')}</span>`; };
+    const bars = (vals, cls, scale) => { const max = scale || Math.max(...vals.filter((v) => v > 0), 0.001); return `<span class="repbars ${cls}">${vals.map((v) => v > 0 ? `<i style="height:${Math.max(12, Math.round((v / max) * 100))}%"></i>` : '<i class="gap"></i>').join('')}</span>`; };
     const cm = (v) => `${Math.round(v * (v < 3 ? 100 : 1))} cm`;
+    const spanText = (vals, unit) => { const nums = vals.filter((v) => v > 0); return unit === 'cm' ? `${cm(nums[0])}–${cm(nums[nums.length - 1])}` : `${nl1(nums[0])}–${nl1(nums[nums.length - 1])} ${unit}`; };
+    const sideRows = (L, R, fL, fR, unit, cls) => {
+      const scale = Math.max(...[...(L || []), ...(R || [])].filter((v) => v > 0), 0.001);
+      const row = (label, vals, fade, extra) => vals ? `<div class="set-side"><span class="k">${esc(label)}${fade != null ? ` · ${fade}%` : ''}</span>${bars(vals, cls + (extra || ''), scale)} <span class="muted">${spanText(vals, unit)}</span></div>` : '';
+      return `<div class="set-sides">${row(t('app.set.left'), L, fL, '')}${row(t('app.set.right'), R, fR, ' right')}</div>`;
+    };
     const scores = e.scores ? [['app.set.force', e.scores.force], ['app.set.balance', e.scores.balance], ['app.set.romScore', e.scores.rom], ['app.set.done', e.scores.done], ['app.set.total', e.scores.total]].filter(([, v]) => v != null) : [];
     return `<div class="wo-ex">
       <div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small">${t('app.zwaarsteSetKg', { a: nl1(e.top), delta })}</div></div>
       ${scores.length ? `<div class="small muted">${esc(t('app.set.fromDevice'))}: ${scores.map(([k, v]) => `${esc(t(k))} ${esc(String(v))}`).join(' · ')}</div>` : ''}
       <table class="wo-sets"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ui.stats.herhalingen')}</th><th class="num">${t('ui.setTraining.doel')}</th><th class="num">${t('app.gewicht')}</th>${fadeKind ? `<th class="num" title="${esc(t(fadeKind === 'time' ? 'sig.slowHint' : 'app.set.fadeHint'))}">${esc(fadeHead)}</th>` : ''}</tr></thead><tbody>
         ${e.sets.map((x, j) => {
-          const open = !!(x.watts || x.amp || x.hr);
+          const open = !!(x.watts || x.wattsL || x.wattsR || x.amp || x.ampL || x.ampR || x.hr);
           const bits = [];
-          if (x.watts) bits.push(`<div><div class="eyebrow">${esc(t('app.set.power'))}${x.wattFade != null ? ` · ${x.wattFade}%` : ''}</div><div class="set-line">${bars(x.watts, 'watt')} <span class="muted">${nl1(x.watts[0])}–${nl1(x.watts[x.watts.length - 1])} W</span></div></div>`);
-          if (x.amp) bits.push(`<div><div class="eyebrow">${esc(t('app.set.rom'))}${x.ampFade != null ? ` · ${x.ampFade}%` : ''}</div><div class="set-line">${bars(x.amp, 'rom')} <span class="muted">${cm(x.amp[0])}–${cm(x.amp[x.amp.length - 1])}</span></div></div>`);
+          if (x.wattsL || x.wattsR) bits.push(`<div><div class="eyebrow">${esc(t('app.set.power'))}</div>${sideRows(x.wattsL, x.wattsR, x.wattFadeL, x.wattFadeR, 'W', 'watt')}</div>`);
+          else if (x.watts) bits.push(`<div><div class="eyebrow">${esc(t('app.set.power'))}${x.wattFade != null ? ` · ${x.wattFade}%` : ''}</div><div class="set-line">${bars(x.watts, 'watt')} <span class="muted">${spanText(x.watts, 'W')}</span></div></div>`);
+          if (x.ampL || x.ampR) bits.push(`<div><div class="eyebrow">${esc(t('app.set.rom'))}</div>${sideRows(x.ampL, x.ampR, x.ampFadeL, x.ampFadeR, 'cm', 'rom')}</div>`);
+          else if (x.amp) bits.push(`<div><div class="eyebrow">${esc(t('app.set.rom'))}${x.ampFade != null ? ` · ${x.ampFade}%` : ''}</div><div class="set-line">${bars(x.amp, 'rom')} <span class="muted">${spanText(x.amp, 'cm')}</span></div></div>`);
           if (x.slow != null) bits.push(`<div><div class="eyebrow">${esc(t('sig.slowCol'))}</div><div>${x.slow}%</div></div>`);
           if (x.hr) bits.push(`<div><div class="eyebrow">${esc(t('app.set.hrSet'))}</div><div>${x.hr}</div></div>`);
           return `<tr class="${open ? 'click' : ''}" ${open ? `data-set="1" tabindex="0" aria-expanded="false"` : ''}><td>${j + 1}</td><td class="num ${x.target && x.reps < x.target ? 'down' : x.target && x.reps >= x.target ? 'up' : ''}">${x.reps}</td><td class="num muted">${x.target ?? '—'}</td><td class="num">${nl1(x.weight)} kg${x.min != null && x.max !== x.min ? ` <span class="muted small">(${nl1(x.min)}–${nl1(x.max)})</span>` : ''}</td>${fadeKind ? fadeCell(fadeVal(x)) : ''}</tr>${open ? `<tr class="set-detail hidden"><td colspan="${cols}">${bits.join('')}</td></tr>` : ''}`;

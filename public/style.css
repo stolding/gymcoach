@@ -445,11 +445,16 @@ tr.click:hover td, tr.click:focus-visible td { background: rgba(255,122,46,.08);
 .wo-sets { width: 100%; font-size: .88rem; }
 .wo-sets th, .wo-sets td { padding: .25rem .4rem; }
 .wo-sets tr.set-detail td { display: flex; flex-direction: column; align-items: flex-start; gap: .55rem; padding: .45rem .5rem .65rem; }
-.set-line { display: flex; align-items: flex-end; gap: .55rem; }
-.set-line .muted { white-space: nowrap; }
+.set-line, .set-side { display: flex; align-items: flex-end; gap: .55rem; }
+.set-sides { display: flex; flex-direction: column; gap: .28rem; }
+.set-side .k { min-width: 6.4rem; font-size: .75rem; color: var(--muted); white-space: nowrap; }
+.set-line .muted, .set-side .muted { white-space: nowrap; }
 .repbars { display: inline-flex; align-items: flex-end; gap: 2px; height: 28px; }
 .repbars i { display: block; width: 5px; min-height: 2px; border-radius: 1px 1px 0 0; background: var(--a); }
+.repbars i.gap { min-height: 0; background: transparent; }
+.repbars.right i { background: color-mix(in srgb, var(--a) 42%, var(--ink)); }
 .repbars.rom i { background: var(--b); }
+.repbars.rom.right i { background: color-mix(in srgb, var(--b) 45%, var(--ink)); }
 .wo-sep { border: none; border-top: 1px solid var(--line); margin: .6rem 0; }
 
 .period { display: inline-flex; align-items: center; gap: .5rem; flex-direction: row; font-size: .85rem; color: var(--muted); }

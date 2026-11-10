@@ -55,7 +55,7 @@ With a demo account and sample data; dark theme.
 - **Optional AI coach** via the Claude API or a local language model (OpenAI-compatible). Suggestions are validated and only applied when you click them.
 
 **Looking back**
-- **Workout report** after every workout (in the app, as PDF and by email): comparison with the last 4 sessions, heart rate per set and over the whole workout with zones, time under tension and rest. Clicking a set shows Speediance power and range of motion per rep, with the fade in each. The recovery score still uses the time per rep.
+- **Workout report** after every workout (in the app, as PDF and by email): comparison with the last 4 sessions, heart rate per set and over the whole workout with zones, time under tension and rest. Clicking a set shows Speediance power and range of motion per rep, left and right separately, with the fade in each. The recovery score still uses the time per rep.
 - **Training**: the log. At the top, workouts, volume and minutes per week, and estimated 1RM per exercise.
 - **Review**: one period for the numbers (muscle groups, strength index, balance, muscle mass versus volume, km and steps) and the patterns (calendar, when you train, records, energy versus weight, recovery).
 - **Body** via Withings: weight, fat %, muscle mass, segments per arm/leg/trunk, vascular age, with reference ranges.

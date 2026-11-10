@@ -1631,6 +1631,8 @@ export default {
   "app.set.fadeHint": "Rückgang der letzten zwei Wiederholungen gegenüber den ersten zwei. Bis 25 % frisch, 25–40 % schwer, ab 40 % bis zum Limit.",
   "app.set.hrSet": "Puls dieses Satzes",
   "app.set.fromDevice": "Vom Gerät",
+  "app.set.left": "Links",
+  "app.set.right": "Rechts",
   "app.set.force": "Kraftkontrolle",
   "app.set.balance": "links/rechts",
   "app.set.romScore": "Amplitude stabil",

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.21.7 — 10 november 2026
+- Vermogen en uitslag in een set staan links en rechts apart, op dezelfde schaal. De kolom blijft het gemiddelde verval.
+
 ## 2.21.6 — 10 november 2026
 - Een klik op een uitgevoerde set toont het vermogen en de bewegingsuitslag per herhaling van Speediance, met het verval daarin. De kolom gebruikt dat verval; de herstelscore blijft de tijd per herhaling.
 

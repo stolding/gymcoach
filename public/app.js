@@ -1442,8 +1442,10 @@ function renderProgressGoals() {
   });
 }
 function renderProgress() {
-  barChart($('#chartSessions'), state.weekly.map((w) => ({ x: w.week, y: w.sessions })), { unit: '×' });
-  barChart($('#chartVolume'), state.weekly.map((w) => ({ x: w.week, y: Math.round(w.volume) })), { unit: 'kg' });
+  const weeks = state.weekly || [];
+  barChart($('#chartSessions'), weeks.map((w) => ({ x: w.week, y: w.sessions })), { unit: '×' });
+  barChart($('#chartVolume'), weeks.map((w) => ({ x: w.week, y: Math.round(w.volume) })), { unit: 'kg' });
+  barChart($('#chartMinutes'), weeks.map((w) => ({ x: w.week, y: Math.round(w.minutes || 0) })), { unit: 'min' });
   const sel = $('#exSelect');
   if (!sel.options.length || sel.dataset.n !== String(state.progress.length)) {
     sel.innerHTML = state.progress.length ? state.progress.map((p, i) => `<option value="${i}">${esc(p.name)} (${p.points.length}×)</option>`).join('') : '<option>' + t('app.nogGeenOefeningen') + '</option>';

@@ -387,6 +387,7 @@ export default {
   "ui.analysis.records": "Rekorde",
   "ui.progress.trainingenPerWeek": "Trainings pro Woche",
   "ui.progress.volumePerWeekKg": "Volumen pro Woche (kg)",
+  "ui.progress.minutenPerWeek": "Minuten pro Woche",
   "ui.progress.klikOpEenTraining": "Klicke auf ein Training für Übungen, Sätze und Gewichte.",
   "ui.progress.series": "Messwerte",
   "ui.progress.goalLine": "Soll-Linie",

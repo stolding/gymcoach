@@ -370,6 +370,7 @@ export default {
   'ui.analysis.records': 'Records',
   'ui.progress.trainingenPerWeek': 'Trainingen per week',
   'ui.progress.volumePerWeekKg': 'Volume per week (kg)',
+  'ui.progress.minutenPerWeek': 'Minuten per week',
   'ui.progress.klikOpEenTraining': 'Klik op een training voor de oefeningen, sets en gewichten.',
   'ui.progress.series': 'Metingen',
   'ui.progress.goalLine': 'Streeflijn',

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.19.0 — 10 november 2026
+- Op Training staan de weekgrafieken bovenaan: aantal trainingen, volume en het totaal aantal minuten van de Gym Monster-trainingen.
+
 ## 2.18.1 — 10 november 2026
 - In het rapport staat de trainingsnaam bij deze training, onder het dagtotaal.
 

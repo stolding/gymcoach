@@ -56,7 +56,7 @@ With a demo account and sample data; dark theme.
 
 **Looking back**
 - **Workout report** after every workout (in the app, as PDF and by email): comparison with the last 4 sessions, heart rate per set and over the whole workout with zones, time under tension and rest.
-- **Training**: the log, with estimated 1RM per exercise and volume per week.
+- **Training**: the log. At the top, workouts, volume and minutes per week, and estimated 1RM per exercise.
 - **Review**: one period for the numbers (muscle groups, strength index, balance, muscle mass versus volume, km and steps) and the patterns (calendar, when you train, records, energy versus weight, recovery).
 - **Body** via Withings: weight, fat %, muscle mass, segments per arm/leg/trunk, vascular age, with reference ranges.
 - **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …), plus HRV and the VO2max estimate of the Apple Watch.

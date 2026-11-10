@@ -387,6 +387,7 @@ export default {
   "ui.analysis.records": "Rekorder",
   "ui.progress.trainingenPerWeek": "Treningsøkter per uke",
   "ui.progress.volumePerWeekKg": "Volum per uke (kg)",
+  "ui.progress.minutenPerWeek": "Minutter per uke",
   "ui.progress.klikOpEenTraining": "Klikk en treningsøkt for øvelser, sett og vekter.",
   "ui.progress.series": "Målinger",
   "ui.progress.goalLine": "Mållinje",

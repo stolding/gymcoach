@@ -176,6 +176,11 @@
 
   <section id="tab-progress" class="panel">
     <h1 data-i18n="ui.tabs.voortgang">Training</h1>
+    <div class="grid3">
+      <div class="card"><h2 data-i18n="ui.progress.trainingenPerWeek">Trainingen per week</h2><div id="chartSessions" class="chart"></div></div>
+      <div class="card"><h2 data-i18n="ui.progress.volumePerWeekKg">Volume per week (kg)</h2><div id="chartVolume" class="chart"></div></div>
+      <div class="card"><h2 data-i18n="ui.progress.minutenPerWeek">Minuten per week</h2><div id="chartMinutes" class="chart"></div></div>
+    </div>
     <div class="card"><div class="row between wrap gap"><h2 data-i18n="tp.title">Trainingen</h2><input type="search" id="woSearch" placeholder="Zoek op naam of datum…" data-i18n-placeholder="ui.progress.zoekOpNaamOf" aria-label="Zoek trainingen" data-i18n-aria-label="ui.progress.zoekTrainingen" style="max-width:240px"></div>
       <p class="muted small" style="margin-top:-.4rem" data-i18n="ui.progress.klikOpEenTraining">Klik op een training voor de oefeningen, sets en gewichten.</p>
       <div id="recent"></div></div>
@@ -183,10 +188,6 @@
       <div class="row between wrap gap"><h2 data-i18n="ui.stats.perOefening">Per oefening</h2><select id="exSelect"></select></div>
       <div id="chartExercise" class="chart tall"></div>
       <div class="legend"><span class="dot a"></span><span data-i18n="ui.leg.e1rm">Geschat 1RM</span> <span class="dot b"></span><span data-i18n="ui.leg.heaviest">Zwaarste set</span></div>
-    </div>
-    <div class="grid2">
-      <div class="card"><h2 data-i18n="ui.progress.trainingenPerWeek">Trainingen per week</h2><div id="chartSessions" class="chart"></div></div>
-      <div class="card"><h2 data-i18n="ui.progress.volumePerWeekKg">Volume per week (kg)</h2><div id="chartVolume" class="chart"></div></div>
     </div>
   </section>
 

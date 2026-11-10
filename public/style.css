@@ -284,11 +284,12 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .ri-dot.warm { background: var(--accent); opacity: .5; } .ri-dot.cool { background: var(--b); }
 .wide-dlg { width: min(720px, 96vw); padding: 1.25rem; max-height: 92vh; overflow: auto; }
 .plan-dlg { width: min(1040px, 96vw); }
-.plan-figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: start; }
-.plan-figs > div > .muted.small { min-height: 2.7em; }
-.plan-rows { display: flex; flex-direction: column; gap: .15rem; }
-.plan-row { display: grid; grid-template-columns: minmax(7.2rem, 1.05fr) repeat(3, minmax(0, 1fr)); gap: .45rem .7rem; align-items: center; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0; border-radius: 8px; padding: .28rem .4rem; cursor: pointer; }
-.plan-row.head { cursor: default; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 650; padding-bottom: .15rem; }
+.plan-board { display: flex; flex-direction: column; gap: .15rem; }
+.plan-row { display: grid; grid-template-columns: 8.6rem repeat(3, minmax(0, 1fr)); gap: .45rem .7rem; align-items: center; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0; border-radius: 8px; padding: .28rem .35rem; cursor: pointer; }
+.plan-row.figs { align-items: start; cursor: default; padding-top: 0; }
+.plan-fig { min-width: 0; }
+.plan-fig .muted.small { min-height: 2.7em; }
+.plan-fig .bodymap { margin: 0 auto; }
 .plan-row .cell { display: grid; grid-template-columns: minmax(0, 1fr) 2.6rem; gap: .35rem; align-items: center; min-width: 0; }
 .plan-row b { text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
 .plan-row > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -298,7 +299,7 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .plan-row .ht.split .hf { border-radius: 0; background: none; }
 .plan-row .ht.split .hf.tired { background: var(--accent); }
 .plan-row .ht.split .hf.fresh { background: var(--ok); }
-.plan-figs .bm { cursor: pointer; }
+.plan-fig .bm { cursor: pointer; }
 .session header[data-open="plan"] { cursor: pointer; margin: -.35rem -.35rem .15rem; padding: .35rem; border-radius: 10px; }
 .session header[data-open="plan"]:hover, .session header[data-open="plan"]:focus-visible { background: color-mix(in srgb, var(--ink) 5%, transparent); outline: none; }
 .info-dlg { width: min(860px, 96vw); }
@@ -333,7 +334,7 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .rec-tip .ht { flex: 1; height: 8px; background: color-mix(in srgb, var(--bg) 22%, transparent); border-radius: 6px; min-width: 64px; }
 .rec-tip .hf { border-radius: 6px; }
 .rec-tip b { font-variant-numeric: tabular-nums; }
-@media (max-width: 800px) { .rec-grid, .plan-figs { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .rec-grid { grid-template-columns: 1fr; } .plan-row { grid-template-columns: 6.6rem repeat(3, minmax(0, 1fr)); gap: .3rem .4rem; } }
 @media (max-width: 700px) {
   .week-map { grid-template-columns: 1fr; }
   .wm-fig { position: static; }

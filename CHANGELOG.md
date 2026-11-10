@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.21.3 — 10 november 2026
+- In het trainingsoverzicht staat elk figuur boven zijn eigen kolom. De kolom met spiergroepnamen is smaller.
+
 ## 2.21.2 — 10 november 2026
 - In het trainingsoverzicht staat elke spiergroep één keer, met de drie balken ernaast. Een klik licht die spier uit en dimt de rest.
 

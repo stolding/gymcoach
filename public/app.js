@@ -665,33 +665,31 @@ function openSession(session) {
     return `<div class="cell"><div class="ht split"><div class="hf tired" style="width:${tired}%"></div><div class="hf fresh" style="width:${fresh}%"></div></div><b>${esc(t('rec.pct', { n: tired }))}</b></div>`;
   };
   const figs = muscles.length ? `<div class="plan-board">
-    <div class="plan-figs">
-      <div>
+    <div class="plan-row figs">
+      <span></span>
+      <div class="plan-fig">
         <div class="eyebrow">${esc(t('ui.plan.intensity'))}</div>
-        ${bodyMap(session.muscles || {}, { height: 200, title: t('ui.plan.intensity'), figure: fig, selected: pick })}
+        ${bodyMap(session.muscles || {}, { height: 168, title: t('ui.plan.intensity'), figure: fig, selected: pick })}
         <p class="muted small">${esc(t('ui.plan.intensityNote'))}</p>
         <div class="legend"><span class="sq m1"></span>${t('app.licht')} <span class="sq m2"></span>${t('app.gemiddeld')} <span class="sq m3"></span>${t('app.veel')}</div>
       </div>
-      <div>
+      <div class="plan-fig">
         <div class="eyebrow">${esc(t('ui.plan.fatigue'))}</div>
-        ${bodyMap(fat.scores, { height: 200, title: t('ui.plan.fatigue'), figure: fig, scale: 'recovery', selected: pick })}
+        ${bodyMap(fat.scores, { height: 168, title: t('ui.plan.fatigue'), figure: fig, scale: 'recovery', selected: pick })}
         <p class="muted small">${esc(t('ui.plan.fatigueNote'))}</p>
       </div>
-      <div>
+      <div class="plan-fig">
         <div class="eyebrow">${esc(t('ui.plan.after'))}</div>
-        ${bodyMap(after.scores, { height: 200, title: t('ui.plan.after'), figure: fig, scale: 'recovery', selected: pick })}
+        ${bodyMap(after.scores, { height: 168, title: t('ui.plan.after'), figure: fig, scale: 'recovery', selected: pick })}
         <p class="muted small">${esc(t(done ? 'ui.plan.afterDone' : 'ui.plan.afterNote'))}</p>
       </div>
     </div>
-    <div class="plan-rows">
-      <div class="plan-row head"><span></span><span>${esc(t('ui.plan.intensity'))}</span><span>${esc(t('ui.plan.fatigue'))}</span><span>${esc(t('ui.plan.after'))}</span></div>
-      ${muscles.map(([k, v]) => `<button type="button" class="plan-row${pick === k ? ' on' : pick ? ' off' : ''}" data-m="${esc(k)}" aria-pressed="${pick === k}">
+    ${muscles.map(([k, v]) => `<button type="button" class="plan-row${pick === k ? ' on' : pick ? ' off' : ''}" data-m="${esc(k)}" aria-pressed="${pick === k}">
         <span>${esc(MUSCLE_LABELS[k] || k)}</span>
         <div class="cell"><div class="ht"><div class="hf" style="width:${(v / muscles[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>
         ${splitCell(fatBy.has(k) ? fatBy.get(k) : null)}
         ${splitCell(afterBy.has(k) ? afterBy.get(k) : null)}
       </button>`).join('')}
-    </div>
   </div>` : '';
   const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}` : `
     ${session.warmup && (session.warmup.mobility.length + session.warmup.cable.length) ? `<button type="button" class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: session.warmup.mobility.length + session.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}

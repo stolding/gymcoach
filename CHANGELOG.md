@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.21.0 — 10 november 2026
+- Het trainingsoverzicht heeft een derde figuur: de vermoeidheid per spiergroep als je de geplande training nu doet, bovenop de huidige vermoeidheid.
+
 ## 2.20.0 — 10 november 2026
 - Een klik op een training in het plan opent het overzicht van die training: spiergroepen en intensiteit, vermoeidheid, tijd en volume. Een oefening toont de details, met foto's en video.
 

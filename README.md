@@ -42,7 +42,7 @@ With a demo account and sample data; dark theme.
 ## Features
 
 **Planning and training**
-- **Personal weekly plan** based on your goal (muscle gain, combination, fat loss), days per week and available time; per day you can also choose a cardio circuit or outdoor cardio. Click a workout for that session only: muscle groups and intensity, fatigue, time and volume, and per exercise the instructions with photos and video. On the Goal tab, *Match the plan to this goal* sets that style from the outcome and gives heavier sets to the exercises that train a chosen muscle group. The rest of the plan follows the other goals. Cardio days stay. A workout already on the Gym Monster stays there until you send it again.
+- **Personal weekly plan** based on your goal (muscle gain, combination, fat loss), days per week and available time; per day you can also choose a cardio circuit or outdoor cardio. Click a workout for that session only: muscle groups and intensity, fatigue now and after the planned workout, time and volume, and per exercise the instructions with photos and video. On the Goal tab, *Match the plan to this goal* sets that style from the outcome and gives heavier sets to the exercises that train a chosen muscle group. The rest of the plan follows the other goals. Cardio days stay. A workout already on the Gym Monster stays there until you send it again.
 - **Automatic progression**: double progression, run-in for new exercises, deload weeks.
 - **Tailored to you**: rest and volume adjusted for sex and for your own recovery; maximum heart rate with Tanaka or (for women) Gulati.
 - **Weekly focus** on muscle groups; an anatomical figure (male, female or neutral) shows what you train.

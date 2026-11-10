@@ -615,6 +615,21 @@ function sessionFatigue(s) {
   rows.sort((a, b) => (a.pct ?? 101) - (b.pct ?? 101) || b.load - a.load);
   return { scores, rows };
 }
+// Huidige herstel plus de geplande sets. Een gewone set kost setCost punten op de hoofdspier, hetzelfde als lib/muscleRecovery.js.
+function sessionAfter(s, done) {
+  const cost = Number(state.muscleRecovery?.setCost) > 0 ? Number(state.muscleRecovery.setCost) : 12;
+  const known = new Map((state.muscleRecovery?.muscles || []).map((m) => [m.key, m.pct]));
+  const scores = {};
+  const rows = Object.entries(s.muscles || {}).filter(([, v]) => v > 0).map(([k, load]) => {
+    const now = known.has(k) ? known.get(k) : null;
+    // al gedaan: die sets zitten al in de huidige stand; anders aftrekken van 100% als de spier nog geen historie heeft
+    const pct = done ? now : Math.round(Math.min(100, Math.max(0, (now == null ? 100 : now) - cost * load)));
+    if (pct != null) scores[k] = pct;
+    return { k, pct, load };
+  });
+  rows.sort((a, b) => (a.pct ?? 101) - (b.pct ?? 101) || b.load - a.load);
+  return { scores, rows };
+}
 // Overzicht van één training: spieren en intensiteit, vermoeidheid, tijd en volume, en de oefeningen.
 function openSession(session) {
   const dlg = $('#planDlg');
@@ -633,19 +648,26 @@ function openSession(session) {
   if (done?.volume) tiles.push(tile(t('ed.volume'), `${Number(done.volume).toLocaleString(localeOf())} kg`, t('app.gedaan2')));
   const muscles = Object.entries(session.muscles || {}).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
   const fat = sessionFatigue(session);
+  const after = sessionAfter(session, done);
   const figs = muscles.length ? `<div class="plan-figs">
       <div>
         <div class="eyebrow">${esc(t('ui.plan.intensity'))}</div>
-        ${bodyMap(session.muscles || {}, { height: 240, title: t('ui.plan.intensity'), figure: figureFor(state.settings || {}) })}
+        ${bodyMap(session.muscles || {}, { height: 220, title: t('ui.plan.intensity'), figure: figureFor(state.settings || {}) })}
         <p class="muted small">${esc(t('ui.plan.intensityNote'))}</p>
         <div class="mbars">${muscles.map(([k, v]) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / muscles[0][1]) * 100}%"></div></div><b>${fmtNum(v)}</b></div>`).join('')}</div>
         <div class="legend"><span class="sq m1"></span>${t('app.licht')} <span class="sq m2"></span>${t('app.gemiddeld')} <span class="sq m3"></span>${t('app.veel')}</div>
       </div>
       <div>
         <div class="eyebrow">${esc(t('ui.plan.fatigue'))}</div>
-        ${bodyMap(fat.scores, { height: 240, title: t('ui.plan.fatigue'), figure: figureFor(state.settings || {}), scale: 'recovery' })}
+        ${bodyMap(fat.scores, { height: 220, title: t('ui.plan.fatigue'), figure: figureFor(state.settings || {}), scale: 'recovery' })}
         <p class="muted small">${esc(t('ui.plan.fatigueNote'))}</p>
         <div class="mbars">${fat.rows.map((r) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[r.k] || r.k)}</span><div class="ht"><div class="hf" style="width:${r.pct == null ? 0 : r.pct}%;background:${r.pct == null ? 'transparent' : recoveryFill(r.pct)}"></div></div><b>${r.pct == null ? '—' : esc(t('rec.pct', { n: Math.round(r.pct) }))}</b></div>`).join('')}</div>
+      </div>
+      <div>
+        <div class="eyebrow">${esc(t('ui.plan.after'))}</div>
+        ${bodyMap(after.scores, { height: 220, title: t('ui.plan.after'), figure: figureFor(state.settings || {}), scale: 'recovery' })}
+        <p class="muted small">${esc(t(done ? 'ui.plan.afterDone' : 'ui.plan.afterNote'))}</p>
+        <div class="mbars">${after.rows.map((r) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[r.k] || r.k)}</span><div class="ht"><div class="hf" style="width:${r.pct == null ? 0 : r.pct}%;background:${r.pct == null ? 'transparent' : recoveryFill(r.pct)}"></div></div><b>${r.pct == null ? '—' : esc(t('rec.pct', { n: Math.round(r.pct) }))}</b></div>`).join('')}</div>
       </div>
     </div>` : '';
   const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}` : `

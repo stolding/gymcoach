@@ -47,9 +47,8 @@
   <button class="tab" data-tab="plan" data-i18n="ui.tabs.plan">Plan</button>
   <button class="tab" data-tab="goal" data-i18n="ui.tabs.doel">Doel</button>
   <button class="tab" data-tab="body" data-i18n="ui.tabs.lichaam">Lichaam</button>
-  <button class="tab" data-tab="progress" data-i18n="ui.tabs.voortgang">Voortgang</button>
-  <button class="tab" data-tab="stats" data-i18n="ui.tabs.statistieken">Statistieken</button>
-  <button class="tab" data-tab="analysis" data-i18n="ui.tabs.analyse">Analyse</button>
+  <button class="tab" data-tab="progress" data-i18n="ui.tabs.voortgang">Training</button>
+  <button class="tab" data-tab="stats" data-i18n="ui.tabs.statistieken">Terugkijken</button>
   <button class="tab" data-tab="settings" data-i18n="ui.tabs.instellingen">Instellingen</button>
 </nav>
 
@@ -103,14 +102,15 @@
 
   <section id="tab-stats" class="panel">
     <div class="row between wrap gap">
-      <h1 data-i18n="ui.tabs.statistieken">Statistieken</h1>
+      <h1 data-i18n="ui.tabs.statistieken">Terugkijken</h1>
       <label class="period"><span data-i18n="ui.stats.periode">Periode</span>
         <select id="statRange" aria-label="Periode voor de statistieken" data-i18n-aria-label="ui.stats.periodeVoorDeStatistieken">
           <optgroup label="Kalender" data-i18n-label="ui.stats.kalender"><option value="week" data-i18n="ui.stats.dezeWeek">Deze week</option><option value="month" data-i18n="ui.stats.dezeMaand">Deze maand</option><option value="year" data-i18n="ui.stats.ditJaar">Dit jaar</option></optgroup>
-          <optgroup label="Terugkijken" data-i18n-label="ui.stats.terugkijken"><option value="28" data-i18n="ui.stats.laatste4Weken">Laatste 4 weken</option><option value="84" selected data-i18n="ui.stats.laatste12Weken">Laatste 12 weken</option><option value="365" data-i18n="ui.stats.laatsteJaar">Laatste jaar</option><option value="0" data-i18n="pk.all">Alles</option></optgroup>
+          <optgroup label="Terugkijken" data-i18n-label="ui.stats.terugkijken"><option value="28" data-i18n="ui.stats.laatste4Weken">Laatste 4 weken</option><option value="84" selected data-i18n="ui.stats.laatste12Weken">Laatste 12 weken</option><option value="182" data-i18n="ui.analysis.laatsteHalfJaar">Laatste half jaar</option><option value="365" data-i18n="ui.stats.laatsteJaar">Laatste jaar</option><option value="0" data-i18n="pk.all">Alles</option></optgroup>
         </select>
       </label>
     </div>
+    <h2 data-i18n="ui.review.numbers">Cijfers</h2>
     <div class="tiles6" id="statTotals"></div>
     <div id="statNote"></div>
     <div class="card hidden" id="cardioCard"></div>
@@ -152,18 +152,7 @@
       <h2 data-i18n="ui.stats.perOefening">Per oefening</h2>
       <div class="tablewrap"><table id="exTable" class="sortable"></table></div>
     </div>
-  </section>
-
-  <section id="tab-analysis" class="panel">
-    <div class="row between wrap gap">
-      <h1 data-i18n="ui.tabs.analyse">Analyse</h1>
-      <label class="period"><span data-i18n="ui.stats.periode">Periode</span>
-        <select id="anRange" aria-label="Periode voor de analyse" data-i18n-aria-label="ui.analysis.periodeVoorDeAnalyse">
-          <optgroup label="Kalender" data-i18n-label="ui.stats.kalender"><option value="month" data-i18n="ui.stats.dezeMaand">Deze maand</option><option value="year" data-i18n="ui.stats.ditJaar">Dit jaar</option></optgroup>
-          <optgroup label="Terugkijken" data-i18n-label="ui.stats.terugkijken"><option value="84" data-i18n="ui.stats.laatste12Weken">Laatste 12 weken</option><option value="182" data-i18n="ui.analysis.laatsteHalfJaar">Laatste half jaar</option><option value="365" selected data-i18n="ui.stats.laatsteJaar">Laatste jaar</option><option value="0" data-i18n="pk.all">Alles</option></optgroup>
-        </select>
-      </label>
-    </div>
+    <h2 data-i18n="ui.review.patterns">Patronen</h2>
     <div class="card" id="bigCal"></div>
     <div class="grid2">
       <div class="card"><div class="row between wrap gap"><h2 data-i18n="ui.analysis.wanneerTrainJe">Wanneer train je?</h2>
@@ -186,25 +175,19 @@
   </section>
 
   <section id="tab-progress" class="panel">
-    <h1 data-i18n="ui.tabs.voortgang">Voortgang</h1>
-    <div id="progressGoals"></div>
-    <details class="card collapse" id="progressSeries">
-      <summary><span data-i18n="ui.progress.series">Metingen</span></summary>
-      <div class="progress-series">
-        <div class="grid2">
-          <div class="card"><h2 data-i18n="ui.progress.trainingenPerWeek">Trainingen per week</h2><div id="chartSessions" class="chart"></div></div>
-          <div class="card"><h2 data-i18n="ui.progress.volumePerWeekKg">Volume per week (kg)</h2><div id="chartVolume" class="chart"></div></div>
-        </div>
-        <div class="card">
-          <div class="row between wrap gap"><h2 data-i18n="ui.stats.perOefening">Per oefening</h2><select id="exSelect"></select></div>
-          <div id="chartExercise" class="chart tall"></div>
-          <div class="legend"><span class="dot a"></span><span data-i18n="ui.leg.e1rm">Geschat 1RM</span> <span class="dot b"></span><span data-i18n="ui.leg.heaviest">Zwaarste set</span></div>
-        </div>
-        <div class="card"><div class="row between wrap gap"><h2 data-i18n="tp.title">Trainingen</h2><input type="search" id="woSearch" placeholder="Zoek op naam of datum…" data-i18n-placeholder="ui.progress.zoekOpNaamOf" aria-label="Zoek trainingen" data-i18n-aria-label="ui.progress.zoekTrainingen" style="max-width:240px"></div>
-          <p class="muted small" style="margin-top:-.4rem" data-i18n="ui.progress.klikOpEenTraining">Klik op een training voor de oefeningen, sets en gewichten.</p>
-          <div id="recent"></div></div>
-      </div>
-    </details>
+    <h1 data-i18n="ui.tabs.voortgang">Training</h1>
+    <div class="card"><div class="row between wrap gap"><h2 data-i18n="tp.title">Trainingen</h2><input type="search" id="woSearch" placeholder="Zoek op naam of datum…" data-i18n-placeholder="ui.progress.zoekOpNaamOf" aria-label="Zoek trainingen" data-i18n-aria-label="ui.progress.zoekTrainingen" style="max-width:240px"></div>
+      <p class="muted small" style="margin-top:-.4rem" data-i18n="ui.progress.klikOpEenTraining">Klik op een training voor de oefeningen, sets en gewichten.</p>
+      <div id="recent"></div></div>
+    <div class="card">
+      <div class="row between wrap gap"><h2 data-i18n="ui.stats.perOefening">Per oefening</h2><select id="exSelect"></select></div>
+      <div id="chartExercise" class="chart tall"></div>
+      <div class="legend"><span class="dot a"></span><span data-i18n="ui.leg.e1rm">Geschat 1RM</span> <span class="dot b"></span><span data-i18n="ui.leg.heaviest">Zwaarste set</span></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h2 data-i18n="ui.progress.trainingenPerWeek">Trainingen per week</h2><div id="chartSessions" class="chart"></div></div>
+      <div class="card"><h2 data-i18n="ui.progress.volumePerWeekKg">Volume per week (kg)</h2><div id="chartVolume" class="chart"></div></div>
+    </div>
   </section>
 
   <section id="tab-goal" class="panel">

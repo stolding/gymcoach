@@ -1,5 +1,5 @@
 // GymCoach — de app in de browser (één bestand, geen framework).
-// Tabbladen: Overzicht, Plan, Statistieken, Analyse, Voortgang, Lichaam en Instellingen.
+// Tabbladen: Overzicht, Plan, Doel, Lichaam, Training, Terugkijken en Instellingen.
 // Alle gegevens komen van de eigen server via api(); grafieken zijn zelfgemaakte SVG's.
 import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure, recoveryFill } from './bodymap.js';
 import { TERMS_VERSION, termsHtml } from './terms.js';
@@ -87,7 +87,7 @@ document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () 
   document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('active', p.id === 'tab-' + b.dataset.tab));
   if (b.dataset.tab === 'progress') renderProgress();
   if (b.dataset.tab === 'home') renderHome();
-  if (b.dataset.tab === 'stats') loadStats();
+  if (b.dataset.tab === 'stats') { loadStats(); loadAnalysis(); renderBigCal(); }
   if (b.dataset.tab === 'settings') { loadAccount(); loadHealth(); if (state?.me?.role === 'admin') loadUsers(); }
   if (b.dataset.tab === 'body') renderBody();
   if (b.dataset.tab === 'goal') loadGoal();
@@ -1168,9 +1168,9 @@ function renderHome() {
       const info = o.days[keyOf(dt)];
       const future = dt > today, isToday = keyOf(dt) === keyOf(today);
       const dayActs = (state.activities || []).filter((a) => a.date === keyOf(dt));
-      // het getal in het vak is de hele dag: Gym Monster plus Apple Health
-      const min = info ? Math.round((info.min || 0) + dayActs.reduce((s, a) => s + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0)) : 0;
-      const lvl = !info ? '' : min < 25 ? 'l1' : min < 45 ? 'l2' : 'l3';
+      // het getal in het vak is de hele dag, ook als er alleen Apple Health is
+      const min = Math.round((info?.min || 0) + dayActs.reduce((s, a) => s + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0));
+      const lvl = !min ? '' : min < 25 ? 'l1' : min < 45 ? 'l2' : 'l3';
       if (info) { count += Math.max(1, info.titles.length); trainedDays++; }
       const tipParts = [];
       if (min) tipParts.push(t('fmt.minutes', { m: min }));
@@ -1306,6 +1306,7 @@ $('#statRange').addEventListener('change', (ev) => {
   statDays = ev.target.value;
   try { localStorage.setItem('gc-stat-range', statDays); } catch {}
   loadStats();
+  loadAnalysis();
 });
 $('#muscleMetric').addEventListener('click', (ev) => {
   const b = ev.target.closest('button'); if (!b) return;
@@ -1441,7 +1442,6 @@ function renderProgressGoals() {
   });
 }
 function renderProgress() {
-  renderProgressGoals();
   barChart($('#chartSessions'), state.weekly.map((w) => ({ x: w.week, y: w.sessions })), { unit: '×' });
   barChart($('#chartVolume'), state.weekly.map((w) => ({ x: w.week, y: Math.round(w.volume) })), { unit: 'kg' });
   const sel = $('#exSelect');
@@ -2678,7 +2678,7 @@ async function load() {
   renderSyncStatus(); renderPlan(); fillSettings(); renderWithingsSettings();
   if ($('#tab-plan')?.classList.contains('active')) loadTemplates();
   if ($('#tab-home').classList.contains('active')) renderHome();
-  if ($('#tab-stats').classList.contains('active')) loadStats();
+  if ($('#tab-stats').classList.contains('active')) { loadStats(); loadAnalysis(); renderBigCal(); }
   renderCoach(state.meta?.coach || null);
   if ($('#tab-progress').classList.contains('active')) renderProgress();
   if ($('#tab-body').classList.contains('active')) renderBody();
@@ -2894,15 +2894,12 @@ function renderStatsExtra() {
 }
 
 // ---------- analyse ----------
-let analysisData = null, anRange = '365';
-try { const v = localStorage.getItem('gc-an-range'); if (v) anRange = v; } catch {}
-$('#anRange').value = anRange; if (!$('#anRange').value) { anRange = '365'; $('#anRange').value = '365'; }
-$('#anRange').addEventListener('change', (ev) => { anRange = ev.target.value; try { localStorage.setItem('gc-an-range', anRange); } catch {} loadAnalysis(); });
+let analysisData = null;
 $('#heatActs').addEventListener('change', () => analysisData && renderAnalysis());
-// Haalt de gegevens voor Analyse op.
+// Patronen op Terugkijken, dezelfde periode als de cijfers.
 async function loadAnalysis() {
-  const from = periodStart(anRange);
-  try { analysisData = await api('GET', '/api/analysis?' + (from ? `from=${from}` : `days=${anRange}`)); renderAnalysis(); } catch (e) { toast(e.message, true); }
+  const from = periodStart(statDays);
+  try { analysisData = await api('GET', '/api/analysis?' + (from ? `from=${from}` : `days=${statDays}`)); renderAnalysis(); } catch (e) { toast(e.message, true); }
 }
 // Tabblad Analyse: kalender, wanneer je traint, records, energie en herstel.
 function renderAnalysis() {
@@ -2950,7 +2947,6 @@ function renderAnalysis() {
     return `${head}<div class="rec"><span class="rec-d">${+r.date.slice(8)}</span><div><b>${esc(r.name)}</b><div class="muted small">${t('app.geschat1rmKg', { a: esc(r.set), b: n1nl(r.e1rm), c: r.muscle ? ` · ${esc(r.muscle)}` : '' })}</div></div><span class="up">+${n1nl(r.pct)}%</span></div>`;
   }).join('') + (a.recordCount > 60 ? `<p class="muted small">${t('app.enNogEerdereRecords', { a: a.recordCount - 60 })}</p>` : '') : '<div class="empty">' + t('app.nogGeenRecordsIn') + '</div>';
 }
-document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'analysis') loadAnalysis(); }));
 
 // ---------- instellingen: onderdelen ----------
 let setPane = 'account';
@@ -3002,7 +2998,7 @@ function renderBigCal() {
   const target = state.settings?.daysPerWeek || 3;
   const gymMin = (d) => (d?.gym || []).reduce((t, w) => t + (w.min || 0), 0);
   const shownMin = (d) => Math.round(gymMin(d) + (d?.acts || []).reduce((t, a) => t + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0));
-  const lvl = (d) => { if (!d?.gym.length) return ''; const m = shownMin(d); return m && m < 25 ? 'l1' : m && m < 45 ? 'l2' : 'l3'; };
+  const lvl = (d) => { const m = shownMin(d); if (!m) return ''; return m < 25 ? 'l1' : m < 45 ? 'l2' : 'l3'; };
   const dots = (d) => (d?.acts.length ? `<span class="bc-acts">${d.acts.slice(0, 4).map((a) => `<i style="background:${actColor(a.type)}" title="${esc(actLine(a))}"></i>`).join('')}</span>` : '');
   const totalGym = (state.trainingDays || []).length, gymDays = Object.values(days).filter((d) => d.gym.length).length;
 
@@ -3022,7 +3018,7 @@ function renderBigCal() {
         const mins = d ? shownMin(d) : 0;
         const tip = `${dt.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${mins ? ` — ${t('fmt.minutes', { m: mins })}` : ''}${d?.gym.length ? ' — ' + d.gym.map((w) => `${w.title}${w.min ? ` (${w.min} min)` : ''}`).join(', ') : ''}${d?.acts.length ? ' — ' + d.acts.map(actLine).join(', ') : ''}`;
         cells += `<div class="bc-d ${lvl(d)}${inM ? '' : ' out'}${fut ? ' fut' : ''}${k === ymd(today) ? ' today' : ''}${d ? ' click' : ''}" data-day="${k}" ${d ? `data-date="${k}" tabindex="0" role="button"` : ''}>
-          <span class="bc-n">${dt.getDate()}</span>${d?.gym.length ? `<span class="bc-t">${esc(titles)}</span><span class="bc-m">${mins ? mins + '′' : ''}</span>` : ''}${dots(d)}</div>`;
+          <span class="bc-n">${dt.getDate()}</span>${d?.gym.length ? `<span class="bc-t">${esc(titles)}</span>` : ''}${mins ? `<span class="bc-m">${mins}′</span>` : ''}${dots(d)}</div>`;
       }
       const thisWeek = ws <= today;
       rows += `${cells}<div class="bc-w ${wkCount >= target ? 'hit' : ''}">${thisWeek ? `${wkCount}/${target}` : ''}</div>`;
@@ -3074,7 +3070,6 @@ function renderBigCal() {
     c.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } });
   });
 }
-document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'analysis') renderBigCal(); }));
 
 // ---------- popup bij een dag in de kalenders ----------
 const dayTipEl = document.createElement('div');

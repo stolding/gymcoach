@@ -54,8 +54,8 @@ Met een demo-account en voorbeelddata; donker thema.
 
 **Terugkijken**
 - **Trainingsrapport** na elke training (in de app, als PDF en per mail): vergelijking met de laatste 4 keer, hartslag per set en over de hele training met zones, tijd onder spanning en rust.
-- **Statistieken**: per spiergroep, krachtindex, duwen/trekken- en boven/onder-balans, records, spiermassa tegen volume, km per week en stappen.
-- **Analyse**: kalender met je volledige historie (maand en jaar), wanneer je traint, records-tijdlijn, energie tegen gewicht en herstel (rusthartslag tegen belasting).
+- **Training**: het logboek, met per oefening het geschatte 1RM en het volume per week.
+- **Terugkijken**: één periode voor de cijfers (spiergroepen, krachtindex, balans, spiermassa tegen volume, km en stappen) en de patronen (kalender, wanneer je traint, records, energie tegen gewicht, herstel).
 - **Lichaam** via Withings: gewicht, vet%, spiermassa, segmenten per arm/been/romp, vasculaire leeftijd, met richtwaarden.
 - **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal, plus HRV en de VO2max-schatting van de Apple Watch.
 

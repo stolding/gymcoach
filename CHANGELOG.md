@@ -5,6 +5,10 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.18.0 — 10 november 2026
+- Het menu is Overzicht, Plan, Doel, Lichaam, Training, Terugkijken en Instellingen. Training is het logboek. Terugkijken toont de cijfers en de patronen onder één periode. De doelgrafieken blijven op Doel. Overzicht is ongewijzigd.
+- In de agenda staat de tijd van de dag ook als er alleen een Apple Health-training is, zonder Gym Monster.
+
 ## 2.17.4 — 10 november 2026
 - Op Voortgang staan de doelgrafieken onder elkaar, elk over de volle breedte.
 

@@ -101,7 +101,7 @@ const axisUnit = (u) => ({ '%-punt': '%-pt' }[u] ?? u ?? '');
 const fmtTick = (v, dec, unit) => `${v.toLocaleString(localeOf(), { minimumFractionDigits: dec, maximumFractionDigits: dec })}${unit ? (/^[%×]/.test(unit) ? '' : ' ') + unit : ''}`;
 
 // Lijngrafiek (SVG) met een of meer reeksen, as-labels en tooltip.
-function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, zoneColor = null, spanDates = false } = {}) {
+function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, zoneColor = null, spanDates = false, ySpan = null } = {}) {
   const pts = series.flatMap((s) => s.points);
   if (pts.length < 1) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   // eenheid op de y-as: expliciet, of de gemeenschappelijke eenheid van alle reeksen
@@ -118,6 +118,14 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
   const ys = pts.map((p) => p.y);
   let lo = Math.min(...ys), hi = Math.max(...ys);
   if (lo === hi) { lo -= 1; hi += 1; }
+  // krachtdoel: de as dekt het hele doel, zodat een kleine dip klein blijft
+  if (Array.isArray(ySpan) && ySpan.length === 2 && ySpan.every((n) => Number.isFinite(n))) {
+    lo = Math.min(lo, ySpan[0], ySpan[1]);
+    hi = Math.max(hi, ySpan[0], ySpan[1]);
+    const mid = (ySpan[0] + ySpan[1]) / 2;
+    const minSpan = Math.max(Math.abs(ySpan[1] - ySpan[0]), Math.abs(mid) * 0.12, 8);
+    if (hi - lo < minSpan) { const extra = (minSpan - (hi - lo)) / 2; lo -= extra; hi += extra; }
+  }
   // met richtwaarden: bereik iets oprekken tot de dichtstbijzijnde grens, zodat je ziet waar je zit
   if (bands?.length) {
     const span = Math.max(hi - lo, Math.abs(hi) * 0.05);
@@ -187,8 +195,8 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
   }
   for (const s of series) {
     const st = s.color ? ` style="stroke:${s.color}${s.dash ? ';stroke-dasharray:4 3;stroke-width:1.6;opacity:.9' : ''}"` : '';
-    g += `<polyline class="${s.cls || 'la'}"${st} points="${s.points.map((q) => `${X(q.x)},${Y(q.y)}`).join(' ')}"/>`;
-    if ((s.cls === 'la' || s.color) && !s.dash && xs.length <= 120) s.points.forEach((q) => { g += `<circle class="pt"${s.color ? ` style="fill:${s.color}"` : ''} cx="${X(q.x)}" cy="${Y(q.y)}" r="${s.color ? 2.4 : 3}"/>`; });
+    if (!s.dotsOnly) g += `<polyline class="${s.cls || 'la'}"${st} points="${s.points.map((q) => `${X(q.x)},${Y(q.y)}`).join(' ')}"/>`;
+    if (!s.noDots && (s.dotsOnly || ((s.cls === 'la' || s.color) && !s.dash)) && xs.length <= 120) s.points.forEach((q) => { g += `<circle class="pt"${s.color ? ` style="fill:${s.color}"` : ''} cx="${X(q.x)}" cy="${Y(q.y)}" r="${s.color ? 2.4 : 3}"/>`; });
   }
   // hulplijn en markeringen voor de muis: onzichtbaar tot je over de grafiek beweegt
   g += `<line class="guide" visibility="hidden" y1="${T}" y2="${H - B}" x1="0" x2="0"/>` + series.map((s, i) => `<circle class="hl ${s.cls || 'la'}" visibility="hidden"${s.color ? ` style="stroke:${s.color}"` : ''} data-i="${i}" r="5" cx="0" cy="0"/>`).join('');
@@ -1566,12 +1574,13 @@ function renderProgressGoals() {
     const place = trackPlace(row);
     const cell = (key, v) => `<div><div class="eyebrow">${esc(t(key))}</div><div class="mid">${esc(trackNum(v, row.unit))}</div></div>`;
     const chart = row.line?.length === 2;
+    const index = row.kind === 'strength' && row.unit !== 'kg';
     return `<article class="card goal-track">
       <div class="row between wrap gap"><h2>${esc(name)}</h2><div class="track-status ${paceCls}">${esc(t(PACE_KEY[row.state] || 'goal.tile.paceWait'))}</div></div>
       ${place ? `<p class="muted small" style="margin:.35rem 0 0">${esc(place)}</p>` : ''}
-      <div class="track-nums">${cell('ui.progress.start', row.start)}${cell('ui.progress.now', row.now)}${cell('ui.progress.target', row.target)}</div>
-      ${row.kind === 'strength' && row.unit !== 'kg' ? `<p class="muted small" style="margin:.45rem 0 0">${esc(t('goal.legend.index'))}</p>` : ''}
-      ${chart ? `<div class="chart" id="goalChart${i}"></div><div class="legend"><span class="dot a"></span>${esc(name)} <span class="dot b"></span>${esc(t('ui.progress.goalLine'))}</div>` : ''}
+      <div class="track-nums">${cell('ui.progress.start', row.start)}${cell(index ? 'goal.legend.best' : 'ui.progress.now', row.now)}${cell('ui.progress.target', row.target)}</div>
+      ${index ? `<p class="muted small" style="margin:.45rem 0 0">${esc(t('goal.legend.index'))}</p>` : ''}
+      ${chart ? `<div class="chart" id="goalChart${i}"></div><div class="legend">${index ? `<span class="dot a"></span>${esc(t('goal.legend.index'))} <span class="legend-line"></span>${esc(t('goal.legend.best'))} ` : `<span class="dot a"></span>${esc(name)} `}<span class="dot b"></span>${esc(t('ui.progress.goalLine'))}</div>` : ''}
     </article>`;
   }).join('')}</div>`;
   rows.forEach((row, i) => {
@@ -1579,9 +1588,14 @@ function renderProgressGoals() {
     if (!el || row.line?.length !== 2) return;
     const name = row.kind === 'weight' ? t('goal.legend.weight') : row.kind === 'muscle' ? t('goal.legend.muscle') : (row.name || '');
     const unit = row.unit === 'kg' ? 'kg' : '';
-    const series = [{ cls: 'lb', label: t('ui.progress.goalLine'), unit, points: row.line }];
-    if (row.points?.length) series.push({ cls: 'la', label: name, unit, points: row.points });
-    lineChart(el, series, { yLabel: name, yUnit: unit, spanDates: true });
+    const index = row.kind === 'strength' && row.unit !== 'kg';
+    const measured = row.points || [];
+    const series = [{ cls: 'lb', label: t('ui.progress.goalLine'), unit, noDots: true, points: row.line }];
+    if (index && measured.length) {
+      series.push({ cls: 'la', label: t('goal.legend.best'), unit, noDots: true, points: runningMax(measured) });
+      series.push({ cls: 'la', label: t('goal.legend.index'), unit, dotsOnly: true, points: measured });
+    } else if (measured.length) series.push({ cls: 'la', label: name, unit, points: measured });
+    lineChart(el, series, { yLabel: name, yUnit: unit, spanDates: true, ySpan: index ? [row.line[0].y, row.line[1].y] : undefined });
   });
 }
 function renderProgress() {
@@ -1934,14 +1948,28 @@ function bindRange(card, id) {
 }
 try { compTrend = localStorage.getItem('gc-comp-trend') !== 'off'; } catch {}
 
-// trendlijn: gemiddelde van de metingen in de 14 dagen tot en met elk meetpunt
-function smoothTrend(points, days = 14) {
-  let start = 0, sum = 0;
-  return points.map((p, i) => {
-    sum += p.y;
-    const from = daysBefore(p.x, days - 1);
-    while (points[start].x < from) sum -= points[start++].y;
-    return { x: p.x, y: Math.round((sum / (i - start + 1)) * 100) / 100 };
+// trendlijn: rechte lijn door alle punten die de grafiek toont
+function smoothTrend(points) {
+  if (!points || points.length < 2) return [];
+  const sorted = [...points].sort((a, b) => String(a.x).localeCompare(String(b.x)));
+  const t0 = new Date(sorted[0].x + 'T12:00:00').getTime();
+  const xs = sorted.map((p) => (new Date(p.x + 'T12:00:00').getTime() - t0) / 864e5);
+  const ys = sorted.map((p) => p.y);
+  const n = xs.length;
+  const mx = xs.reduce((s, x) => s + x, 0) / n;
+  const my = ys.reduce((s, y) => s + y, 0) / n;
+  const den = xs.reduce((s, x) => s + (x - mx) ** 2, 0);
+  const slope = den ? xs.reduce((s, x, i) => s + (x - mx) * (ys[i] - my), 0) / den : 0;
+  const at = (x) => Math.round((my + slope * (x - mx)) * 100) / 100;
+  return [{ x: sorted[0].x, y: at(xs[0]) }, { x: sorted[n - 1].x, y: at(xs[n - 1]) }];
+}
+
+// hoogste waarde tot en met elk punt; een lichtere training trekt de lijn niet omlaag
+function runningMax(points) {
+  let best = -Infinity;
+  return (points || []).map((p) => {
+    best = Math.max(best, p.y);
+    return { x: p.x, y: Math.round(best * 10) / 10 };
   });
 }
 // Namen van segmenten worden in het Nederlands bewaard (instelling); voor het tonen vertaald.
@@ -1958,19 +1986,17 @@ function lastWith(log, key, beforeDate) {
   for (let i = log.length - 1; i >= 0; i--) if (log[i][key] != null && (!beforeDate || log[i].date <= beforeDate)) return log[i];
   return null;
 }
-// trend (eenheid per week) over de 4 weken tot en met de laatste meting
-function trendOf(log, key) {
-  const last = lastWith(log, key); if (!last) return null;
-  const from = daysBefore(last.date, 28);
-  const pts = log.filter((b) => b[key] != null && b.date >= from && b.date <= last.date);
-  if (pts.length < 2) return null;
-  const t0 = new Date(pts[0].date).getTime();
-  const xs = pts.map((b) => (new Date(b.date).getTime() - t0) / (7 * 864e5)), ys = pts.map((b) => b[key]);
-  const mx = xs.reduce((a, b) => a + b) / xs.length, my = ys.reduce((a, b) => a + b) / ys.length;
+// helling per week over alle punten die de grafiek toont
+function slopeOf(points) {
+  if (!points || points.length < 2) return null;
+  const t0 = new Date(points[0].x + 'T12:00:00').getTime();
+  const xs = points.map((p) => (new Date(p.x + 'T12:00:00').getTime() - t0) / (7 * 864e5));
+  const ys = points.map((p) => p.y);
+  const mx = xs.reduce((a, b) => a + b, 0) / xs.length, my = ys.reduce((a, b) => a + b, 0) / ys.length;
   const den = xs.reduce((a, x) => a + (x - mx) ** 2, 0);
   if (!den) return null;
   const slope = xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0) / den;
-  return { slope, pct: (slope / my) * 100, from: pts[0].date, to: last.date };
+  return { slope, pct: my ? (slope / my) * 100 : 0, to: points[points.length - 1].x };
 }
 
 // Lichaamssamenstelling: gewicht, vet, spiermassa met richtwaarden.
@@ -1991,23 +2017,23 @@ function renderComposition() {
       <div class="small ${cls}">${d == null ? '—' : `${d > 0 ? '+' : ''}${d} ${unit}`} <span class="muted">${old && old !== cur ? t('app.sinds', { a: esc(old.date.slice(5)) }) : ''}</span></div></button>`;
   }).join('');
   const [, mLabel, mUnit, mGood] = COMP.find(([k]) => k === compMetric);
-  const tr = trendOf(log, compMetric);
+  const ptsAll = log.filter((b) => b[compMetric] != null).map((b) => ({ x: b.date, y: b[compMetric] }));
+  const from = rangeStart(ptsAll[ptsAll.length - 1]?.x);
+  const shown = from ? ptsAll.filter((q) => q.x >= from) : ptsAll;
+  const tr = slopeOf(shown);
   let trendTxt = '';
   if (tr) {
     const goodDir = compMetric === 'kg' ? (state.settings.goal === 'spieropbouw' ? 'up' : 'down') : mGood;
     const cls = !goodDir || Math.abs(tr.slope) < 0.005 ? '' : (tr.slope > 0) === (goodDir === 'up') ? 'up' : 'down';
-    trendTxt = `${t('app.trend4WekenT', { a: esc(tr.to.slice(5)) })} <b class="${cls}">${tr.slope >= 0 ? '+' : ''}${tr.slope.toFixed(2)} ${compMetric === 'fat' ? t('app.puntWeek') : mUnit ? esc(mUnit) + t('app.week4') : t('app.perWeek')}</b>`;
+    trendTxt = `${t('app.trendChart', { a: esc(tr.to.slice(5)) })} <b class="${cls}">${tr.slope >= 0 ? '+' : ''}${tr.slope.toFixed(2)} ${compMetric === 'fat' ? t('app.puntWeek') : mUnit ? esc(mUnit) + t('app.week4') : t('app.perWeek')}</b>`;
     if (compMetric === 'kg') trendTxt += ` (${tr.pct.toFixed(2)}%)${state.settings.goal !== 'spieropbouw' ? ' <span class="muted">' + t('app.richtwaardeBijAfvallenCa') + '</span>' : ''}`;
   }
   card.innerHTML = `<div class="row between wrap gap"><h2>${t('app.lichaamssamenstelling')}</h2><span class="muted">${t('app.laatsteMeting', { a: esc(lastWith(log, 'kg')?.date || '') })}</span></div>
     <div class="ctiles">${tiles}</div>
-    <div class="row between wrap gap" style="margin-top:1rem"><div class="eyebrow" style="margin:0">${t('app.overTijd', { mLabel, a: mUnit ? ` (${mUnit})` : '' })}</div><div class="row gap wrap"><span class="small">${trendTxt}</span>${rangeChips('compRange')}<button class="chip ${compTrain ? 'on' : ''}" id="trainToggle" aria-pressed="${compTrain}" title="${t('app.toonDeDagenWaarop')}"><span class="dot tm"></span> ${t('app.activiteiten')}</button><button class="chip ${compTrend ? 'on' : ''}" id="trendToggle" aria-pressed="${compTrend}" title="${t('app.gemiddeldeOver14Dagen')}"><span class="dot b"></span> ${t('app.trendlijn')}</button></div></div>
+    <div class="row between wrap gap" style="margin-top:1rem"><div class="eyebrow" style="margin:0">${t('app.overTijd', { mLabel, a: mUnit ? ` (${mUnit})` : '' })}</div><div class="row gap wrap"><span class="small">${trendTxt}</span>${rangeChips('compRange')}<button class="chip ${compTrain ? 'on' : ''}" id="trainToggle" aria-pressed="${compTrain}" title="${t('app.toonDeDagenWaarop')}"><span class="dot tm"></span> ${t('app.activiteiten')}</button><button class="chip ${compTrend ? 'on' : ''}" id="trendToggle" aria-pressed="${compTrend}" title="${t('app.trendWhole')}"><span class="dot b"></span> ${t('app.trendlijn')}</button></div></div>
     <div id="chartComp" class="chart tall"></div>`;
-  const pts = log.filter((b) => b[compMetric] != null).map((b) => ({ x: b.date, y: b[compMetric] }));
-  const series = [{ cls: 'la', label: mLabel, unit: mUnit, points: pts }];
-  if (compTrend && pts.length > 2) series.push({ cls: 'lb', label: t('app.trend14D'), unit: mUnit, points: smoothTrend(pts) });
-  const from = rangeStart(pts[pts.length - 1]?.x);
-  if (from) series.forEach((sr) => { sr.points = sr.points.filter((q) => q.x >= from); });
+  const series = [{ cls: 'la', label: mLabel, unit: mUnit, points: shown }];
+  if (compTrend && shown.length > 2) series.push({ cls: 'lb', label: t('app.trendlijn'), unit: mUnit, points: smoothTrend(shown) });
   const marks = compTrain ? [
     ...(state.trainingDays || []).map((w) => ({ x: w.date, label: w.title + (w.min ? t('app.min5', { min: w.min }) : '') })),
     ...(state.activities || []).map((a) => ({ x: a.date, label: actLine(a), color: actColor(a.type) })),
@@ -2113,7 +2139,7 @@ function renderSegments() {
       <div class="row gap wrap">
         <div class="chips small" id="segSwitch">${Object.entries(SEG_METRICS).map(([k, [l]]) => `<button data-m="${k}" class="${k === segMetric ? 'on' : ''}">${l}</button>`).join('')}</div>
         ${rangeChips('segRange')}
-        <button class="chip ${segTrend ? 'on' : ''}" id="segTrendToggle" aria-pressed="${segTrend}" title="${t('app.gemiddeldeOver14Dagen2')}"><span class="dot b"></span> ${t('app.trendlijn')}</button>
+        <button class="chip ${segTrend ? 'on' : ''}" id="segTrendToggle" aria-pressed="${segTrend}" title="${t('app.trendWhole')}"><span class="dot b"></span> ${t('app.trendlijn')}</button>
         <div class="chips small" id="segMode"><button data-v="delta" class="${segMode === 'delta' ? 'on' : ''}">${t('app.verandering')}</button><button data-v="abs" class="${segMode === 'abs' ? 'on' : ''}">${t('app.absoluut')}</button>${pairs.length ? `<button data-v="bal" class="${segMode === 'bal' ? 'on' : ''}">${t('app.balansLR')}</button>` : ''}</div>
       </div>
     </div>
@@ -2132,13 +2158,13 @@ function renderSegments() {
       // grootte van het verschil (altijd positief); welke kant zwaarder is staat in de tooltip
       const all = log.map((b) => { const v = balOf(b, pr); return v == null ? null : { x: b.date, y: Math.abs(v), note: v > 0 ? t('app.rechtsMeer') : v < 0 ? t('app.linksMeer') : t('app.gelijk') }; }).filter(Boolean);
       const inRange = (q) => !segFrom || q.x >= segFrom;
-      const out = [{ color: pr.color, label: `${pr.label}`, unit: balUnit, points: all.filter(inRange) }];
-      if (segTrend && all.length > 2) out.push({ color: pr.color, dash: true, label: t('app.trend', { label: pr.label }), unit: balUnit, points: smoothTrend(all).filter(inRange) });
+      const shown = all.filter(inRange);
+      const out = [{ color: pr.color, label: `${pr.label}`, unit: balUnit, points: shown }];
+      if (segTrend && shown.length > 2) out.push({ color: pr.color, dash: true, label: t('app.trend', { label: pr.label }), unit: balUnit, points: smoothTrend(shown) });
       return out;
     }), { fromZero: true, bands: [{ from: 0, to: 3, cls: 'ok' }, { from: 3, to: 8, cls: 'warn' }, { from: 8, to: Infinity, cls: 'bad' }] });
   } else if (!visible.length) { $('#chartSeg').innerHTML = '<div class="empty">' + t('app.zetMinstensEenSegment') + '</div>'; }
   else lineChart($('#chartSeg'), visible.flatMap(([p, i]) => {
-    // trend over de volledige historie berekenen, daarna pas de periode tonen
     const all = log.map((b) => ({ x: b.date, y: segVal(b.segments[p], segMetric) })).filter((q) => q.y != null);
     const inRange = (q) => !segFrom || q.x >= segFrom;
     const pts = all.filter(inRange);
@@ -2146,7 +2172,7 @@ function renderSegments() {
     const rel = (arr) => segMode === 'delta' ? arr.map((q) => ({ x: q.x, y: Math.round((q.y - base) * 100) / 100 })) : arr;
     const color = SEG_COLORS[i % SEG_COLORS.length], unit = segMode === 'delta' && segMetric === 'pct' ? '%-punt' : mUnit;
     const out = [{ color, label: showName(p) + (segMode === 'delta' ? ' (Δ)' : ''), unit, points: rel(pts).map((q) => ({ x: q.x, y: Math.round(q.y * 10) / 10 })) }];
-    if (segTrend && all.length > 2) out.push({ color, dash: true, label: showName(p) + t('app.trend2'), unit, points: rel(smoothTrend(all).filter(inRange)) });
+    if (segTrend && pts.length > 2) out.push({ color, dash: true, label: showName(p) + t('app.trend2'), unit, points: rel(smoothTrend(pts)) });
     return out;
   }));
   card.querySelector('.bal-toggles')?.addEventListener('click', (ev) => {
@@ -2410,13 +2436,16 @@ function drawGoalCharts() {
   const charts = $('#goalStrengthCharts');
   if (charts) {
     charts.classList.toggle('hidden', !goals.length);
-    charts.innerHTML = goals.map((g, i) => `<div class="card"><h2>${esc(g.label || g.name || t('goal.chart.strength'))}</h2><div class="chart tall" id="goalStr${i}"></div><div class="legend"><span class="dot a"></span>${esc(t('goal.legend.index'))} <span class="dot b"></span>${esc(t('goal.legend.goal'))}</div></div>`).join('');
+    charts.innerHTML = goals.map((g, i) => `<div class="card"><h2>${esc(g.label || g.name || t('goal.chart.strength'))}</h2><div class="chart tall" id="goalStr${i}"></div><div class="legend"><span class="dot a"></span>${esc(t('goal.legend.index'))} <span class="legend-line"></span>${esc(t('goal.legend.best'))} <span class="dot b"></span>${esc(t('goal.legend.goal'))}</div></div>`).join('');
     goals.forEach((g, i) => {
       const from = g.startIndex || g.startE1rm, to = g.targetIndex || g.targetE1rm;
       const ss = [];
-      if (g.series?.length) ss.push({ cls: 'la', label: t('goal.legend.index'), points: g.series });
-      if (g.startDate && from > 0 && to > 0) ss.push({ cls: 'lb', label: t('goal.legend.goal'), points: [{ x: g.startDate, y: from }, { x: g.endDate, y: to }] });
-      if (ss.length) lineChart($('#goalStr' + i), ss, { yLabel: g.label || g.name || '' });
+      if (g.startDate && from > 0 && to > 0) ss.push({ cls: 'lb', label: t('goal.legend.goal'), noDots: true, points: [{ x: g.startDate, y: from }, { x: g.endDate, y: to }] });
+      if (g.series?.length) {
+        ss.push({ cls: 'la', label: t('goal.legend.best'), noDots: true, points: runningMax(g.series) });
+        ss.push({ cls: 'la', label: t('goal.legend.index'), dotsOnly: true, points: g.series });
+      }
+      if (ss.length) lineChart($('#goalStr' + i), ss, { yLabel: g.label || g.name || '', ySpan: from > 0 && to > 0 ? [from, to] : undefined });
     });
   }
 }

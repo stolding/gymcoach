@@ -73,6 +73,7 @@ main { max-width: 1400px; margin: 0 auto; padding: 1rem; }
 .chart text { fill: var(--muted); font-size: 11px; }
 .chart .grid { stroke: var(--line); }
 .chart .la { stroke: var(--a); fill: none; stroke-width: 2.2; }
+.legend-line { display: inline-block; width: 14px; height: 0; border-top: 2px solid var(--a); margin: 0 .3rem 0 .15rem; vertical-align: middle; }
 .chart .lb { stroke: var(--b); fill: none; stroke-width: 2; stroke-dasharray: 4 3; }
 .chart .bar { fill: var(--a); opacity: .85; }
 .chart .pt { fill: var(--a); }

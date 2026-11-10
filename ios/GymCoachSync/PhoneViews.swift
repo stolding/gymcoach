@@ -595,8 +595,21 @@ struct GoalChart: View {
         guard line.count >= 2, size.width > 48, size.height > 48 else { return }
         guard let from = PhoneDates.day(line[0].d), let to = PhoneDates.day(line[line.count - 1].d), to >= from else { return }
         let ys = line.map(\.y) + points.map(\.y)
-        let lo = ys.min() ?? line[0].y
-        let hi = ys.max() ?? lo
+        var lo = ys.min() ?? line[0].y
+        var hi = ys.max() ?? lo
+        if unit.isEmpty {
+            let goalLo = min(line[0].y, line[line.count - 1].y)
+            let goalHi = max(line[0].y, line[line.count - 1].y)
+            lo = min(lo, goalLo)
+            hi = max(hi, goalHi)
+            let mid = (goalLo + goalHi) / 2
+            let minSpan = max(goalHi - goalLo, abs(mid) * 0.12, 8)
+            if hi - lo < minSpan {
+                let extra = (minSpan - (hi - lo)) / 2
+                lo -= extra
+                hi += extra
+            }
+        }
         let pad = max((hi - lo) * 0.1, max(abs(hi) * 0.02, 0.4))
         let y0 = lo - pad
         let y1 = hi + pad
@@ -627,7 +640,10 @@ struct GoalChart: View {
         func yOf(_ v: Double) -> CGFloat { plot.minY + plot.height * CGFloat(1 - (v - y0) / spanY) }
         stroke(&ctx, line, xOf, yOf, Color.secondary.opacity(0.85), 1.6, dashed: true)
         let drawn = points.filter { PhoneDates.day($0.d) != nil }
-        if drawn.count >= 2 {
+        if unit.isEmpty {
+            let best = runningMax(drawn)
+            if best.count >= 2 { stroke(&ctx, best, xOf, yOf, orange, 2.2, dashed: false) }
+        } else if drawn.count >= 2 {
             stroke(&ctx, drawn, xOf, yOf, orange, 2.2, dashed: false)
         }
         for p in drawn {
@@ -682,6 +698,14 @@ struct GoalChart: View {
             }
             let text = ctx.resolve(Text(tick.text).font(font).foregroundColor(.secondary))
             ctx.draw(text, at: CGPoint(x: x, y: size.height - 1), anchor: anchor)
+        }
+    }
+
+    private func runningMax(_ points: [PhonePoint]) -> [PhonePoint] {
+        var best = -Double.greatestFiniteMagnitude
+        return points.map { p in
+            best = max(best, p.y)
+            return PhonePoint(d: p.d, y: (best * 10).rounded() / 10)
         }
     }
 
@@ -741,7 +765,7 @@ struct ProgressViewScreen: View {
             }
             HStack(alignment: .top, spacing: 8) {
                 trackStat("Start", row.start, row.unit)
-                trackStat("Nu", row.now, row.unit)
+                trackStat(row.unit.isEmpty ? "Beste tot nu" : "Nu", row.now, row.unit)
                 trackStat("Doel", row.target, row.unit)
             }
             if !row.note.isEmpty {
@@ -751,9 +775,20 @@ struct ProgressViewScreen: View {
                 GoalChart(line: line, points: row.points ?? [], unit: row.unit)
                     .frame(height: 168)
                 HStack(spacing: 14) {
-                    HStack(spacing: 4) {
-                        Circle().fill(Color(red: 1, green: 0.48, blue: 0.18)).frame(width: 7, height: 7)
-                        Text(row.name).font(.caption2).foregroundStyle(.secondary)
+                    if row.unit.isEmpty {
+                        HStack(spacing: 4) {
+                            Circle().fill(Color(red: 1, green: 0.48, blue: 0.18)).frame(width: 7, height: 7)
+                            Text("Krachtindex").font(.caption2).foregroundStyle(.secondary)
+                        }
+                        HStack(spacing: 4) {
+                            Capsule().fill(Color(red: 1, green: 0.48, blue: 0.18)).frame(width: 16, height: 2)
+                            Text("Beste tot nu").font(.caption2).foregroundStyle(.secondary)
+                        }
+                    } else {
+                        HStack(spacing: 4) {
+                            Circle().fill(Color(red: 1, green: 0.48, blue: 0.18)).frame(width: 7, height: 7)
+                            Text(row.name).font(.caption2).foregroundStyle(.secondary)
+                        }
                     }
                     HStack(spacing: 4) {
                         Capsule().stroke(Color.secondary, style: StrokeStyle(lineWidth: 1.5, dash: [3, 2]))
@@ -946,7 +981,7 @@ struct BodyView: View {
     private func chartCard(_ comp: PhoneComposition) -> some View {
         let m = chosen(comp)
         let visible = filtered(m.points, range: range)
-        let trend = showTrend ? filtered(trendLine(m.points), range: range) : []
+        let trend = showTrend ? trendLine(visible) : []
         let marks = showMarks ? comp.marks.filter { mark in visibleRange(mark.d, points: m.points, range: range) } : []
         let kinds = Set(marks.map(\.kind))
         return PhoneCard {
@@ -1025,19 +1060,18 @@ private func rangeStart(_ last: String, _ range: String) -> String? {
 }
 
 private func trendLine(_ points: [PhonePoint]) -> [PhonePoint] {
-    guard points.count > 2 else { return [] }
-    var start = 0
-    var sum = 0.0
-    return points.enumerated().map { i, p in
-        sum += p.y
-        let cut = PhoneDates.shift(p.d, days: -13) ?? p.d
-        while points[start].d < cut {
-            sum -= points[start].y
-            start += 1
-        }
-        let y = (sum / Double(i - start + 1) * 100).rounded() / 100
-        return PhonePoint(d: p.d, y: y)
-    }
+    guard points.count > 2, let t0 = PhoneDates.day(points[0].d) else { return [] }
+    let xs = points.map { (PhoneDates.day($0.d) ?? t0).timeIntervalSince(t0) / 86400 }
+    let ys = points.map(\.y)
+    let n = Double(xs.count)
+    let mx = xs.reduce(0, +) / n
+    let my = ys.reduce(0, +) / n
+    let den = xs.reduce(0) { $0 + ($1 - mx) * ($1 - mx) }
+    var num = 0.0
+    for i in xs.indices { num += (xs[i] - mx) * (ys[i] - my) }
+    let slope = den > 0 ? num / den : 0
+    func at(_ x: Double) -> Double { ((my + slope * (x - mx)) * 100).rounded() / 100 }
+    return [PhonePoint(d: points[0].d, y: at(xs[0])), PhonePoint(d: points[points.count - 1].d, y: at(xs[xs.count - 1]))]
 }
 
 private enum PhoneDates {
@@ -1151,7 +1185,7 @@ struct CompChart: View {
         } else {
             stroke(&ctx, series, xOf, yOf, orange, 2)
         }
-        if trend.count > 2 { stroke(&ctx, trend, xOf, yOf, Color(red: 0.62, green: 0.78, blue: 1), 1.5) }
+        if trend.count >= 2 { stroke(&ctx, trend, xOf, yOf, Color(red: 0.62, green: 0.78, blue: 1), 1.5) }
         let byKind = Dictionary(uniqueKeysWithValues: legend.map { ($0.kind, $0.color) })
         if !marks.isEmpty {
             for mark in marks {

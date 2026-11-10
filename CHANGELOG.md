@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.21.1 — 10 november 2026
+- In het trainingsoverzicht is het percentage de vermoeidheid. Dezelfde spiergroep staat op één regel in de drie kolommen, en de balk is oranje voor vermoeid en groen voor hersteld.
+
 ## 2.21.0 — 10 november 2026
 - Het trainingsoverzicht heeft een derde figuur: de vermoeidheid per spiergroep als je de geplande training nu doet, bovenop de huidige vermoeidheid.
 

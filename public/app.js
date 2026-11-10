@@ -649,6 +649,16 @@ function openSession(session) {
   const muscles = Object.entries(session.muscles || {}).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
   const fat = sessionFatigue(session);
   const after = sessionAfter(session, done);
+  const fatBy = new Map(fat.rows.map((r) => [r.k, r.pct]));
+  const afterBy = new Map(after.rows.map((r) => [r.k, r.pct]));
+  // pct is herstel (100 = uitgerust). De balk toont vermoeidheid in oranje en de rest in groen.
+  const splitBar = (k, rest) => {
+    const name = esc(MUSCLE_LABELS[k] || k);
+    if (rest == null) return `<div class="mbar static"><span>${name}</span><div class="ht split"></div><b>—</b></div>`;
+    const fresh = Math.round(Math.max(0, Math.min(100, rest)));
+    const tired = 100 - fresh;
+    return `<div class="mbar static"><span>${name}</span><div class="ht split"><div class="hf tired" style="width:${tired}%"></div><div class="hf fresh" style="width:${fresh}%"></div></div><b>${esc(t('rec.pct', { n: tired }))}</b></div>`;
+  };
   const figs = muscles.length ? `<div class="plan-figs">
       <div>
         <div class="eyebrow">${esc(t('ui.plan.intensity'))}</div>
@@ -661,13 +671,13 @@ function openSession(session) {
         <div class="eyebrow">${esc(t('ui.plan.fatigue'))}</div>
         ${bodyMap(fat.scores, { height: 220, title: t('ui.plan.fatigue'), figure: figureFor(state.settings || {}), scale: 'recovery' })}
         <p class="muted small">${esc(t('ui.plan.fatigueNote'))}</p>
-        <div class="mbars">${fat.rows.map((r) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[r.k] || r.k)}</span><div class="ht"><div class="hf" style="width:${r.pct == null ? 0 : r.pct}%;background:${r.pct == null ? 'transparent' : recoveryFill(r.pct)}"></div></div><b>${r.pct == null ? '—' : esc(t('rec.pct', { n: Math.round(r.pct) }))}</b></div>`).join('')}</div>
+        <div class="mbars">${muscles.map(([k]) => splitBar(k, fatBy.has(k) ? fatBy.get(k) : null)).join('')}</div>
       </div>
       <div>
         <div class="eyebrow">${esc(t('ui.plan.after'))}</div>
         ${bodyMap(after.scores, { height: 220, title: t('ui.plan.after'), figure: figureFor(state.settings || {}), scale: 'recovery' })}
         <p class="muted small">${esc(t(done ? 'ui.plan.afterDone' : 'ui.plan.afterNote'))}</p>
-        <div class="mbars">${after.rows.map((r) => `<div class="mbar static"><span>${esc(MUSCLE_LABELS[r.k] || r.k)}</span><div class="ht"><div class="hf" style="width:${r.pct == null ? 0 : r.pct}%;background:${r.pct == null ? 'transparent' : recoveryFill(r.pct)}"></div></div><b>${r.pct == null ? '—' : esc(t('rec.pct', { n: Math.round(r.pct) }))}</b></div>`).join('')}</div>
+        <div class="mbars">${muscles.map(([k]) => splitBar(k, afterBy.has(k) ? afterBy.get(k) : null)).join('')}</div>
       </div>
     </div>` : '';
   const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}` : `

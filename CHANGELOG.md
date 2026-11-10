@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.21.5 — 10 november 2026
+- In de tabel Per dag staat elke kolomkop boven de getallen, met dezelfde uitlijning.
+
 ## 2.21.4 — 10 november 2026
 - De krachtgrafiek zet elke training als stip en houdt het beste geschatte 1RM tot dan toe vast. De as dekt het hele doel. Trendlijnen lopen door alle punten van de grafiek.
 

@@ -517,6 +517,12 @@ button.linklike:hover { text-decoration: underline; }
 table.cmp td { padding: .25rem 0; border-bottom: 1px solid var(--line); }
 table.cmp tr:last-child td { border-bottom: 0; }
 table.cmp td.num { text-align: right; padding-left: .6rem; white-space: nowrap; }
+table.goal-days { table-layout: fixed; min-width: 760px; }
+table.goal-days th, table.goal-days td { padding: .4rem .7rem; vertical-align: baseline; }
+table.goal-days th:first-child, table.goal-days td:first-child { width: 26%; padding-left: 0; }
+table.goal-days th.num, table.goal-days td.num { width: 10%; text-align: right; padding-left: .7rem; padding-right: .7rem; white-space: nowrap; }
+table.goal-days th:nth-child(7), table.goal-days td:nth-child(7) { width: 14%; }
+table.goal-days th:last-child, table.goal-days td:last-child { padding-right: 0; }
 .big-num { font-size: 1.5rem; font-weight: 700; }
 .legend .lg { margin-right: 1rem; font-size: .82rem; color: var(--muted); }
 .sgchips { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .5rem; }

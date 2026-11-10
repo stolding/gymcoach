@@ -2464,10 +2464,10 @@ function renderGoalTable() {
   const more = days.length > 14 ? `<button type="button" class="btn small ghost" data-goal-more="1">${esc(goalShowAll ? t('goal.showLess') : t('goal.showAll'))}</button>` : '';
   const fiber = [...days].reverse().find((d) => d.fiber != null);
   card.innerHTML = `<div class="row between wrap gap"><h2>${esc(t('goal.table'))}</h2>${more}</div>
-    <div style="overflow:auto"><table class="cmp"><thead><tr>
-      <th>${esc(t('goal.col.date'))}</th><th>${esc(t('goal.col.weight'))}</th><th>${esc(t('goal.col.muscle'))}</th>
-      <th>${esc(t('goal.col.intake'))}</th><th>${esc(t('goal.col.target'))}</th><th>${esc(t('goal.col.diff'))}</th>
-      <th>${esc(t('goal.col.protein'))}</th><th>${esc(t('goal.col.active'))}</th>
+    <div style="overflow:auto"><table class="cmp goal-days"><thead><tr>
+      <th>${esc(t('goal.col.date'))}</th><th class="num">${esc(t('goal.col.weight'))}</th><th class="num">${esc(t('goal.col.muscle'))}</th>
+      <th class="num">${esc(t('goal.col.intake'))}</th><th class="num">${esc(t('goal.col.target'))}</th><th class="num">${esc(t('goal.col.diff'))}</th>
+      <th class="num">${esc(t('goal.col.protein'))}</th><th class="num">${esc(t('goal.col.active'))}</th>
     </tr></thead><tbody>${rows}</tbody></table></div>` + (fiber ? `<p class="muted small">${esc(t('goal.fiber', { g: goalNum(fiber.fiber) }))}</p>` : '');
 }
 

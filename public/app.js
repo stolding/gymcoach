@@ -1891,6 +1891,7 @@ const BAND_COLORS = {
   ok: '#4cc26a', warn: '#e5b84b', bad: '#ff6b6b',
   ffmi1: '#8aa0c8', ffmi2: '#e5b84b', ffmi3: '#7dcea0', ffmi4: '#2f9e55', ffmi5: '#c77dff',
   vo2low: '#8aa0c8', vo2avg: '#e5b84b', vo2good: '#2f9e55',
+  pwvok: '#2f9e55', pwvmid: '#e5b84b', pwvhigh: '#ff6b6b',
 };
 // In welke band (ok/warn/bad) valt waarde v?
 const bandOf = (bands, v) => (bands && v != null ? bands.find((b) => v >= b.from && v < b.to)?.cls || null : null);
@@ -1926,6 +1927,21 @@ function markVo2Row(dlg) {
   const cut = vo2Cut(sx, age);
   dlg.querySelectorAll('[data-vo2-age]').forEach((tr) => tr.classList.toggle('on', !!cut && tr.dataset.vo2Age === String(cut.row)));
 }
+// Polsgolfsnelheid: tot de bovenkant van het leeftijdsgemiddelde is normaal of soepeler. Daarboven, tot en met de grens, is boven gemiddeld. Strikt boven de grens is verhoogde stijfheid.
+function pwvCut(age) {
+  if (!(age > 0)) return null;
+  const rows = [[6.5, 7.5], [7.0, 8.5], [7.8, 9.5], [8.8, 10.5], [10.3, 11.5], [12.0, 13.0]];
+  const idx = age < 30 ? 0 : age < 40 ? 1 : age < 50 ? 2 : age < 60 ? 3 : age < 70 ? 4 : 5;
+  const labels = ['< 30', '30–39', '40–49', '50–59', '60–69', '70+'];
+  const starts = [0, 30, 40, 50, 60, 70];
+  return { idx, label: labels[idx], row: starts[idx], avgTop: rows[idx][0], stiff: rows[idx][1] };
+}
+function markPwvRow(dlg) {
+  if (!dlg || !state?.settings) return;
+  const age = state.settings.birthYear ? new Date().getFullYear() - state.settings.birthYear : null;
+  const cut = pwvCut(age);
+  dlg.querySelectorAll('[data-pwv-age]').forEach((tr) => tr.classList.toggle('on', !!cut && tr.dataset.pwvAge === String(cut.row)));
+}
 function healthBands(metric) {
   const s = state.settings, age = s.birthYear ? new Date().getFullYear() - s.birthYear : null, h = heightM();
   // richtwaarden per man/vrouw; bij een ander geslacht de zelfgekozen tabel
@@ -1957,7 +1973,23 @@ function healthBands(metric) {
       return { bands, legend, lead: t(sex === 'm' ? 'ui.ffmi.men' : 'ui.ffmi.women') };
     }
     case 'restHr': return { bands: B([-Infinity, 75, 'ok'], [75, 90, 'warn'], [90, Infinity, 'bad']), note: t('app.richtwaardeOnder75Goed') };
-    case 'pwv': return { bands: B([-Infinity, 8, 'ok'], [8, 10, 'warn'], [10, Infinity, 'bad']), note: t('app.richtwaardeOnder8M') };
+    case 'pwv': {
+      const cut = pwvCut(age);
+      if (!cut) return { bands: null, note: t('app.vulJeGeboortejaarIn') };
+      const edge = 0.05;
+      const n = (v) => v.toLocaleString(localeOf(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+      const bands = [
+        { from: -Infinity, to: cut.avgTop + edge, cls: 'pwvok' },
+        { from: cut.avgTop + edge, to: cut.stiff + edge, cls: 'pwvmid' },
+        { from: cut.stiff + edge, to: Infinity, cls: 'pwvhigh' },
+      ];
+      const legend = [
+        { cls: 'pwvok', label: `≤ ${n(cut.avgTop)} ${t('ui.pwv.short.avg')}` },
+        { cls: 'pwvmid', label: `${n(cut.avgTop)}–${n(cut.stiff)} ${t('ui.pwv.short.mid')}` },
+        { cls: 'pwvhigh', label: `> ${n(cut.stiff)} ${t('ui.pwv.short.high')}` },
+      ];
+      return { bands, legend, lead: cut.label };
+    }
     case 'hrv': return { bands: null, note: t('sig.hrvNote') };
     case 'vo2max': {
       const cut = vo2Cut(sex, age);
@@ -2099,8 +2131,9 @@ function renderComposition() {
     const d = old && old !== cur ? Math.round((cur[k] - old[k]) * 10) / 10 : null;
     const cls = d == null || d === 0 || !good ? 'muted' : (d > 0) === (good === 'up') ? 'up' : 'down';
     const zc = BAND_COLORS[bandOf(healthBands(k)?.bands, cur[k])];
-    const hasInfo = k === 'ffmi' || k === 'vo2max';
-    const info = hasInfo ? `<button type="button" class="info-i" data-metric-info="${k}" aria-label="${esc(t(k === 'ffmi' ? 'ui.ffmi.info' : 'ui.vo2.info'))}"><span aria-hidden="true">i</span></button>` : '';
+    const hasInfo = k === 'ffmi' || k === 'vo2max' || k === 'pwv';
+    const infoLabel = k === 'ffmi' ? t('ui.ffmi.info') : k === 'vo2max' ? t('ui.vo2.info') : t('ui.pwv.info');
+    const info = hasInfo ? `<button type="button" class="info-i" data-metric-info="${k}" aria-label="${esc(infoLabel)}"><span aria-hidden="true">i</span></button>` : '';
     const open = hasInfo ? '<div' : '<button';
     const close = hasInfo ? '</div>' : '</button>';
     const role = hasInfo ? ' role="button" tabindex="0"' : '';
@@ -2161,8 +2194,9 @@ function renderComposition() {
     ev.stopPropagation();
     const key = btn.dataset.metricInfo;
     if (compMetric !== key) { compMetric = key; renderComposition(); }
-    const dlg = $('#' + (key === 'vo2max' ? 'vo2Dlg' : 'ffmiDlg'));
+    const dlg = $('#' + ({ ffmi: 'ffmiDlg', vo2max: 'vo2Dlg', pwv: 'pwvDlg' }[key] || 'ffmiDlg'));
     if (key === 'vo2max') markVo2Row(dlg);
+    if (key === 'pwv') markPwvRow(dlg);
     if (dlg && !dlg.open) dlg.showModal();
   }));
   renderSegments();

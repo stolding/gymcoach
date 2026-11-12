@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.24.0 — 12 november 2026
+- De grafiek van de polsgolfsnelheid gebruikt grenzen per leeftijd. Op de tegel staat een info-icoon met wat de waarde betekent, hoe ze wordt gemeten en hoe je haar kunt verlagen.
+
 ## 2.23.0 — 12 november 2026
 - De VO2max-grafiek gebruikt grenzen per leeftijd en geslacht. Op de tegel staat een info-icoon met de tabel en hoe je de VO2max kunt verbeteren.
 

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.27.3 — 12 november 2026
+- De volgorde in een training gebruikt de kabelpositie van Speediance. Oefeningen met de kabels op de bodemplaat blijven bij elkaar. Zonder die gegevens blijft de inschatting op de naam.
+
 ## 2.27.2 — 12 november 2026
 - Terugkijken naar een weekplan houdt oefening, gepland en gedaan in hun eigen kolom, ook als de gedane sets per set verschillen.
 

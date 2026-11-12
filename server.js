@@ -47,6 +47,7 @@ const LEGACY_SPEEDIANCE_CONFIG = process.env.SPEEDIANCE_CONFIG || path.join(home
 // ---------- helpers ----------
 
 const libraryMem = new Map(); // deviceType -> catalogus
+let cableTried = false; // één keer per proces de kabelposities ophalen, niet bij elke pagina
 // Het toesteltype van de gebruiker (Gym Monster-model) voor de catalogus.
 async function deviceType() {
   try { return Number(JSON.parse(await readFile(path.join(store.speedianceDir(store.currentUser()), 'config.json'), 'utf8')).device_type || 1); } catch { return 1; }
@@ -59,8 +60,24 @@ async function getLibrary() {
   if (libraryMem.has(dt)) return libraryMem.get(dt);
   const cached = await store.getLibraryCache(dt);
   const lib = cached || (dt === 1 ? JSON.parse(await readFile(path.join(ROOT, 'lib', 'library.snapshot.json'), 'utf8')) : []);
-  if (cached) libraryMem.set(dt, lib);
+  await ensureCableBases(lib, cached);
+  libraryMem.set(dt, lib);
   return lib;
+}
+// Zet op elke oefening of de kabels op de bodemplaat staan. Mislukt het, dan blijft de naamregel.
+async function ensureCableBases(lib, persist) {
+  if (cableTried || !lib?.length || lib.some((e) => typeof e.base === 'boolean')) return;
+  if (!(await cli.hasToken())) return;
+  cableTried = true;
+  try {
+    const bases = await speediance.cableBases(lib.map((e) => e.id));
+    if (!bases?.size) return;
+    for (const e of lib) if (bases.has(Number(e.id))) e.base = bases.get(Number(e.id));
+    if (persist) {
+      const dt = await deviceType();
+      await store.saveLibraryCache(lib, dt);
+    }
+  } catch (e) { console.warn(`cable positions: ${e.message}`); }
 }
 // Of de oefeningencatalogus geladen is en hoe oud hij is.
 async function libraryStatus() {
@@ -74,6 +91,8 @@ async function libraryStatus() {
 async function refreshLibrary() {
   const lib = await cli.library();
   if (!lib?.length) throw new Error(tr('srv.legeCatalogusOntvangen'));
+  cableTried = false;
+  await ensureCableBases(lib, false);
   const dt = await deviceType();
   await store.saveLibraryCache(lib, dt);
   libraryMem.set(dt, lib);
@@ -478,6 +497,11 @@ const routes = {
     let sorted = false;
     if (dryRun) {
       const before = (session.exercises || []).map((e) => e.id).join(',');
+      const libById = new Map((await getLibrary()).map((e) => [Number(e.id), e]));
+      for (const e of session.exercises) {
+        const b = libById.get(Number(e.id))?.base;
+        if (typeof b === 'boolean') e.base = b;
+      }
       session.exercises = engine.orderSessionExercises(session.exercises);
       sorted = before !== session.exercises.map((e) => e.id).join(',');
       if (sorted) {

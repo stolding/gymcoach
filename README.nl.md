@@ -56,7 +56,7 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Trainingsrapport** na elke training (in de app, als PDF en per mail): vergelijking met de laatste 4 keer, hartslag per set en over de hele training met zones, tijd onder spanning en rust. Een klik op een set toont het vermogen en de bewegingsuitslag per herhaling van Speediance, links en rechts apart, met het verval daarin. De herstelscore blijft de tijd per herhaling gebruiken.
 - **Training**: het logboek. Bovenaan het aantal trainingen, het volume en de minuten per week, en per oefening het geschatte 1RM.
 - **Terugkijken**: één periode voor de cijfers (spiergroepen, krachtindex, balans, spiermassa tegen volume, km en stappen) en de patronen (kalender, wanneer je traint, records, energie tegen gewicht, herstel).
-- **Lichaam** via Withings: gewicht, vet%, spiermassa, FFMI (vetvrije massa ten opzichte van lengte, met grenzen per geslacht), polsgolfsnelheid met grenzen per leeftijd, segmenten per arm/been/romp, vasculaire leeftijd, met richtwaarden.
+- **Lichaam** via Withings: gewicht, vet%, spiermassa, FFMI (vetvrije massa ten opzichte van lengte, met grenzen per geslacht), polsgolfsnelheid met grenzen per leeftijd, segmenten per arm/been/romp, vasculaire leeftijd, met richtwaarden. Daaruit, samen met de Apple Watch, volgt een gezondheidsscore van 1,0 tot 10,0 voor jouw geslacht en leeftijd. Die staat op Overzicht en op Lichaam.
 - **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal, plus HRV en de VO2max-schatting van de Apple Watch, met grenzen per leeftijd en geslacht.
 
 **Gebruik**

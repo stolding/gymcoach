@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.26.0 — 12 november 2026
+- Een gezondheidsscore van 1,0 tot 10,0, gecorrigeerd voor geslacht en leeftijd. De tegel staat op Overzicht naast Herstel en op Lichaam, met de historie. Dezelfde score gaat mee naar de AI-samenvatting.
+
+## 2.25.6 — 12 november 2026
+- In de trendtabel krijgen de delta en de pijl een groene, amber of rode achtergrond, dezelfde kleur als de beoordeling.
+
 ## 2.25.5 — 12 november 2026
 - GymCoach Sync 1.13 toont op Lichaam ook FFMI, polsgolfsnelheid, HRV en VO2max, met dezelfde grenzen als op de computer. Op Overzicht staat de laatst gemaakte gezondheidsstatus.
 

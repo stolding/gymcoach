@@ -22,6 +22,7 @@ import * as withings from './lib/withings.js';
 import * as speediance from './lib/speediance.js';
 import * as auth from './lib/auth.js';
 import * as health from './lib/health.js';
+import * as scores from './lib/scores.js';
 import * as mail from './lib/mail.js';
 import { workoutPdf, workoutMail } from './lib/summary.js';
 import { figureFor } from './public/bodymap.js';
@@ -346,6 +347,7 @@ const routes = {
       muscleRecovery: muscleRec.report(ctx.history, goal.todayISO()),
       week: engine.weekNumber(ctx.sessions),
       signals: await userSignals(ctx),
+      healthScore: await scores.present(180),
       // dagwaarden van de Apple Watch voor Lichaam (rusthartslag, HRV, VO2max), het laatste jaar
       healthDaily: (await store.getHealthDaily()).filter((d) => d.date >= new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10) && (d.restHr || d.hrv || d.vo2max))
         .map((d) => ({ date: d.date, restHr: d.restHr ?? undefined, hrv: d.hrv ?? undefined, vo2max: d.vo2max ?? undefined })),
@@ -514,7 +516,8 @@ const routes = {
     const ctx = await context();
     const [daily, activities, w] = await Promise.all([store.getHealthDaily(), store.getActivities(), store.getWithings()]);
     const heightM = ctx.settings.heightCm ? ctx.settings.heightCm / 100 : (w?.height || null);
-    const result = await ai.healthStatus({ settings: ctx.settings, bodyLog: ctx.bodyLog, workouts: ctx.workouts, daily, activities, heightM });
+    const gezondheidsscore = await scores.forPrompt();
+    const result = await ai.healthStatus({ settings: ctx.settings, bodyLog: ctx.bodyLog, workouts: ctx.workouts, daily, activities, heightM, gezondheidsscore });
     const meta = await store.getMeta();
     meta.healthStatus = result;
     await store.saveMeta(meta);
@@ -584,6 +587,7 @@ const routes = {
     // eerste keer voorkeuren vastgelegd door een nieuwe gebruiker: een eerder automatisch gemaakt plan vervalt
     if (next.prefsConfirmed && !cur.prefsConfirmed && !(await store.getWorkouts()).length) await store.savePlan(null);
     await store.saveSettings(next);
+    if (cur.sex !== next.sex || cur.birthDate !== next.birthDate || cur.heightCm !== next.heightCm) await scores.rebuild();
     // gedeelde instellingen: alleen beheerders
     if (isAdmin() && (incoming.ai || incoming.withings || incoming.smtp || incoming.autoSyncHours != null)) {
       const g = await store.getGlobal();
@@ -606,6 +610,15 @@ const routes = {
       scheduleAutoSync(ng);
     }
     return { settings: maskSettings(await store.getSettings()) };
+  },
+  'GET /api/health-score/latest': async () => {
+    const view = await scores.present(180);
+    return { status: view.status, ...(view.record || {}), delta4w: view.delta4w, trend: view.trend, since: view.since };
+  },
+  'GET /api/health-score/history': async (req, url) => {
+    const days = Math.min(3650, Math.max(1, Math.round(Number(url.searchParams.get('days')) || 180)));
+    const view = await scores.present(days);
+    return { points: view.history };
   },
   'GET /api/goal': async () => goalView(await context()),
   // iPhone, onderweg: overzicht, schema, voortgang, lichaam en doel in één klein antwoord. Alleen lezen.
@@ -842,12 +855,14 @@ const routes = {
     log.push({ date, kg: Math.round(+kg * 10) / 10, ...(fat != null ? { fat: Math.round(+fat * 10) / 10 } : {}), source: 'handmatig' });
     log.sort((a, b) => a.date.localeCompare(b.date));
     await store.saveBodyLog(log);
+    await scores.rebuild();
     return { bodyLog: log };
   },
   'DELETE /api/bodyweight': async (req, url) => {
     const date = url.searchParams.get('date');
     const log = (await store.getBodyLog()).filter((b) => b.date !== date);
     await store.saveBodyLog(log);
+    await scores.rebuild();
     return { bodyLog: log };
   },
   'GET /api/withings/status': async () => withings.status(),

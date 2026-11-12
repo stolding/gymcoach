@@ -1067,9 +1067,9 @@ function inlineMd(s) {
 // Kolomsoort in de trendtabel, in de taal van het antwoord.
 function healthCol(label) {
   const s = label.trim().toLowerCase();
-  if (/[\u0394\u2206]/.test(label) || /delta|verschil|änderung|aenderung|change|endring/.test(s)) return 'delta';
-  if (s.includes('trend')) return 'trend';
-  if (/beoordeel|assessment|rating|bewertung|vurdering/.test(s)) return 'judge';
+  if (/[\u0394\u2206\u03B4]/.test(label) || /delta|verschil|änderung|aenderung|change|endring/.test(s)) return 'delta';
+  if (s.includes('trend') || /pijl|richting|arrow/.test(s)) return 'trend';
+  if (/beoordel|oordeel|assessment|rating|bewertung|vurdering|duiding/.test(s)) return 'judge';
   return '';
 }
 // Goed, aandacht of neutraal, afgeleid van de beoordeling. Een pijl omhoog is niet vanzelf gunstig.
@@ -1099,13 +1099,25 @@ function renderHealthMd(src) {
       const head = cells(rows[0]);
       const kinds = head.map(healthCol);
       const judgeAt = kinds.indexOf('judge');
+      const toneOf = (raw) => {
+        if (judgeAt >= 0) return healthTone(raw[judgeAt] || '');
+        let tone = '';
+        for (const c of raw) {
+          const t = healthTone(c);
+          if (t === 'bad') return 'bad';
+          if (t === 'watch') tone = 'watch';
+          else if (t === 'good' && !tone) tone = 'good';
+        }
+        return tone;
+      };
       out.push('<div class="tablewrap"><table class="health-table"><thead><tr>' + head.map((c) => `<th>${inlineMd(c)}</th>`).join('') + '</tr></thead><tbody>'
         + rows.slice(2).map((r) => {
           const raw = cells(r);
-          const tone = judgeAt >= 0 ? healthTone(raw[judgeAt] || '') : '';
+          const tone = toneOf(raw);
           return '<tr>' + raw.map((c, n) => {
             const mark = tone && (kinds[n] === 'delta' || kinds[n] === 'trend' || kinds[n] === 'judge');
-            return `<td${mark ? ` class="ht-${tone}"` : ''}>${inlineMd(c)}</td>`;
+            const body = inlineMd(c).replace(/[↑⬇↓⬆→➡]/g, (ch) => `<span class="ht-arrow">${ch === '⬇' || ch === '↓' ? '↓' : ch === '⬆' || ch === '↑' ? '↑' : '→'}&#xFE0E;</span>`);
+            return `<td${mark ? ` class="ht-${tone}"` : ''}>${body}</td>`;
           }).join('') + '</tr>';
         }).join('')
         + '</tbody></table></div>');
@@ -1207,10 +1219,115 @@ function sigLine(s) {
     : t('sig.slow', { recent: s.recent, base: s.base });
   return `<li><span class="sig-dot ${lvl}"></span>${esc(txt)}</li>`;
 }
+const SCORE_ORDER = {
+  body: ['fat', 'visceral', 'ffmi', 'bmi', 'bonePct'],
+  heart: ['restHr', 'pwv', 'vascDelta'],
+  fitness: ['vo2max', 'hrv'],
+  other: ['nerve', 'metDelta', 'ecwTbw'],
+};
+const SCORE_UNIT = { fat: '%', visceral: '', ffmi: '', bmi: '', bonePct: '%', restHr: 'bpm', pwv: 'm/s', vascDelta: 'yr', vo2max: '', hrv: 'ms', nerve: 'µS', metDelta: 'yr', ecwTbw: '' };
+function scoreBand(n) {
+  if (n == null || !Number.isFinite(Number(n))) return '';
+  if (n >= 7) return 'good';
+  if (n >= 5.5) return 'mid';
+  return 'low';
+}
+function scoreNum(n) {
+  return fmtNum(n, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+function scoreWhen(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(localeOf(), { day: 'numeric', month: 'short' });
+}
+function scoreUnit(id) {
+  return SCORE_UNIT[id] === 'yr' ? t('score.unit.yr') : (SCORE_UNIT[id] || '');
+}
+function scoreMetricValue(id, v) {
+  if (v == null || !Number.isFinite(Number(v))) return '—';
+  const digits = id === 'ecwTbw' ? 3 : id === 'ffmi' || id === 'bmi' || id === 'pwv' || id === 'bonePct' ? 1 : 0;
+  const n = fmtNum(v, { minimumFractionDigits: id === 'ecwTbw' ? 3 : 0, maximumFractionDigits: digits === 0 && Math.abs(v) >= 10 ? 0 : Math.max(digits, 1) });
+  const unit = scoreUnit(id);
+  return unit ? `${n} ${unit}` : n;
+}
+function scoreHomeHtml() {
+  const view = state.healthScore;
+  if (!view) return '';
+  const rec = view.record;
+  if (view.status === 'nobirth') return `<div class="card sig-card score-card score-home"><div class="eyebrow">${t('score.title')}</div><p class="muted small">${t('score.noBirth')}</p></div>`;
+  if (view.status === 'under18') return `<div class="card sig-card score-card score-home"><div class="eyebrow">${t('score.title')}</div><p class="muted small">${t('score.under18')}</p></div>`;
+  if (!rec || view.status === 'empty') return `<div class="card sig-card score-card score-home"><div class="eyebrow">${t('score.title')}</div><p class="muted small">${t('score.empty')}</p></div>`;
+  const band = scoreBand(rec.total);
+  const delta = view.delta4w;
+  const dir = view.trend || 'flat';
+  const deltaTxt = delta == null ? '' : `<div class="score-delta ${dir}">${t('score.since', { d: (delta > 0 ? '+' : '') + scoreNum(delta), date: scoreWhen(view.since) })}</div>`;
+  const total = rec.total == null ? `<p class="muted small">${t('score.low')}</p>` : `<div class="score-num">${t('score.per10', { n: scoreNum(rec.total) })}</div>`;
+  const sparkLine = spark((view.history || []).map((p) => p.total), { w: 160, h: 36 });
+  return `<div class="card sig-card score-card score-home ${band ? 'band-' + band : ''}">
+    <div class="row between"><div class="eyebrow">${t('score.title')}</div><button type="button" class="btn ghost small" data-score-info aria-label="${esc(t('score.info'))}">i</button></div>
+    ${total}${deltaTxt}${sparkLine ? `<div>${sparkLine}</div>` : ''}
+    <p class="score-note muted small hidden">${t('score.info')}</p>
+    ${rec.normsApproximated ? `<div class="muted small">${t('score.approx')}</div>` : ''}
+    <a href="#body" data-score-history>${t('score.history')}</a>
+  </div>`;
+}
+function scoreDetailHtml() {
+  const view = state.healthScore;
+  const el = $('#scoreCard');
+  if (!el) return;
+  if (!view) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+  el.classList.remove('hidden');
+  const rec = view.record;
+  if (view.status === 'nobirth' || view.status === 'under18' || !rec || view.status === 'empty') {
+    el.className = 'card score-card';
+    el.innerHTML = `<div class="eyebrow">${t('score.title')}</div><p class="muted">${t(view.status === 'nobirth' ? 'score.noBirth' : view.status === 'under18' ? 'score.under18' : 'score.empty')}</p>`;
+    return;
+  }
+  const band = scoreBand(rec.total);
+  el.className = `card score-card ${band ? 'band-' + band : ''}`;
+  const delta = view.delta4w;
+  const dir = view.trend || 'flat';
+  const cats = ['body', 'heart', 'fitness', 'other'].map((id) => {
+    const n = rec.categories?.[id];
+    if (n == null) return '';
+    const b = scoreBand(n);
+    const metrics = (SCORE_ORDER[id] || []).filter((k) => rec.metrics?.[k]).map((k) => {
+      const m = rec.metrics[k];
+      const mb = scoreBand(m.score);
+      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted">${esc(scoreMetricValue(k, m.value))}</span><b>${scoreNum(m.score)}</b></div>`;
+    }).join('');
+    return `<div class="score-cat"><div class="row between"><span>${t('score.cat.' + id)}</span><b>${scoreNum(n)}</b></div><div class="score-bar"><i class="band-${b}" style="width:${Math.max(0, Math.min(100, n * 10))}%"></i></div>${metrics}</div>`;
+  }).join('');
+  el.innerHTML = `<div class="row between wrap gap"><div class="eyebrow">${t('score.title')}</div><button type="button" class="btn ghost small" data-score-info aria-label="${esc(t('score.info'))}">i</button></div>
+    ${rec.total == null ? `<p class="muted">${t('score.low')}</p>` : `<div class="score-num">${t('score.per10', { n: scoreNum(rec.total) })}</div>`}
+    ${delta == null ? '' : `<div class="score-delta ${dir}">${t('score.since', { d: (delta > 0 ? '+' : '') + scoreNum(delta), date: scoreWhen(view.since) })}</div>`}
+    ${spark((view.history || []).map((p) => p.total), { w: 280, h: 48 })}
+    <p class="score-note muted small hidden">${t('score.info')}</p>
+    ${rec.normsApproximated ? `<div class="muted small">${t('score.approx')}</div>` : ''}
+    <details id="scoreCats"><summary>${t('score.categories')}</summary><div class="score-cats">${cats}</div></details>`;
+}
+function bindScore(root) {
+  if (!root) return;
+  root.querySelector('[data-score-info]')?.addEventListener('click', () => root.querySelector('.score-note')?.classList.toggle('hidden'));
+  root.querySelector('[data-score-history]')?.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    document.querySelector('.tab[data-tab="body"]')?.click();
+    requestAnimationFrame(() => {
+      const card = $('#scoreCard');
+      card?.querySelector('#scoreCats')?.setAttribute('open', '');
+      card?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+}
+function renderHealthScore() {
+  scoreDetailHtml();
+  bindScore($('#scoreCard'));
+}
 function renderSignals() {
   const box = $('#sigBar'), sg = state.signals || {};
   const r = sg.recovery, w = sg.weightLoss;
-  if (state.setup?.needed || (!r && !w?.warn)) { box.classList.add('hidden'); return; }
+  const scoreHtml = state.setup?.needed ? '' : scoreHomeHtml();
+  if (state.setup?.needed || (!r && !w?.warn && !scoreHtml)) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden');
   // de eerstvolgende krachttraining (geen cardio buiten) die deze week nog niet gedaan is
   const ses = state.plan?.sessions || [];
@@ -1223,7 +1340,9 @@ function renderSignals() {
       <ul class="sig-list small">${r.signals.map(sigLine).join('')}</ul>
       <div class="small muted">${t('sig.' + r.state + 'Text')} <a href="#" data-explain="signalen">${t('sig.why')}</a></div></div>` : ''}
     ${w?.warn ? `<div class="card sig-card sig-watch"><div class="eyebrow">${t('sig.lossTitle')}</div>
-      <div class="small">${t('sig.lossText', { pct: fmtNum(w.pctWeek), kg: fmtNum(w.kgWeek), muscle: fmtNum(w.muscleKg28) })} <a href="#" data-explain="signalen">${t('sig.why')}</a></div></div>` : ''}`;
+      <div class="small">${t('sig.lossText', { pct: fmtNum(w.pctWeek), kg: fmtNum(w.kgWeek), muscle: fmtNum(w.muscleKg28) })} <a href="#" data-explain="signalen">${t('sig.why')}</a></div></div>` : ''}
+    ${scoreHtml}`;
+  bindScore(box);
   $('#sigLighter')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
     state.plan = (await api('POST', '/api/plan/lighter', { session: next.key })).plan;
     toast(t('sig.lightenedToast', { name: next.name })); renderSignals(); renderPlan();
@@ -2764,6 +2883,7 @@ $('#goalTableCard').addEventListener('click', (ev) => { if (!ev.target.closest('
 // Tabblad Lichaam.
 function renderBody() {
   renderWithings();
+  renderHealthScore();
   renderComposition();
   const log = state.bodyLog;
   $('#bwCount').textContent = `(${log.length})`;
@@ -2860,6 +2980,13 @@ $('#settingsForm').addEventListener('submit', async (ev) => {
     const changed = ['goal', 'daysPerWeek', 'minutesPerSession', 'experience', 'warmup', 'cooldown', 'pushMobility'].some((k) => before[k] !== state.settings[k]) || cs(before) !== cs(state.settings)
       || [...(before.noAccessories || [])].sort().join() !== [...(state.settings.noAccessories || [])].sort().join();
     if ((before.lang || '') !== (state.settings.lang || '')) { storeLang(state.settings.lang || ''); location.reload(); return; } // andere taal: alles opnieuw opbouwen
+    if (before.sex !== state.settings.sex || before.birthDate !== state.settings.birthDate || before.heightCm !== state.settings.heightCm) {
+      const latest = await api('GET', '/api/health-score/latest');
+      const history = await api('GET', '/api/health-score/history?days=180');
+      state.healthScore = { status: latest.status, record: latest.date ? latest : null, delta4w: latest.delta4w ?? null, trend: latest.trend ?? null, since: latest.since ?? null, history: history.points || [] };
+      renderSignals();
+      if ($('#tab-body').classList.contains('active')) renderHealthScore();
+    }
     if (figureFor(before) !== figureFor(state.settings)) { renderPlan(); if ($('#tab-home').classList.contains('active')) renderHome(); }
     if (state.setup?.needed) { await load(); toast(t('app.opgeslagen')); }
     else if (changed) { state.plan = (await api('POST', '/api/plan/generate')).plan; if (state.meta) state.meta.coach = null; renderCoach(null); renderPlan(); toast(t('app.opgeslagenNieuwPlanGemaakt')); }

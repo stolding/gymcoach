@@ -69,6 +69,11 @@ jobs:
         run: |
           test -n "$TEAM_ID" && test -n "$ASC_KEY_ID" && test -n "$ASC_ISSUER_ID" && test -n "$ASC_KEY_P8" || { echo "::error::Secrets ontbreken (APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8)"; exit 1; }
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/AuthKey.p8"
+      - name: Oude CI-certificaten intrekken
+        working-directory: ${{ github.workspace }}
+        env:
+          ASC_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+        run: python3 .github/scripts/revoke-ci-certs.py
       - name: Archief maken (ondertekend)
         run: |
           set +e

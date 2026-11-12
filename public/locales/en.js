@@ -660,6 +660,7 @@ export default {
   "score.empty": "No score yet. It appears after a weigh-in.",
   "score.history": "History",
   "score.categories": "Categories",
+  "score.window": "Average of the last two weigh-ins. Resting heart rate and HRV: seven days. Each reading counts equally. VO2max is the latest estimate.",
   "score.cat.body": "Body composition",
   "score.cat.heart": "Heart and vessels",
   "score.cat.fitness": "Fitness and recovery",

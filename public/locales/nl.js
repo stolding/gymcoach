@@ -645,6 +645,7 @@ export default {
   'score.empty': 'Nog geen score. Die verschijnt na een weging.',
   'score.history': 'Historie',
   'score.categories': 'Categorieën',
+  'score.window': 'Gemiddelde van de laatste twee wegingen. Hartslag en HRV: zeven dagen. Elke meting telt even zwaar. VO2max is de laatste schatting.',
   'score.cat.body': 'Lichaamssamenstelling',
   'score.cat.heart': 'Hart & vaten',
   'score.cat.fitness': 'Conditie & herstel',

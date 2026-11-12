@@ -538,8 +538,10 @@ button.linklike:hover { text-decoration: underline; }
 .ctile .info-i { position: absolute; top: .4rem; right: .4rem; z-index: 1; width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 700 .72rem/1.15rem Georgia, serif; padding: 0; cursor: pointer; }
 .ctile .info-i:hover { color: var(--ink); border-color: var(--muted); }
 .ctile:has(.info-i) .eyebrow { padding-right: 1.3rem; }
-#ffmiDlg, #vo2Dlg, #pwvDlg { width: min(460px, 94vw); max-height: min(680px, 92vh); overflow: auto; }
+#ffmiDlg, #vo2Dlg, #pwvDlg { width: min(460px, 94vw); max-height: min(680px, 92vh); overflow: auto; padding: 0; }
 #vo2Dlg, #pwvDlg { width: min(680px, 96vw); }
+.ffmi-head { position: sticky; top: 0; z-index: 2; background: var(--surface); padding: .9rem 1.05rem .7rem; border-bottom: 1px solid var(--line); }
+.ffmi-body { display: flex; flex-direction: column; gap: .4rem; padding: .85rem 1.05rem 1.05rem; }
 .vo2-wrap { overflow-x: auto; }
 .vo2-table, .pwv-table { width: 100%; border-collapse: collapse; font-size: .8rem; }
 .vo2-table th, .vo2-table td, .pwv-table th, .pwv-table td { text-align: left; padding: .32rem .4rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -547,7 +549,7 @@ button.linklike:hover { text-decoration: underline; }
 .vo2-table tr.on td, .pwv-table tr.on td { background: color-mix(in srgb, var(--accent) 16%, transparent); }
 .ffmi-info ul.tips { list-style: disc; padding-left: 1.15rem; display: block; }
 .ffmi-info ul.tips li { display: list-item; }
-.ffmi-info { display: flex; flex-direction: column; gap: .4rem; }
+.ffmi-info { display: flex; flex-direction: column; gap: 0; }
 .ffmi-info h2 { margin: 0; font-size: 1.2rem; }
 .ffmi-info h3 { margin: .45rem 0 0; font-size: .95rem; }
 .ffmi-info p { margin: 0; }
@@ -1019,6 +1021,7 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .score-delta.down { color: var(--warn); }
 .score-delta.flat { color: var(--muted); }
 .score-note { margin: .45rem 0 0; }
+.score-window { margin: .55rem 0 0; }
 .score-cats { display: grid; gap: .7rem; margin-top: .7rem; }
 .score-cat .row { align-items: baseline; }
 .score-bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: .25rem 0 .35rem; }

@@ -1305,7 +1305,7 @@ function scoreDetailHtml() {
     ${(view.history || []).some((p) => p.total != null) ? '<div class="chart score-line" data-score-chart></div>' : ''}
     <p class="score-note muted small hidden">${t('score.info')}</p>
     ${rec.normsApproximated ? `<div class="muted small">${t('score.approx')}</div>` : ''}
-    <details id="scoreCats"><summary>${t('score.categories')}</summary><div class="score-cats">${cats}</div></details>`;
+    <details id="scoreCats"><summary>${t('score.categories')}</summary><p class="score-window muted small">${t('score.window')}</p><div class="score-cats">${cats}</div></details>`;
 }
 function drawScoreChart(root) {
   const el = root?.querySelector('[data-score-chart]');

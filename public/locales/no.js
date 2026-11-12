@@ -660,6 +660,7 @@ export default {
   "score.empty": "Ingen skår ennå. Den kommer etter en veiing.",
   "score.history": "Historikk",
   "score.categories": "Kategorier",
+  "score.window": "Gjennomsnitt av de to siste veiingene. Hvilepuls og HRV: sju dager. Hver måling teller likt. VO2max er siste estimat.",
   "score.cat.body": "Kroppssammensetning",
   "score.cat.heart": "Hjerte og kar",
   "score.cat.fitness": "Kondisjon og restitusjon",

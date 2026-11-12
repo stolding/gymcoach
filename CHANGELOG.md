@@ -5,6 +5,15 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.26.7 — 12 november 2026
+- TestFlight trekt voor het archief de oude ontwikkelcertificaten van eerdere buildmachines in. Apple weigerde een nieuw certificaat omdat het maximum bereikt was.
+
+## 2.26.6 — 12 november 2026
+- In de uitleg van FFMI, VO2max en polsgolfsnelheid blijven de titel en de sluitknop staan als de tekst scrolt.
+
+## 2.26.5 — 12 november 2026
+- Bij de categorieën van de gezondheidsscore staat dat de getallen het gemiddelde zijn van de laatste twee wegingen, of van zeven dagen voor hartslag en HRV.
+
 ## 2.26.4 — 12 november 2026
 - VO2max in de gezondheidsscore houdt één decimaal, gelijk aan de tegel.
 

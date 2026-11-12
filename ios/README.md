@@ -34,6 +34,8 @@ Gebruik je eigen bundle-ID: pas `bundleIdPrefix` en `PRODUCT_BUNDLE_IDENTIFIER` 
    - `ASC_KEY_P8` – de volledige inhoud van het `.p8`-bestand
 5. Draai de workflow. Na 10–30 minuten verwerking staat de build in **TestFlight**; voeg jezelf toe als interne tester en installeer via de TestFlight-app.
 
+Elke buildmachine maakt een eigen ontwikkelcertificaat (`Created via API`) en gooit de sleutel daarna weg. Voor het archief trekt de workflow die oude certificaten in, anders weigert Apple een nieuw certificaat zodra het maximum bereikt is. Certificaten op je eigen Mac blijven staan.
+
 ## Gebruik
 
 1. Inloggen voor het scherm: adres (standaard `https://gymcoach.stolding.com`), gebruikersnaam en wachtwoord. Het wachtwoord wordt niet bewaard; de sessie wel.

@@ -660,6 +660,7 @@ export default {
   "score.empty": "Noch keine Punktzahl. Sie erscheint nach einer Messung.",
   "score.history": "Verlauf",
   "score.categories": "Kategorien",
+  "score.window": "Mittel der letzten zwei Wägungen. Ruhepuls und HRV: sieben Tage. Jede Messung zählt gleich. VO2max ist die letzte Schätzung.",
   "score.cat.body": "Körperzusammensetzung",
   "score.cat.heart": "Herz und Gefäße",
   "score.cat.fitness": "Kondition und Erholung",

@@ -1813,6 +1813,7 @@ export default {
   "rec.rested": "Erholt",
   "rec.chart": "Prozent erholt",
   "rec.pick": "Muskelgruppe",
+  "rec.all": "Alle Gruppen",
   "rec.pct": "{n} %",
   "rec.tip": "{name}: {n} %, Prozent erholt",
   "upd.check": "Nach Updates suchen",

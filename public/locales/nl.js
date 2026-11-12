@@ -1814,6 +1814,7 @@ export default {
   "rec.rested": "Uitgerust",
   "rec.chart": "percentage hersteld",
   "rec.pick": "Spiergroep",
+  "rec.all": "Alle groepen",
   "rec.pct": "{n}%",
   "rec.tip": "{name}: {n}%, percentage hersteld",
   "upd.check": "Controleren op updates",

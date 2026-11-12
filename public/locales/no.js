@@ -1813,6 +1813,7 @@ export default {
   "rec.rested": "Uthvilt",
   "rec.chart": "prosent uthvilt",
   "rec.pick": "Muskelgruppe",
+  "rec.all": "Alle grupper",
   "rec.pct": "{n} %",
   "rec.tip": "{name}: {n} %, prosent uthvilt",
   "upd.check": "Se etter oppdateringer",

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.26.3 — 12 november 2026
+- Spierherstel opent op alle groepen. Een spiergroep kies je daarna zelf.
+
 ## 2.26.2 — 12 november 2026
 - Polsgolfsnelheid en vasculaire leeftijd in de gezondheidsscore gebruiken de laatste echte meting. Een nulmeting telt niet meer mee.
 

@@ -1357,7 +1357,8 @@ function renderSignals() {
     toast(t('sig.lightenedToast', { name: next.name })); renderSignals(); renderPlan();
   }));
 }
-let recKey = null;
+let recKey = 'all';
+const REC_COLOR = { pecs: '#ff7a2e', lats: '#6c9cff', rearDelts: '#c084fc', sideDelts: '#f0c14a', frontDelts: '#ff9f6b', traps: '#5ec8c5', triceps: '#e85d75', biceps: '#7dcea0', forearms: '#d4a574', abs: '#f4d35e', glutes: '#ff6b6b', quads: '#4cc26a', hamstrings: '#9b8cff', calves: '#7eb6ff', adductors: '#e08ad3', lowerBack: '#c9a227' };
 let recTip = null;
 let recTipTouch = false;
 function renderMuscleRecovery() {
@@ -1372,23 +1373,29 @@ function renderMuscleRecovery() {
     recTip = null; recTipTouch = false;
     return;
   }
-  if (!muscles.some((m) => m.key === recKey)) recKey = muscles[0].key;
+  if (recKey !== 'all' && !muscles.some((m) => m.key === recKey)) recKey = 'all';
   const known = new Map(muscles.map((m) => [m.key, m]));
   if (recTip && !known.has(recTip)) { recTip = null; recTipTouch = false; }
   const nameOf = (m) => MUSCLE_LABELS[m.key] || m.name || m.key;
   const recovery = Object.fromEntries(muscles.map((m) => [m.key, m.pct]));
-  const chips = muscles.map((m) => `<button type="button" data-rec="${esc(m.key)}" class="${m.key === recKey ? 'on' : ''}">${esc(nameOf(m))}</button>`).join('');
+  const chips = `<button type="button" data-rec="all" class="${recKey === 'all' ? 'on' : ''}">${esc(t('rec.all'))}</button>` + muscles.map((m) => `<button type="button" data-rec="${esc(m.key)}" class="${m.key === recKey ? 'on' : ''}">${esc(nameOf(m))}</button>`).join('');
+  const allLegend = recKey === 'all' ? `<div class="legend">${muscles.map((m) => `<span class="lg"><i style="background:${REC_COLOR[m.key] || 'var(--a)'}"></i>${esc(nameOf(m))}</span>`).join('')}</div>` : '';
   el.innerHTML = `<div class="eyebrow">${esc(t('rec.title'))}</div><p class="muted small" style="margin-top:0">${esc(t('rec.note'))}</p>
     <div class="rec-grid">
-      <div class="rec-fig">${bodyMap(recovery, { height: 260, title: t('rec.title'), selected: recKey, figure: figureFor(state.settings || {}), scale: 'recovery' })}
+      <div class="rec-fig">${bodyMap(recovery, { height: 260, title: t('rec.title'), selected: recKey === 'all' ? null : recKey, figure: figureFor(state.settings || {}), scale: 'recovery' })}
         <p class="muted small">${esc(t('rec.legend'))}</p></div>
-      <div><div class="chips sgchips" role="group" aria-label="${esc(t('rec.pick'))}">${chips}</div><p class="muted small rec-axis">${esc(t('rec.chart'))}</p><div id="recChart" class="chart tall"></div></div>
+      <div><div class="chips sgchips" role="group" aria-label="${esc(t('rec.pick'))}">${chips}</div><p class="muted small rec-axis">${esc(t('rec.chart'))}</p><div id="recChart" class="chart tall"></div>${allLegend}</div>
     </div>
     <div class="rec-tip hidden" role="tooltip"></div>`;
-  const chosen = muscles.find((m) => m.key === recKey) || muscles[0];
-  const ser = (rec.series || []).find((s) => s.key === chosen.key);
   const host = el.querySelector('#recChart');
-  if (host && ser?.points?.length) lineChart(host, [{ label: nameOf(chosen), unit: '%', points: ser.points.map((p) => ({ x: p.d, y: p.y })) }], { yLabel: t('rec.chart'), yUnit: '%' });
+  const seriesOf = (list) => list.map((m) => {
+    const ser = (rec.series || []).find((s) => s.key === m.key);
+    if (!ser?.points?.length) return null;
+    const one = list.length === 1;
+    return { label: nameOf(m), unit: '%', cls: 'la', color: one ? '' : (REC_COLOR[m.key] || '#ff7a2e'), noDots: !one, points: ser.points.map((p) => ({ x: p.d, y: p.y })) };
+  }).filter(Boolean);
+  const drawn = seriesOf(recKey === 'all' ? muscles : muscles.filter((m) => m.key === recKey));
+  if (host && drawn.length) lineChart(host, drawn, { yLabel: t('rec.chart'), yUnit: '%' });
   else if (host) host.innerHTML = '<div class="empty">' + t('rec.empty') + '</div>';
   const tip = el.querySelector('.rec-tip');
   const muscleKey = (node) => {
@@ -1462,7 +1469,7 @@ function renderMuscleRecovery() {
   el.onclick = (ev) => {
     const chip = ev.target.closest('[data-rec]');
     const key = chip?.dataset.rec || muscleKey(ev.target);
-    if (!key || !known.has(key) || key === recKey) return;
+    if (!key || key === recKey || (key !== 'all' && !known.has(key))) return;
     recKey = key;
     renderMuscleRecovery();
   };

@@ -1813,6 +1813,7 @@ export default {
   "rec.rested": "Rested",
   "rec.chart": "percentage recovered",
   "rec.pick": "Muscle group",
+  "rec.all": "All groups",
   "rec.pct": "{n}%",
   "rec.tip": "{name}: {n}%, percentage recovered",
   "upd.check": "Check for updates",

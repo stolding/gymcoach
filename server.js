@@ -14,6 +14,7 @@ const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'e
 import * as insights from './lib/insights.js';
 import * as signals from './lib/signals.js';
 import * as muscleRec from './lib/muscleRecovery.js';
+import * as weekbalance from './lib/weekbalance.js';
 import * as goal from './lib/goal.js';
 import * as phone from './lib/phone.js';
 import { TERMS_VERSION } from './public/terms.js';
@@ -290,6 +291,8 @@ async function generatePlan(prefs) {
     if (i >= 0) plan.sessions[i] = kept; else plan.sessions.push(kept);
   }
   engine.placeStrengthLift(plan, { settings: ctx.settings, library: ctx.library, history: ctx.history });
+  if (ctx.settings.weekBalance === 'off') weekbalance.clearWeekBalance(plan);
+  else weekbalance.applyWeekBalance(plan, { history: ctx.history });
   refreshMuscles(plan);
   await store.savePlan(plan);
   // advies van de AI-coach hoorde bij het vorige plan
@@ -459,6 +462,10 @@ const routes = {
       for (const c of s.cooldown || []) c.dose = engine.cooldownDose(c);
     }
     refreshMuscles(plan);
+    if (plan.weekBalance) {
+      const ctx = await context();
+      weekbalance.refreshGrid(plan, { history: ctx.history });
+    }
     await store.savePlan(plan);
     return { plan };
   },
@@ -567,7 +574,7 @@ const routes = {
     next.daysPerWeek = Math.min(5, Math.max(2, Math.round(+next.daysPerWeek)));
     next.minutesPerSession = Math.min(120, Math.max(20, Math.round(+next.minutesPerSession)));
     if (!engine.GOALS.includes(next.goal)) next.goal = 'combinatie';
-    for (const k of ['warmup', 'cooldown', 'pushMobility']) if (!['on', 'off'].includes(next[k])) next[k] = cur[k];
+    for (const k of ['warmup', 'cooldown', 'pushMobility', 'weekBalance']) if (!['on', 'off'].includes(next[k])) next[k] = cur[k] === 'off' ? 'off' : 'on';
     next.withings = { segmentNames: cur.withings.segmentNames };
     next.heightCm = next.heightCm === '' || next.heightCm == null ? null : Math.round(+next.heightCm);
     if (!['', 'm', 'v', 'x', 'o'].includes(next.sex)) next.sex = cur.sex || '';

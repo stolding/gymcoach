@@ -113,7 +113,42 @@ struct PhoneSession: Codable, Identifiable {
     var onDevice: Bool
     var superset: Bool
     var exercises: [PhoneExercise]
+    var shifts: [String] = []
     var id: String { key }
+
+    enum CodingKeys: String, CodingKey {
+        case key, name, minutes, outdoor, advice, done, doneDate, onDevice, superset, exercises, shifts
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        key = try c.decode(String.self, forKey: .key)
+        name = try c.decode(String.self, forKey: .name)
+        minutes = try c.decodeIfPresent(Int.self, forKey: .minutes)
+        outdoor = try c.decode(Bool.self, forKey: .outdoor)
+        advice = try c.decode(String.self, forKey: .advice)
+        done = try c.decode(Bool.self, forKey: .done)
+        doneDate = try c.decode(String.self, forKey: .doneDate)
+        onDevice = try c.decode(Bool.self, forKey: .onDevice)
+        superset = try c.decode(Bool.self, forKey: .superset)
+        exercises = try c.decode([PhoneExercise].self, forKey: .exercises)
+        shifts = try c.decodeIfPresent([String].self, forKey: .shifts) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(key, forKey: .key)
+        try c.encode(name, forKey: .name)
+        try c.encodeIfPresent(minutes, forKey: .minutes)
+        try c.encode(outdoor, forKey: .outdoor)
+        try c.encode(advice, forKey: .advice)
+        try c.encode(done, forKey: .done)
+        try c.encode(doneDate, forKey: .doneDate)
+        try c.encode(onDevice, forKey: .onDevice)
+        try c.encode(superset, forKey: .superset)
+        try c.encode(exercises, forKey: .exercises)
+        try c.encode(shifts, forKey: .shifts)
+    }
 }
 
 struct PhoneExercise: Codable {
@@ -206,6 +241,22 @@ struct PhoneLegend: Codable, Identifiable {
     var id: String { kind }
 }
 
+struct PhoneBalanceCell: Codable {
+    var pct: Int
+    var role: String
+}
+
+struct PhoneBalanceRow: Codable, Identifiable {
+    var name: String
+    var cells: [PhoneBalanceCell]
+    var id: String { name }
+}
+
+struct PhoneBalance: Codable {
+    var days: [String]
+    var rows: [PhoneBalanceRow]
+}
+
 struct PhoneWeekPlan: Codable {
     var week: Int
     var goal: String
@@ -219,6 +270,45 @@ struct PhoneWeekPlan: Codable {
     var heavier: Int
     var scores: [PhoneScore]
     var muscles: [PhoneMuscle]
+    var balance: PhoneBalance?
+
+    enum CodingKeys: String, CodingKey {
+        case week, goal, focus, figure, sessions, avgMinutes, sets, exercises, volume, heavier, scores, muscles, balance
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        week = try c.decode(Int.self, forKey: .week)
+        goal = try c.decode(String.self, forKey: .goal)
+        focus = try c.decode([String].self, forKey: .focus)
+        figure = try c.decode(String.self, forKey: .figure)
+        sessions = try c.decode(Int.self, forKey: .sessions)
+        avgMinutes = try c.decode(Int.self, forKey: .avgMinutes)
+        sets = try c.decode(Int.self, forKey: .sets)
+        exercises = try c.decode(Int.self, forKey: .exercises)
+        volume = try c.decode(Int.self, forKey: .volume)
+        heavier = try c.decode(Int.self, forKey: .heavier)
+        scores = try c.decode([PhoneScore].self, forKey: .scores)
+        muscles = try c.decode([PhoneMuscle].self, forKey: .muscles)
+        balance = try c.decodeIfPresent(PhoneBalance.self, forKey: .balance)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(week, forKey: .week)
+        try c.encode(goal, forKey: .goal)
+        try c.encode(focus, forKey: .focus)
+        try c.encode(figure, forKey: .figure)
+        try c.encode(sessions, forKey: .sessions)
+        try c.encode(avgMinutes, forKey: .avgMinutes)
+        try c.encode(sets, forKey: .sets)
+        try c.encode(exercises, forKey: .exercises)
+        try c.encode(volume, forKey: .volume)
+        try c.encode(heavier, forKey: .heavier)
+        try c.encode(scores, forKey: .scores)
+        try c.encode(muscles, forKey: .muscles)
+        try c.encodeIfPresent(balance, forKey: .balance)
+    }
 }
 
 struct PhoneScore: Codable, Identifiable {

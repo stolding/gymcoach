@@ -435,6 +435,7 @@ function renderPlan() {
     <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
       <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div></header>
+      ${(s.shifts || []).map((sh) => `<p class="small shift">${esc(t('plan.shift', { title: sh.title, from: sh.from, muscle: t('bm.' + sh.muscle), pct: sh.pct }))}</p>`).join('')}
       ${s.warmup && (s.warmup.mobility.length + s.warmup.cable.length) ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: s.warmup.mobility.length + s.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
       ${s.exercises.map((e, i) => `
         <button class="row-item${exDone(s, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
@@ -509,9 +510,25 @@ function renderWeekMap() {
       <div class="eyebrow" style="margin-top:.8rem">${t('app.setsPerSpiergroepIncl')}</div>
       <div class="mbars">${top.map(([k, v]) => `<button class="mbar ${selMuscle === k ? 'on' : selMuscle ? 'off' : ''}" data-m="${k}" aria-pressed="${selMuscle === k}"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / top[0][1]) * 100}%"></div></div><b>${Math.round(v * 10) / 10}</b></button>`).join('')}</div>
       ${detail}
+      ${balanceHtml(plan)}
       <div class="legend"><span class="sq m1"></span>${t('app.licht')} <span class="sq m2"></span>${t('app.gemiddeld')} <span class="sq m3"></span>${t('app.veel')}</div>
     </div></div>`;
   highlightSessions();
+}
+
+// Herstel aan het begin van elke training. Alleen aanwezig als de week als één plan is gemaakt.
+function balanceHtml(plan) {
+  const b = plan.balance;
+  if (!b?.rows?.length || !b.days?.length) return '';
+  const head = b.days.map((d) => `<th>${esc(d.name)}</th>`).join('');
+  const body = b.rows.map((row) => `<tr><th>${esc(t('bm.' + row.key))}</th>${row.cells.map((c, i) => {
+    const band = c.pct >= (b.fresh || 90) ? 'hi' : c.pct >= 70 ? 'mid' : 'lo';
+    const dot = c.role ? `<i class="wb-dot ${c.role === 'prime' ? 'prime' : ''}"></i>` : '';
+    const day = b.days[i];
+    const jump = c.role != null && day ? ` data-jump="${esc(day.key)}|${c.i}"` : '';
+    return `<td><button type="button" class="wb-cell ${band}"${jump}>${dot}<span>${c.pct}</span></button></td>`;
+  }).join('')}</tr>`).join('');
+  return `<div class="wb"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-scroll"><table><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table></div><p class="muted small">${t('plan.balanceHint')}</p></div>`;
 }
 
 // gekozen spiergroep ook in de trainingskaarten uitlichten (primair sterk, secundair licht, rest gedimd)

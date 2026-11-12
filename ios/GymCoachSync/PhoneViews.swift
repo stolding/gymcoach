@@ -114,6 +114,9 @@ struct SessionCard: View {
                 }
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                ForEach(Array(session.shifts.enumerated()), id: \.offset) { _, line in
+                    Text(line).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
             }
             Spacer(minLength: 8)
             if chevron {
@@ -478,6 +481,9 @@ struct DashboardView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .top)
                 }
+                if let grid = plan.balance, !grid.rows.isEmpty {
+                    WeekBalanceStrip(grid: grid)
+                }
                 ForEach(Array(plan.muscles.enumerated()), id: \.offset) { _, m in
                     HStack(spacing: 8) {
                         Text(m.name).font(.caption).lineLimit(1).minimumScaleFactor(0.75).frame(width: 118, alignment: .leading)
@@ -559,6 +565,49 @@ struct ChipFlow: Layout {
             x += size.width + spacing
         }
         return lines.filter { !$0.isEmpty }
+    }
+}
+
+struct WeekBalanceStrip: View {
+    var grid: PhoneBalance
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Herstel aan het begin van elke training")
+                .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            ScrollView(.horizontal, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Color.clear.frame(width: 88, height: 1)
+                        ForEach(Array(grid.days.enumerated()), id: \.offset) { _, name in
+                            Text(name).font(.caption2).lineLimit(2).minimumScaleFactor(0.7)
+                                .frame(width: 52, alignment: .center)
+                        }
+                    }
+                    ForEach(grid.rows) { row in
+                        HStack(spacing: 6) {
+                            Text(row.name).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
+                                .frame(width: 88, alignment: .leading)
+                            ForEach(Array(row.cells.enumerated()), id: \.offset) { _, cell in
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .fill(BodyShapes.recoveryFill(Double(cell.pct)).opacity(0.45))
+                                    VStack(spacing: 1) {
+                                        if cell.role == "prime" {
+                                            Circle().fill(Color.primary).frame(width: 5, height: 5)
+                                        } else if cell.role == "secondary" {
+                                            Circle().stroke(Color.primary, lineWidth: 1.2).frame(width: 5, height: 5)
+                                        }
+                                        Text("\(cell.pct)").font(.caption2.monospacedDigit())
+                                    }
+                                }
+                                .frame(width: 52, height: 32)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

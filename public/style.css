@@ -269,6 +269,19 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
 .wish { font-style: italic; margin-top: .5rem; color: var(--ink); }
 .mbars { display: flex; flex-direction: column; gap: .3rem; margin-top: .35rem; }
+.wb { margin-top: 1rem; }
+.wb-scroll { overflow-x: auto; }
+.wb table { border-collapse: separate; border-spacing: .35rem .3rem; width: 100%; }
+.wb th { font-weight: 500; font-size: .8rem; text-align: center; }
+.wb th:first-child, .wb td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+.wb-cell { display: flex; flex-direction: column; align-items: center; gap: .15rem; min-width: 2.6rem; padding: .28rem .2rem; border: 0; border-radius: 8px; color: inherit; font: inherit; cursor: default; }
+.wb-cell[data-jump] { cursor: pointer; }
+.wb-cell.hi { background: color-mix(in srgb, var(--ok) 32%, transparent); }
+.wb-cell.mid { background: color-mix(in srgb, #e5b84b 38%, transparent); }
+.wb-cell.lo { background: color-mix(in srgb, var(--warn) 38%, transparent); }
+.wb-dot { width: .5rem; height: .5rem; border-radius: 50%; border: 2px solid currentColor; }
+.wb-dot.prime { background: currentColor; }
+.shift { margin: .15rem 0 .35rem; }
 .mbar { display: grid; grid-template-columns: 160px 1fr 38px; gap: .5rem; align-items: center; font-size: .82rem; }
 .mbar b { text-align: right; font-variant-numeric: tabular-nums; }
 .mbar .ht { height: 10px; }

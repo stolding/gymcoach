@@ -60,7 +60,7 @@ export default [
       <dt>Tijd onder spanning en rust</dt><dd>Uit de tijden die de Gym Monster per herhaling en per pauze opslaat.</dd>
       <dt>Hartslag</dt><dd>Per set van de Gym Monster (met hartslagband); het verloop over de hele training, ook in de rust, komt van Apple Health (Apple Watch). Zones: 50–60% van je maximum herstel, 60–70% basis, 70–80% aeroob, 80–90% drempel, 90%+ maximaal.</dd>
       <dt>Herstel</dt><dd>Je hartslag in rust van de laatste 7 dagen tegenover de 4 weken daarvoor. 3 slagen hoger: let op; 5 of meer: waarschijnlijk niet hersteld of je wordt ziek.</dd>
-      <dt>Lichaam</dt><dd>BMI volgens de WHO. Vetpercentage tegen de tabellen van Gallagher e.a. (2000), naar leeftijd en geslacht. FFMI (vetvrije massa ÷ lengte²): vanaf 17 (mannen) of 14 (vrouwen) goed. Spiermassa en vet komen van de Withings-weegschaal.</dd>
+      <dt>Lichaam</dt><dd>BMI volgens de WHO. Vetpercentage tegen de tabellen van Gallagher e.a. (2000), naar leeftijd en geslacht. FFMI (vetvrije massa ÷ lengte²), met grenzen per geslacht van weinig spiermassa tot uitzonderlijk veel. Spiermassa en vet komen van de Withings-weegschaal.</dd>
       <dt>Energie en stappen</dt><dd>Actieve energie uit Apple Health (wat je verbrandt bovenop je rustverbruik); zonder Apple Health de calorieën van je trainingen. Stappendoel standaard 8.000 per dag.</dd>
     </dl>
     <p class="muted small">Alle waarden zijn schattingen voor je eigen voortgang, geen medische metingen.</p>`,

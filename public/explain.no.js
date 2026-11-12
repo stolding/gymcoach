@@ -60,7 +60,7 @@ export default [
       <dt>Tid under spenning og pause</dt><dd>Fra tidene Gym Monster lagrer per repetisjon og per pause.</dd>
       <dt>Puls</dt><dd>Per sett fra Gym Monster (med pulsbånd); forløpet over hele treningsøkten, også i pausene, kommer fra Apple Health (Apple Watch). Soner: 50–60% av makspulsen din restitusjon, 60–70% basis, 70–80% aerob, 80–90% terskel, 90%+ maksimal.</dd>
       <dt>Restitusjon</dt><dd>Hvilepulsen din de siste 7 dagene sammenlignet med de 4 ukene før. 3 slag høyere: pass på; 5 eller mer: sannsynligvis ikke restituert, eller du er i ferd med å bli syk.</dd>
-      <dt>Kropp</dt><dd>BMI ifølge WHO. Kroppsfett mot tabellene til Gallagher et al. (2000), etter alder og kjønn. FFMI (fettfri masse ÷ høyde²): bra fra 17 (menn) eller 14 (kvinner). Muskelmasse og fett kommer fra Withings-vekten.</dd>
+      <dt>Kropp</dt><dd>BMI ifølge WHO. Kroppsfett mot tabellene til Gallagher et al. (2000), etter alder og kjønn. FFMI (fettfri masse ÷ høyde²), med grenser etter kjønn fra lite muskelmasse til usedvanlig mye. Muskelmasse og fett kommer fra Withings-vekten.</dd>
       <dt>Energi og skritt</dt><dd>Aktiv energi fra Apple Health (det du forbrenner oppå hvileforbrenningen); uten Apple Health kaloriene fra treningsøktene dine. Skrittmål 8 000 per dag som standard.</dd>
     </dl>
     <p class="muted small">Alle verdier er anslag for din egen fremgang, ikke medisinske målinger.</p>`,

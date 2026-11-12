@@ -502,10 +502,35 @@ button.linklike:hover { text-decoration: underline; }
 .chart .band.ok { fill: #4cc26a; opacity: .07; }
 .chart .band.warn { fill: #e5b84b; opacity: .07; }
 .chart .band.bad { fill: #ff6b6b; opacity: .07; }
+.chart .band.ffmi1 { fill: #8aa0c8; opacity: .18; }
+.chart .band.ffmi2 { fill: #e5b84b; opacity: .18; }
+.chart .band.ffmi3 { fill: #7dcea0; opacity: .18; }
+.chart .band.ffmi4 { fill: #2f9e55; opacity: .18; }
+.chart .band.ffmi5 { fill: #c77dff; opacity: .18; }
 :root[data-theme="light"] .chart .band { opacity: .1; }
+:root[data-theme="light"] .chart .band.ffmi1,
+:root[data-theme="light"] .chart .band.ffmi2,
+:root[data-theme="light"] .chart .band.ffmi3,
+:root[data-theme="light"] .chart .band.ffmi4,
+:root[data-theme="light"] .chart .band.ffmi5 { opacity: .24; }
 .band-note { margin-top: .3rem; display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
 .band-note .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; opacity: .55; }
 .band-note .sw.ok { background: #4cc26a; } .band-note .sw.warn { background: #e5b84b; } .band-note .sw.bad { background: #ff6b6b; }
+.sw.ffmi1 { background: #8aa0c8; } .sw.ffmi2 { background: #e5b84b; } .sw.ffmi3 { background: #7dcea0; }
+.sw.ffmi4 { background: #2f9e55; } .sw.ffmi5 { background: #c77dff; }
+.band-note .sw.ffmi1, .band-note .sw.ffmi2, .band-note .sw.ffmi3, .band-note .sw.ffmi4, .band-note .sw.ffmi5 { opacity: 1; }
+.ctile .info-i { position: absolute; top: .4rem; right: .4rem; z-index: 1; width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 700 .72rem/1.15rem Georgia, serif; padding: 0; cursor: pointer; }
+.ctile .info-i:hover { color: var(--ink); border-color: var(--muted); }
+.ctile:has(.info-i) .eyebrow { padding-right: 1.3rem; }
+#ffmiDlg { width: min(460px, 94vw); max-height: min(680px, 92vh); overflow: auto; }
+.ffmi-info { display: flex; flex-direction: column; gap: .4rem; }
+.ffmi-info h2 { margin: 0; font-size: 1.2rem; }
+.ffmi-info h3 { margin: .45rem 0 0; font-size: .95rem; }
+.ffmi-info p { margin: 0; }
+.ffmi-info .formula { font-weight: 650; }
+.ffmi-info ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .28rem; }
+.ffmi-info li { display: flex; gap: .45rem; align-items: flex-start; }
+.ffmi-info .sw { width: 10px; height: 10px; border-radius: 3px; margin-top: .35rem; flex: none; }
 
 /* trainingsdetails: anatomisch overzicht */
 .wo-map { display: grid; grid-template-columns: 170px 1fr; gap: 1rem; align-items: center; }

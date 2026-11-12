@@ -468,6 +468,37 @@
 <dialog id="bwDlg" class="wide-dlg"></dialog>
 <dialog id="userDlg" class="wide-dlg"></dialog>
 <dialog id="woDlg" class="wide-dlg"></dialog>
+<dialog id="ffmiDlg">
+  <form method="dialog" class="ffmi-info">
+    <div class="row between">
+      <h2 data-i18n="ui.ffmi.title">FFMI</h2>
+      <button value="close" class="btn ghost small" data-i18n-aria-label="pk.close" aria-label="Sluiten">✕</button>
+    </div>
+    <h3 data-i18n="ui.ffmi.whatTitle">Wat is het</h3>
+    <p data-i18n="ui.ffmi.what">FFMI staat voor Fat-Free Mass Index, de vetvrije-massa-index. Het zet je vetvrije massa af tegen je lengte. De BMI stijgt ook als je spiermassa toeneemt; de FFMI laat het vet buiten beschouwing.</p>
+    <h3 data-i18n="ui.ffmi.howTitle">Hoe het wordt berekend</h3>
+    <p data-i18n="ui.ffmi.how">Vetvrije massa in kilo, gedeeld door je lengte in meters in het kwadraat. De vetvrije massa is je gewicht zonder het vet (spieren, botten en water) en komt van de Withings-weegschaal. De lengte is de lengte bij Instellingen, anders de lengte van de weegschaal. Het getal wordt op één decimaal afgerond.</p>
+    <p class="formula" data-i18n="ui.ffmi.formula">vetvrije massa (kg) ÷ lengte² (m)</p>
+    <h3 data-i18n="ui.ffmi.bandsTitle">Richtlijnen</h3>
+    <p class="eyebrow" data-i18n="ui.ffmi.men">Mannen</p>
+    <ul>
+      <li><span class="sw ffmi1"></span><span data-i18n="ui.ffmi.m1">Onder 18: relatief weinig spiermassa (slank of ondergemiddeld)</span></li>
+      <li><span class="sw ffmi2"></span><span data-i18n="ui.ffmi.m2">18 tot 20: gemiddelde spierontwikkeling</span></li>
+      <li><span class="sw ffmi3"></span><span data-i18n="ui.ffmi.m3">20 tot 22: goed ontwikkeld (sportief)</span></li>
+      <li><span class="sw ffmi4"></span><span data-i18n="ui.ffmi.m4">22 tot 25: zeer gespierd (gevorderde krachttrainer)</span></li>
+      <li><span class="sw ffmi5"></span><span data-i18n="ui.ffmi.m5">Boven 25: uitzonderlijk veel spiermassa (ligt rond de natuurlijke limiet; waardes ver daarboven duiden vaak op anabolensteroïdengebruik)</span></li>
+    </ul>
+    <p class="eyebrow" data-i18n="ui.ffmi.women">Vrouwen</p>
+    <ul>
+      <li><span class="sw ffmi1"></span><span data-i18n="ui.ffmi.w1">Onder 15: relatief weinig spiermassa (slank of ondergemiddeld)</span></li>
+      <li><span class="sw ffmi2"></span><span data-i18n="ui.ffmi.w2">15 tot 17: gemiddelde spierontwikkeling</span></li>
+      <li><span class="sw ffmi3"></span><span data-i18n="ui.ffmi.w3">17 tot 19: goed ontwikkeld (sportief)</span></li>
+      <li><span class="sw ffmi4"></span><span data-i18n="ui.ffmi.w4">19 tot 21: zeer gespierd</span></li>
+      <li><span class="sw ffmi5"></span><span data-i18n="ui.ffmi.w5">Boven 21: uitzonderlijk veel spiermassa</span></li>
+    </ul>
+    <p class="muted small" data-i18n="ui.ffmi.disclaimer">Richtlijnen voor spierontwikkeling, geen medisch oordeel.</p>
+  </form>
+</dialog>
 <dialog id="swapDlg">
   <form method="dialog">
     <h2 id="swapTitle" data-i18n="ui.swap.oefeningWisselen">Oefening wisselen</h2>

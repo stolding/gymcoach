@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.22.0 — 12 november 2026
+- De FFMI-grafiek gebruikt grenzen per geslacht, van weinig spiermassa tot uitzonderlijk. Op de tegel staat een info-icoon met wat FFMI is en hoe het wordt berekend.
+
 ## 2.21.8 — 10 november 2026
 - Links en rechts van een set staan naast elkaar.
 

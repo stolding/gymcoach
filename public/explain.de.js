@@ -60,7 +60,7 @@ export default [
       <dt>Zeit unter Spannung und Pausen</dt><dd>Aus den Zeiten, die der Gym Monster pro Wiederholung und pro Pause speichert.</dd>
       <dt>Herzfrequenz</dt><dd>Pro Satz vom Gym Monster (mit Brustgurt); der Verlauf über das ganze Training, einschließlich der Pausen, kommt aus Apple Health (Apple Watch). Zonen: 50–60 % deines Maximums Erholung, 60–70 % Grundlage, 70–80 % aerob, 80–90 % Schwelle, 90 %+ Maximum.</dd>
       <dt>Erholung</dt><dd>Dein Ruhepuls der letzten 7 Tage im Vergleich zu den 4 Wochen davor. 3 Schläge höher: Achtung; 5 oder mehr: wahrscheinlich nicht erholt, oder du wirst krank.</dd>
-      <dt>Körper</dt><dd>BMI nach der WHO. Körperfett nach den Tabellen von Gallagher et al. (2000), nach Alter und Geschlecht. FFMI (fettfreie Masse ÷ Größe²): gut ab 17 (Männer) oder 14 (Frauen). Muskelmasse und Fett kommen von der Withings-Waage.</dd>
+      <dt>Körper</dt><dd>BMI nach der WHO. Körperfett nach den Tabellen von Gallagher et al. (2000), nach Alter und Geschlecht. FFMI (fettfreie Masse ÷ Größe²), mit Grenzen nach Geschlecht von wenig Muskelmasse bis außergewöhnlich viel. Muskelmasse und Fett kommen von der Withings-Waage.</dd>
       <dt>Energie und Schritte</dt><dd>Aktive Energie aus Apple Health (was du über deinen Grundumsatz hinaus verbrennst); ohne Apple Health die Kalorien deiner Trainings. Schrittziel standardmäßig 8.000 pro Tag.</dd>
     </dl>
     <p class="muted small">Alle Werte sind Schätzungen für deinen eigenen Fortschritt, keine medizinischen Messungen.</p>`,

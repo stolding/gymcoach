@@ -1887,7 +1887,10 @@ const COMP = tmap([
 // Gepland gewicht → echt volume: bij twee handgrepen telt Speediance beide kanten (factor uit je eigen trainingen).
 function volFactor(id) { const vf = state.volFactors || {}; return (vf.byId || {})[id] || vf.def || 1; }
 
-const BAND_COLORS = { ok: '#4cc26a', warn: '#e5b84b', bad: '#ff6b6b' };
+const BAND_COLORS = {
+  ok: '#4cc26a', warn: '#e5b84b', bad: '#ff6b6b',
+  ffmi1: '#8aa0c8', ffmi2: '#e5b84b', ffmi3: '#7dcea0', ffmi4: '#2f9e55', ffmi5: '#c77dff',
+};
 // In welke band (ok/warn/bad) valt waarde v?
 const bandOf = (bands, v) => (bands && v != null ? bands.find((b) => v >= b.from && v < b.to)?.cls || null : null);
 // style-attribuut voor de gekleurde lijn boven een tegel (leeg als er geen zone is)
@@ -1918,7 +1921,21 @@ function healthBands(metric) {
       return { bands: B([-Infinity, t[0], 'warn'], [t[0], t[1], 'ok'], [t[1], t[2], 'warn'], [t[2], Infinity, 'bad']), note: tx('app.gezondVoorJouwLeeftijd', { a: t[0], b: t[1] }) };
     }
     case 'visceral': return { bands: B([-Infinity, 12.5, 'ok'], [12.5, 14.5, 'warn'], [14.5, Infinity, 'bad']), note: t('app.richtwaardeOnder13Gezond') };
-    case 'ffmi': return sex ? { bands: sex === 'm' ? B([-Infinity, 17, 'warn'], [17, Infinity, 'ok']) : B([-Infinity, 14, 'warn'], [14, Infinity, 'ok']), note: t('app.richtwaardeVanafGoed', { a: sex === 'm' ? 17 : 14 }) } : { bands: null, note: t('app.vulGeslachtOfDe2') };
+    case 'ffmi': {
+      // Grenzen zijn inclusief aan de onderkant. 25 (mannen) en 21 (vrouwen) horen nog bij «zeer gespierd»; daarboven is uitzonderlijk.
+      if (!sex) return { bands: null, note: t('app.vulGeslachtOfDe2') };
+      const edge = sex === 'm' ? [18, 20, 22, 25] : [15, 17, 19, 21];
+      const cls = ['ffmi1', 'ffmi2', 'ffmi3', 'ffmi4', 'ffmi5'];
+      const name = ['low', 'avg', 'fit', 'high', 'exc'];
+      const from = [-Infinity, edge[0], edge[1], edge[2], edge[3] + 0.05];
+      const to = [edge[0], edge[1], edge[2], edge[3] + 0.05, Infinity];
+      const bands = cls.map((c, i) => ({ from: from[i], to: to[i], cls: c }));
+      const legend = cls.map((c, i) => {
+        const range = i === 0 ? `< ${edge[0]}` : i === 4 ? `> ${edge[3]}` : `${edge[i - 1]}–${edge[i]}`;
+        return { cls: c, label: `${range} ${t('ui.ffmi.short.' + name[i])}` };
+      });
+      return { bands, legend, lead: t(sex === 'm' ? 'ui.ffmi.men' : 'ui.ffmi.women') };
+    }
     case 'restHr': return { bands: B([-Infinity, 75, 'ok'], [75, 90, 'warn'], [90, Infinity, 'bad']), note: t('app.richtwaardeOnder75Goed') };
     case 'pwv': return { bands: B([-Infinity, 8, 'ok'], [8, 10, 'warn'], [10, Infinity, 'bad']), note: t('app.richtwaardeOnder8M') };
     case 'hrv': return { bands: null, note: t('sig.hrvNote') };
@@ -2045,9 +2062,13 @@ function renderComposition() {
     const d = old && old !== cur ? Math.round((cur[k] - old[k]) * 10) / 10 : null;
     const cls = d == null || d === 0 || !good ? 'muted' : (d > 0) === (good === 'up') ? 'up' : 'down';
     const zc = BAND_COLORS[bandOf(healthBands(k)?.bands, cur[k])];
-    return `<button class="ctile zoned ${k === compMetric ? 'on' : ''}" data-k="${k}"${zoneStyle(zc)}>
-      <div class="eyebrow">${label}</div><div class="mid">${cur[k]}<small> ${unit}</small></div>
-      <div class="small ${cls}">${d == null ? '—' : `${d > 0 ? '+' : ''}${d} ${unit}`} <span class="muted">${old && old !== cur ? t('app.sinds', { a: esc(old.date.slice(5)) }) : ''}</span></div></button>`;
+    const info = k === 'ffmi' ? `<button type="button" class="info-i" data-ffmi-info aria-label="${esc(t('ui.ffmi.info'))}"><span aria-hidden="true">i</span></button>` : '';
+    const open = k === 'ffmi' ? '<div' : '<button';
+    const close = k === 'ffmi' ? '</div>' : '</button>';
+    const role = k === 'ffmi' ? ' role="button" tabindex="0"' : '';
+    return `${open} class="ctile zoned ${k === compMetric ? 'on' : ''}" data-k="${k}"${role}${zoneStyle(zc)}>
+      ${info}<div class="eyebrow">${label}</div><div class="mid">${cur[k]}<small> ${unit}</small></div>
+      <div class="small ${cls}">${d == null ? '—' : `${d > 0 ? '+' : ''}${d} ${unit}`} <span class="muted">${old && old !== cur ? t('app.sinds', { a: esc(old.date.slice(5)) }) : ''}</span></div>${close}`;
   }).join('');
   const [, mLabel, mUnit, mGood] = COMP.find(([k]) => k === compMetric);
   const ptsAll = log.filter((b) => b[compMetric] != null).map((b) => ({ x: b.date, y: b[compMetric] }));
@@ -2078,13 +2099,32 @@ function renderComposition() {
     if (hasGm || types.length) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${t('app.streepjesOnderDeGrafiek', { a: hasGm ? '<span class="sw" style="background:var(--ok);opacity:.8"></span>' + t('app.gymMonster') + ' ' : '', b: types.map((t) => `<span class="sw" style="background:${actColor(t)};opacity:.8"></span>${esc(lc(actLabel(t)))}`).join(' ') })}</div>`);
   }
   const hb = healthBands(compMetric);
-  if (hb?.note) $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${hb.bands ? '<span class="sw ok"></span>' + t('app.goed') + ' <span class="sw warn"></span>' + t('app.letOp') + ' <span class="sw bad"></span>' + t('app.nietGoed') + ' ' : ''}${esc(hb.note)}</div>`);
+  if (hb?.note || hb?.legend) {
+    const legend = hb.legend?.length
+      ? hb.legend.map((x) => `<span class="sw ${x.cls}"></span>${esc(x.label)}`).join(' ')
+      : (hb.bands ? `<span class="sw ok"></span>${t('app.goed')} <span class="sw warn"></span>${t('app.letOp')} <span class="sw bad"></span>${t('app.nietGoed')} ` : '');
+    const lead = hb.lead ? esc(hb.lead) : '';
+    const note = hb.note ? esc(hb.note) : '';
+    $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${lead}${lead && (legend || note) ? ' · ' : ''}${legend}${legend && note ? ' ' : ''}${note}</div>`);
+  }
   if (!series[0].points.length) $('#chartComp').innerHTML = '<div class="empty">' + t('app.geenMetingenInDeze') + '</div>';
   else lineChart($('#chartComp'), series, { bands: hb?.bands, marks, onPick: (d) => openDay(d) });
   $('#trainToggle').addEventListener('click', () => { compTrain = !compTrain; try { localStorage.setItem('gc-comp-train', compTrain ? 'on' : 'off'); } catch {} renderComposition(); });
   bindRange(card, 'compRange');
   $('#trendToggle').addEventListener('click', () => { compTrend = !compTrend; try { localStorage.setItem('gc-comp-trend', compTrend ? 'on' : 'off'); } catch {} renderComposition(); });
-  card.querySelectorAll('.ctile').forEach((t) => t.addEventListener('click', () => { compMetric = t.dataset.k; renderComposition(); }));
+  card.querySelectorAll('.ctile').forEach((el) => {
+    el.addEventListener('click', () => { compMetric = el.dataset.k; renderComposition(); });
+    if (el.tagName !== 'BUTTON') el.addEventListener('keydown', (ev) => {
+      if (ev.target.closest('[data-ffmi-info]')) return;
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); el.click(); }
+    });
+  });
+  card.querySelector('[data-ffmi-info]')?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    if (compMetric !== 'ffmi') { compMetric = 'ffmi'; renderComposition(); }
+    const dlg = $('#ffmiDlg');
+    if (dlg && !dlg.open) dlg.showModal();
+  });
   renderSegments();
 }
 

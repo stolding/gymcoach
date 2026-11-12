@@ -60,7 +60,7 @@ export default [
       <dt>Time under tension and rest</dt><dd>From the times the Gym Monster stores per rep and per pause.</dd>
       <dt>Heart rate</dt><dd>Per set from the Gym Monster (with a heart rate strap); the course over the whole workout, including rest, comes from Apple Health (Apple Watch). Zones: 50–60% of your maximum recovery, 60–70% base, 70–80% aerobic, 80–90% threshold, 90%+ maximum.</dd>
       <dt>Recovery</dt><dd>Your resting heart rate over the last 7 days compared with the 4 weeks before. 3 beats higher: take care; 5 or more: probably not recovered, or you are getting ill.</dd>
-      <dt>Body</dt><dd>BMI according to the WHO. Body fat against the tables of Gallagher et al. (2000), by age and sex. FFMI (fat-free mass ÷ height²): good from 17 (men) or 14 (women). Muscle mass and fat come from the Withings scale.</dd>
+      <dt>Body</dt><dd>BMI according to the WHO. Body fat against the tables of Gallagher et al. (2000), by age and sex. FFMI (fat-free mass ÷ height²), with ranges by sex from relatively little muscle to exceptionally high. Muscle mass and fat come from the Withings scale.</dd>
       <dt>Energy and steps</dt><dd>Active energy from Apple Health (what you burn on top of your resting metabolism); without Apple Health the calories of your workouts. Step goal 8,000 per day by default.</dd>
     </dl>
     <p class="muted small">All values are estimates for your own progress, not medical measurements.</p>`,

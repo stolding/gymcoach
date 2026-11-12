@@ -39,6 +39,12 @@ struct PhoneSnapshot: Codable {
     var progress: [PhoneProgress]
     var records: [PhoneRecord]
     var weekPlan: PhoneWeekPlan
+    var health: PhoneHealth?
+}
+
+struct PhoneHealth: Codable {
+    var text: String
+    var at: String
 }
 
 struct PhoneWeek: Codable {

@@ -611,13 +611,15 @@ const routes = {
   // iPhone, onderweg: overzicht, schema, voortgang, lichaam en doel in één klein antwoord. Alleen lezen.
   'GET /api/phone': async () => {
     const ctx = await context();
-    const [rawPlan, daily, activities] = await Promise.all([store.getPlan(), store.getHealthDaily(), store.getActivities()]);
+    const [rawPlan, daily, activities, meta] = await Promise.all([store.getPlan(), store.getHealthDaily(), store.getActivities(), store.getMeta()]);
     const gv = await goalView(ctx, daily);
+    const hs = meta.healthStatus?.text ? { text: meta.healthStatus.text, at: meta.healthStatus.at || '' } : null;
     return phone.view({
       version: VERSION, name: auth.publicUser(store.currentUser())?.name || '', today: goal.todayISO(),
       plan: rawPlan, settings: ctx.settings, workouts: ctx.workouts, sessions: ctx.sessions,
       history: ctx.history, bodyLog: ctx.bodyLog, daily, goalView: gv, activities,
       recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }),
+      health: hs,
     });
   },
   'PUT /api/goal': async (req) => {

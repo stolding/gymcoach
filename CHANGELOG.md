@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.25.5 — 12 november 2026
+- GymCoach Sync 1.13 toont op Lichaam ook FFMI, polsgolfsnelheid, HRV en VO2max, met dezelfde grenzen als op de computer. Op Overzicht staat de laatst gemaakte gezondheidsstatus.
+
 ## 2.25.4 — 12 november 2026
 - Op Lichaam komt de hartslag in rust uit Apple Health. De weegschaal blijft alleen als er geen van die dagen zijn.
 

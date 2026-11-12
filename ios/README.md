@@ -2,7 +2,7 @@
 
 iPhone-app bij GymCoach. Twee dingen:
 
-- **Onderweg, alleen lezen.** De app opent op het overzicht: herstel, spierherstel met grafiek, en het weekplan met het lichaamsschema bovenaan, daarna de volgende training, het weekdoel en het doel, en onderaan de voortgang van de week. Daarnaast het schema met sets en gewichten, stappen, inname, voortgang en op Lichaam zeven samenstellingstegels met een grafiek. Het plan en de instellingen wijzig je op de computer. Zonder verbinding blijft de laatst geladen stand zichtbaar.
+- **Onderweg, alleen lezen.** De app opent op het overzicht: herstel, spierherstel met grafiek, en het weekplan met het lichaamsschema bovenaan, daarna de volgende training, het weekdoel en het doel, de voortgang van de week, en onderaan de laatst gemaakte gezondheidsstatus. Daarnaast het schema met sets en gewichten, stappen, inname, voortgang en op Lichaam de samenstelling: gewicht, vet, spiermassa, FFMI, hartslag in rust uit Apple Health, polsgolfsnelheid, HRV en VO2max, met dezelfde grenzen als op de computer. Het plan en de instellingen wijzig je op de computer. Zonder verbinding blijft de laatst geladen stand zichtbaar.
 - **Apple Health** naar je eigen server. Het scherm onderweg heeft GymCoach 2.13.1 of nieuwer nodig. Spierherstel vraagt 2.14.0. De Health-sync werkt ook met een oudere server.
 
 Uit Apple Health leest de app precies wat GymCoach nodig heeft:

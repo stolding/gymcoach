@@ -187,6 +187,7 @@ struct DashboardView: View {
                         nextRow(snap)
                         goalCard(snap)
                         statGrid(snap)
+                        healthCard(snap)
                     }
                     .padding(16)
                 }
@@ -195,6 +196,32 @@ struct DashboardView: View {
             .navigationTitle("Overzicht")
             .refreshable { await phone.refresh() }
         }
+    }
+
+    @ViewBuilder private func healthCard(_ snap: PhoneSnapshot) -> some View {
+        if let health = snap.health, !health.text.isEmpty {
+            PhoneCard {
+                Text("Gezondheidsstatus").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text(markdown(health.text)).font(.subheadline).textSelection(.enabled)
+                if !healthWhen(health.at).isEmpty {
+                    Text(healthWhen(health.at)).font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func markdown(_ raw: String) -> AttributedString {
+        var options = AttributedString.MarkdownParsingOptions()
+        options.interpretedSyntax = .full
+        return (try? AttributedString(markdown: raw, options: options)) ?? AttributedString(raw)
+    }
+
+    private func healthWhen(_ iso: String) -> String {
+        let withFraction = ISO8601DateFormatter()
+        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let plain = ISO8601DateFormatter()
+        guard let date = withFraction.date(from: iso) ?? plain.date(from: iso) else { return "" }
+        return date.formatted(date: .abbreviated, time: .shortened)
     }
 
     @ViewBuilder private func recoveryCard(_ snap: PhoneSnapshot) -> some View {
@@ -914,7 +941,7 @@ struct BodyView: View {
     @ViewBuilder private func composition(_ comp: PhoneComposition) -> some View {
         if comp.metrics.isEmpty {
             PhoneCard {
-                Text("Nog geen weging. Die komt van de weegschaal of van Lichaam op de computer.")
+                Text("Nog geen meting. Gewicht en samenstelling komen van de weegschaal. Hartslag in rust, HRV en VO2max komen uit Apple Health.")
                     .foregroundStyle(.secondary)
             }
         } else {
@@ -971,9 +998,12 @@ struct BodyView: View {
 
     private func zoneColor(_ zone: String) -> Color {
         switch zone {
-        case "ok": return Color(red: 0.30, green: 0.76, blue: 0.42)
-        case "warn": return Color(red: 0.90, green: 0.72, blue: 0.29)
-        case "bad": return Color(red: 1, green: 0.42, blue: 0.42)
+        case "ok", "ffmi4", "vo2good", "pwvok": return Color(red: 0.18, green: 0.62, blue: 0.33)
+        case "ffmi3": return Color(red: 0.49, green: 0.81, blue: 0.63)
+        case "warn", "ffmi2", "vo2avg", "pwvmid": return Color(red: 0.90, green: 0.72, blue: 0.29)
+        case "bad", "pwvhigh": return Color(red: 1, green: 0.42, blue: 0.42)
+        case "ffmi1", "vo2low": return Color(red: 0.54, green: 0.63, blue: 0.78)
+        case "ffmi5": return Color(red: 0.78, green: 0.49, blue: 1)
         default: return .clear
         }
     }
@@ -1019,7 +1049,7 @@ struct BodyView: View {
     }
 
     private func bandCaption(_ m: PhoneMetric) -> String {
-        m.bands.isEmpty ? "" : "goed · let op · niet goed · "
+        m.bands.contains(where: { ["ok", "warn", "bad"].contains($0.cls) }) ? "goed · let op · niet goed · " : ""
     }
 
     private func chartChip(_ title: String, on: Bool, action: @escaping () -> Void) -> some View {
@@ -1261,9 +1291,13 @@ struct CompChart: View {
 
     private func zoneFill(_ cls: String) -> Color {
         switch cls {
-        case "ok": return Color(red: 0.30, green: 0.76, blue: 0.42).opacity(0.16)
-        case "warn": return Color(red: 0.90, green: 0.72, blue: 0.29).opacity(0.14)
-        default: return Color(red: 1, green: 0.42, blue: 0.42).opacity(0.12)
+        case "ok", "ffmi4", "vo2good", "pwvok": return Color(red: 0.18, green: 0.62, blue: 0.33).opacity(0.16)
+        case "ffmi3": return Color(red: 0.49, green: 0.81, blue: 0.63).opacity(0.16)
+        case "warn", "ffmi2", "vo2avg", "pwvmid": return Color(red: 0.90, green: 0.72, blue: 0.29).opacity(0.14)
+        case "bad", "pwvhigh": return Color(red: 1, green: 0.42, blue: 0.42).opacity(0.12)
+        case "ffmi1", "vo2low": return Color(red: 0.54, green: 0.63, blue: 0.78).opacity(0.16)
+        case "ffmi5": return Color(red: 0.78, green: 0.49, blue: 1).opacity(0.16)
+        default: return .clear
         }
     }
 }

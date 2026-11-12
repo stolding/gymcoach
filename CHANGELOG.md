@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.27.2 — 12 november 2026
+- Terugkijken naar een weekplan houdt oefening, gepland en gedaan in hun eigen kolom, ook als de gedane sets per set verschillen.
+
 ## 2.27.1 — 12 november 2026
 - Speediance-login gebruikt het app-type NANO en hergebruikt een geldig token. De iPhone-app en de Gym Monster blijven ingelogd. Een verlopen token wordt één keer ververst.
 

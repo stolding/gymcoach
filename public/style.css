@@ -973,13 +973,15 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .pw-tiles b { font-size: 1.35rem; }
 .pw-legend { display: flex; flex-wrap: wrap; gap: 1rem; }
 .pw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 1rem; margin-top: 1rem; }
-.pw-card { display: flex; flex-direction: column; gap: .7rem; }
+.pw-card { display: flex; flex-direction: column; gap: .7rem; min-width: 0; }
 .pw-card.pw-skip { opacity: .8; }
-.pw-tbl { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.pw-tbl { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: .9rem; }
+.pw-cn { width: 30%; }
+.pw-cs { width: 1.6rem; }
 .pw-tbl thead td { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; padding-bottom: .3rem; }
 .pw-tbl td { padding: .38rem .3rem; border-top: 1px solid var(--line); vertical-align: top; }
 .pw-tbl thead td { border-top: 0; }
-.pw-tbl .pw-n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; padding-left: 1rem; }
+.pw-tbl .pw-n { text-align: right; white-space: normal; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; padding-left: .45rem; }
 .pw-st { width: 1.6rem; text-align: center; font-weight: 700; }
 .pw-ok .pw-st, .pw-legend .pw-ok { color: var(--ok); }
 .pw-less .pw-st, .pw-legend .pw-less { color: #f0a640; }

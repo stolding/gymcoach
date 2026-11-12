@@ -375,7 +375,7 @@ function renderPastWeek() {
         <div class="row gap wrap">${dn ? '<button type="button" class="btn ghost small" data-pw="view">' + t('app.rapport') + '</button>' : ''}
           <button type="button" class="btn ghost small" data-pw="copy">${t('app.kopieerNaarDezeWeek')}</button>
           <button type="button" class="btn ghost small" data-pw="tpl">${t('ed.asTemplate')}</button></div></header>
-      ${s.exercises.length || s.extra.length ? `<table class="pw-tbl"><thead><tr><td>${t('app.oefening')}</td><td class="pw-n">${t('app.gepland')}</td><td class="pw-n">${t('app.gedaan2')}</td><td></td></tr></thead><tbody>${rows}</tbody></table>` : '<p class="muted small">' + t('app.geenOefeningen') + '</p>'}
+      ${s.exercises.length || s.extra.length ? `<table class="pw-tbl"><colgroup><col><col class="pw-cn"><col class="pw-cn"><col class="pw-cs"></colgroup><thead><tr><td>${t('app.oefening')}</td><td class="pw-n">${t('app.gepland')}</td><td class="pw-n">${t('app.gedaan2')}</td><td></td></tr></thead><tbody>${rows}</tbody></table>` : '<p class="muted small">' + t('app.geenOefeningen') + '</p>'}
     </article>`;
   };
   $('#pastWeek').innerHTML = `<div class="card pw-sum">

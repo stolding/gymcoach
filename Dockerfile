@@ -1,18 +1,25 @@
 # GymCoach als container: Node.js 22 (ingebouwde SQLite) + speediance-cli.
 #   docker compose up -d      (zie docker-compose.yml)
 # Alle gegevens staan in het volume /data.
+# De CLI wordt gebouwd uit v2.0.0 met tools/speediance-cli-nano.patch:
+# inloggen als NANO, niet als SOFTWARE of HARDWARE.
+FROM golang:1.24-bookworm AS cli
+ARG CLI_VERSION=v2.0.0
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl patch \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /src
+RUN curl -fsSL "https://github.com/stozo04/speediance-cli/archive/refs/tags/${CLI_VERSION}.tar.gz" | tar -xz --strip-components=1
+COPY tools/speediance-cli-nano.patch /tmp/speediance-cli-nano.patch
+RUN patch -p1 < /tmp/speediance-cli-nano.patch \
+ && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/speediance-cli ./cmd/speediance-cli
+
 FROM node:22-bookworm-slim
 
-ARG TARGETARCH
-ARG CLI_VERSION=v2.0.0
-
-# speediance-cli (de onofficiële Speediance-client) voor de juiste processorarchitectuur
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl tzdata \
- && case "$TARGETARCH" in amd64|"") ARCH=x86_64 ;; arm64) ARCH=arm64 ;; *) echo "niet ondersteund: $TARGETARCH" && exit 1 ;; esac \
- && curl -fsSL "https://github.com/stozo04/speediance-cli/releases/download/${CLI_VERSION}/speediance-cli_Linux_${ARCH}.tar.gz" | tar xz -C /usr/local/bin speediance-cli \
- && chmod 0755 /usr/local/bin/speediance-cli \
- && apt-get purge -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+ && apt-get install -y --no-install-recommends ca-certificates tzdata \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=cli /out/speediance-cli /usr/local/bin/speediance-cli
 
 WORKDIR /app
 COPY --chown=node:node . .

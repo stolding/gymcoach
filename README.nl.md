@@ -191,7 +191,7 @@ docker compose exec gymcoach node backup.js /data/backups   # Docker: in data/ba
 
 **Upgraden vanaf een versie met JSON-bestanden:** bij de eerste start importeert GymCoach `data/*.json` en `data/users/*/*.json` automatisch. De oude bestanden krijgen de extensie `.imported`.
 
-De Speediance-API is onofficieel. Breekt een app-update van Speediance iets, dan komt er een nieuwe `speediance-cli`: met Docker zit die in een nieuw image (`CLI_VERSION` in de `Dockerfile`); zonder Docker zet je `CLI_VERSION` in `install.sh` op de nieuwste versie, verwijder je `~/.local/bin/speediance-cli` en draai je het script opnieuw.
+De Speediance-API is onofficieel. Breekt een app-update van Speediance iets, dan komt er een nieuwe `speediance-cli`: met Docker zit die in een nieuw image (`CLI_VERSION` in de `Dockerfile`); zonder Docker zet je `CLI_VERSION` in `install.sh` op de nieuwste versie, verwijder je `~/.local/bin/speediance-cli` en draai je het script opnieuw. Het Docker-image bouwt die CLI met `tools/speediance-cli-nano.patch`, zodat GymCoach inlogt als NANO. Een geldig token wordt hergebruikt. Daardoor blijven de Speediance-app op de iPhone en de Gym Monster ingelogd.
 
 ## Andere Gym Monster-modellen
 

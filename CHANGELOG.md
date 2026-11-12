@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.27.1 — 12 november 2026
+- Speediance-login gebruikt het app-type NANO en hergebruikt een geldig token. De iPhone-app en de Gym Monster blijven ingelogd. Een verlopen token wordt één keer ververst.
+
 ## 2.27.0 — 12 november 2026
 - Een weekplan verdeelt de oefeningen over de dagen zodat een spiergroep kan herstellen voor de volgende training. Het weekoverzicht toont dat herstel. Instellingen → Training → Week als één plan uit, en een nieuw weekplan, zet de vaste dagen terug.
 - GymCoach Sync 1.13.1 toont die verdeling als strook onder het lichaamsschema.

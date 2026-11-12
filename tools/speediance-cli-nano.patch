@@ -1,0 +1,60 @@
+--- a/internal/api/types.go
++++ b/internal/api/types.go
+@@ -37,6 +37,10 @@ type Envelope struct {
+ // codeTokenExpired is the application-level "token expired" signal. On seeing
+ // it the client re-logs-in once and retries the same request (GOAL.md §8).
+ const codeTokenExpired = 91
++
++// codeSessionTaken means this app type's session was replaced. One delayed
++// re-login, then stop, so a displaced session cannot start a login loop.
++const codeSessionTaken = 90
+ 
+ // AuthError marks an authentication failure. The CLI maps it to exit code 2 to
+ // preserve the Python tool's behavior (GOAL.md §12). It is a distinct type so
+--- a/internal/api/client.go
++++ b/internal/api/client.go
+@@ -132,9 +132,9 @@ func (c *Client) setHeaders(req *http.Request) {
+ 		"Timestamp":       {ts},
+ 		"Utc_offset":      {"+0000"},
+ 		"Timezone":        {"GMT"},
+-		"Versioncode":     {"40304"},
++		"Versioncode":     {"1"},
+ 		"Accept-Language": {"en"},
+-		"App_type":        {"SOFTWARE"},
++		"App_type":        {"NANO"},
+ 		"Mobiledevices":   {mobileDevices},
+ 	}
+ 	if c.token != "" {
+@@ -210,6 +210,18 @@ func (c *Client) request(ctx context.Context, method, path string, body any) (E
+ 	if err != nil {
+ 		return Envelope{}, err
+ 	}
++	if env.Code == codeSessionTaken {
++		c.logger.Warn("speediance session displaced (code 90); one retry after backoff")
++		select {
++		case <-ctx.Done():
++			return Envelope{}, ctx.Err()
++		case <-time.After(2 * time.Second):
++		}
++		if err := c.Login(ctx); err != nil {
++			return Envelope{}, err
++		}
++		return c.send(ctx, method, path, body)
++	}
+ 	if env.Code == codeTokenExpired {
+ 		c.logger.Info("token expired, re-authenticating")
+ 		if err := c.Login(ctx); err != nil {
+--- a/internal/api/client_test.go
++++ b/internal/api/client_test.go
+@@ -134,9 +134,9 @@ func TestFrozenHeaders(t *testing.T) {
+ 		"Content-Type":    "application/json",
+ 		"Utc_offset":      "+0000",
+ 		"Timezone":        "GMT",
+-		"Versioncode":     "40304",
++		"Versioncode":     "1",
+ 		"Accept-Language": "en",
+-		"App_type":        "SOFTWARE",
++		"App_type":        "NANO",
+ 		"Mobiledevices":   mobileDevices,
+ 		"Token":           "THE_TOKEN",
+ 		"App_user_id":     "99",

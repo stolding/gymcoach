@@ -41,6 +41,7 @@ if [ ! -x "$CLI" ]; then
   rm -rf "$TMP"
 fi
 echo "speediance-cli: $("$CLI" version 2>/dev/null | head -1)"
+echo "Let op: deze losse binary logt in als SOFTWARE. Het Docker-image past tools/speediance-cli-nano.patch toe en logt in als NANO, zodat de iPhone-app en de Gym Monster ingelogd blijven."
 
 # 3. Speediance-accounts stel je per gebruiker in via het dashboard (Instellingen).
 #    Een bestaande ~/.config/speediance/config.json wordt bij het aanmaken van de

@@ -938,7 +938,11 @@ const routes = {
       await cli.configSet('device_type', dt);
     }
     let login = { ok: true }, library = null;
-    try { await cli.login(); } catch (e) { login = { ok: false, error: e.authFailure ? tr('srv.inloggenMisluktControleerE') : e.message }; }
+    const emailChanged = !!(b.email && String(b.email).trim() !== String(before.email || '').trim());
+    // Een geldig token blijft. Opnieuw inloggen alleen zonder token, of als het account zelf wijzigt.
+    if (!(await cli.hasToken()) || b.password || emailChanged) {
+      try { await cli.login(); } catch (e) { login = { ok: false, error: e.authFailure ? tr('srv.inloggenMisluktControleerE') : e.message }; }
+    }
     const changedDevice = Number(before.device_type || 1) !== Number(b.deviceType ?? before.device_type) || (b.region && b.region !== before.region);
     // catalogus ophalen bij een ander toestel of regio, of als er voor dit toestel nog geen opgehaalde catalogus is
     if (login.ok && (changedDevice || !store.getLibraryInfo(await deviceType()))) {

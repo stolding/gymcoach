@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.25.2 — 12 november 2026
+- De gezondheidsstatus leest ook een antwoord dat in het denkblok van het model staat, en vraagt opnieuw als het antwoord werd afgekapt.
+
 ## 2.25.1 — 12 november 2026
 - Bij Lichaam en doelen staat een geboortedatum. De gezondheidsstatus rekent daarmee de leeftijd uit op elke meetdag.
 

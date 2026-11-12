@@ -648,7 +648,7 @@ export default {
   "app.health.at": "aktualisiert {when}",
   "app.health.disclaimer": "Keine Diagnose. Besprich einen Wert, der wochenlang außerhalb des Referenzbereichs bleibt, mit deinem Arzt.",
   "app.health.noData": "Zu wenige Messungen in den letzten 4 Wochen für einen Status.",
-  "app.health.emptyAnswer": "Die KI hat keinen Text zurückgegeben.",
+  "app.health.emptyAnswer": "Die KI hat keinen Text zurückgegeben{why}.",
   "app.geenVergelijking": "kein Vergleich",
   "app.vorigeWeekKg": "letzte Woche {a} kg",
   "app.tOVVorige": "ggü. letzter Woche",

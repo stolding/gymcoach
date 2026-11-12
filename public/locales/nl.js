@@ -633,7 +633,7 @@ export default {
   'app.health.at': 'bijgewerkt {when}',
   'app.health.disclaimer': 'Geen diagnose. Bespreek een waarde die wekenlang buiten de referentie blijft met je huisarts.',
   'app.health.noData': 'Nog te weinig metingen in de laatste 4 weken voor een status.',
-  'app.health.emptyAnswer': 'De AI gaf geen tekst terug.',
+  'app.health.emptyAnswer': 'De AI gaf geen tekst terug{why}.',
   'app.geenVergelijking': 'geen vergelijking',
   'app.vorigeWeekKg': 'vorige week {a} kg',
   'app.tOVVorige': 't.o.v. vorige week',

@@ -648,7 +648,7 @@ export default {
   "app.health.at": "updated {when}",
   "app.health.disclaimer": "Not a diagnosis. Discuss a value that stays outside the reference range for weeks with your doctor.",
   "app.health.noData": "Not enough measurements in the last 4 weeks for a status.",
-  "app.health.emptyAnswer": "The AI returned no text.",
+  "app.health.emptyAnswer": "The AI returned no text{why}.",
   "app.geenVergelijking": "no comparison",
   "app.vorigeWeekKg": "last week {a} kg",
   "app.tOVVorige": "vs. last week",

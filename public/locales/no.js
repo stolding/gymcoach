@@ -648,7 +648,7 @@ export default {
   "app.health.at": "oppdatert {when}",
   "app.health.disclaimer": "Ingen diagnose. Ta opp en verdi som i ukevis ligger utenfor referansen med legen din.",
   "app.health.noData": "For få målinger de siste 4 ukene til en status.",
-  "app.health.emptyAnswer": "KI-en ga ingen tekst tilbake.",
+  "app.health.emptyAnswer": "KI-en ga ingen tekst tilbake{why}.",
   "app.geenVergelijking": "ingen sammenligning",
   "app.vorigeWeekKg": "forrige uke {a} kg",
   "app.tOVVorige": "mot forrige uke",

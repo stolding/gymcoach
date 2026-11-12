@@ -499,6 +499,48 @@
     <p class="muted small" data-i18n="ui.ffmi.disclaimer">Richtlijnen voor spierontwikkeling, geen medisch oordeel.</p>
   </form>
 </dialog>
+<dialog id="vo2Dlg">
+  <form method="dialog" class="ffmi-info">
+    <div class="row between">
+      <h2 data-i18n="ui.vo2.title">VO2max</h2>
+      <button value="close" class="btn ghost small" data-i18n-aria-label="pk.close" aria-label="Sluiten">✕</button>
+    </div>
+    <h3 data-i18n="ui.vo2.whatTitle">Wat is het</h3>
+    <p data-i18n="ui.vo2.what">VO2max is de maximale hoeveelheid zuurstof die je lichaam per minuut kan gebruiken bij zware inspanning, in milliliter per kilo lichaamsgewicht. Het is een maat voor je conditie. Het getal in GymCoach is de schatting van de Apple Watch, uit wandelen en hardlopen.</p>
+    <p data-i18n="ui.vo2.ageSex">Je VO2max daalt van nature naarmate je ouder wordt. Daarnaast hebben mannen gemiddeld een hogere waarde dan vrouwen door meer spiermassa en een hoger hemoglobinegehalte in het bloed.</p>
+    <h3 data-i18n="ui.vo2.bandsTitle">Richtlijnen</h3>
+    <p data-i18n="ui.vo2.tableLead">Onderstaande tabel geeft een globaal overzicht van gemiddelde tot uitstekende waarden, in ml/kg/min.</p>
+    <p class="small"><span class="sw vo2low"></span> <span data-i18n="ui.vo2.short.low">onder gemiddeld</span> <span class="sw vo2avg"></span> <span data-i18n="ui.vo2.short.avg">gemiddeld</span> <span class="sw vo2good"></span> <span data-i18n="ui.vo2.short.good">goed tot uitstekend</span></p>
+    <p class="muted small" data-i18n="ui.vo2.chartNote">Op de grafiek valt alles onder de gemiddelde band in onder gemiddeld. Vanaf de ondergrens van goed, en alles daarboven, is goed tot uitstekend.</p>
+    <div class="vo2-wrap">
+      <table class="vo2-table">
+        <thead>
+          <tr>
+            <th data-i18n="ui.vo2.col.age">Leeftijd</th>
+            <th data-i18n="ui.vo2.col.mAvg">Man, gemiddeld</th>
+            <th data-i18n="ui.vo2.col.mGood">Man, goed tot uitstekend</th>
+            <th data-i18n="ui.vo2.col.wAvg">Vrouw, gemiddeld</th>
+            <th data-i18n="ui.vo2.col.wGood">Vrouw, goed tot uitstekend</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-vo2-age="20"><td>20–29</td><td>42–46</td><td>47–56+</td><td>33–37</td><td>38–49+</td></tr>
+          <tr data-vo2-age="30"><td>30–39</td><td>40–44</td><td>45–54+</td><td>31–35</td><td>36–46+</td></tr>
+          <tr data-vo2-age="40"><td>40–49</td><td>37–41</td><td>42–51+</td><td>29–33</td><td>34–44+</td></tr>
+          <tr data-vo2-age="50"><td>50–59</td><td>34–38</td><td>39–48+</td><td>26–30</td><td>31–40+</td></tr>
+          <tr data-vo2-age="60"><td>60+</td><td>30–34</td><td>35–44+</td><td>23–27</td><td>28–37+</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 data-i18n="ui.vo2.howTitle">Hoe kun je je VO2max verbeteren?</h3>
+    <ul class="tips">
+      <li><b data-i18n="ui.vo2.hiitTitle">High-intensity interval training (HIIT).</b> <span data-i18n="ui.vo2.hiit">Korte, zeer intensieve inspanningen (bijvoorbeeld 4 minuten rennen op 90–95% van je maximale hartslag) afgewisseld met rustige herstelpauzes zijn het meest effectief om je hartslagvolume en zuurstofopname te vergroten.</span></li>
+      <li><b data-i18n="ui.vo2.z2Title">Zone 2-training.</b> <span data-i18n="ui.vo2.z2">Lange trainingen op een rustig tempo waarbij je nog makkelijk kunt praten. Dit vergroot het aantal haarvaten en mitochondriën in je spieren.</span></li>
+      <li><b data-i18n="ui.vo2.weightTitle">Gewichtsbeheersing.</b> <span data-i18n="ui.vo2.weight">Omdat de score wordt berekend per kilogram lichaamsgewicht, stijgt je relatieve VO2max als je overtollig vet verliest zonder dat je conditie direct verandert.</span></li>
+    </ul>
+    <p class="muted small" data-i18n="ui.vo2.disclaimer">Globaal overzicht, geen medisch oordeel. De waarde is een schatting van de Apple Watch.</p>
+  </form>
+</dialog>
 <dialog id="swapDlg">
   <form method="dialog">
     <h2 id="swapTitle" data-i18n="ui.swap.oefeningWisselen">Oefening wisselen</h2>

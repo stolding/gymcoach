@@ -1890,6 +1890,7 @@ function volFactor(id) { const vf = state.volFactors || {}; return (vf.byId || {
 const BAND_COLORS = {
   ok: '#4cc26a', warn: '#e5b84b', bad: '#ff6b6b',
   ffmi1: '#8aa0c8', ffmi2: '#e5b84b', ffmi3: '#7dcea0', ffmi4: '#2f9e55', ffmi5: '#c77dff',
+  vo2low: '#8aa0c8', vo2avg: '#e5b84b', vo2good: '#2f9e55',
 };
 // In welke band (ok/warn/bad) valt waarde v?
 const bandOf = (bands, v) => (bands && v != null ? bands.find((b) => v >= b.from && v < b.to)?.cls || null : null);
@@ -1906,6 +1907,25 @@ const hrTile = (avg, max) => [t('app.hrAvgMax'), `${avg ?? '—'}${max ? `/${max
 
 // Richtwaarden per meting (subtiele achtergrond in de grafiek). ok = groen, warn = geel, bad = rood.
 // Bronnen: BMI WHO; vet% Gallagher e.a. (2000, naar leeftijd en geslacht); overige zijn grove richtwaarden.
+// VO2max: gemiddeld tot goed/uitstekend per leeftijd en geslacht. Onder de 30 geldt de rij 20–29.
+function vo2Cut(sex, age) {
+  if (!sex || !(age > 0)) return null;
+  const rows = sex === 'm'
+    ? [[42, 47], [40, 45], [37, 42], [34, 39], [30, 35]]
+    : [[33, 38], [31, 36], [29, 34], [26, 31], [23, 28]];
+  const idx = age < 30 ? 0 : age < 40 ? 1 : age < 50 ? 2 : age < 60 ? 3 : 4;
+  const labels = ['20–29', '30–39', '40–49', '50–59', '60+'];
+  const starts = [20, 30, 40, 50, 60];
+  return { idx, label: labels[idx], row: starts[idx], avg: rows[idx][0], good: rows[idx][1] };
+}
+function markVo2Row(dlg) {
+  if (!dlg || !state?.settings) return;
+  const s = state.settings;
+  const age = s.birthYear ? new Date().getFullYear() - s.birthYear : null;
+  const sx = ['m', 'v'].includes(s.sex) ? s.sex : (['m', 'v'].includes(s.bandSex) ? s.bandSex : '');
+  const cut = vo2Cut(sx, age);
+  dlg.querySelectorAll('[data-vo2-age]').forEach((tr) => tr.classList.toggle('on', !!cut && tr.dataset.vo2Age === String(cut.row)));
+}
 function healthBands(metric) {
   const s = state.settings, age = s.birthYear ? new Date().getFullYear() - s.birthYear : null, h = heightM();
   // richtwaarden per man/vrouw; bij een ander geslacht de zelfgekozen tabel
@@ -1939,7 +1959,24 @@ function healthBands(metric) {
     case 'restHr': return { bands: B([-Infinity, 75, 'ok'], [75, 90, 'warn'], [90, Infinity, 'bad']), note: t('app.richtwaardeOnder75Goed') };
     case 'pwv': return { bands: B([-Infinity, 8, 'ok'], [8, 10, 'warn'], [10, Infinity, 'bad']), note: t('app.richtwaardeOnder8M') };
     case 'hrv': return { bands: null, note: t('sig.hrvNote') };
-    case 'vo2max': return { bands: null, note: t('sig.vo2Note') };
+    case 'vo2max': {
+      const cut = vo2Cut(sex, age);
+      if (!cut) {
+        const need = !sex && !age ? t('ui.vo2.need') : !sex ? t('app.vulGeslachtOfDe2') : t('app.vulJeGeboortejaarIn');
+        return { bands: null, note: `${need} ${t('sig.vo2Note')}` };
+      }
+      const bands = [
+        { from: -Infinity, to: cut.avg, cls: 'vo2low' },
+        { from: cut.avg, to: cut.good, cls: 'vo2avg' },
+        { from: cut.good, to: Infinity, cls: 'vo2good' },
+      ];
+      const legend = [
+        { cls: 'vo2low', label: `< ${cut.avg} ${t('ui.vo2.short.low')}` },
+        { cls: 'vo2avg', label: `${cut.avg}–${cut.good - 1} ${t('ui.vo2.short.avg')}` },
+        { cls: 'vo2good', label: `≥ ${cut.good} ${t('ui.vo2.short.good')}` },
+      ];
+      return { bands, legend, lead: `${t(sex === 'm' ? 'ui.ffmi.men' : 'ui.ffmi.women')}, ${cut.label}`, note: t('sig.vo2Note') };
+    }
     case 'nerve': return { bands: B([-Infinity, 40, 'bad'], [40, 60, 'warn'], [60, Infinity, 'ok']), note: t('app.richtwaardeVanaf60S') };
     case 'metAge': case 'vascAge': return age ? { bands: ageBands(age), note: t('app.groenGelijkAanOf', { age }) } : { bands: null, note: t('app.vulJeGeboortejaarIn') };
     default: return null;
@@ -2062,10 +2099,11 @@ function renderComposition() {
     const d = old && old !== cur ? Math.round((cur[k] - old[k]) * 10) / 10 : null;
     const cls = d == null || d === 0 || !good ? 'muted' : (d > 0) === (good === 'up') ? 'up' : 'down';
     const zc = BAND_COLORS[bandOf(healthBands(k)?.bands, cur[k])];
-    const info = k === 'ffmi' ? `<button type="button" class="info-i" data-ffmi-info aria-label="${esc(t('ui.ffmi.info'))}"><span aria-hidden="true">i</span></button>` : '';
-    const open = k === 'ffmi' ? '<div' : '<button';
-    const close = k === 'ffmi' ? '</div>' : '</button>';
-    const role = k === 'ffmi' ? ' role="button" tabindex="0"' : '';
+    const hasInfo = k === 'ffmi' || k === 'vo2max';
+    const info = hasInfo ? `<button type="button" class="info-i" data-metric-info="${k}" aria-label="${esc(t(k === 'ffmi' ? 'ui.ffmi.info' : 'ui.vo2.info'))}"><span aria-hidden="true">i</span></button>` : '';
+    const open = hasInfo ? '<div' : '<button';
+    const close = hasInfo ? '</div>' : '</button>';
+    const role = hasInfo ? ' role="button" tabindex="0"' : '';
     return `${open} class="ctile zoned ${k === compMetric ? 'on' : ''}" data-k="${k}"${role}${zoneStyle(zc)}>
       ${info}<div class="eyebrow">${label}</div><div class="mid">${cur[k]}<small> ${unit}</small></div>
       <div class="small ${cls}">${d == null ? '—' : `${d > 0 ? '+' : ''}${d} ${unit}`} <span class="muted">${old && old !== cur ? t('app.sinds', { a: esc(old.date.slice(5)) }) : ''}</span></div>${close}`;
@@ -2115,16 +2153,18 @@ function renderComposition() {
   card.querySelectorAll('.ctile').forEach((el) => {
     el.addEventListener('click', () => { compMetric = el.dataset.k; renderComposition(); });
     if (el.tagName !== 'BUTTON') el.addEventListener('keydown', (ev) => {
-      if (ev.target.closest('[data-ffmi-info]')) return;
+      if (ev.target.closest('[data-metric-info]')) return;
       if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); el.click(); }
     });
   });
-  card.querySelector('[data-ffmi-info]')?.addEventListener('click', (ev) => {
+  card.querySelectorAll('[data-metric-info]').forEach((btn) => btn.addEventListener('click', (ev) => {
     ev.stopPropagation();
-    if (compMetric !== 'ffmi') { compMetric = 'ffmi'; renderComposition(); }
-    const dlg = $('#ffmiDlg');
+    const key = btn.dataset.metricInfo;
+    if (compMetric !== key) { compMetric = key; renderComposition(); }
+    const dlg = $('#' + (key === 'vo2max' ? 'vo2Dlg' : 'ffmiDlg'));
+    if (key === 'vo2max') markVo2Row(dlg);
     if (dlg && !dlg.open) dlg.showModal();
-  });
+  }));
   renderSegments();
 }
 

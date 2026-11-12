@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.23.0 — 12 november 2026
+- De VO2max-grafiek gebruikt grenzen per leeftijd en geslacht. Op de tegel staat een info-icoon met de tabel en hoe je de VO2max kunt verbeteren.
+
 ## 2.22.0 — 12 november 2026
 - De FFMI-grafiek gebruikt grenzen per geslacht, van weinig spiermassa tot uitzonderlijk. Op de tegel staat een info-icoon met wat FFMI is en hoe het wordt berekend.
 

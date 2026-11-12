@@ -59,7 +59,7 @@ With a demo account and sample data; dark theme.
 - **Training**: the log. At the top, workouts, volume and minutes per week, and estimated 1RM per exercise.
 - **Review**: one period for the numbers (muscle groups, strength index, balance, muscle mass versus volume, km and steps) and the patterns (calendar, when you train, records, energy versus weight, recovery).
 - **Body** via Withings: weight, fat %, muscle mass, FFMI (fat-free mass against height, with ranges by sex), segments per arm/leg/trunk, vascular age, with reference ranges.
-- **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …), plus HRV and the VO2max estimate of the Apple Watch.
+- **Activities** from Apple Health: all types (walking, cycling, swimming, padel, football, …), plus HRV and the VO2max estimate of the Apple Watch, with ranges by age and sex.
 
 **Use**
 - **English, Dutch, German and Norwegian**: choose per user with the flag menu, or let the app follow your browser. Another language needs a dictionary file (`public/locales/`) plus a translation of the in-app explanation and terms.

@@ -57,7 +57,7 @@ Met een demo-account en voorbeelddata; donker thema.
 - **Training**: het logboek. Bovenaan het aantal trainingen, het volume en de minuten per week, en per oefening het geschatte 1RM.
 - **Terugkijken**: één periode voor de cijfers (spiergroepen, krachtindex, balans, spiermassa tegen volume, km en stappen) en de patronen (kalender, wanneer je traint, records, energie tegen gewicht, herstel).
 - **Lichaam** via Withings: gewicht, vet%, spiermassa, FFMI (vetvrije massa ten opzichte van lengte, met grenzen per geslacht), segmenten per arm/been/romp, vasculaire leeftijd, met richtwaarden.
-- **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal, plus HRV en de VO2max-schatting van de Apple Watch.
+- **Activiteiten** uit Apple Health: alle soorten (wandelen, fietsen, zwemmen, padel, voetbal, …) in jouw taal, plus HRV en de VO2max-schatting van de Apple Watch, met grenzen per leeftijd en geslacht.
 
 **Gebruik**
 - **Nederlands, Engels, Duits en Noors**: kies per gebruiker met de vlaggetjes (inlogscherm, menubalk of je gebruikersmenu), of laat de app de taal van je browser volgen. Rapporten, mails en de AI-coach gebruiken dezelfde taal. Uitleg en video's van oefeningen komen van Speediance in jouw taal als Speediance die heeft, anders in het Engels. Een taal toevoegen vraagt een woordenboek (`public/locales/`) en een vertaling van de uitleg en de voorwaarden.

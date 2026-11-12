@@ -981,6 +981,7 @@ export default {
   "app.richtwaardeVanafGoed": "rettesnor: bra fra {a}",
   "app.vulGeslachtOfDe2": "oppgi kjønn (eller referansetabellen) i Innstillinger",
   "app.richtwaardeOnder75Goed": "rettesnor: under 75 er bra",
+  "app.restHrBron": "dagsverdi fra Apple Health",
   "app.richtwaardeOnder8M": "rettesnor: under 8 m/s er bra, over 10 er forhøyet",
   "app.richtwaardeVanaf60S": "rettesnor: fra 60 µS er normalt",
   "app.groenGelijkAanOf": "grønt = lik eller yngre enn alderen din ({age})",

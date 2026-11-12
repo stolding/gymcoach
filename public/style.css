@@ -1017,3 +1017,7 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .health-md ul, .health-md ol { margin: .25rem 0 .5rem; padding-left: 1.2rem; }
 .health-table th, .health-table td { text-align: left; padding: .32rem .45rem; border-bottom: 1px solid var(--line); font-size: .82rem; }
 .health-table th { color: var(--muted); font-weight: 650; white-space: nowrap; }
+.health-table td.ht-good { color: var(--ok); font-weight: 650; }
+.health-table td.ht-watch { color: #e5b84b; font-weight: 650; }
+.health-table td.ht-bad { color: var(--warn); font-weight: 650; }
+.health-table td.ht-flat { color: var(--muted); }

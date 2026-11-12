@@ -981,6 +981,7 @@ export default {
   "app.richtwaardeVanafGoed": "reference: good from {a}",
   "app.vulGeslachtOfDe2": "enter sex (or the reference table) in Settings",
   "app.richtwaardeOnder75Goed": "reference: below 75 good",
+  "app.restHrBron": "daily value from Apple Health",
   "app.richtwaardeOnder8M": "reference: below 8 m/s good, above 10 elevated",
   "app.richtwaardeVanaf60S": "reference: from 60 µS normal",
   "app.groenGelijkAanOf": "green = equal to or younger than your age ({age})",

@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.25.4 — 12 november 2026
+- Op Lichaam komt de hartslag in rust uit Apple Health. De weegschaal blijft alleen als er geen van die dagen zijn.
+
+## 2.25.3 — 12 november 2026
+- In de trendtabel van de gezondheidsstatus kleuren de delta, de pijl en de beoordeling mee: groen is gunstig, amber vraagt aandacht, grijs blijft binnen de meetruis.
+
 ## 2.25.2 — 12 november 2026
 - De gezondheidsstatus leest ook een antwoord dat in het denkblok van het model staat, en vraagt opnieuw als het antwoord werd afgekapt.
 

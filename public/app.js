@@ -1064,6 +1064,23 @@ function renderCoach(c) {
 function inlineMd(s) {
   return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
 }
+// Kolomsoort in de trendtabel, in de taal van het antwoord.
+function healthCol(label) {
+  const s = label.trim().toLowerCase();
+  if (/[\u0394\u2206]/.test(label) || /delta|verschil|änderung|aenderung|change|endring/.test(s)) return 'delta';
+  if (s.includes('trend')) return 'trend';
+  if (/beoordeel|assessment|rating|bewertung|vurdering/.test(s)) return 'judge';
+  return '';
+}
+// Goed, aandacht of neutraal, afgeleid van de beoordeling. Een pijl omhoog is niet vanzelf gunstig.
+function healthTone(judge) {
+  const s = judge.toLowerCase();
+  if (/slecht|risico|ongunstig|verhoogd|te hoog|te laag|poor|elevated|schlecht|risiko|erhöht|dårlig|forhøyet/.test(s)) return 'bad';
+  if (/let op|attention|caution|achtung|pass på/.test(s)) return 'watch';
+  if (/onderkant|bovenkant|below average|above average|unteres mittel|øvre|nedre|matig|moderate|mäßig|moderat/.test(s)) return 'watch';
+  if (/\bgoed\b|gunstig|prima|uitstekend|\bgood\b|favour|favor|günstig|\bgut\b|\bbra\b|utmerket/.test(s)) return 'good';
+  return 'flat';
+}
 function renderHealthMd(src) {
   const lines = String(src || '').split(/\r?\n/);
   const out = [];
@@ -1080,8 +1097,17 @@ function renderHealthMd(src) {
       while (i < lines.length && lines[i].trim().startsWith('|')) rows.push(lines[i++]);
       const cells = (row) => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
       const head = cells(rows[0]);
+      const kinds = head.map(healthCol);
+      const judgeAt = kinds.indexOf('judge');
       out.push('<div class="tablewrap"><table class="health-table"><thead><tr>' + head.map((c) => `<th>${inlineMd(c)}</th>`).join('') + '</tr></thead><tbody>'
-        + rows.slice(2).map((r) => '<tr>' + cells(r).map((c) => `<td>${inlineMd(c)}</td>`).join('') + '</tr>').join('')
+        + rows.slice(2).map((r) => {
+          const raw = cells(r);
+          const tone = judgeAt >= 0 ? healthTone(raw[judgeAt] || '') : '';
+          return '<tr>' + raw.map((c, n) => {
+            const mark = tone && (kinds[n] === 'delta' || kinds[n] === 'trend' || kinds[n] === 'judge');
+            return `<td${mark ? ` class="ht-${tone}"` : ''}>${inlineMd(c)}</td>`;
+          }).join('') + '</tr>';
+        }).join('')
         + '</tbody></table></div>');
       continue;
     }
@@ -2044,7 +2070,10 @@ function healthBands(metric) {
       });
       return { bands, legend, lead: t(sex === 'm' ? 'ui.ffmi.men' : 'ui.ffmi.women') };
     }
-    case 'restHr': return { bands: B([-Infinity, 75, 'ok'], [75, 90, 'warn'], [90, Infinity, 'bad']), note: t('app.richtwaardeOnder75Goed') };
+    case 'restHr': {
+      const apple = (state.healthDaily || []).some((d) => d.restHr > 30);
+      return { bands: B([-Infinity, 75, 'ok'], [75, 90, 'warn'], [90, Infinity, 'bad']), note: t('app.richtwaardeOnder75Goed') + (apple ? ' · ' + t('app.restHrBron') : '') };
+    }
     case 'pwv': {
       const cut = pwvCut(age);
       if (!cut) return { bands: null, note: t('app.vulJeGeboortejaarIn') };
@@ -2089,16 +2118,30 @@ function healthBands(metric) {
 // lengte in meters: eigen instelling gaat voor, anders uit Withings
 const heightM = () => (state.settings.heightCm ? state.settings.heightCm / 100 : state.withings?.height || null);
 // BMI per meting berekenen (gewicht / lengte²)
-// HRV en VO2max van de Apple Watch (dagwaarden) bij de metingen van de weegschaal voegen, voor de tegels en grafiek.
+// HRV, VO2max en hartslag in rust van de Apple Watch bij de metingen van de weegschaal voegen.
+// Zijn er Apple-dagen voor de rusthartslag, dan verdwijnt de momentmeting van de weegschaal uit deze grafiek.
 function withWatch(log) {
-  const extra = (state.healthDaily || []).filter((d) => d.hrv || d.vo2max);
+  const daily = state.healthDaily || [];
+  const extra = daily.filter((d) => d.hrv || d.vo2max || d.restHr > 30);
   if (!extra.length) return log;
-  const out = log.map((b) => ({ ...b }));
+  const appleRest = daily.some((d) => d.restHr > 30);
+  const out = log.map((b) => {
+    const o = { ...b };
+    if (appleRest) delete o.restHr;
+    return o;
+  });
   const byDay = new Map(out.map((b) => [String(b.date).slice(0, 10), b]));
   for (const d of extra) {
+    const rest = d.restHr > 30 ? Math.round(d.restHr) : null;
     const b = byDay.get(d.date);
-    if (b) { if (d.hrv) b.hrv = Math.round(d.hrv); if (d.vo2max) b.vo2max = Math.round(d.vo2max * 10) / 10; }
-    else { const n = { date: d.date, ...(d.hrv && { hrv: Math.round(d.hrv) }), ...(d.vo2max && { vo2max: Math.round(d.vo2max * 10) / 10 }) }; out.push(n); byDay.set(d.date, n); }
+    if (b) {
+      if (d.hrv) b.hrv = Math.round(d.hrv);
+      if (d.vo2max) b.vo2max = Math.round(d.vo2max * 10) / 10;
+      if (rest) b.restHr = rest;
+    } else {
+      const n = { date: d.date, ...(d.hrv && { hrv: Math.round(d.hrv) }), ...(d.vo2max && { vo2max: Math.round(d.vo2max * 10) / 10 }), ...(rest && { restHr: rest }) };
+      out.push(n); byDay.set(d.date, n);
+    }
   }
   return out.sort((a, b) => String(a.date).localeCompare(String(b.date)));
 }

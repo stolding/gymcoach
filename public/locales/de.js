@@ -981,6 +981,7 @@ export default {
   "app.richtwaardeVanafGoed": "Richtwert: gut ab {a}",
   "app.vulGeslachtOfDe2": "trage Geschlecht (oder die Richtwerttabelle) in den Einstellungen ein",
   "app.richtwaardeOnder75Goed": "Richtwert: unter 75 gut",
+  "app.restHrBron": "Tageswert aus Apple Health",
   "app.richtwaardeOnder8M": "Richtwert: unter 8 m/s gut, über 10 erhöht",
   "app.richtwaardeVanaf60S": "Richtwert: ab 60 µS normal",
   "app.groenGelijkAanOf": "grün = gleich oder jünger als dein Alter ({age})",

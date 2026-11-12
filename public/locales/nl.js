@@ -966,6 +966,7 @@ export default {
   'app.richtwaardeVanafGoed': 'richtwaarde: vanaf {a} goed',
   'app.vulGeslachtOfDe2': 'vul geslacht (of de tabel voor richtwaarden) in bij Instellingen',
   'app.richtwaardeOnder75Goed': 'richtwaarde: onder 75 goed',
+  'app.restHrBron': 'dagwaarde uit Apple Health',
   'app.richtwaardeOnder8M': 'richtwaarde: onder 8 m/s goed, boven 10 verhoogd',
   'app.richtwaardeVanaf60S': 'richtwaarde: vanaf 60 µS normaal',
   'app.groenGelijkAanOf': 'groen = gelijk aan of jonger dan je leeftijd ({age})',

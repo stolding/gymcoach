@@ -1245,7 +1245,7 @@ function scoreUnit(id) {
 }
 function scoreMetricValue(id, v) {
   if (v == null || !Number.isFinite(Number(v))) return '—';
-  const digits = id === 'ecwTbw' ? 3 : id === 'ffmi' || id === 'bmi' || id === 'pwv' || id === 'bonePct' ? 1 : 0;
+  const digits = id === 'ecwTbw' ? 3 : id === 'ffmi' || id === 'bmi' || id === 'pwv' || id === 'bonePct' || id === 'vo2max' ? 1 : 0;
   const n = fmtNum(v, { minimumFractionDigits: id === 'ecwTbw' ? 3 : 0, maximumFractionDigits: digits === 0 && Math.abs(v) >= 10 ? 0 : Math.max(digits, 1) });
   const unit = scoreUnit(id);
   return unit ? `${n} ${unit}` : n;

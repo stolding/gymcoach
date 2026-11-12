@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.26.4 — 12 november 2026
+- VO2max in de gezondheidsscore houdt één decimaal, gelijk aan de tegel.
+
 ## 2.26.3 — 12 november 2026
 - Spierherstel opent op alle groepen. Een spiergroep kies je daarna zelf.
 

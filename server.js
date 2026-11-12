@@ -468,6 +468,23 @@ const routes = {
     const session = plan?.sessions.find((s) => s.key === sessionKey);
     if (!session) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
     if (session.outdoor || !session.exercises?.length) throw Object.assign(new Error(tr('srv.dezeDagIsCardio')), { status: 400 });
+    let sorted = false;
+    if (dryRun) {
+      const before = (session.exercises || []).map((e) => e.id).join(',');
+      session.exercises = engine.orderSessionExercises(session.exercises);
+      sorted = before !== session.exercises.map((e) => e.id).join(',');
+      if (sorted) {
+        const hadRamp = session.exercises.some((e) => e.rampUp);
+        for (const e of session.exercises) delete e.rampUp;
+        if (hadRamp) {
+          const first = session.exercises.find((e) => e.type === 'compound') || session.exercises[0];
+          if (first) first.rampUp = true;
+        }
+        if (session.pushedAt) { session.changedAfterPush = true; delete session.pushedAt; }
+        refreshMuscles(plan);
+        await store.savePlan(plan);
+      }
+    }
     const pushPlan = engine.toPushPlan(plan, session, await store.getSettings());
     const res = await cli.push(pushPlan, { dryRun });
     console.log(`push${dryRun ? ' (dry-run)' : ''} ${pushPlan.name}: ${typeof res.result === 'string' ? res.result.slice(0, 300) : JSON.stringify(res.result).slice(0, 300)}`);
@@ -477,7 +494,7 @@ const routes = {
       session.pushedAt = new Date().toISOString(); delete session.changedAfterPush;
       await Promise.all([store.saveMeta(meta), store.savePlan(plan)]);
     }
-    return { ...res, plan: pushPlan };
+    return { ...res, plan: pushPlan, ...(dryRun && sorted ? { sorted: true, weekPlan: plan } : {}) };
   },
   // AI-coach voor het hele plan, of met { session } alleen voor die ene training (bijv. een eigen training)
   'POST /api/coach': async (req) => {

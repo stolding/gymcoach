@@ -966,6 +966,7 @@ export default {
   'app.alsProgrammaOpJe': '“{a}” als programma op je Gym Monster zetten?',
   'app.zetOpToestel': 'Zet op toestel',
   'app.controleOkOefeningenSets': 'Controle ok: {n} oefeningen, {a} sets',
+  'app.controleSorted': 'Controle ok: {n} oefeningen, {a} sets. De volgorde is aangepast.',
   'app.opJeGymMonster': 'Op je Gym Monster gezet: {name}',
   'app.spierenInDezeOefening': 'Spieren in deze oefening',
   'app.nietMeerVoorstellen': '“{title}” niet meer voorstellen?',

@@ -783,7 +783,11 @@ $('#sessions').addEventListener('click', async (ev) => {
   if (act === 'push' && !await askConfirm(t('app.alsProgrammaOpJe', { a: progName(state.plan, session) }), { okText: t('app.zetOpToestel') })) return;
   await busy(btn, async () => {
     const r = await api('POST', '/api/plan/push', { sessionKey: session.key, dryRun: act === 'dry' });
-    if (act === 'dry') toast(t('app.controleOkOefeningenSets', { n: r.plan.exercises.length, a: r.plan.exercises.reduce((n, e) => n + e.sets.length, 0) }));
+    if (act === 'dry') {
+      if (r.weekPlan) { state.plan = r.weekPlan; renderPlan(); }
+      const n = r.plan.exercises.length, a = r.plan.exercises.reduce((s, e) => s + e.sets.length, 0);
+      toast(t(r.sorted ? 'app.controleSorted' : 'app.controleOkOefeningenSets', { n, a }));
+    }
     else { toast(t('app.opJeGymMonster', { name: r.plan.name })); await load(); }
   });
 });

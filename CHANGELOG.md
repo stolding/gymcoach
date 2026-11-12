@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.26.9 — 12 november 2026
+- Controleer op een training zet de oefeningen in dezelfde volgorde: kabels op de bodemplaat bij elkaar, niet twee keer dezelfde spiergroep achter elkaar.
+
+## 2.26.8 — 12 november 2026
+- Een training zet oefeningen met de kabels op de bodemplaat bij elkaar. Twee keer dezelfde spiergroep achter elkaar blijft uit elkaar, ook als de kabels dan een keer extra om moeten.
+
 ## 2.26.7 — 12 november 2026
 - TestFlight trekt voor het archief de oude ontwikkelcertificaten van eerdere buildmachines in. Apple weigerde een nieuw certificaat omdat het maximum bereikt was.
 

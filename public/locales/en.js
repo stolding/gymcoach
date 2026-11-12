@@ -981,6 +981,7 @@ export default {
   "app.alsProgrammaOpJe": "Put “{a}” as a programme on your Gym Monster?",
   "app.zetOpToestel": "Put on machine",
   "app.controleOkOefeningenSets": "Check ok: {n} exercises, {a} sets",
+  "app.controleSorted": "Check ok: {n} exercises, {a} sets. The order has been updated.",
   "app.opJeGymMonster": "Put on your Gym Monster: {name}",
   "app.spierenInDezeOefening": "Muscles in this exercise",
   "app.nietMeerVoorstellen": "Stop suggesting “{title}”?",

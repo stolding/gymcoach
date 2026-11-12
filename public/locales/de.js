@@ -981,6 +981,7 @@ export default {
   "app.alsProgrammaOpJe": "„{a}“ als Programm auf deinen Gym Monster übertragen?",
   "app.zetOpToestel": "Aufs Gerät übertragen",
   "app.controleOkOefeningenSets": "Prüfung ok: {n} Übungen, {a} Sätze",
+  "app.controleSorted": "Prüfung ok: {n} Übungen, {a} Sätze. Die Reihenfolge ist angepasst.",
   "app.opJeGymMonster": "Auf deinem Gym Monster: {name}",
   "app.spierenInDezeOefening": "Muskeln in dieser Übung",
   "app.nietMeerVoorstellen": "„{title}“ nicht mehr vorschlagen?",

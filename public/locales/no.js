@@ -981,6 +981,7 @@ export default {
   "app.alsProgrammaOpJe": "Legge «{a}» inn som program på Gym Monster?",
   "app.zetOpToestel": "Legg på maskinen",
   "app.controleOkOefeningenSets": "Sjekk ok: {n} øvelser, {a} sett",
+  "app.controleSorted": "Sjekk ok: {n} øvelser, {a} sett. Rekkefølgen er endret.",
   "app.opJeGymMonster": "Legg på Gym Monster: {name}",
   "app.spierenInDezeOefening": "Muskler i denne øvelsen",
   "app.nietMeerVoorstellen": "Slutte å foreslå «{title}»?",

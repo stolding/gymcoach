@@ -1262,10 +1262,10 @@ function scoreHomeHtml() {
   const dir = view.trend || 'flat';
   const deltaTxt = delta == null ? '' : `<div class="score-delta ${dir}">${t('score.since', { d: (delta > 0 ? '+' : '') + scoreNum(delta), date: scoreWhen(view.since) })}</div>`;
   const total = rec.total == null ? `<p class="muted small">${t('score.low')}</p>` : `<div class="score-num">${t('score.per10', { n: scoreNum(rec.total) })}</div>`;
-  const sparkLine = spark((view.history || []).map((p) => p.total), { w: 160, h: 36 });
+  const chart = (view.history || []).some((p) => p.total != null) ? '<div class="chart score-line" data-score-chart></div>' : '';
   return `<div class="card sig-card score-card score-home ${band ? 'band-' + band : ''}">
     <div class="row between"><div class="eyebrow">${t('score.title')}</div><button type="button" class="btn ghost small" data-score-info aria-label="${esc(t('score.info'))}">i</button></div>
-    ${total}${deltaTxt}${sparkLine ? `<div>${sparkLine}</div>` : ''}
+    ${total}${deltaTxt}${chart}
     <p class="score-note muted small hidden">${t('score.info')}</p>
     ${rec.normsApproximated ? `<div class="muted small">${t('score.approx')}</div>` : ''}
     <a href="#body" data-score-history>${t('score.history')}</a>
@@ -1294,20 +1294,29 @@ function scoreDetailHtml() {
     const metrics = (SCORE_ORDER[id] || []).filter((k) => rec.metrics?.[k]).map((k) => {
       const m = rec.metrics[k];
       const mb = scoreBand(m.score);
-      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted">${esc(scoreMetricValue(k, m.value))}</span><b>${scoreNum(m.score)}</b></div>`;
+      const shown = (k === 'vascDelta' || k === 'metDelta') && m.measured != null ? m.measured : m.value;
+      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted">${esc(scoreMetricValue(k, shown))}</span><b>${scoreNum(m.score)}</b></div>`;
     }).join('');
     return `<div class="score-cat"><div class="row between"><span>${t('score.cat.' + id)}</span><b>${scoreNum(n)}</b></div><div class="score-bar"><i class="band-${b}" style="width:${Math.max(0, Math.min(100, n * 10))}%"></i></div>${metrics}</div>`;
   }).join('');
   el.innerHTML = `<div class="row between wrap gap"><div class="eyebrow">${t('score.title')}</div><button type="button" class="btn ghost small" data-score-info aria-label="${esc(t('score.info'))}">i</button></div>
     ${rec.total == null ? `<p class="muted">${t('score.low')}</p>` : `<div class="score-num">${t('score.per10', { n: scoreNum(rec.total) })}</div>`}
     ${delta == null ? '' : `<div class="score-delta ${dir}">${t('score.since', { d: (delta > 0 ? '+' : '') + scoreNum(delta), date: scoreWhen(view.since) })}</div>`}
-    ${spark((view.history || []).map((p) => p.total), { w: 280, h: 48 })}
+    ${(view.history || []).some((p) => p.total != null) ? '<div class="chart score-line" data-score-chart></div>' : ''}
     <p class="score-note muted small hidden">${t('score.info')}</p>
     ${rec.normsApproximated ? `<div class="muted small">${t('score.approx')}</div>` : ''}
     <details id="scoreCats"><summary>${t('score.categories')}</summary><div class="score-cats">${cats}</div></details>`;
 }
+function drawScoreChart(root) {
+  const el = root?.querySelector('[data-score-chart]');
+  if (!el) return;
+  const pts = (state.healthScore?.history || []).filter((p) => p.total != null);
+  if (pts.length < 1) { el.remove(); return; }
+  lineChart(el, [{ cls: 'la', label: t('score.title'), points: pts.map((p) => ({ x: p.date, y: p.total })) }], { yLabel: t('score.title') });
+}
 function bindScore(root) {
   if (!root) return;
+  drawScoreChart(root);
   root.querySelector('[data-score-info]')?.addEventListener('click', () => root.querySelector('.score-note')?.classList.toggle('hidden'));
   root.querySelector('[data-score-history]')?.addEventListener('click', (ev) => {
     ev.preventDefault();
@@ -3259,7 +3268,7 @@ async function load() {
   // een nieuwe gebruiker kiest eerst zijn voorkeuren; pas daarna een plan
   if (!state.plan && !state.setup?.needed) { state.plan = (await api('POST', '/api/plan/generate')).plan; renderPlan(); }
 }
-let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!state) return; if ($('#tab-home').classList.contains('active')) renderMuscleRecovery(); if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); if ($('#tab-goal').classList.contains('active')) drawGoalCharts(); }, 150); });
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!state) return; if ($('#tab-home').classList.contains('active')) { renderSignals(); renderMuscleRecovery(); } if ($('#tab-progress').classList.contains('active')) renderProgress(); if ($('#tab-body').classList.contains('active')) renderBody(); if ($('#tab-goal').classList.contains('active')) drawGoalCharts(); }, 150); });
 boot().catch((e) => toast(e.message, true));
 
 // ---------- extra grafieken ----------

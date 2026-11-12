@@ -1030,6 +1030,8 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .score-metric { display: flex; align-items: baseline; gap: .45rem; font-size: .82rem; padding: .12rem 0; }
 .score-metric b { margin-left: auto; font-variant-numeric: tabular-nums; }
 .score-home .score-num { font-size: 1.7rem; }
+.chart.score-line { height: 168px; margin-top: .45rem; }
+.score-home .chart.score-line { height: 132px; }
 
 /* gezondheidsstatus op het overzicht */
 .health-md { margin-top: .8rem; }

@@ -90,6 +90,24 @@ test('geen score onder 18 of zonder geboortedatum', () => {
   assert.equal(none.status, 'nobirth');
 });
 
+test('een nul voor polsgolf of vasculaire leeftijd telt niet, de laatste echte meting wel', () => {
+  const bodyLog = [
+    { date: '2026-11-10', kg: 90, pwv: 10.2, vascAge: 69, metAge: 61 },
+    { date: '2026-11-12', kg: 89.7, pwv: 0, vascAge: 0, metAge: 61 },
+  ];
+  const s = scoreOnDate({ date: '2026-11-12', bodyLog, birthDate: '1964-11-12', sex: 'm', heightM: 1.84 });
+  near(s.metrics.pwv.value, 10.2, 0.001);
+  assert.ok(s.metrics.pwv.score < 10);
+  near(s.metrics.vascDelta.measured, 69, 0.001);
+  near(s.metrics.vascDelta.value, 7, 0.001);
+  const onlyZero = scoreOnDate({
+    date: '2026-11-12', birthDate: '1964-11-12', sex: 'm',
+    bodyLog: [{ date: '2026-11-12', kg: 89.7, pwv: 0, vascAge: 0, fat: 19.4 }],
+  });
+  assert.equal(onlyZero.metrics.pwv, undefined);
+  assert.equal(onlyZero.metrics.vascDelta, undefined);
+});
+
 test('randgevallen van geslacht en leeftijd', () => {
   const unknown = scoreValues({ values: REF, age: 65, sex: '' });
   assert.equal(unknown.normsApproximated, true);

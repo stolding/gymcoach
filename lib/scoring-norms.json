@@ -1,5 +1,5 @@
 {
-  "version": "2026-11-v1",
+  "version": "2026-11-v2",
   "ageAnchors": [25, 35, 45, 55, 65, 75, 85],
   "coverageMin": 0.6,
   "bmiBonus": { "add": 1, "ffmiAt": 20, "fatBelow": 22 },

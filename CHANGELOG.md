@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.26.2 — 12 november 2026
+- Polsgolfsnelheid en vasculaire leeftijd in de gezondheidsscore gebruiken de laatste echte meting. Een nulmeting telt niet meer mee.
+
+## 2.26.1 — 12 november 2026
+- De grafiek van de gezondheidsscore heeft een y-as en een raster, zodat de score af te lezen is.
+
 ## 2.26.0 — 12 november 2026
 - Een gezondheidsscore van 1,0 tot 10,0, gecorrigeerd voor geslacht en leeftijd. De tegel staat op Overzicht naast Herstel en op Lichaam, met de historie. Dezelfde score gaat mee naar de AI-samenvatting.
 

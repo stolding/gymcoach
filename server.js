@@ -509,6 +509,17 @@ const routes = {
     if (meta.coach) { meta.coach = { ...meta.coach, done: 'dismissed', doneAt: new Date().toISOString() }; await store.saveMeta(meta); }
     return { coach: meta.coach || null };
   },
+  // Gezondheidsstatus: samenvatting van 4 weken metingen via de AI-koppeling. Het plan blijft staan.
+  'POST /api/health-status': async () => {
+    const ctx = await context();
+    const [daily, activities, w] = await Promise.all([store.getHealthDaily(), store.getActivities(), store.getWithings()]);
+    const heightM = ctx.settings.heightCm ? ctx.settings.heightCm / 100 : (w?.height || null);
+    const result = await ai.healthStatus({ settings: ctx.settings, bodyLog: ctx.bodyLog, workouts: ctx.workouts, daily, activities, heightM });
+    const meta = await store.getMeta();
+    meta.healthStatus = result;
+    await store.saveMeta(meta);
+    return result;
+  },
   'GET /api/about': async () => ({
     version: VERSION, node: process.version, cli: await cli.version().catch(() => null),
     started: STARTED, users: (await store.getUsers()).length, changelog: readChangelog(),
@@ -544,8 +555,23 @@ const routes = {
     if (!['', 'm', 'v'].includes(next.bandSex)) next.bandSex = cur.bandSex || '';
     if (next.lang !== '' && !ALL_LANGS.some((l) => l.code === next.lang)) next.lang = cur.lang || '';
     next.noAccessories = Array.isArray(next.noAccessories) ? [...new Set(next.noAccessories.filter((k) => engine.ACCESSORIES.some((a) => a.key === k)))] : cur.noAccessories || [];
-    next.birthYear = next.birthYear === '' || next.birthYear == null ? null : Math.round(+next.birthYear);
-    if (next.birthYear != null && !(next.birthYear >= 1920 && next.birthYear <= new Date().getFullYear() - 10)) throw Object.assign(new Error(tr('srv.ongeldigGeboortejaar')), { status: 400 });
+    const yearMax = new Date().getFullYear() - 10;
+    let yearFromDate = false;
+    if (Object.hasOwn(incoming, 'birthDate')) {
+      const raw = incoming.birthDate == null ? '' : String(incoming.birthDate).trim().slice(0, 10);
+      if (!raw) next.birthDate = null;
+      else {
+        const [y, m, d] = raw.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        const real = /^\d{4}-\d{2}-\d{2}$/.test(raw) && dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+        if (!real || y < 1920 || y > yearMax) throw Object.assign(new Error(tr('srv.ongeldigeGeboortedatum')), { status: 400 });
+        next.birthDate = raw;
+        next.birthYear = y;
+        yearFromDate = true;
+      }
+    }
+    if (!yearFromDate) next.birthYear = next.birthYear === '' || next.birthYear == null ? null : Math.round(+next.birthYear);
+    if (next.birthYear != null && !(next.birthYear >= 1920 && next.birthYear <= yearMax)) throw Object.assign(new Error(tr('srv.ongeldigGeboortejaar')), { status: 400 });
     next.hrMax = next.hrMax === '' || next.hrMax == null || !(+next.hrMax) ? null : Math.round(+next.hrMax);
     if (next.hrMax != null && !(next.hrMax >= 120 && next.hrMax <= 230)) throw Object.assign(new Error(tr('srv.maximaleHartslagMoetTussen')), { status: 400 });
     if (Object.hasOwn(incoming, 'stepGoal')) next.stepGoal = Math.min(40000, Math.max(1000, Math.round(+incoming.stepGoal || 8000)));

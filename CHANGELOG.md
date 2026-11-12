@@ -5,6 +5,15 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.25.1 — 12 november 2026
+- Bij Lichaam en doelen staat een geboortedatum. De gezondheidsstatus rekent daarmee de leeftijd uit op elke meetdag.
+
+## 2.25.0 — 12 november 2026
+- Op Overzicht staat een gezondheidsstatus. Dezelfde AI-koppeling vat de metingen van de laatste 4 weken samen. Het plan verandert er niet door.
+
+## 2.24.1 — 12 november 2026
+- De uitleg Hoe GymCoach werkt noemt de huidige pagina's, en waar de hartslag in rust, VO2max en polsgolfsnelheid vandaan komen.
+
 ## 2.24.0 — 12 november 2026
 - De grafiek van de polsgolfsnelheid gebruikt grenzen per leeftijd. Op de tegel staat een info-icoon met wat de waarde betekent, hoe ze wordt gemeten en hoe je haar kunt verlagen.
 

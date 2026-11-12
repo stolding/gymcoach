@@ -1008,3 +1008,12 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .sig-dot { width: .55rem; height: .55rem; border-radius: 50%; background: currentColor; flex: none; }
 .sig-dot.up { color: var(--ok); } .sig-dot.balwarn { color: #e5b84b; } .sig-dot.down { color: #ff6b5a; }
 .sig-note { margin: .2rem 0 .6rem; padding: .45rem .6rem; border-radius: 8px; background: rgba(229, 184, 75, .12); }
+
+/* gezondheidsstatus op het overzicht */
+.health-md { margin-top: .8rem; }
+.health-md h3 { margin: .9rem 0 .3rem; font-size: 1rem; }
+.health-md h3:first-child { margin-top: .2rem; }
+.health-md p { margin: .3rem 0; }
+.health-md ul, .health-md ol { margin: .25rem 0 .5rem; padding-left: 1.2rem; }
+.health-table th, .health-table td { text-align: left; padding: .32rem .45rem; border-bottom: 1px solid var(--line); font-size: .82rem; }
+.health-table th { color: var(--muted); font-weight: 650; white-space: nowrap; }

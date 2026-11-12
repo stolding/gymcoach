@@ -1060,6 +1060,77 @@ function renderCoach(c) {
 
 
 // ---------- overzicht ----------
+// Beperkte Markdown uit de gezondheidsstatus: koppen, lijsten, tabellen en vet. De tekst wordt eerst geëscaped.
+function inlineMd(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+function renderHealthMd(src) {
+  const lines = String(src || '').split(/\r?\n/);
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    if (/^#{1,3}\s+/.test(line)) {
+      out.push(`<h3>${inlineMd(line.replace(/^#+\s+/, ''))}</h3>`);
+      i++; continue;
+    }
+    if (line.trim().startsWith('|') && lines[i + 1] && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1])) {
+      const rows = [];
+      while (i < lines.length && lines[i].trim().startsWith('|')) rows.push(lines[i++]);
+      const cells = (row) => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+      const head = cells(rows[0]);
+      out.push('<div class="tablewrap"><table class="health-table"><thead><tr>' + head.map((c) => `<th>${inlineMd(c)}</th>`).join('') + '</tr></thead><tbody>'
+        + rows.slice(2).map((r) => '<tr>' + cells(r).map((c) => `<td>${inlineMd(c)}</td>`).join('') + '</tr>').join('')
+        + '</tbody></table></div>');
+      continue;
+    }
+    if (/^\s*[-*]\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) items.push(inlineMd(lines[i++].replace(/^\s*[-*]\s+/, '')));
+      out.push('<ul>' + items.map((it) => `<li>${it}</li>`).join('') + '</ul>');
+      continue;
+    }
+    if (/^\s*\d+\.\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) items.push(inlineMd(lines[i++].replace(/^\s*\d+\.\s+/, '')));
+      out.push('<ol>' + items.map((it) => `<li>${it}</li>`).join('') + '</ol>');
+      continue;
+    }
+    const para = [line];
+    i++;
+    while (i < lines.length && lines[i].trim() && !/^#{1,3}\s+/.test(lines[i]) && !lines[i].trim().startsWith('|') && !/^\s*[-*]\s+/.test(lines[i]) && !/^\s*\d+\.\s+/.test(lines[i])) para.push(lines[i++]);
+    out.push(`<p>${inlineMd(para.join(' '))}</p>`);
+  }
+  return out.join('');
+}
+
+function renderHealth() {
+  const el = $('#healthCard');
+  if (!el) return;
+  const h = state.meta?.healthStatus;
+  el.classList.remove('hidden');
+  const when = h?.at ? new Date(h.at).toLocaleString(localeOf(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  el.innerHTML = `<div class="row between wrap gap">
+      <div><div class="eyebrow">${t('app.health.title')}</div><div class="muted small">${t('app.health.lead')}</div></div>
+      <button type="button" class="btn accent" id="healthBtn">${h?.text ? t('app.health.refresh') : t('app.health.make')}</button>
+    </div>
+    ${h?.text ? `<div class="health-md">${renderHealthMd(h.text)}</div><div class="muted small">${t('app.health.at', { when })} · ${esc(h.provider || '')}${h.model ? ' · ' + esc(h.model) : ''}</div><p class="muted small">${t('app.health.disclaimer')}</p>` : `<p class="muted" style="margin:.6rem 0 0">${t('app.health.empty')}</p>`}`;
+  $('#healthBtn').addEventListener('click', (ev) => {
+    const btn = ev.currentTarget;
+    const label = btn.textContent;
+    btn.textContent = t('app.health.thinking');
+    busy(btn, async () => {
+      try {
+        const r = await api('POST', '/api/health-status');
+        if (!state.meta) state.meta = {};
+        state.meta.healthStatus = r;
+        renderHealth();
+      } catch (e) { btn.textContent = label; throw e; }
+    });
+  });
+}
+
 function spark(values, { w = 120, h = 32, cls = 'sp' } = {}) {
   if (!values || values.length < 2) return '';
   const lo = Math.min(...values), hi = Math.max(...values), r = hi - lo || 1;
@@ -1265,6 +1336,7 @@ function renderHome() {
   const n = o.next;
   document.querySelector('.dash').classList.toggle('setup-mode', !!state.setup?.needed);
   if (state.setup?.needed) { renderSetup(); return; }
+  renderHealth();
   renderMuscleRecovery();
   $('#nextCard').classList.remove('setup');
   // cardio buiten: geen programma voor het toestel, wel het advies
@@ -2696,6 +2768,15 @@ function fillSettings() {
   f.lang.value = s.lang || '';
   const toggleBand = () => $('#bandSexWrap').classList.toggle('hidden', ['m', 'v'].includes(f.sex.value));
   toggleBand(); f.sex.onchange = toggleBand;
+  const yearMax = new Date().getFullYear() - 10;
+  if (f.birthYear) f.birthYear.max = yearMax;
+  if (f.birthDate) {
+    f.birthDate.max = yearMax + '-12-31';
+    f.birthDate.onchange = () => {
+      const y = Number(String(f.birthDate.value || '').slice(0, 4));
+      if (y >= 1920 && y <= yearMax && f.birthYear) f.birthYear.value = String(y);
+    };
+  }
   syncOutputs();
   const lb = state.library || {};
   const MODEL = { 1: 'Gym Monster 1', 2: 'Gym Monster 2' };

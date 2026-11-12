@@ -67,6 +67,7 @@
       <article class="card tile" id="tVolume"></article>
       <article class="card tile" id="tMinutes"></article>
       <article class="card tile" id="tBody"></article>
+      <article class="card full hidden" id="healthCard"></article>
       <article class="card full hidden" id="goalTile"></article>
       <article class="card wide" id="strength"></article>
       <article class="card" id="prs"></article>
@@ -360,6 +361,8 @@
         <div class="fgrid">
         <label><span data-i18n="ui.setBody.geslacht">Geslacht</span> <select name="sex"><option value="" data-i18n="ui.setBody.zegIkLieverNiet">Zeg ik liever niet</option><option value="m" data-i18n="ui.setBody.man">Man</option><option value="v" data-i18n="ui.setBody.vrouw">Vrouw</option><option value="x" data-i18n="ui.setBody.nonBinair">Non-binair</option><option value="o" data-i18n="ui.setBody.anders">Anders</option></select></label>
         <label><span data-i18n="ui.setBody.geboortejaar">Geboortejaar</span> <input type="number" name="birthYear" min="1920" max="2016" placeholder="bijv. 1970" data-i18n-placeholder="ui.setBody.bijv1970"></label>
+        <label><span data-i18n="ui.setBody.geboortedatum">Geboortedatum</span> <input type="date" name="birthDate" min="1920-01-01" max="2016-12-31">
+          <span class="muted" data-i18n="ui.setBody.geboortedatumHint">Voor de leeftijd op elke meetdag in de gezondheidsstatus. Het geboortejaar blijft de grafieken en zones sturen.</span></label>
         <label><span data-i18n="ui.setBody.maximaleHartslagBpm">Maximale hartslag (bpm)</span> <input type="number" name="hrMax" min="120" max="230" placeholder="leeg = schatten uit geboortejaar" data-i18n-placeholder="ui.setBody.leegSchattenUitGeboortejaar">
           <span class="muted" data-i18n="ui.setBody.voorDeHartslagzonesWeet">Voor de hartslagzones. Weet je hem uit een test, vul hem dan in.</span></label>
       <label id="bandSexWrap"><span data-i18n="ui.setBody.richtwaardenEnBerekeningen">Richtwaarden en berekeningen</span> <select name="bandSex"><option value="" data-i18n="ui.setBody.algemeenGeenTabel">Algemeen (geen tabel)</option><option value="m" data-i18n="ui.setBody.tabelVoorMannen">Tabel voor mannen</option><option value="v" data-i18n="ui.setBody.tabelVoorVrouwen">Tabel voor vrouwen</option></select>

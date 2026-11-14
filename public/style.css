@@ -1060,6 +1060,12 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .score-delta.up { color: var(--ok); }
 .score-delta.down { color: var(--warn); }
 .score-delta.flat { color: var(--muted); }
+.score-move { margin-left: .35rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.score-move.up, .score-moves .up { color: var(--ok); }
+.score-move.down, .score-moves .down { color: var(--warn); }
+.score-move.flat { color: var(--muted); font-weight: 500; }
+.score-moves { margin: .15rem 0 .35rem; }
+.ctip .trow.sub { padding-left: .85rem; color: var(--muted); font-size: .82rem; }
 .score-note { margin: .45rem 0 0; }
 .score-window { margin: .55rem 0 0; }
 .score-cats { display: grid; gap: .7rem; margin-top: .7rem; }

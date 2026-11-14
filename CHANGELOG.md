@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.0 — 14 november 2026
+- Bij de gezondheidsscore zie je welke categorie en welke meting sinds de vergelijkingsdatum omhoog of omlaag ging. In de grafiek staat dat per punt ten opzichte van de meting ervoor.
+
 ## 2.31.0 — 14 november 2026
 - De oefeningen op een trainingskaart staan ingeklapt. Je klapt ze open, of je ziet de lijst als je over de naam van de training gaat.
 

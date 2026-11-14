@@ -722,7 +722,7 @@ const routes = {
   },
   'GET /api/health-score/latest': async () => {
     const view = await scores.present(180);
-    return { status: view.status, ...(view.record || {}), delta4w: view.delta4w, trend: view.trend, since: view.since };
+    return { status: view.status, ...(view.record || {}), delta4w: view.delta4w, trend: view.trend, since: view.since, baseline: view.baseline || null };
   },
   'GET /api/health-score/history': async (req, url) => {
     const days = Math.min(3650, Math.max(1, Math.round(Number(url.searchParams.get('days')) || 180)));

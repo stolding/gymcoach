@@ -223,6 +223,7 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
       if (!q) { c.setAttribute('visibility', 'hidden'); return; }
       c.setAttribute('cx', cx); c.setAttribute('cy', Y(q.y)); c.setAttribute('visibility', 'visible'); topY = Math.min(topY, Y(q.y));
       rows += `<div class="trow"><span class="dot ${s.cls === 'lb' ? 'b' : 'a'}"${s.color ? ` style="background:${s.color}"` : ''}></span>${esc(s.label || yLabel || 'Waarde')}: <b>${q.y}${s.unit ? ' ' + esc(s.unit) : ''}</b>${q.note ? ` <span class="muted">${esc(q.note)}</span>` : ''}</div>`;
+      if (Array.isArray(q.detail)) rows += q.detail.map((line) => `<div class="trow sub">${esc(line)}</div>`).join('');
     });
     const tr = markDays.filter((m) => m.x === best);
     if (tr.length) rows += tr.map((m) => `<div class="trow"><span class="dot tm"${m.color ? ` style="background:${m.color}"` : ''}></span>${m.color ? '' : t('app.getraind')}<b>${esc(m.label)}</b></div>`).join('');
@@ -1398,6 +1399,33 @@ function scoreBand(n) {
 function scoreNum(n) {
   return fmtNum(n, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
+// Verschil in scorepunten. Onder 0,2 telt als gelijk, net als bij de totaalscore.
+function scoreShift(now, was) {
+  if (now == null || was == null || !Number.isFinite(Number(now)) || !Number.isFinite(Number(was))) return null;
+  return Math.round((Number(now) - Number(was)) * 10) / 10;
+}
+function scoreMoveSpan(d) {
+  if (d == null) return '';
+  const dir = Math.abs(d) < 0.2 ? 'flat' : d > 0 ? 'up' : 'down';
+  return `<span class="score-move ${dir}">${d > 0 ? '+' : ''}${scoreNum(d)}</span>`;
+}
+function scoreMovesHtml(view) {
+  const base = view.baseline;
+  const rec = view.record;
+  if (!base || !rec?.metrics) return '';
+  const up = [];
+  const down = [];
+  for (const id of Object.keys(SCORE_ORDER)) {
+    for (const k of SCORE_ORDER[id]) {
+      const d = scoreShift(rec.metrics?.[k]?.score, base.metrics?.[k]);
+      if (d == null || Math.abs(d) < 0.2) continue;
+      const bit = `${t('score.m.' + k)} ${d > 0 ? '+' : ''}${scoreNum(d)}`;
+      (d > 0 ? up : down).push(bit);
+    }
+  }
+  if (!up.length && !down.length) return `<div class="score-moves muted small">${t('score.movedNone')}</div>`;
+  return `<div class="score-moves small">${up.length ? `<div class="up">${esc(t('score.movedUp', { a: up.join(' · ') }))}</div>` : ''}${down.length ? `<div class="down">${esc(t('score.movedDown', { a: down.join(' · ') }))}</div>` : ''}</div>`;
+}
 function scoreWhen(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-').map(Number);
@@ -1423,7 +1451,7 @@ function scoreHomeHtml() {
   const band = scoreBand(rec.total);
   const delta = view.delta4w;
   const dir = view.trend || 'flat';
-  const deltaTxt = delta == null ? '' : `<div class="score-delta ${dir}">${t('score.since', { d: (delta > 0 ? '+' : '') + scoreNum(delta), date: scoreWhen(view.since) })}</div>`;
+  const deltaTxt = delta == null ? '' : `<div class="score-delta ${dir}">${t('score.since', { d: (delta > 0 ? '+' : '') + scoreNum(delta), date: scoreWhen(view.since) })}</div>${scoreMovesHtml(view)}`;
   const total = rec.total == null ? `<p class="muted small">${t('score.low')}</p>` : `<div class="score-num">${t('score.per10', { n: scoreNum(rec.total) })}</div>`;
   const chart = (view.history || []).some((p) => p.total != null) ? '<div class="chart score-line" data-score-chart></div>' : '';
   return `<div class="card sig-card score-card score-home ${band ? 'band-' + band : ''}">
@@ -1458,13 +1486,15 @@ function scoreDetailHtml() {
       const m = rec.metrics[k];
       const mb = scoreBand(m.score);
       const shown = (k === 'vascDelta' || k === 'metDelta') && m.measured != null ? m.measured : m.value;
-      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted">${esc(scoreMetricValue(k, shown))}</span><b>${scoreNum(m.score)}</b></div>`;
+      const md = scoreShift(m.score, view.baseline?.metrics?.[k]);
+      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted">${esc(scoreMetricValue(k, shown))}</span><b>${scoreNum(m.score)}${scoreMoveSpan(md)}</b></div>`;
     }).join('');
-    return `<div class="score-cat"><div class="row between"><span>${t('score.cat.' + id)}</span><b>${scoreNum(n)}</b></div><div class="score-bar"><i class="band-${b}" style="width:${Math.max(0, Math.min(100, n * 10))}%"></i></div>${metrics}</div>`;
+    const cd = scoreShift(n, view.baseline?.categories?.[id]);
+    return `<div class="score-cat"><div class="row between"><span>${t('score.cat.' + id)}</span><b>${scoreNum(n)}${scoreMoveSpan(cd)}</b></div><div class="score-bar"><i class="band-${b}" style="width:${Math.max(0, Math.min(100, n * 10))}%"></i></div>${metrics}</div>`;
   }).join('');
   el.innerHTML = `<div class="row between wrap gap"><div class="eyebrow">${t('score.title')}</div><button type="button" class="btn ghost small" data-score-info aria-label="${esc(t('score.info'))}">i</button></div>
     ${rec.total == null ? `<p class="muted">${t('score.low')}</p>` : `<div class="score-num">${t('score.per10', { n: scoreNum(rec.total) })}</div>`}
-    ${delta == null ? '' : `<div class="score-delta ${dir}">${t('score.since', { d: (delta > 0 ? '+' : '') + scoreNum(delta), date: scoreWhen(view.since) })}</div>`}
+    ${delta == null ? '' : `<div class="score-delta ${dir}">${t('score.since', { d: (delta > 0 ? '+' : '') + scoreNum(delta), date: scoreWhen(view.since) })}</div>${scoreMovesHtml(view)}`}
     ${(view.history || []).some((p) => p.total != null) ? '<div class="chart score-line" data-score-chart></div>' : ''}
     <p class="score-note muted small hidden">${t('score.info')}</p>
     ${rec.normsApproximated ? `<div class="muted small">${t('score.approx')}</div>` : ''}
@@ -1475,7 +1505,18 @@ function drawScoreChart(root) {
   if (!el) return;
   const pts = (state.healthScore?.history || []).filter((p) => p.total != null);
   if (pts.length < 1) { el.remove(); return; }
-  lineChart(el, [{ cls: 'la', label: t('score.title'), points: pts.map((p) => ({ x: p.date, y: p.total })) }], { yLabel: t('score.title') });
+  const points = pts.map((p, i) => {
+    const prev = i > 0 ? pts[i - 1] : null;
+    const detail = ['body', 'heart', 'fitness', 'other'].map((id) => {
+      const n = p.categories?.[id];
+      if (n == null) return '';
+      const d = scoreShift(n, prev?.categories?.[id]);
+      const move = d == null || Math.abs(d) < 0.2 ? '' : ` ${d > 0 ? '+' : ''}${scoreNum(d)}`;
+      return `${t('score.cat.' + id)} ${scoreNum(n)}${move}`;
+    }).filter(Boolean);
+    return { x: p.date, y: p.total, detail };
+  });
+  lineChart(el, [{ cls: 'la', label: t('score.title'), points }], { yLabel: t('score.title') });
 }
 function bindScore(root) {
   if (!root) return;
@@ -3320,7 +3361,7 @@ $('#settingsForm').addEventListener('submit', async (ev) => {
     if (before.sex !== state.settings.sex || before.birthDate !== state.settings.birthDate || before.heightCm !== state.settings.heightCm) {
       const latest = await api('GET', '/api/health-score/latest');
       const history = await api('GET', '/api/health-score/history?days=180');
-      state.healthScore = { status: latest.status, record: latest.date ? latest : null, delta4w: latest.delta4w ?? null, trend: latest.trend ?? null, since: latest.since ?? null, history: history.points || [] };
+      state.healthScore = { status: latest.status, record: latest.date ? latest : null, delta4w: latest.delta4w ?? null, trend: latest.trend ?? null, since: latest.since ?? null, baseline: latest.baseline || null, history: history.points || [] };
       renderSignals();
       if ($('#tab-body').classList.contains('active')) renderHealthScore();
     }

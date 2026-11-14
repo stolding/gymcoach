@@ -104,12 +104,18 @@
   <section id="tab-stats" class="panel">
     <div class="row between wrap gap">
       <h1 data-i18n="ui.tabs.statistieken">Terugkijken</h1>
+      <div class="row gap wrap">
+        <div class="row gap no-print">
+          <button type="button" class="btn small ghost" id="reviewPrint" data-i18n="ui.stats.print">Afdrukken</button>
+          <button type="button" class="btn small ghost" id="reviewPdf" data-i18n="ui.stats.savePdf">PDF</button>
+        </div>
       <label class="period"><span data-i18n="ui.stats.periode">Periode</span>
         <select id="statRange" aria-label="Periode voor de statistieken" data-i18n-aria-label="ui.stats.periodeVoorDeStatistieken">
           <optgroup label="Kalender" data-i18n-label="ui.stats.kalender"><option value="week" data-i18n="ui.stats.dezeWeek">Deze week</option><option value="month" data-i18n="ui.stats.dezeMaand">Deze maand</option><option value="year" data-i18n="ui.stats.ditJaar">Dit jaar</option></optgroup>
           <optgroup label="Terugkijken" data-i18n-label="ui.stats.terugkijken"><option value="28" data-i18n="ui.stats.laatste4Weken">Laatste 4 weken</option><option value="84" selected data-i18n="ui.stats.laatste12Weken">Laatste 12 weken</option><option value="182" data-i18n="ui.analysis.laatsteHalfJaar">Laatste half jaar</option><option value="365" data-i18n="ui.stats.laatsteJaar">Laatste jaar</option><option value="0" data-i18n="pk.all">Alles</option></optgroup>
         </select>
       </label>
+      </div>
     </div>
     <h2 data-i18n="ui.review.numbers">Cijfers</h2>
     <div class="tiles6" id="statTotals"></div>
@@ -123,13 +129,7 @@
         <p class="muted small" id="volMassNote" style="margin:.3rem 0 0"></p></div>
     </div>
     <div class="card" id="strengthCard">
-      <div class="row between wrap gap">
-        <h2 data-i18n="ui.stats.krachtontwikkelingPerSpiergroep">Krachtontwikkeling per spiergroep</h2>
-        <div class="row gap no-print">
-          <button type="button" class="btn small ghost" id="strengthPrint" data-i18n="ui.stats.print">Afdrukken</button>
-          <button type="button" class="btn small ghost" id="strengthPdf" data-i18n="ui.stats.savePdf">PDF</button>
-        </div>
-      </div>
+      <h2 data-i18n="ui.stats.krachtontwikkelingPerSpiergroep">Krachtontwikkeling per spiergroep</h2>
       <p class="muted" style="margin-top:-.4rem" data-i18n="ui.stats.geschat1rmPerOefening">Geschat 1RM per oefening, de mediaan per spiergroep. Een sessie die meer dan 15% van de mediaan van die oefening afwijkt telt niet mee. Het begin van de periode is 100: 110 betekent 10% sterker. Klik een spiergroep aan of uit.</p>
       <div class="chips small sgchips" id="strengthChips"></div>
       <div id="chartStrength" class="chart tall"></div>

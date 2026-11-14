@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.8 — 14 november 2026
+- Afdrukken en PDF gelden voor de hele tab Terugkijken: cijfers, grafieken, spiergroepen, oefeningen en patronen.
+
 ## 2.32.7 — 14 november 2026
 - De krachtontwikkeling kun je afdrukken of als PDF bewaren. De PDF toont de spiergroepen die op het scherm aan staan.
 

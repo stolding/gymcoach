@@ -1094,21 +1094,23 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .score-home .score-num { font-size: 1.7rem; }
 .chart.score-line { height: 168px; margin-top: .45rem; }
 @media print {
-  body.print-strength { background: #fff !important; }
-  body.print-strength * { visibility: hidden; }
-  body.print-strength #strengthCard,
-  body.print-strength #strengthCard * { visibility: visible; }
-  body.print-strength #strengthCard {
-    position: absolute; left: 0; top: 0; width: 100%; margin: 0;
-    background: #fff !important; color: #1c1d1f !important; border: 0; box-shadow: none;
-  }
-  body.print-strength #strengthCard .muted { color: #5c5f66 !important; }
-  body.print-strength #strengthCard .no-print { display: none !important; }
-  body.print-strength #strengthCard .chart { height: 320px; }
-  body.print-strength #strengthCard .chart text { fill: #5c5f66; }
-  body.print-strength #strengthCard .chart .grid { stroke: #e2e0da; }
-  body.print-strength #strengthCard .chips button { background: #fff; color: #1c1d1f; border-color: #d5d3cd; }
-  body.print-strength #strengthCard .chips button.on { background: #1c1d1f; color: #fff; }
+  body.print-review { background: #fff !important; color: #1c1d1f !important; }
+  body.print-review header.top,
+  body.print-review nav.tabs,
+  body.print-review .no-print,
+  body.print-review .panel { display: none !important; }
+  body.print-review #tab-stats { display: block !important; }
+  body.print-review #tab-stats,
+  body.print-review #tab-stats .card,
+  body.print-review #tab-stats h1,
+  body.print-review #tab-stats h2,
+  body.print-review #tab-stats td,
+  body.print-review #tab-stats th { color: #1c1d1f !important; background: #fff; }
+  body.print-review #tab-stats .muted,
+  body.print-review #tab-stats .chart text { color: #5c5f66 !important; fill: #5c5f66; }
+  body.print-review #tab-stats .card { break-inside: avoid; border-color: #e2e0da; box-shadow: none; }
+  body.print-review #tab-stats .chart .grid { stroke: #e2e0da; }
+  body.print-review #tab-stats .hidden { display: none !important; }
 }
 .score-home .chart.score-line { height: 132px; }
 

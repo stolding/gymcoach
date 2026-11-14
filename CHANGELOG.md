@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.9 — 14 november 2026
+- In de PDF van Terugkijken staat meer ruimte tussen de delen. Een deel dat niet meer past schuift in zijn geheel naar de volgende pagina.
+
 ## 2.32.8 — 14 november 2026
 - Afdrukken en PDF gelden voor de hele tab Terugkijken: cijfers, grafieken, spiergroepen, oefeningen en patronen.
 

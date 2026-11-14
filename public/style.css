@@ -1077,6 +1077,7 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .score-bar > i.band-low, .score-dot.band-low { background: var(--warn); }
 .score-dot { width: .55rem; height: .55rem; border-radius: 50%; display: inline-block; flex: none; }
 .score-metric { display: flex; align-items: baseline; gap: .45rem; font-size: .82rem; padding: .12rem 0; }
+.score-metric .score-reading { white-space: nowrap; }
 .score-metric b { margin-left: auto; font-variant-numeric: tabular-nums; }
 .score-home .score-num { font-size: 1.7rem; }
 .chart.score-line { height: 168px; margin-top: .45rem; }

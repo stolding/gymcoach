@@ -1404,10 +1404,46 @@ function scoreShift(now, was) {
   if (now == null || was == null || !Number.isFinite(Number(now)) || !Number.isFinite(Number(was))) return null;
   return Math.round((Number(now) - Number(was)) * 10) / 10;
 }
-function scoreMoveSpan(d) {
-  if (d == null) return '';
-  const dir = Math.abs(d) < 0.2 ? 'flat' : d > 0 ? 'up' : 'down';
-  return `<span class="score-move ${dir}">${d > 0 ? '+' : ''}${scoreNum(d)}</span>`;
+function basePart(raw) {
+  if (raw == null) return null;
+  return typeof raw === 'number' ? { score: raw, value: null } : raw;
+}
+function metricDigits(id) {
+  return id === 'ecwTbw' ? 3 : id === 'ffmi' || id === 'bmi' || id === 'pwv' || id === 'bonePct' || id === 'vo2max' || id === 'fat' || id === 'visceral' ? 1 : 0;
+}
+function shownMetric(m, id) {
+  if (!m) return null;
+  if ((id === 'vascDelta' || id === 'metDelta') && m.measured != null) return m.measured;
+  return m.value ?? null;
+}
+// Helling van de score op deze waarde. Negatief: een lagere meting geeft een hogere score, zoals BMI boven 22.
+function scoreSlope(points, value) {
+  const pts = [...(points || [])].filter((p) => Array.isArray(p) && Number.isFinite(+p[0]) && Number.isFinite(+p[1])).sort((a, b) => a[0] - b[0]);
+  if (pts.length < 2 || !Number.isFinite(Number(value))) return 0;
+  let i = 1;
+  while (i < pts.length - 1 && value > pts[i][0]) i++;
+  const [x0, y0] = pts[i - 1];
+  const [x1, y1] = pts[i];
+  return x1 === x0 ? 0 : (y1 - y0) / (x1 - x0);
+}
+// Groen als de meting de gezondere kant op ging, rood als die ongezonder werd. Bij BMI telt dalen alleen richting 22 als goed.
+function valueHealthDir(points, now, was) {
+  if (now == null || was == null) return 'flat';
+  const gain = ((scoreSlope(points, was) + scoreSlope(points, now)) / 2) * (now - was);
+  if (Math.abs(gain) < 1e-9) return 'flat';
+  return gain > 0 ? 'up' : 'down';
+}
+function metricDeltaText(id, d) {
+  const digits = metricDigits(id);
+  const rounded = Math.round(d * 10 ** digits) / 10 ** digits;
+  if (!rounded) return '';
+  const n = fmtNum(Math.abs(rounded), { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return (rounded > 0 ? '+' : '−') + n;
+}
+function valueMoveSpan(id, now, was, points) {
+  const text = now == null || was == null ? '' : metricDeltaText(id, now - was);
+  if (!text) return '';
+  return `<span class="score-move ${valueHealthDir(points, now, was)}">${text}</span>`;
 }
 function scoreMovesHtml(view) {
   const base = view.baseline;
@@ -1417,10 +1453,18 @@ function scoreMovesHtml(view) {
   const down = [];
   for (const id of Object.keys(SCORE_ORDER)) {
     for (const k of SCORE_ORDER[id]) {
-      const d = scoreShift(rec.metrics?.[k]?.score, base.metrics?.[k]);
-      if (d == null || Math.abs(d) < 0.2) continue;
-      const bit = `${t('score.m.' + k)} ${d > 0 ? '+' : ''}${scoreNum(d)}`;
-      (d > 0 ? up : down).push(bit);
+      const m = rec.metrics?.[k];
+      const prev = basePart(base.metrics?.[k]);
+      if (!m || !prev) continue;
+      const scoreD = scoreShift(m.score, prev.score);
+      if (scoreD == null || Math.abs(scoreD) < 0.2) continue;
+      const now = shownMetric(m, k);
+      const was = shownMetric(prev, k);
+      const text = now == null || was == null ? `${scoreD > 0 ? '+' : ''}${scoreNum(scoreD)}` : metricDeltaText(k, now - was);
+      if (!text) continue;
+      const dir = now == null || was == null ? (scoreD > 0 ? 'up' : 'down') : valueHealthDir(m.points, m.value, prev.value);
+      const bit = `${t('score.m.' + k)} ${text}`;
+      (dir === 'down' ? down : up).push(bit);
     }
   }
   if (!up.length && !down.length) return `<div class="score-moves muted small">${t('score.movedNone')}</div>`;
@@ -1485,12 +1529,12 @@ function scoreDetailHtml() {
     const metrics = (SCORE_ORDER[id] || []).filter((k) => rec.metrics?.[k]).map((k) => {
       const m = rec.metrics[k];
       const mb = scoreBand(m.score);
-      const shown = (k === 'vascDelta' || k === 'metDelta') && m.measured != null ? m.measured : m.value;
-      const md = scoreShift(m.score, view.baseline?.metrics?.[k]);
-      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted">${esc(scoreMetricValue(k, shown))}</span><b>${scoreNum(m.score)}${scoreMoveSpan(md)}</b></div>`;
+      const shown = shownMetric(m, k);
+      const prev = basePart(view.baseline?.metrics?.[k]);
+      const move = valueMoveSpan(k, shown, shownMetric(prev, k), m.points);
+      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted score-reading">${esc(scoreMetricValue(k, shown))}${move}</span><b>${scoreNum(m.score)}</b></div>`;
     }).join('');
-    const cd = scoreShift(n, view.baseline?.categories?.[id]);
-    return `<div class="score-cat"><div class="row between"><span>${t('score.cat.' + id)}</span><b>${scoreNum(n)}${scoreMoveSpan(cd)}</b></div><div class="score-bar"><i class="band-${b}" style="width:${Math.max(0, Math.min(100, n * 10))}%"></i></div>${metrics}</div>`;
+    return `<div class="score-cat"><div class="row between"><span>${t('score.cat.' + id)}</span><b>${scoreNum(n)}</b></div><div class="score-bar"><i class="band-${b}" style="width:${Math.max(0, Math.min(100, n * 10))}%"></i></div>${metrics}</div>`;
   }).join('');
   el.innerHTML = `<div class="row between wrap gap"><div class="eyebrow">${t('score.title')}</div><button type="button" class="btn ghost small" data-score-info aria-label="${esc(t('score.info'))}">i</button></div>
     ${rec.total == null ? `<p class="muted">${t('score.low')}</p>` : `<div class="score-num">${t('score.per10', { n: scoreNum(rec.total) })}</div>`}

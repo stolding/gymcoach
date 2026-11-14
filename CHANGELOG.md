@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.1 — 14 november 2026
+- Het verschil staat bij de meetwaarde, niet bij de score. De kleur volgt of de meting gezonder werd: een BMI die naar 22 zakt is groen, een BMI die verder stijgt is rood. Vet, rusthartslag en leeftijden werken zo ook: lager is daar groener.
+
 ## 2.32.0 — 14 november 2026
 - Bij de gezondheidsscore zie je welke categorie en welke meting sinds de vergelijkingsdatum omhoog of omlaag ging. In de grafiek staat dat per punt ten opzichte van de meting ervoor.
 

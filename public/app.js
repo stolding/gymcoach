@@ -305,12 +305,30 @@ const FOCUS_WORDS = {
   billen: ['bil', 'glute'], benen: ['been', 'benen', 'quad', 'hamstring', 'kuit'],
 };
 const setsSummary = (e) => `${e.sets.length} × ${e.sets[0]?.reps} · ${e.sets[0]?.weight} kg`;
+// Oefeningen, warming-up en cooldown. Dezelfde lijst staat ingeklapt op de kaart en in de hover.
+function exerciseRows(s) {
+  const warm = s.warmup && (s.warmup.mobility.length + s.warmup.cable.length)
+    ? `<button type="button" class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: s.warmup.mobility.length + s.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>`
+    : '';
+  const ex = (s.exercises || []).map((e, i) => `
+        <button type="button" class="row-item${exDone(s, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
+          ${exDone(s, e) ? '<span class="ri-check" title="' + t('app.gedaan3') + '">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}" title="${e.focus ? t('app.focusDezeWeek') : ''}"></span>`}
+          <span class="ri-name">${e.group ? `<span class="badge ss">${e.group}${s.exercises.slice(0, i + 1).filter((x) => x.group === e.group).length}</span> ` : ''}${esc(e.title)}</span>
+          <span class="ri-sum">${e.sets?.length ? setsSummary(e) : '—'}${/^↑/.test(e.note || '') ? ' <span class="up">↑</span>' : /^↓/.test(e.note || '') ? ' <span class="down">↓</span>' : ''}</span>
+          <span class="ri-chev" aria-hidden="true">›</span>
+        </button>`).join('');
+  const cool = s.cooldown?.length
+    ? `<button type="button" class="row-item wc" data-open="cool"><span class="ri-dot cool"></span><span class="ri-name">${t('ed.cooldown')}</span><span class="ri-sum">${t('app.stretchesMin', { n: s.cooldown.length, a: coolMin(s.cooldown) })}</span><span class="ri-chev" aria-hidden="true">›</span></button>`
+    : '';
+  return warm + ex + cool;
+}
 const MAX_MUSCLE = () => Math.max(1, ...Object.values(state.plan?.muscles || {}));
 
 // ---------- vorige weken ----------
 // Het tabblad Plan kan terugbladeren naar bewaarde weekplannen: per training gepland tegenover gedaan, per oefening.
 const nlNum = (n) => Number(n || 0).toLocaleString(localeOf(), { maximumFractionDigits: 1 });
 let pastWeek = null;       // null = deze week, anders "2026-W44"
+const exOpen = new Set(); // kaarten waarvan de oefeningenlijst open staat
 let weekList = null;       // [{ week, planned, done, … }] uit het archief, nieuwste eerst
 let pastData = null;       // het rapport van de bekeken week
 
@@ -440,19 +458,11 @@ function renderPlan() {
       ${outdoorActBanners(s)}
       <footer>${slotBtns}</footer>
     </article>` : `
-    <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
+    <article class="card session${doneOf(s) ? ' done' : ''}${exOpen.has(s.key) ? '' : ' ex-shut'}" data-key="${esc(s.key)}">
       <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
-        <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div></header>
+        <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div>${exerciseRows(s) ? `<div class="ex-pop">${exerciseRows(s)}</div>` : ''}</header>
       ${(s.shifts || []).map((sh) => `<p class="small shift">${esc(t('plan.shift', { title: sh.title, from: sh.from, muscle: t('bm.' + sh.muscle), pct: sh.pct }))}</p>`).join('')}
-      ${s.warmup && (s.warmup.mobility.length + s.warmup.cable.length) ? `<button class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: s.warmup.mobility.length + s.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
-      ${s.exercises.map((e, i) => `
-        <button class="row-item${exDone(s, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
-          ${exDone(s, e) ? '<span class="ri-check" title="' + t('app.gedaan3') + '">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}" title="${e.focus ? t('app.focusDezeWeek') : ''}"></span>`}
-          <span class="ri-name">${e.group ? `<span class="badge ss">${e.group}${s.exercises.slice(0, i + 1).filter((x) => x.group === e.group).length}</span> ` : ''}${esc(e.title)}</span>
-          <span class="ri-sum">${setsSummary(e)}${/^↑/.test(e.note || '') ? ' <span class="up">↑</span>' : /^↓/.test(e.note || '') ? ' <span class="down">↓</span>' : ''}</span>
-          <span class="ri-chev" aria-hidden="true">›</span>
-        </button>`).join('')}
-      ${s.cooldown?.length ? `<button class="row-item wc" data-open="cool"><span class="ri-dot cool"></span><span class="ri-name">${t('ed.cooldown')}</span><span class="ri-sum">${t('app.stretchesMin', { n: s.cooldown.length, a: coolMin(s.cooldown) })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
+      ${exerciseRows(s) ? `<button type="button" class="ex-fold-btn" data-act="fold" aria-expanded="${exOpen.has(s.key) ? 'true' : 'false'}">${t('app.exList')}<span class="ri-chev" aria-hidden="true">›</span></button><div class="ex-fold">${exerciseRows(s)}</div>` : ''}
       ${doneBanner(s)}
       <footer>${doneOf(s) ? `
         <button class="btn accent" data-act="view">${t('app.bekijkTraining')}</button>
@@ -634,16 +644,31 @@ function highlightSessions() {
   document.querySelectorAll('#sessions .session').forEach((card) => {
     const s = plan.sessions.find((x) => x.key === card.dataset.key); if (!s) return;
     let sets = 0;
-    card.querySelectorAll('.row-item').forEach((row) => {
+    card.querySelectorAll('.ex-fold .row-item').forEach((row) => {
       row.classList.remove('mh-primary', 'mh-secondary', 'mh-dim');
       row.querySelector('.mh-tag')?.remove();
-      if (!selMuscle) return;
+      const twin = card.querySelector(row.dataset.open === 'ex'
+        ? `.ex-pop .row-item[data-open="ex"][data-i="${row.dataset.i}"]`
+        : `.ex-pop .row-item[data-open="${row.dataset.open}"]`);
+      if (!selMuscle) {
+        if (twin) { twin.classList.remove('mh-primary', 'mh-secondary', 'mh-dim'); twin.querySelector('.mh-tag')?.remove(); }
+        return;
+      }
       const e = row.dataset.open === 'ex' ? s.exercises[+row.dataset.i] : null;
       const w = e?.muscles?.[selMuscle] || 0;
-      if (!w) { row.classList.add('mh-dim'); return; }
-      sets += e.sets.length * w;
-      row.classList.add(w >= 1 ? 'mh-primary' : 'mh-secondary');
-      row.querySelector('.ri-name').insertAdjacentHTML('beforeend', ` <span class="mh-tag">${w >= 1 ? 'primair' : 'secundair'}</span>`);
+      if (!w) row.classList.add('mh-dim');
+      else {
+        sets += e.sets.length * w;
+        row.classList.add(w >= 1 ? 'mh-primary' : 'mh-secondary');
+        row.querySelector('.ri-name').insertAdjacentHTML('beforeend', ` <span class="mh-tag">${w >= 1 ? 'primair' : 'secundair'}</span>`);
+      }
+      if (twin) {
+        twin.classList.remove('mh-primary', 'mh-secondary', 'mh-dim');
+        twin.querySelector('.mh-tag')?.remove();
+        twin.classList.add(...[...row.classList].filter((c) => c.startsWith('mh-')));
+        const tag = row.querySelector('.mh-tag');
+        if (tag) twin.querySelector('.ri-name').insertAdjacentHTML('beforeend', tag.outerHTML);
+      }
     });
     const mm = card.querySelector('.mini-map');
     if (mm) mm.innerHTML = bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name, selected: selMuscle });
@@ -657,8 +682,14 @@ $('#planOverview').addEventListener('click', (ev) => {
   const j = ev.target.closest('[data-jump]');
   if (j) {
     const [key, i] = j.dataset.jump.split('|');
-    const row = document.querySelector(`#sessions .session[data-key="${CSS.escape(key)}"] .row-item[data-open="ex"][data-i="${i}"]`);
-    if (row) { row.scrollIntoView({ behavior: 'smooth', block: 'center' }); row.classList.remove('mh-flash'); void row.offsetWidth; row.classList.add('mh-flash'); }
+    const row = document.querySelector(`#sessions .session[data-key="${CSS.escape(key)}"] .ex-fold .row-item[data-open="ex"][data-i="${i}"]`);
+    if (row) {
+      const card = row.closest('.session');
+      card.classList.remove('ex-shut');
+      exOpen.add(key);
+      card.querySelector('.ex-fold-btn')?.setAttribute('aria-expanded', 'true');
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' }); row.classList.remove('mh-flash'); void row.offsetWidth; row.classList.add('mh-flash');
+    }
     return;
   }
   const t = ev.target.closest('[data-m]'); if (!t) return;
@@ -876,6 +907,12 @@ $('#sessions').addEventListener('click', async (ev) => {
   const btn = ev.target.closest('button[data-act]');
   if (!btn) return;
   const act = btn.dataset.act;
+  if (act === 'fold') {
+    const shut = card.classList.toggle('ex-shut');
+    if (shut) exOpen.delete(session.key); else exOpen.add(session.key);
+    btn.setAttribute('aria-expanded', shut ? 'false' : 'true');
+    return;
+  }
   if (act === 'view') { const d = doneOf(session); if (d) openWorkouts([d.id]); return; }
   if (act === 'coach') { coachRequest(btn, { session: session.key }); return; }
   if (act === 'remove') {

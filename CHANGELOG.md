@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.31.0 — 14 november 2026
+- De oefeningen op een trainingskaart staan ingeklapt. Je klapt ze open, of je ziet de lijst als je over de naam van de training gaat.
+
 ## 2.30.1 — 14 november 2026
 - Een wandeling of andere activiteit toont wat Apple Health deze week al binnenkreeg, op dezelfde balk als een gedane training. Wat nog ontbreekt tot het weekdoel staat eronder, op een gele balk.
 

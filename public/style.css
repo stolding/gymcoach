@@ -47,7 +47,7 @@ main { max-width: 1400px; margin: 0 auto; padding: 1rem; }
 .sessions { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
 @media (min-width: 1040px) { .sessions { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .sessions { grid-template-columns: 1fr; } }
-.session { margin-top: 1rem; display: flex; flex-direction: column; }
+.session { margin-top: 1rem; display: flex; flex-direction: column; position: relative; }
 .session header { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; margin-bottom: .5rem; }
 .badge { font-size: .75rem; padding: .1rem .5rem; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
 .badge.ok { color: var(--ok); border-color: currentColor; }
@@ -320,7 +320,17 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .plan-row .ht.split .hf.tired { background: var(--accent); }
 .plan-row .ht.split .hf.fresh { background: var(--ok); }
 .plan-fig .bm { cursor: pointer; }
-.session header[data-open="plan"] { cursor: pointer; margin: -.35rem -.35rem .15rem; padding: .35rem; border-radius: 10px; }
+.session header[data-open="plan"] { cursor: pointer; margin: -.35rem -.35rem .15rem; padding: .35rem; border-radius: 10px; position: relative; }
+.ex-fold-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; margin: .1rem 0 .25rem; padding: .4rem .2rem; background: none; border: 0; border-top: 1px solid var(--line); color: var(--muted); font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; text-align: left; }
+.ex-fold-btn:hover { color: var(--ink); }
+.session.ex-shut .ex-fold { display: none; }
+.ex-fold-btn .ri-chev { transition: transform .15s; }
+.session:not(.ex-shut) .ex-fold-btn .ri-chev { transform: rotate(90deg); }
+.ex-pop { display: none; position: absolute; z-index: 40; top: calc(100% + .2rem); left: 0; right: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 14px 36px rgba(0,0,0,.5); padding: .15rem .5rem .4rem; max-height: min(22rem, 70vh); overflow: auto; }
+@media (hover: hover) and (pointer: fine) {
+  .session.ex-shut header:hover .ex-pop { display: block; }
+  .session.ex-shut:hover { z-index: 6; }
+}
 .session header[data-open="plan"]:hover, .session header[data-open="plan"]:focus-visible { background: color-mix(in srgb, var(--ink) 5%, transparent); outline: none; }
 .info-dlg { width: min(860px, 96vw); }
 .info-dlg .info-body { overflow: auto; max-height: min(70vh, 680px); display: flex; flex-direction: column; gap: .85rem; }

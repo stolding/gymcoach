@@ -610,6 +610,7 @@ export default {
   "app.controleer": "Check",
   "app.zetOpGymMonster": "Put on Gym Monster",
   "app.minOefeningen": "~{estMinutes} min · {n} exercises{a} {b}",
+  "app.exList": "Exercises",
   "app.gedaanOp": "Done on {a}",
   "app.resterend": "Remaining",
   "app.resterendFor": "Remaining ({name})",

@@ -610,6 +610,7 @@ export default {
   "app.controleer": "Prüfen",
   "app.zetOpGymMonster": "Auf Gym Monster übertragen",
   "app.minOefeningen": "~{estMinutes} Min. · {n} Übungen{a} {b}",
+  "app.exList": "Übungen",
   "app.gedaanOp": "Gemacht am {a}",
   "app.resterend": "Noch offen",
   "app.resterendFor": "Noch offen ({name})",

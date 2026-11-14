@@ -122,9 +122,15 @@
         <div class="legend"><span class="lg"><i style="background:var(--a)"></i><span data-i18n="ui.leg.volumePerWeek">Volume per week</span></span><span class="lg"><i style="background:var(--b);height:3px;border-radius:2px"></i><span data-i18n="ui.leg.muscleWithings">Spiermassa (Withings)</span></span></div>
         <p class="muted small" id="volMassNote" style="margin:.3rem 0 0"></p></div>
     </div>
-    <div class="card">
-      <h2 data-i18n="ui.stats.krachtontwikkelingPerSpiergroep">Krachtontwikkeling per spiergroep</h2>
-      <p class="muted" style="margin-top:-.4rem" data-i18n="ui.stats.geschat1rmPerOefening">Geschat 1RM per oefening, gemiddeld per spiergroep. Het begin van de periode is 100: 110 betekent 10% sterker. Klik een spiergroep aan of uit.</p>
+    <div class="card" id="strengthCard">
+      <div class="row between wrap gap">
+        <h2 data-i18n="ui.stats.krachtontwikkelingPerSpiergroep">Krachtontwikkeling per spiergroep</h2>
+        <div class="row gap no-print">
+          <button type="button" class="btn small ghost" id="strengthPrint" data-i18n="ui.stats.print">Afdrukken</button>
+          <button type="button" class="btn small ghost" id="strengthPdf" data-i18n="ui.stats.savePdf">PDF</button>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:-.4rem" data-i18n="ui.stats.geschat1rmPerOefening">Geschat 1RM per oefening, de mediaan per spiergroep. Een sessie die meer dan 15% van de mediaan van die oefening afwijkt telt niet mee. Het begin van de periode is 100: 110 betekent 10% sterker. Klik een spiergroep aan of uit.</p>
       <div class="chips small sgchips" id="strengthChips"></div>
       <div id="chartStrength" class="chart tall"></div>
     </div>

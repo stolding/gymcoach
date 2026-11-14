@@ -447,6 +447,17 @@ const routes = {
     const since = from || (days > 0 ? new Date(Date.now() - days * 864e5).toISOString().slice(0, 10) : '0000');
     return { ...st, ...insights.statsExtra({ history: ctx.history, workouts: ctx.workouts, activities, daily, bodyLog: ctx.bodyLog, settings: ctx.settings }, since) };
   },
+  'GET /api/stats/strength.pdf': async (req, url) => {
+    const ctx = await context();
+    const from = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('from') || '') ? url.searchParams.get('from') : null;
+    const days = from ? Math.max(1, Math.ceil((Date.now() - new Date(from + 'T00:00:00').getTime()) / 864e5))
+      : Math.max(0, Number(url.searchParams.get('days') ?? 84));
+    const since = from || (days > 0 ? new Date(Date.now() - days * 864e5).toISOString().slice(0, 10) : '0000');
+    const extra = insights.statsExtra({ history: ctx.history, workouts: ctx.workouts, settings: ctx.settings }, since);
+    const keys = url.searchParams.getAll('keys').map((k) => k.trim()).filter(Boolean);
+    const who = store.currentUser()?.name || '';
+    return { __binary: { type: 'application/pdf', data: insights.strengthPdf({ strength: extra.strength, since, userName: who, keys: keys.length ? keys : null }), filename: 'GymCoach-krachtontwikkeling.pdf' } };
+  },
   'GET /api/analysis': async (req, url) => {
     const ctx = await context();
     const from = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('from') || '') ? url.searchParams.get('from') : null;

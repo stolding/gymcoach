@@ -3894,6 +3894,19 @@ function renderStatsExtra() {
   comboChart($('#chartSteps'), { x: st.map((p) => p.x), stacks: [{ label: t('app.stappen'), color: 'var(--b)', values: st.map((p) => p.y) }], goal: { value: s.stepGoal, label: t('app.doel2', { a: fmt(s.stepGoal) }) }, colorOf: (v) => (v >= s.stepGoal ? 'var(--ok)' : 'var(--b)'), label: t('ui.stats.stappenPerDag') });
   $('#stepsNote').textContent = st.length ? t('app.doelGehaaldOpVan', { stepHit: s.stepHit, n: s.steps.length, a: Math.round((s.stepHit / s.steps.length) * 100), b: s.steps.length > st.length ? t('app.deGrafiekToontDe') : '' }) : t('app.nogGeenStappenUit');
 }
+function strengthQuery() {
+  const from = periodStart(statDays);
+  const q = new URLSearchParams(from ? { from } : { days: String(statDays) });
+  for (const k of strengthOn || []) q.append('keys', k);
+  return q.toString();
+}
+$('#strengthPrint')?.addEventListener('click', () => {
+  document.body.classList.add('print-strength');
+  const done = () => { document.body.classList.remove('print-strength'); window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  window.print();
+});
+$('#strengthPdf')?.addEventListener('click', () => { window.open('/api/stats/strength.pdf?' + strengthQuery(), '_blank', 'noopener'); });
 
 // ---------- analyse ----------
 let analysisData = null;

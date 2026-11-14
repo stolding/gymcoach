@@ -596,6 +596,8 @@ export default {
   'app.zetOpGymMonster': 'Zet op Gym Monster',
   'app.minOefeningen': '~{estMinutes} min · {n} oefeningen{a} {b}',
   'app.gedaanOp': 'Gedaan op {a}',
+  'app.resterend': 'Resterend',
+  'app.resterendFor': 'Resterend ({name})',
   'app.dezeWeekNogGeen': 'Deze week nog geen wandel- of fietsactiviteit binnengekomen.',
   'app.dezeWeekNogGeenAct': 'Deze week nog geen {name} binnengekomen.',
   'app.actDoneSub': 'deze week · gepland {plan} min',

@@ -611,6 +611,8 @@ export default {
   "app.zetOpGymMonster": "Legg på Gym Monster",
   "app.minOefeningen": "~{estMinutes} min · {n} øvelser{a} {b}",
   "app.gedaanOp": "Gjort {a}",
+  "app.resterend": "Gjenstår",
+  "app.resterendFor": "Gjenstår ({name})",
   "app.dezeWeekNogGeen": "Ingen gange- eller sykkelaktivitet mottatt denne uken ennå.",
   "app.dezeWeekNogGeenAct": "Ingen {name} mottatt denne uken ennå.",
   "app.actDoneSub": "denne uken · planlagt {plan} min",

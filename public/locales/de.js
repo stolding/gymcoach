@@ -611,6 +611,8 @@ export default {
   "app.zetOpGymMonster": "Auf Gym Monster übertragen",
   "app.minOefeningen": "~{estMinutes} Min. · {n} Übungen{a} {b}",
   "app.gedaanOp": "Gemacht am {a}",
+  "app.resterend": "Noch offen",
+  "app.resterendFor": "Noch offen ({name})",
   "app.dezeWeekNogGeen": "Diese Woche ist noch keine Geh- oder Radaktivität eingegangen.",
   "app.dezeWeekNogGeenAct": "Diese Woche ist noch kein {name} eingegangen.",
   "app.actDoneSub": "diese Woche · geplant {plan} Min.",

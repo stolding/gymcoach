@@ -785,6 +785,14 @@ body.is-admin .fgrid .form-sub.admin-only { display: grid !important; }
 .ri-check { width: 14px; text-align: center; color: var(--ok); font-weight: 800; font-size: .9rem; flex: none; }
 .session .done-banner { margin-top: auto; }
 .session .done-banner + footer { margin-top: 0; }
+.session-status { display: flex; flex-direction: column; gap: .45rem; }
+.session > .session-status { margin-top: auto; }
+.session-status .done-banner { margin-top: 0; }
+.session .session-status + footer { margin-top: .75rem; }
+.remain-banner { display: flex; gap: .65rem; align-items: center; padding: .55rem .7rem; border-radius: 9px;
+  background: color-mix(in srgb, #e0b34a 24%, var(--surface)); color: var(--ink); }
+.remain-banner .small { color: var(--muted); }
+.remain-mark { width: 1.6rem; height: 1.6rem; border-radius: 50%; background: #e0b34a; color: #1a1408; display: flex; align-items: center; justify-content: center; font-weight: 800; flex: none; }
 .session.done > .row-item:last-of-type { margin-bottom: .8rem; }
 
 /* uitleg: hoe GymCoach werkt */

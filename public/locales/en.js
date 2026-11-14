@@ -611,6 +611,8 @@ export default {
   "app.zetOpGymMonster": "Put on Gym Monster",
   "app.minOefeningen": "~{estMinutes} min · {n} exercises{a} {b}",
   "app.gedaanOp": "Done on {a}",
+  "app.resterend": "Remaining",
+  "app.resterendFor": "Remaining ({name})",
   "app.dezeWeekNogGeen": "No walking or cycling activity received this week yet.",
   "app.dezeWeekNogGeenAct": "No {name} received this week yet.",
   "app.actDoneSub": "this week · planned {plan} min",

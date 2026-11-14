@@ -437,6 +437,7 @@ function renderPlan() {
       ${outdoorDone(s)}
       ${outdoorGoalLine(s)}
       <p class="muted small">${t('app.geenProgrammaVoorDe')}</p>
+      ${outdoorActBanners(s)}
       <footer>${slotBtns}</footer>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
@@ -538,6 +539,46 @@ function goalsForCard(session) {
 }
 function outdoorGoalLine(s) {
   return goalsForCard(s).map((g) => `<p class="small">${esc(t('goal.form.yourWeek', { name: actGoalName(g.id), a: actGoalText(g) }))}</p>`).join('');
+}
+function actWhen(date) {
+  return new Date(date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'short', day: 'numeric', month: 'short' });
+}
+function actFacts(a) {
+  return [
+    a.minutes ? `${Math.round(a.minutes)} min` : null,
+    a.km ? `${Number(a.km).toLocaleString(localeOf(), { maximumFractionDigits: 1 })} km` : null,
+    a.kcal ? `${Math.round(a.kcal)} kcal` : null,
+  ].filter(Boolean).join(' · ');
+}
+// Wat Apple Health deze week al binnenkreeg, op dezelfde balk als een gedane gymtraining.
+function outdoorDoneBanners(s) {
+  return [...outdoorTotals(s).acts]
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.start || '').localeCompare(String(b.start || '')))
+    .map((a) => {
+      const facts = actFacts(a);
+      return `<div class="done-banner"><span class="done-check">✓</span><div><b>${t('app.gedaanOp', { a: esc(actWhen(a.date)) })}</b>${facts ? `<div class="small">${esc(facts)}</div>` : ''}</div></div>`;
+    }).join('');
+}
+// Wat er nog ontbreekt tot het weekdoel: keren, minuten en kilometers.
+function outdoorRemainBanners(s) {
+  const o = outdoorTotals(s);
+  const goals = goalsForCard(s);
+  return goals.map((g) => {
+    const leftTimes = Math.max(0, g.times - o.acts.length);
+    const leftMin = Math.max(0, g.times * g.minutes - o.min);
+    const leftKm = g.km ? Math.max(0, Math.round((Number(g.km) - o.km) * 10) / 10) : 0;
+    const bits = [];
+    if (leftTimes) bits.push(`${leftTimes}×`);
+    if (leftMin) bits.push(`${leftMin} min`);
+    if (leftKm) bits.push(`${leftKm.toLocaleString(localeOf(), { maximumFractionDigits: 1 })} km`);
+    if (!bits.length) return '';
+    const title = goals.length > 1 ? t('app.resterendFor', { name: actGoalName(g.id) }) : t('app.resterend');
+    return `<div class="remain-banner"><span class="remain-mark" aria-hidden="true">–</span><div><b>${esc(title)}</b><div class="small">${esc(bits.join(' · '))}</div></div>`;
+  }).join('');
+}
+function outdoorActBanners(s) {
+  const html = outdoorDoneBanners(s) + outdoorRemainBanners(s);
+  return html ? `<div class="session-status">${html}</div>` : '';
 }
 
 let selMuscle = null;
@@ -778,7 +819,7 @@ function openSession(session) {
         ${splitCell(afterBy.has(k) ? afterBy.get(k) : null)}
       </button>`).join('')}
   </div>` : '';
-  const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}${activityEditor(session)}` : `
+  const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}${outdoorActBanners(session)}${activityEditor(session)}` : `
     ${session.warmup && (session.warmup.mobility.length + session.warmup.cable.length) ? `<button type="button" class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: session.warmup.mobility.length + session.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
     ${(session.exercises || []).map((e, i) => `<button type="button" class="row-item${exDone(session, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
         ${exDone(session, e) ? '<span class="ri-check" title="' + t('app.gedaan3') + '">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}"></span>`}

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.30.1 — 14 november 2026
+- Een wandeling of andere activiteit toont wat Apple Health deze week al binnenkreeg, op dezelfde balk als een gedane training. Wat nog ontbreekt tot het weekdoel staat eronder, op een gele balk.
+
 ## 2.30.0 — 14 november 2026
 - Op Doel stel je een weekdoel voor wandelen, zwemmen, padel of een andere activiteit. Het voorstel van de coach staat ernaast: uit je laatste vier weken in Apple Health, of een vaste richtlijn als die meting er nog niet is. Hetzelfde staat bij de activiteit in het weekplan.
 

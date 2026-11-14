@@ -217,6 +217,12 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .goal-str .now { grid-column: 1 / -1; margin: 0; }
 .goal-str .btn { margin-bottom: .15rem; }
 @media (max-width: 760px) { .goal-str { grid-template-columns: 1fr 1fr auto; } .goal-str label:first-child { grid-column: 1 / -1; } }
+#goalForm .form-sub > #goalActRows, .act-goal { grid-column: 1 / -1; }
+.goal-act { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr) minmax(0, .8fr) minmax(0, .9fr) auto; gap: .45rem .9rem; align-items: end; margin-bottom: .35rem; }
+.goal-act .proposal { grid-column: 1 / -1; margin: 0 0 .8rem; }
+.goal-act .btn { margin-bottom: .15rem; }
+.act-goal { margin-top: .8rem; }
+@media (max-width: 760px) { .goal-act { grid-template-columns: 1fr 1fr; } .goal-act label:first-child { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .goal-home { grid-template-columns: 1fr; } .goal-spark { align-items: flex-start; } }
 .hv { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
 .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }

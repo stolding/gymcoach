@@ -29,6 +29,7 @@ import { workoutPdf, workoutMail } from './lib/summary.js';
 import { figureFor } from './public/bodymap.js';
 import * as exinfo from './lib/exinfo.js';
 import * as acttypes from './lib/acttypes.js';
+import * as actgoal from './lib/actgoal.js';
 import * as ghUpdate from './lib/update.js';
 import { createReadStream } from 'node:fs';
 import { stat as fsStat } from 'node:fs/promises';
@@ -322,10 +323,30 @@ async function userSignals(ctx) {
 async function goalView(ctx, daily = null) {
   const w = await store.getWithings();
   const heightCm = ctx.settings.heightCm || (w.height ? Math.round(w.height * 100) : null);
-  return goal.assemble({
+  const today = goal.todayISO();
+  const view = goal.assemble({
     settings: { ...ctx.settings, heightCm },
-    bodyLog: ctx.bodyLog, daily: daily || await store.getHealthDaily(), history: ctx.history, today: goal.todayISO(),
+    bodyLog: ctx.bodyLog, daily: daily || await store.getHealthDaily(), history: ctx.history, today,
   });
+  const activities = await store.getActivities();
+  view.activityGoals = actgoal.normalize(ctx.settings.activityGoals);
+  view.activityProposals = actgoal.proposals(activities, today);
+  return view;
+}
+
+// Weekdoelen voor activiteiten. Past alleen de geplande minuten van een bijpassende sessie aan.
+async function saveActivityGoals(ctx, raw) {
+  const goals = actgoal.normalize(raw);
+  const s = await store.getSettings();
+  s.activityGoals = goals;
+  await store.saveSettings(s);
+  ctx.settings = await store.getSettings();
+  const plan = await store.getPlan();
+  if (plan && actgoal.applyMinutes(plan, goals)) {
+    await store.savePlan(plan);
+    return engine.localizePlan(await store.getPlan());
+  }
+  return null;
 }
 
 // Maakt een nieuw weekplan met de regels-engine en bewaart het.
@@ -727,12 +748,18 @@ const routes = {
     const incoming = await body(req);
     const ctx = await context();
     const clampSteps = (n) => Math.min(40000, Math.max(1000, Math.round(+n || 8000)));
-    if (incoming.stepsOnly) {
-      const s = await store.getSettings();
-      if (Object.hasOwn(incoming, 'stepGoal')) s.stepGoal = clampSteps(incoming.stepGoal);
-      await store.saveSettings(s);
-      ctx.settings = s;
-      return { ...(await goalView(ctx)), saved: true };
+    const withActivities = async (extra) => {
+      const plan = Object.hasOwn(incoming, 'activityGoals') ? await saveActivityGoals(ctx, incoming.activityGoals) : null;
+      return { ...(await goalView(ctx)), ...(plan ? { plan } : {}), ...extra };
+    };
+    if (incoming.activityOnly || incoming.stepsOnly) {
+      if (Object.hasOwn(incoming, 'stepGoal')) {
+        const s = await store.getSettings();
+        s.stepGoal = clampSteps(incoming.stepGoal);
+        await store.saveSettings(s);
+        ctx.settings = s;
+      }
+      return withActivities({ saved: true });
     }
     const applied = goal.applyOutcome({
       settings: ctx.settings, bodyLog: ctx.bodyLog, history: ctx.history, today: goal.todayISO(),
@@ -751,7 +778,7 @@ const routes = {
         await store.saveSettings(s);
         ctx.settings = s;
       }
-      return { ...(await goalView(ctx)), blocked: applied.blocked, saved: false };
+      return withActivities({ blocked: applied.blocked, saved: false });
     }
     const s = await store.getSettings();
     s.outcome = applied.outcome;
@@ -763,7 +790,7 @@ const routes = {
     }
     await store.saveSettings(s);
     ctx.settings = s;
-    return { ...(await goalView(ctx)), saved: true };
+    return withActivities({ saved: true });
   },
   'POST /api/swap': async (req) => {
     const { pattern, variant, id } = await body(req);
@@ -860,7 +887,9 @@ const routes = {
       if (!kind) throw Object.assign(new Error(tr('nt.actNeed')), { status: 400 });
       let n = 1; while (plan.sessions.some((x) => x.key === `X${n}`)) n++;
       const old = slot >= 0 ? plan.sessions[slot] : null;
-      const sess = outdoorSession({ key: old ? old.key : `X${n}`, name, kind, minutes: Number(ctx.settings.minutesPerSession) || 45 });
+      const draft = { outdoor: true, activity: kind.type, activityLabel: kind.match || '' };
+      const wanted = actgoal.goalFor(draft, actgoal.normalize(ctx.settings.activityGoals));
+      const sess = outdoorSession({ key: old ? old.key : `X${n}`, name, kind, minutes: wanted?.minutes || Number(ctx.settings.minutesPerSession) || 45 });
       if (old) plan.sessions[slot] = sess; else plan.sessions.push(sess);
       await touchPlan(plan);
       return { plan, key: sess.key };

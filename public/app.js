@@ -21,6 +21,10 @@ const ACT = tmap({ wandelen: ['§app.act.wandelen', '#6c9cff', '🚶'], fietsen:
   racket: ['§app.act.racket', '#d6e04b', '🎾'], teamsport: ['§app.act.teamsport', '#3fd29a', '⚽'], water: ['§app.act.water', '#3f8fe0', '🏄'], wintersport: ['§app.act.wintersport', '#a9dcff', '⛷️'], vechtsport: ['§app.act.vechtsport', '#e0705a', '🥊'], dans: ['§app.act.dans', '#ff8fd0', '💃'],
   kracht: ['§app.act.kracht', '#4cc26a', '🏋️'], hiit: ['§app.act.hiit', '#ff9f43', '⚡'], yoga: ['§app.act.yoga', '#c77dff', '🧘'], elliptical: ['§app.act.elliptical', '#7fd1ae', '🏃'], overig: ['§app.act.overig', '#9a9ca1', '•'] });
 const actLabel = (t) => (ACT[t] || ACT.overig)[0], actColor = (t) => (ACT[t] || ACT.overig)[1];
+// Zelfde lijst als PRESETS in lib/actgoal.js. De browser laadt dat bestand niet.
+const ACT_GOAL_IDS = ['wandelen', 'fietsen', 'hardlopen', 'zwemmen', 'roeien', 'padel', 'teamsport', 'yoga', 'hiit', 'elliptical', 'vechtsport', 'dans', 'water', 'wintersport'];
+const ACT_GOAL_KM = new Set(['wandelen', 'fietsen', 'hardlopen', 'zwemmen', 'roeien', 'water', 'wintersport', 'elliptical']);
+const ACT_GOAL_EASY = ['wandelen', 'fietsen', 'hardlopen'];
 // kalenderweek van het plan, zoals in de programmanaam op het toestel ("GC 2026-W45 Full Body A")
 function isoWeekOf(d) { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y = t.getUTCFullYear(); return { y, w: Math.ceil(((t - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7) }; }
 const planIso = (p) => isoWeekOf(new Date(p?.generatedAt || Date.now()));
@@ -427,10 +431,11 @@ function renderPlan() {
   const slotBtns = `<button class="btn ghost" data-act="replace">${t('ed.replace')}</button><button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>`;
   wrap.innerHTML = plan.sessions.map((s) => s.outdoor ? `
     <article class="card session outdoor${outdoorActs(s).length ? ' done' : ''}" data-key="${esc(s.key)}">
-      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}</h3><div class="muted small">${t('app.min', { estMinutes: s.estMinutes })} <span class="badge">${esc(outdoorBadge(s))}</span></div></div>
+      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}</h3><div class="muted small">${outdoorMeta(s)}</div></div>
         <div class="out-ico" aria-hidden="true">${ACT[s.activity]?.[2] || '🚶‍♂️🚴'}</div></header>
       <p class="small">${esc(s.advice || '')}</p>
       ${outdoorDone(s)}
+      ${outdoorGoalLine(s)}
       <p class="muted small">${t('app.geenProgrammaVoorDe')}</p>
       <footer>${slotBtns}</footer>
     </article>` : `
@@ -493,14 +498,46 @@ function outdoorActs(s) {
 function outdoorBadge(s) {
   return s?.activityLabel || ACT[s?.activity]?.[0] || DAY_SHORT.buiten;
 }
-function outdoorDone(s) {
+function outdoorTotals(s) {
   const acts = outdoorActs(s);
-  if (!acts.length) {
-    const name = outdoorBadge(s);
-    return '<p class="muted small">' + (s?.activity ? t('app.dezeWeekNogGeenAct', { name: esc(name) }) : t('app.dezeWeekNogGeen')) + '</p>';
-  }
-  const min = acts.reduce((n, a) => n + (a.minutes || 0), 0), km = acts.reduce((n, a) => n + (a.km || 0), 0);
-  return `<p class="small"><span class="badge ok">${t('app.dezeWeek')}</span> ${t('app.min2', { n: acts.length, min, a: km ? t('app.km', { a: (Math.round(km * 10) / 10).toLocaleString(localeOf()) }) : '' })}</p>`;
+  const min = Math.round(acts.reduce((n, a) => n + (Number(a.minutes) || 0), 0));
+  const km = Math.round(acts.reduce((n, a) => n + (Number(a.km) || 0), 0) * 10) / 10;
+  return { acts, min, km };
+}
+// Zonder binnenkomst blijft de planning staan. Mét binnenkomst staan minuten en kilometers in de kop en in het overzicht.
+function outdoorDone(s) {
+  if (outdoorTotals(s).acts.length) return '';
+  const name = outdoorBadge(s);
+  return '<p class="muted small">' + (s?.activity ? t('app.dezeWeekNogGeenAct', { name: esc(name) }) : t('app.dezeWeekNogGeen')) + '</p>';
+}
+function outdoorMeta(s) {
+  const o = outdoorTotals(s);
+  const badge = `<span class="badge">${esc(outdoorBadge(s))}</span>`;
+  if (!o.acts.length) return `${t('app.min', { estMinutes: s.estMinutes })} ${badge}`;
+  const km = o.km ? t('app.km', { a: o.km.toLocaleString(localeOf()) }) : '';
+  return `${t('app.min2', { n: o.acts.length, min: o.min, a: km })} · ${badge}`;
+}
+function actGoalName(id) { return id === 'padel' ? t('nt.act.padel') : (ACT[id]?.[0] || id); }
+function actGoalText(p) {
+  if (!p) return '';
+  const km = p.km ? t('goal.form.proposalKm', { km: Number(p.km).toLocaleString(localeOf()) }) : '';
+  return t('goal.form.proposalLine', { times: p.times, min: p.minutes, km });
+}
+function fixedActId(session) {
+  if (!session?.outdoor && session?.type !== 'buiten') return '';
+  if (normName(session.activityLabel) === 'padel') return 'padel';
+  if (session.activity && ACT_GOAL_IDS.includes(session.activity)) return session.activity;
+  return '';
+}
+function goalsForCard(session) {
+  const all = goalView?.activityGoals || [];
+  const id = fixedActId(session);
+  if (id) return all.filter((g) => g.id === id);
+  if (session?.outdoor || session?.type === 'buiten') return all.filter((g) => ACT_GOAL_EASY.includes(g.id));
+  return [];
+}
+function outdoorGoalLine(s) {
+  return goalsForCard(s).map((g) => `<p class="small">${esc(t('goal.form.yourWeek', { name: actGoalName(g.id), a: actGoalText(g) }))}</p>`).join('');
 }
 
 let selMuscle = null;
@@ -684,7 +721,13 @@ function openSession(session) {
   const sets = sessionSets(session);
   const done = session.outdoor ? null : doneOf(session);
   const tile = (label, value, sub) => `<div><div class="eyebrow">${esc(label)}</div><div class="mid">${esc(String(value))}</div>${sub ? `<div class="muted small">${esc(sub)}</div>` : ''}</div>`;
-  const tiles = [
+  const outdoor = session.outdoor ? outdoorTotals(session) : null;
+  const actGoal = session.outdoor ? (goalsForCard(session)[0] || null) : null;
+  const tiles = outdoor ? [
+    tile(t('app.tijd'), outdoor.acts.length ? `${outdoor.min} min` : (session.estMinutes != null ? `${session.estMinutes} min` : '—'), outdoor.acts.length ? t('app.actDoneSub', { plan: session.estMinutes ?? '' }) : t('app.gepland')),
+    ...(outdoor.km ? [tile(t('app.afstand'), `${outdoor.km.toLocaleString(localeOf())} km`, actGoal?.km ? t('app.actKmSub', { km: Number(actGoal.km).toLocaleString(localeOf()) }) : t('app.dezeWeek'))] : []),
+    ...(actGoal ? [tile(t('goal.title'), actGoalText(actGoal), t('goal.form.perWeek'))] : []),
+  ] : [
     tile(t('app.tijd'), session.estMinutes != null ? `${session.estMinutes} min` : '—', t('app.gepland')),
     tile(t('ed.volume'), vol ? `${Math.round(vol).toLocaleString(localeOf())} kg` : '—', t('app.gepland')),
     tile(t('ed.sets'), sets || '—', ''),
@@ -735,7 +778,7 @@ function openSession(session) {
         ${splitCell(afterBy.has(k) ? afterBy.get(k) : null)}
       </button>`).join('')}
   </div>` : '';
-  const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}` : `
+  const rows = session.outdoor ? `<p class="small">${esc(session.advice || '')}</p>${outdoorDone(session)}${activityEditor(session)}` : `
     ${session.warmup && (session.warmup.mobility.length + session.warmup.cable.length) ? `<button type="button" class="row-item wc" data-open="warm"><span class="ri-dot warm"></span><span class="ri-name">${t('ed.warmup')}</span><span class="ri-sum">${t('app.oef6Min', { a: session.warmup.mobility.length + session.warmup.cable.length })}</span><span class="ri-chev" aria-hidden="true">›</span></button>` : ''}
     ${(session.exercises || []).map((e, i) => `<button type="button" class="row-item${exDone(session, e) ? ' ex-done' : ''}" data-open="ex" data-i="${i}">
         ${exDone(session, e) ? '<span class="ri-check" title="' + t('app.gedaan3') + '">✓</span>' : `<span class="ri-dot ${e.focus ? 'focus' : ''}"></span>`}
@@ -751,6 +794,7 @@ function openSession(session) {
     ${figs}
     <div>${rows}</div>
   </form>`;
+  bindActivityEditor(dlg, session);
   dlg.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => {
     if (b.dataset.open === 'ex') openExercise(session, +b.dataset.i);
     else openWarmCool(session, b.dataset.open);
@@ -2712,22 +2756,32 @@ function goalFormBody() {
   const steps = num(f.steps);
   if (Number.isNaN(steps)) throw new Error(t('goal.badInput'));
   const stepGoal = steps == null ? 8000 : steps;
-  if (!composition && !strengths.length) return { stepsOnly: true, stepGoal };
-  return { composition, strengths: strengths.length ? strengths : null, stepGoal };
+  const activityGoals = readActivityGoals(f);
+  if (!composition && !strengths.length) return { stepsOnly: true, stepGoal, activityGoals };
+  return { composition, strengths: strengths.length ? strengths : null, stepGoal, activityGoals };
+}
+
+function takeGoal(v) {
+  goalView = v;
+  if (state?.settings) {
+    if (v.alignPlan != null) state.settings.alignPlan = !!v.alignPlan;
+    if (v.stepGoal != null) state.settings.stepGoal = v.stepGoal;
+    if (v.activityGoals) state.settings.activityGoals = v.activityGoals;
+    if (v.saved && v.outcome && v.alignPlan && v.style?.goal) {
+      state.settings.goal = v.style.goal;
+      const sel = $('#settingsForm')?.elements?.goal;
+      if (sel) sel.value = v.style.goal;
+    }
+  }
+  if (v.plan && state) state.plan = v.plan;
 }
 
 async function saveGoal(accept, clear) {
   const alignPlan = !!$('#goalAlign')?.checked;
   const body = clear ? { composition: null, strengths: null, accept: false, alignPlan } : { ...goalFormBody(), accept: !!accept, alignPlan };
-  goalView = await api('PUT', '/api/goal', body);
-  if (state?.settings && goalView.alignPlan != null) state.settings.alignPlan = !!goalView.alignPlan;
-  if (state?.settings && goalView.stepGoal != null) state.settings.stepGoal = goalView.stepGoal;
-  if (state?.settings && goalView.saved && goalView.outcome && goalView.alignPlan && goalView.style?.goal) {
-    state.settings.goal = goalView.style.goal;
-    const sel = $('#settingsForm')?.elements?.goal;
-    if (sel) sel.value = goalView.style.goal;
-  }
+  takeGoal(await api('PUT', '/api/goal', body));
   renderGoal();
+  if (goalView.plan) renderPlan();
   if (state?.overview) renderHome();
   if (goalView.saved) toast(clear ? t('goal.cleared') : t('goal.saved'));
   if (goalView.saved && goalView.outcome && goalView.alignPlan) await offerAlignedPlan();
@@ -2762,6 +2816,112 @@ function strengthRow(g, muscles) {
     </div>`;
 }
 
+function proposalHtml(id) {
+  const p = id ? goalView?.activityProposals?.[id] : null;
+  if (!p) return '';
+  const recent = p.recent
+    ? t('goal.form.recent', { times: p.recent.times, min: p.recent.minutes, km: p.recent.km ? t('goal.form.proposalKm', { km: Number(p.recent.km).toLocaleString(localeOf()) }) : '' })
+    : t('goal.form.recentNone');
+  return `<b>${esc(t('goal.form.proposal'))}:</b> ${esc(actGoalText(p))} <button type="button" class="btn small ghost" data-x="use">${esc(t('goal.form.useProposal'))}</button> <span class="muted">${esc(recent)}</span>`;
+}
+
+function activityOptions(id, ids) {
+  const list = ids || ACT_GOAL_IDS;
+  return [`<option value="">${esc(t('goal.form.actPick'))}</option>`]
+    .concat(list.map((k) => `<option value="${k}"${k === id ? ' selected' : ''}>${esc(actGoalName(k))}</option>`)).join('');
+}
+
+function activityRow(g, ids, lock) {
+  const id = g?.id || '';
+  const kmOn = ACT_GOAL_KM.has(id);
+  return `<div class="goal-act">
+      <label><span>${esc(t('goal.form.actKind'))}</span><select data-act${lock ? ' disabled' : ''}>${activityOptions(id, ids)}</select></label>
+      <label><span>${esc(t('goal.form.actTimes'))}</span><input data-times type="number" min="1" max="14" step="1" inputmode="numeric" value="${g?.times ?? ''}"></label>
+      <label><span>${esc(t('goal.form.actMin'))}</span><input data-min type="number" min="10" max="180" step="5" inputmode="numeric" value="${g?.minutes ?? ''}"></label>
+      <label><span>${esc(t('goal.form.actKm'))}</span><input data-km type="number" min="0.1" max="500" step="0.1" inputmode="decimal" value="${g?.km ?? ''}"${kmOn ? '' : ' disabled'}></label>
+      <button type="button" class="btn ghost small" data-x="rm-act">${esc(t('goal.form.remove'))}</button>
+      <p class="proposal small">${proposalHtml(id)}</p>
+    </div>`;
+}
+
+function syncActRow(row) {
+  const id = row.querySelector('[data-act]')?.value || '';
+  const km = row.querySelector('[data-km]');
+  if (km) {
+    const on = ACT_GOAL_KM.has(id);
+    km.disabled = !on;
+    if (!on) km.value = '';
+  }
+  const p = row.querySelector('.proposal');
+  if (p) p.innerHTML = proposalHtml(id);
+}
+
+function readActivityGoals(root) {
+  const rows = [...root.querySelectorAll('.goal-act')];
+  if (!rows.length) return goalView?.activityGoals || [];
+  const goals = [];
+  for (const row of rows) {
+    const id = row.querySelector('[data-act]')?.value || '';
+    const times = row.querySelector('[data-times]')?.value ?? '';
+    const minutes = row.querySelector('[data-min]')?.value ?? '';
+    const kmEl = row.querySelector('[data-km]');
+    const km = kmEl && !kmEl.disabled ? kmEl.value : '';
+    if (!id && !String(times).trim() && !String(minutes).trim() && !String(km).trim()) continue;
+    if (!id || !String(times).trim() || !String(minutes).trim()) throw new Error(t('goal.form.actNeed'));
+    goals.push({ id, times, minutes, km });
+  }
+  return goals;
+}
+
+function activityEditor(session) {
+  const fixed = fixedActId(session);
+  const ids = fixed ? [fixed] : ACT_GOAL_EASY;
+  const known = goalsForCard(session);
+  const g = (fixed && known[0]) || (!fixed && known.length === 1 ? known[0] : null);
+  return `<div class="act-goal"><p class="eyebrow">${esc(t('goal.form.actHead'))}</p><p class="muted small">${esc(t('goal.form.actLead'))}</p>${activityRow(g || (fixed ? { id: fixed } : null), ids, !!fixed)}<p class="row"><button type="button" class="btn small" data-x="save-act">${esc(t('goal.form.save'))}</button></p></div>`;
+}
+
+function bindActivityEditor(dlg, session) {
+  const box = dlg.querySelector('.act-goal');
+  if (!box) return;
+  box.addEventListener('change', (ev) => {
+    const sel = ev.target.closest('[data-act]');
+    if (!sel) return;
+    syncActRow(sel.closest('.goal-act'));
+  });
+  box.addEventListener('click', (ev) => {
+    const use = ev.target.closest('[data-x=use]');
+    if (!use) return;
+    const row = use.closest('.goal-act');
+    const p = goalView?.activityProposals?.[row.querySelector('[data-act]')?.value];
+    if (!p) return;
+    row.querySelector('[data-times]').value = p.times;
+    row.querySelector('[data-min]').value = p.minutes;
+    const km = row.querySelector('[data-km]');
+    if (km && !km.disabled) km.value = p.km ?? '';
+  });
+  box.querySelector('[data-x=save-act]')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
+    const row = box.querySelector('.goal-act');
+    const id = row.querySelector('[data-act]')?.value || '';
+    const times = String(row.querySelector('[data-times]')?.value || '').trim();
+    const minutes = String(row.querySelector('[data-min]')?.value || '').trim();
+    const kmEl = row.querySelector('[data-km]');
+    const km = kmEl && !kmEl.disabled ? String(kmEl.value || '').trim() : '';
+    if ((times || minutes) && (!id || !times || !minutes)) { toast(t('goal.form.actNeed'), true); return; }
+    if (!id && km) { toast(t('goal.form.actNeed'), true); return; }
+    const next = (goalView?.activityGoals || []).filter((g) => g.id !== id);
+    if (id && times && minutes) next.push({ id, times, minutes, km });
+    try {
+      takeGoal(await api('PUT', '/api/goal', { activityOnly: true, activityGoals: next }));
+      renderGoal();
+      if (goalView.plan) renderPlan();
+      const fresh = state.plan?.sessions?.find((s) => s.key === session.key) || session;
+      openSession(fresh);
+      toast(t('goal.saved'));
+    } catch (e) { toast(e.message, true); }
+  }));
+}
+
 function muscleHint(key, muscles) {
   if (!key) return '';
   const m = (muscles || goalView?.muscles || []).find((x) => x.key === key);
@@ -2782,6 +2942,8 @@ function fillGoalForm(v) {
   const align = $('#goalAlign');
   if (align) align.checked = !!v.alignPlan;
   if (f.steps) f.steps.value = v.stepGoal ?? '';
+  const acts = $('#goalActRows');
+  if (acts) acts.innerHTML = (v.activityGoals?.length ? v.activityGoals : [{}]).map((g) => activityRow(g.id ? g : null)).join('');
 }
 
 function showGoalNow(v) {
@@ -2932,6 +3094,46 @@ $('#goalStrengthRows')?.addEventListener('change', (ev) => {
 });
 $('#goalStrengthAdd')?.addEventListener('click', () => {
   $('#goalStrengthRows')?.insertAdjacentHTML('beforeend', strengthRow(null, goalView?.muscles || []));
+});
+$('#goalActRows')?.addEventListener('click', (ev) => {
+  const use = ev.target.closest('[data-x=use]');
+  if (use) {
+    const row = use.closest('.goal-act');
+    const p = goalView?.activityProposals?.[row.querySelector('[data-act]')?.value];
+    if (!p) return;
+    row.querySelector('[data-times]').value = p.times;
+    row.querySelector('[data-min]').value = p.minutes;
+    const km = row.querySelector('[data-km]');
+    if (km && !km.disabled) km.value = p.km ?? '';
+    return;
+  }
+  const rm = ev.target.closest('[data-x=rm-act]');
+  if (!rm) return;
+  const box = $('#goalActRows');
+  if (box.querySelectorAll('.goal-act').length <= 1) {
+    const row = rm.closest('.goal-act');
+    row.querySelector('[data-act]').value = '';
+    row.querySelector('[data-times]').value = '';
+    row.querySelector('[data-min]').value = '';
+    const km = row.querySelector('[data-km]');
+    if (km) km.value = '';
+    syncActRow(row);
+    return;
+  }
+  rm.closest('.goal-act').remove();
+});
+$('#goalActRows')?.addEventListener('change', (ev) => {
+  const sel = ev.target.closest('[data-act]');
+  if (!sel) return;
+  const id = sel.value;
+  const dup = id && [...$('#goalActRows').querySelectorAll('[data-act]')].some((s) => s !== sel && s.value === id);
+  if (dup) { sel.value = ''; toast(t('goal.form.actDup'), true); }
+  syncActRow(sel.closest('.goal-act'));
+});
+$('#goalActAdd')?.addEventListener('click', () => {
+  const box = $('#goalActRows');
+  if (!box || box.querySelectorAll('.goal-act').length >= 8) return;
+  box.insertAdjacentHTML('beforeend', activityRow(null));
 });
 $('#goalClear').addEventListener('click', () => busy($('#goalClear'), () => saveGoal(false, true)));
 $('#goalStatus').addEventListener('click', (ev) => { const b = ev.target.closest('[data-accept]'); if (b) busy(b, () => saveGoal(true)); });

@@ -1,6 +1,6 @@
 {
   "name": "gymcoach",
-  "version": "2.29.0",
+  "version": "2.30.0",
   "description": "Persoonlijk trainingsdashboard voor de Speediance Gym Monster",
   "type": "module",
   "main": "server.js",

@@ -224,6 +224,12 @@
             <input name="steps" type="number" min="1000" max="40000" step="500" inputmode="numeric" placeholder="8000">
             <span class="muted" data-i18n="goal.form.stepsHint">Hoeveel stappen je per dag wilt zetten. Dit verandert het lichaams- en krachtdoel niet.</span></label>
         </div>
+        <div class="form-sub">
+          <p class="eyebrow" data-i18n="goal.form.actHead">Activiteiten</p>
+          <p class="muted small" data-i18n="goal.form.actLead">Een weekdoel voor wandelen, zwemmen of een andere activiteit. Het voorstel van de coach staat ernaast. Dit verandert het lichaams- en krachtdoel niet.</p>
+          <div id="goalActRows"></div>
+          <p class="row"><button type="button" class="btn small ghost" id="goalActAdd" data-i18n="goal.form.actAdd">Activiteit toevoegen</button></p>
+        </div>
         <div class="span2">
           <label class="inline-check" for="goalAlign">
             <input type="checkbox" id="goalAlign">

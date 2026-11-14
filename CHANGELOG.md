@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.6 — 14 november 2026
+- De krachtindex laat een sessie weg die meer dan 15% van de mediaan van die oefening afwijkt. Per week telt de mediaan van de oefeningen, zodat één uitschieter de spiergroep niet meetrekt.
+
 ## 2.32.5 — 14 november 2026
 - Het scoregetal rechts kleurt mee met de meting: groen als die gezonder werd, rood als die ongezonder werd. Een hogere BMI of rusthartslag kleurt daardoor rood.
 

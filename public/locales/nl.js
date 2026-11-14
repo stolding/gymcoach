@@ -392,7 +392,7 @@ export default {
   'ui.stats.laatsteJaar': 'Laatste jaar',
   'ui.stats.spiermassaEnTrainingsvolume': 'Spiermassa en trainingsvolume',
   'ui.stats.krachtontwikkelingPerSpiergroep': 'Krachtontwikkeling per spiergroep',
-  'ui.stats.geschat1rmPerOefening': 'Geschat 1RM per oefening, gemiddeld per spiergroep. Het begin van de periode is 100: 110 betekent 10% sterker. Klik een spiergroep aan of uit.',
+  'ui.stats.geschat1rmPerOefening': 'Geschat 1RM per oefening, de mediaan per spiergroep. Een sessie die meer dan 15% van de mediaan van die oefening afwijkt telt niet mee. Het begin van de periode is 100: 110 betekent 10% sterker. Klik een spiergroep aan of uit.',
   'ui.stats.kilometersPerWeek': 'Kilometers per week',
   'ui.stats.stappenPerDag': 'Stappen per dag',
   'ui.stats.perSpiergroep': 'Per spiergroep',

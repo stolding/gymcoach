@@ -409,7 +409,7 @@ export default {
   "ui.stats.laatsteJaar": "Last year",
   "ui.stats.spiermassaEnTrainingsvolume": "Muscle mass and training volume",
   "ui.stats.krachtontwikkelingPerSpiergroep": "Strength development per muscle group",
-  "ui.stats.geschat1rmPerOefening": "Estimated 1RM per exercise, averaged per muscle group. The start of the period is 100: 110 means 10% stronger. Click a muscle group to turn it on or off.",
+  "ui.stats.geschat1rmPerOefening": "Estimated 1RM per exercise, the median per muscle group. A session more than 15% off the median of that exercise is left out. The start of the period is 100: 110 means 10% stronger. Click a muscle group to turn it on or off.",
   "ui.stats.kilometersPerWeek": "Kilometres per week",
   "ui.stats.stappenPerDag": "Steps per day",
   "ui.stats.perSpiergroep": "Per muscle group",

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.5 — 14 november 2026
+- Het scoregetal rechts kleurt mee met de meting: groen als die gezonder werd, rood als die ongezonder werd. Een hogere BMI of rusthartslag kleurt daardoor rood.
+
 ## 2.32.4 — 14 november 2026
 - Een activiteit toont de geplande tijd, en wat Apple Health binnenkreeg staat apart als gedaan. Hetzelfde patroon als bij een training op de Gym Monster.
 

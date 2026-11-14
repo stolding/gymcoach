@@ -1444,10 +1444,10 @@ function metricDeltaText(id, d) {
   const n = fmtNum(Math.abs(rounded), { minimumFractionDigits: digits, maximumFractionDigits: digits });
   return (rounded > 0 ? '+' : '−') + n;
 }
-function valueMoveSpan(id, now, was, points) {
+function valueMoveSpan(id, now, was, dir) {
   const text = now == null || was == null ? '' : metricDeltaText(id, now - was);
   if (!text) return '';
-  return `<span class="score-move ${valueHealthDir(points, now, was)}">${text}</span>`;
+  return `<span class="score-move ${dir}">${text}</span>`;
 }
 function scoreMovesHtml(view) {
   const base = view.baseline;
@@ -1535,10 +1535,14 @@ function scoreDetailHtml() {
       const mb = scoreBand(m.score);
       const shown = shownMetric(m, k);
       const prev = basePart(view.baseline?.metrics?.[k]);
-      const move = valueMoveSpan(k, shown, shownMetric(prev, k), m.points);
-      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted score-reading">${esc(scoreMetricValue(k, shown))}${move}</span><b>${scoreNum(m.score)}</b></div>`;
+      const dirM = valueHealthDir(m.points, m.value, prev?.value);
+      const move = valueMoveSpan(k, shown, shownMetric(prev, k), dirM);
+      const scoreDir = move && (dirM === 'up' || dirM === 'down') ? dirM : 'flat';
+      return `<div class="score-metric"><i class="score-dot band-${mb}"></i><span>${t('score.m.' + k)}</span><span class="muted score-reading">${esc(scoreMetricValue(k, shown))}${move}</span><b class="${scoreDir}">${scoreNum(m.score)}</b></div>`;
     }).join('');
-    return `<div class="score-cat"><div class="row between"><span>${t('score.cat.' + id)}</span><b>${scoreNum(n)}</b></div><div class="score-bar"><i class="band-${b}" style="width:${Math.max(0, Math.min(100, n * 10))}%"></i></div>${metrics}</div>`;
+    const cd = scoreShift(n, view.baseline?.categories?.[id]);
+    const dirC = cd == null || Math.abs(cd) < 0.2 ? 'flat' : cd > 0 ? 'up' : 'down';
+    return `<div class="score-cat"><div class="row between"><span>${t('score.cat.' + id)}</span><b class="${dirC}">${scoreNum(n)}</b></div><div class="score-bar"><i class="band-${b}" style="width:${Math.max(0, Math.min(100, n * 10))}%"></i></div>${metrics}</div>`;
   }).join('');
   el.innerHTML = `<div class="row between wrap gap"><div class="eyebrow">${t('score.title')}</div><button type="button" class="btn ghost small" data-score-info aria-label="${esc(t('score.info'))}">i</button></div>
     ${rec.total == null ? `<p class="muted">${t('score.low')}</p>` : `<div class="score-num">${t('score.per10', { n: scoreNum(rec.total) })}</div>`}

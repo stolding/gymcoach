@@ -1089,6 +1089,8 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .score-metric { display: flex; align-items: baseline; gap: .45rem; font-size: .82rem; padding: .12rem 0; }
 .score-metric .score-reading { white-space: nowrap; }
 .score-metric b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.score-metric b.up, .score-cat b.up { color: var(--ok); }
+.score-metric b.down, .score-cat b.down { color: var(--warn); }
 .score-home .score-num { font-size: 1.7rem; }
 .chart.score-line { height: 168px; margin-top: .45rem; }
 .score-home .chart.score-line { height: 132px; }

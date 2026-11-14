@@ -5,6 +5,15 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.4 — 14 november 2026
+- Een activiteit toont de geplande tijd, en wat Apple Health binnenkreeg staat apart als gedaan. Hetzelfde patroon als bij een training op de Gym Monster.
+
+## 2.32.3 — 14 november 2026
+- De teller "gedaan" op het weekplan telt een wandeling of andere activiteit mee, niet alleen de blokken van de coach.
+
+## 2.32.2 — 14 november 2026
+- De velden voor een activiteitsdoel staan recht onder hun label, ook in het weekplan.
+
 ## 2.32.1 — 14 november 2026
 - Het verschil staat bij de meetwaarde, niet bij de score. De kleur volgt of de meting gezonder werd: een BMI die naar 22 zakt is groen, een BMI die verder stijgt is rood. Vet, rusthartslag en leeftijden werken zo ook: lager is daar groener.
 

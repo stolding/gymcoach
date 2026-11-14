@@ -217,12 +217,22 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .goal-str .now { grid-column: 1 / -1; margin: 0; }
 .goal-str .btn { margin-bottom: .15rem; }
 @media (max-width: 760px) { .goal-str { grid-template-columns: 1fr 1fr auto; } .goal-str label:first-child { grid-column: 1 / -1; } }
-#goalForm .form-sub > #goalActRows, .act-goal { grid-column: 1 / -1; }
-.goal-act { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr) minmax(0, .8fr) minmax(0, .9fr) auto; gap: .45rem .9rem; align-items: end; margin-bottom: .35rem; }
-.goal-act .proposal { grid-column: 1 / -1; margin: 0 0 .8rem; }
-.goal-act .btn { margin-bottom: .15rem; }
+#goalForm .form-sub > #goalActRows, .act-goal { grid-column: 1 / -1; container-type: inline-size; }
+.goal-act { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(6.6rem, .85fr) minmax(7.6rem, 1fr) minmax(8.4rem, 1.1fr) auto; grid-template-rows: auto auto; column-gap: .55rem; row-gap: .28rem; align-items: end; margin-bottom: .35rem; }
+.goal-act > label { display: grid; grid-template-rows: subgrid; grid-row: span 2; gap: .28rem; min-width: 0; }
+.goal-act label > span { font-size: .75rem; line-height: 1.2; }
+.goal-act select, .goal-act input { width: 100%; margin: 0; }
+.goal-act > .btn { grid-column: 5; grid-row: 2; margin: 0; align-self: end; }
+.goal-act > .proposal { grid-column: 1 / -1; grid-row: 3; margin: .15rem 0 .8rem; }
 .act-goal { margin-top: .8rem; }
-@media (max-width: 760px) { .goal-act { grid-template-columns: 1fr 1fr; } .goal-act label:first-child { grid-column: 1 / -1; } }
+dialog:has(.act-goal) { width: min(760px, 96vw); }
+@container (max-width: 640px) {
+  .goal-act { grid-template-columns: 1fr 1fr; grid-template-rows: none; }
+  .goal-act > label { display: flex; flex-direction: column; grid-row: auto; grid-column: auto; }
+  .goal-act > label:first-child { grid-column: 1 / -1; }
+  .goal-act > .btn { grid-column: 1 / -1; grid-row: auto; justify-self: start; }
+  .goal-act > .proposal { grid-row: auto; }
+}
 @media (max-width: 700px) { .goal-home { grid-template-columns: 1fr; } .goal-spark { align-items: flex-start; } }
 .hv { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
 .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }

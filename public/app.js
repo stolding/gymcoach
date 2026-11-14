@@ -441,9 +441,11 @@ function renderPlan() {
   if (pastWeek) return renderPastWeek();
   $('#planTitle').textContent = t('app.week3', { w: planIso(plan).w, y: planIso(plan).y });
   updateWeekNav();
-  const nDone = plan.sessions.filter((x) => !x.outdoor && doneOf(x)).length, nGym = plan.sessions.filter((x) => !x.outdoor).length;
+  // Een wandeling of andere activiteit telt mee zodra er deze week een bijpassende binnenkomst is.
+  const nPlan = plan.sessions.length;
+  const nDone = plan.sessions.filter((x) => (x.outdoor || x.type === 'buiten') ? outdoorActs(x).length > 0 : doneOf(x)).length;
   $('#planMeta').innerHTML = t('app.perWeekBron', { a: GOAL[plan.goal] || plan.goal, daysPerWeek: plan.daysPerWeek, b: esc(String(plan.source || '').replace('regels', t('app.src.rules'))) }) + (plan.deload ? ' · <span class="badge warn"' + (plan.deloadReason === 'recovery' ? ` title="${t('sig.deloadEarly')}"` : '') + '>' + t('app.deloadWeek') + (plan.deloadReason === 'recovery' ? ' · ' + t('sig.deloadEarlyShort') : '') + '</span>' : '')
-    + (nDone ? ` · <span class="badge ok">${t('app.vanGedaan', { nDone, nGym, a: nDone >= nGym ? t('app.weekCompleet') : '' })}</span>` : '');
+    + (nDone ? ` · <span class="badge ok">${t('app.vanGedaan', { nDone, nGym: nPlan, a: nDone >= nPlan ? t('app.weekCompleet') : '' })}</span>` : '');
 
   renderWeekMap();
 
@@ -523,11 +525,8 @@ function outdoorDone(s) {
   return '<p class="muted small">' + (s?.activity ? t('app.dezeWeekNogGeenAct', { name: esc(name) }) : t('app.dezeWeekNogGeen')) + '</p>';
 }
 function outdoorMeta(s) {
-  const o = outdoorTotals(s);
   const badge = `<span class="badge">${esc(outdoorBadge(s))}</span>`;
-  if (!o.acts.length) return `${t('app.min', { estMinutes: s.estMinutes })} ${badge}`;
-  const km = o.km ? t('app.km', { a: o.km.toLocaleString(localeOf()) }) : '';
-  return `${t('app.min2', { n: o.acts.length, min: o.min, a: km })} · ${badge}`;
+  return `${t('app.min', { estMinutes: s.estMinutes })} ${badge}`;
 }
 function actGoalName(id) { return id === 'padel' ? t('nt.act.padel') : (ACT[id]?.[0] || id); }
 function actGoalText(p) {
@@ -797,8 +796,8 @@ function openSession(session) {
   const outdoor = session.outdoor ? outdoorTotals(session) : null;
   const actGoal = session.outdoor ? (goalsForCard(session)[0] || null) : null;
   const tiles = outdoor ? [
-    tile(t('app.tijd'), outdoor.acts.length ? `${outdoor.min} min` : (session.estMinutes != null ? `${session.estMinutes} min` : '—'), outdoor.acts.length ? t('app.actDoneSub', { plan: session.estMinutes ?? '' }) : t('app.gepland')),
-    ...(outdoor.km ? [tile(t('app.afstand'), `${outdoor.km.toLocaleString(localeOf())} km`, actGoal?.km ? t('app.actKmSub', { km: Number(actGoal.km).toLocaleString(localeOf()) }) : t('app.dezeWeek'))] : []),
+    tile(t('app.tijd'), session.estMinutes != null ? `${session.estMinutes} min` : '—', t('app.gepland')),
+    ...(actGoal?.km ? [tile(t('app.afstand'), `${Number(actGoal.km).toLocaleString(localeOf())} km`, t('app.gepland'))] : []),
     ...(actGoal ? [tile(t('goal.title'), actGoalText(actGoal), t('goal.form.perWeek'))] : []),
   ] : [
     tile(t('app.tijd'), session.estMinutes != null ? `${session.estMinutes} min` : '—', t('app.gepland')),
@@ -806,8 +805,13 @@ function openSession(session) {
     tile(t('ed.sets'), sets || '—', ''),
     tile(t('ed.exercises'), (session.exercises || []).length, ''),
   ];
-  if (done?.minutes) tiles.push(tile(t('app.tijd'), `${done.minutes} min`, t('app.gedaan2')));
-  if (done?.volume) tiles.push(tile(t('ed.volume'), `${Number(done.volume).toLocaleString(localeOf())} kg`, t('app.gedaan2')));
+  if (outdoor) {
+    if (outdoor.acts.length) tiles.push(tile(t('app.tijd'), `${outdoor.min} min`, t('app.gedaan2')));
+    if (outdoor.km) tiles.push(tile(t('app.afstand'), `${outdoor.km.toLocaleString(localeOf())} km`, t('app.gedaan2')));
+  } else {
+    if (done?.minutes) tiles.push(tile(t('app.tijd'), `${done.minutes} min`, t('app.gedaan2')));
+    if (done?.volume) tiles.push(tile(t('ed.volume'), `${Number(done.volume).toLocaleString(localeOf())} kg`, t('app.gedaan2')));
+  }
   const muscles = Object.entries(session.muscles || {}).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
   const fat = sessionFatigue(session);
   const after = sessionAfter(session, done);

@@ -269,6 +269,16 @@ function refreshMuscles(plan) {
   plan.muscles = total;
   return plan;
 }
+// Spierkaart en, als de week één plan is, het herstelraster. Verplaatst geen oefeningen.
+async function touchPlan(plan) {
+  refreshMuscles(plan);
+  if (plan.weekBalance) {
+    const ctx = await context();
+    weekbalance.refreshGrid(plan, { history: ctx.history });
+  }
+  await store.savePlan(plan);
+  return plan;
+}
 
 // Herstelscore en afvaltempo voor de huidige gebruiker (zie lib/signals.js).
 async function userSignals(ctx) {
@@ -809,9 +819,11 @@ const routes = {
     return { plan };
   },
   'POST /api/plan/session': async (req) => {
-    const { mode = 'empty', from, name, week } = await body(req);
+    const { mode = 'empty', from, name, week, replace } = await body(req);
     const plan = await store.getPlan();
     if (!plan) throw Object.assign(new Error(tr('app.maakEerstEenPlan')), { status: 400 });
+    const slot = replace ? plan.sessions.findIndex((x) => x.key === replace) : -1;
+    if (replace && slot < 0) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
     const ctx = await context();
     let base;
     let foreign = false;
@@ -821,7 +833,7 @@ const routes = {
       const src = srcPlan?.sessions.find((x) => x.key === from);
       if (!src || src.outdoor) throw Object.assign(new Error(tr('srv.trainingNietGevonden')), { status: 404 });
       base = JSON.parse(JSON.stringify(src));
-      for (const k of ['original', 'pushedAt', 'changedAfterPush', 'edited']) delete base[k];
+      for (const k of ['original', 'pushedAt', 'changedAfterPush', 'edited', 'shifts', 'locked', 'custom', 'lightened']) delete base[k];
     } else if (mode === 'template') {
       const tpl = store.getTemplate(from);
       if (!tpl) throw Object.assign(new Error(tr('srv.sjabloonNietGevonden')), { status: 404 });
@@ -829,23 +841,33 @@ const routes = {
       base = { name: tpl.name, warmup: tpl.warmup || null, cooldown: tpl.cooldown || null, exercises: tpl.exercises || [], template: tpl.id };
     } else base = { name: 'Eigen training', warmup: { mobility: [], cable: [] }, cooldown: [], exercises: [] };
     let n = 1; while (plan.sessions.some((x) => x.key === `X${n}`)) n++;
-    const sess = engine.adaptSession({ ...base, key: `X${n}`, name: String(name || base.name || 'Eigen training').slice(0, 40), type: 'eigen' }, {
+    const old = slot >= 0 ? plan.sessions[slot] : null;
+    const sess = engine.adaptSession({ ...base, key: old ? old.key : `X${n}`, name: String(name || base.name || 'Eigen training').slice(0, 40), type: mode === 'copy' ? (base.type || 'eigen') : 'eigen' }, {
       history: ctx.history, settings: ctx.settings, library: ctx.library, foreign, info: (id) => store.getExerciseInfo(Number(id), 'en')?.info || null,
     });
-    Object.assign(sess, { custom: true, locked: true, estMinutes: sess.estMinutes || 45 });
-    plan.sessions.push(sess);
-    refreshMuscles(plan);
-    await store.savePlan(plan);
+    sess.estMinutes = sess.estMinutes || 45;
+    if (old) {
+      if (old.pushedAt || old.changedAfterPush) sess.changedAfterPush = true;
+      delete sess.shifts;
+      delete sess.original;
+      delete sess.edited;
+      delete sess.pushedAt;
+      plan.sessions[slot] = sess;
+    } else {
+      Object.assign(sess, { custom: true, locked: true });
+      plan.sessions.push(sess);
+    }
+    await touchPlan(plan);
     return { plan, key: sess.key };
   },
-  // eigen training uit het plan halen
+  // één training uit deze week halen; de andere blijven staan
   'DELETE /api/plan/session': async (req, url) => {
     const plan = await store.getPlan();
-    const i = plan?.sessions.findIndex((x) => x.key === url.searchParams.get('key') && x.custom) ?? -1;
-    if (i < 0) throw Object.assign(new Error(tr('srv.alleenEigenTrainingenKun')), { status: 400 });
+    const i = plan?.sessions.findIndex((x) => x.key === url.searchParams.get('key')) ?? -1;
+    if (!plan || i < 0) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
     plan.sessions.splice(i, 1);
-    refreshMuscles(plan);
-    await store.savePlan(plan);
+    plan.daysPerWeek = plan.sessions.length;
+    await touchPlan(plan);
     return { plan };
   },
   // catalogus voor de editor: alle oefeningen, met per oefening jouw historie en de vermeden oefeningen

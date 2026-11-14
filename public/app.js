@@ -424,6 +424,7 @@ function renderPlan() {
 
   renderWeekMap();
 
+  const slotBtns = `<button class="btn ghost" data-act="replace">${t('ed.replace')}</button><button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>`;
   wrap.innerHTML = plan.sessions.map((s) => s.outdoor ? `
     <article class="card session outdoor" data-key="${esc(s.key)}">
       <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}</h3><div class="muted small">${t('app.min', { estMinutes: s.estMinutes })} <span class="badge">${esc(DAY_SHORT.buiten)}</span></div></div>
@@ -431,6 +432,7 @@ function renderPlan() {
       <p class="small">${esc(s.advice || '')}</p>
       ${outdoorDone(s)}
       <p class="muted small">${t('app.geenProgrammaVoorDe')}</p>
+      <footer>${slotBtns}</footer>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}" data-key="${esc(s.key)}">
       <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
@@ -451,11 +453,12 @@ function renderPlan() {
         <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
         <button class="btn ghost" data-act="lock" title="${s.locked ? t('ed.unlockHint') : t('ed.lockHint')}">${s.locked ? t('ed.unlock') : t('ed.lock')}</button>
         ${s.edited ? `<button class="btn ghost" data-act="revert">${t('ed.reset')}</button>` : ''}
-        <button class="btn ghost" data-act="push">${t('app.opnieuwOpToestel')}</button>` : `
+        <button class="btn ghost" data-act="push">${t('app.opnieuwOpToestel')}</button>
+        ${slotBtns}` : `
         <button class="btn ghost" data-act="edit">${t('ed.edit')}</button>
         <button class="btn ghost" data-act="lock" title="${s.locked ? t('ed.unlockHint') : t('ed.lockHint')}">${s.locked ? t('ed.unlock') : t('ed.lock')}</button>
         ${s.edited ? `<button class="btn ghost" data-act="revert">${t('ed.reset')}</button>` : ''}
-        ${s.custom ? `<button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>` : ''}
+        ${slotBtns}
         ${state.settings.ai?.provider && state.settings.ai.provider !== 'none' ? `<button class="btn ghost" data-act="coach" title="${t('app.laatDeAiCoach')}">${t('app.aiAdvies')}</button>` : ''}
         <button class="btn ghost" data-act="dry">${t('app.controleer')}</button>
         <button class="btn accent" data-act="push">${t('app.zetOpGymMonster')}</button>`}
@@ -779,6 +782,7 @@ $('#sessions').addEventListener('click', async (ev) => {
     try { state.plan = (await api('DELETE', '/api/plan/session?key=' + encodeURIComponent(session.key))).plan; renderPlan(); } catch (e) { toast(e.message, true); }
     return;
   }
+  if (act === 'replace') { openSessionMaker({ replaceKey: session.key }); return; }
   if (act === 'lock' || act === 'revert') {
     if (act === 'revert' && !await askConfirm(t('ed.resetConfirm'))) return;
     const p = JSON.parse(JSON.stringify(state.plan));
@@ -4085,15 +4089,16 @@ $('#tplCard').addEventListener('click', async (ev) => {
 document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'plan') { loadTemplates(); loadWeekList(); } }));
 
 // Venster "Nieuwe training": leeg, kopie van een training uit het plan, of uit een sjabloon.
-$('#newSessBtn').addEventListener('click', async () => {
+async function openSessionMaker({ replaceKey = null } = {}) {
   if (!state.plan) { toast(t('app.maakEerstEenPlan'), true); return; }
   await loadTemplates();
   let dlg = $('#newSessDlg');
   if (!dlg) { dlg = document.createElement('dialog'); dlg.id = 'newSessDlg'; dlg.className = 'wide-dlg'; document.body.appendChild(dlg); }
-  const copies = state.plan.sessions.filter((x) => !x.outdoor);
+  const copies = state.plan.sessions.filter((x) => !x.outdoor && x.key !== replaceKey);
   const opt = (v, label, sub = '') => `<label class="ns-opt"><input type="radio" name="ns" value="${esc(v)}"> <span><b>${esc(label)}</b>${sub ? `<br><span class="muted small">${esc(sub)}</span>` : ''}</span></label>`;
+  const title = replaceKey ? t('nt.replaceTitle') : t('nt.title');
   dlg.innerHTML = `<form method="dialog" class="exd">
-    <div class="exd-head"><div><div class="eyebrow">${t('nt.title')}</div><h2>${t('nt.title')}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
+    <div class="exd-head"><div><div class="eyebrow">${title}</div><h2>${title}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
     <label>${t('nt.name')} <input name="name" maxlength="40" placeholder="${esc(t('nt.namePh'))}"></label>
     <div class="eyebrow" style="margin:0">${t('nt.start')}</div>
     <div class="ns-list">
@@ -4102,16 +4107,19 @@ $('#newSessBtn').addEventListener('click', async () => {
       <div class="muted small">${t('nt.mine')}</div>${tplData.mine.length ? tplData.mine.map((x) => opt('template:' + x.id, x.name, t('tp.sum', { n: x.count, sets: x.sets, min: '' }))).join('') : `<div class="muted small">${t('nt.noTpl')}</div>`}
       ${tplData.shared.length ? `<div class="muted small">${t('nt.shared')}</div>${tplData.shared.map((x) => opt('template:' + x.id, x.name, t('nt.by', { name: x.owner }))).join('')}` : ''}
     </div>
-    <div class="row gap end"><button value="close" class="btn ghost">${t('ed.cancel')}</button><button type="button" class="btn accent" id="nsMake">${t('nt.make')}</button></div>
+    <div class="row gap end"><button value="close" class="btn ghost">${t('ed.cancel')}</button><button type="button" class="btn accent" id="nsMake">${replaceKey ? t('ed.replace') : t('nt.make')}</button></div>
   </form>`;
   dlg.querySelector('input[value="empty:"]').checked = true;
   dlg.querySelector('#nsMake').addEventListener('click', () => busy(dlg.querySelector('#nsMake'), async () => {
     const [mode, from] = dlg.querySelector('input[name=ns]:checked').value.split(/:(.*)/s);
     try {
-      const r = await api('POST', '/api/plan/session', { mode, from, name: dlg.querySelector('input[name=name]').value.trim() || undefined });
+      const r = await api('POST', '/api/plan/session', { mode, from, name: dlg.querySelector('input[name=name]').value.trim() || undefined, ...(replaceKey ? { replace: replaceKey } : {}) });
       state.plan = r.plan; renderPlan(); dlg.close();
-      openEditor(r.key, edCtx());
+      const made = state.plan.sessions.find((s) => s.key === r.key);
+      if (replaceKey) toast(t('ed.replaced', { name: made?.name || '' }));
+      if (!replaceKey || mode === 'empty') openEditor(r.key, edCtx());
     } catch (e) { toast(e.message, true); }
   }));
   dlg.showModal();
-});
+}
+$('#newSessBtn').addEventListener('click', () => openSessionMaker());

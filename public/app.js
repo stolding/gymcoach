@@ -426,9 +426,9 @@ function renderPlan() {
 
   const slotBtns = `<button class="btn ghost" data-act="replace">${t('ed.replace')}</button><button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>`;
   wrap.innerHTML = plan.sessions.map((s) => s.outdoor ? `
-    <article class="card session outdoor" data-key="${esc(s.key)}">
-      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}</h3><div class="muted small">${t('app.min', { estMinutes: s.estMinutes })} <span class="badge">${esc(DAY_SHORT.buiten)}</span></div></div>
-        <div class="out-ico" aria-hidden="true">🚶‍♂️🚴</div></header>
+    <article class="card session outdoor${outdoorActs(s).length ? ' done' : ''}" data-key="${esc(s.key)}">
+      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}</h3><div class="muted small">${t('app.min', { estMinutes: s.estMinutes })} <span class="badge">${esc(outdoorBadge(s))}</span></div></div>
+        <div class="out-ico" aria-hidden="true">${ACT[s.activity]?.[2] || '🚶‍♂️🚴'}</div></header>
       <p class="small">${esc(s.advice || '')}</p>
       ${outdoorDone(s)}
       <p class="muted small">${t('app.geenProgrammaVoorDe')}</p>
@@ -479,11 +479,27 @@ function doneBanner(s) {
   return `<div class="done-banner"><span class="done-check">✓</span><div><b>${t('app.gedaanOp', { a: esc(day) })}</b>${facts ? `<div class="small">${esc(facts)}</div>` : ''}</div></div>`;
 }
 
-// cardio buiten: laat zien wat er deze week al via Apple Health binnenkwam
-function outdoorDone() {
-  const acts = (state.activities || []).filter((a) => a.date >= periodStart('week') && ['wandelen', 'fietsen', 'hardlopen', 'wandeltocht'].includes(a.type));
-  if (!acts.length) return '<p class="muted small">' + t('app.dezeWeekNogGeen') + '</p>';
-  const min = acts.reduce((t, a) => t + (a.minutes || 0), 0), km = acts.reduce((t, a) => t + (a.km || 0), 0);
+// cardio buiten: activiteiten van deze week die bij deze training horen
+const BROAD_ACT = new Set(['racket', 'teamsport', 'water', 'wintersport', 'vechtsport', 'dans', 'overig', 'kracht', 'yoga', 'hiit', 'elliptical']);
+function outdoorActs(s) {
+  const week = (state.activities || []).filter((a) => a.date >= periodStart('week'));
+  if (!s?.activity) return week.filter((a) => ['wandelen', 'fietsen', 'hardlopen'].includes(a.type));
+  if (s.activityLabel && BROAD_ACT.has(s.activity)) {
+    const want = normName(s.activityLabel);
+    return week.filter((a) => normName(a.label) === want || normName(a.name).includes(want));
+  }
+  return week.filter((a) => a.type === s.activity);
+}
+function outdoorBadge(s) {
+  return s?.activityLabel || ACT[s?.activity]?.[0] || DAY_SHORT.buiten;
+}
+function outdoorDone(s) {
+  const acts = outdoorActs(s);
+  if (!acts.length) {
+    const name = outdoorBadge(s);
+    return '<p class="muted small">' + (s?.activity ? t('app.dezeWeekNogGeenAct', { name: esc(name) }) : t('app.dezeWeekNogGeen')) + '</p>';
+  }
+  const min = acts.reduce((n, a) => n + (a.minutes || 0), 0), km = acts.reduce((n, a) => n + (a.km || 0), 0);
   return `<p class="small"><span class="badge ok">${t('app.dezeWeek')}</span> ${t('app.min2', { n: acts.length, min, a: km ? t('app.km', { a: (Math.round(km * 10) / 10).toLocaleString(localeOf()) }) : '' })}</p>`;
 }
 
@@ -4097,12 +4113,17 @@ async function openSessionMaker({ replaceKey = null } = {}) {
   const copies = state.plan.sessions.filter((x) => !x.outdoor && x.key !== replaceKey);
   const opt = (v, label, sub = '') => `<label class="ns-opt"><input type="radio" name="ns" value="${esc(v)}"> <span><b>${esc(label)}</b>${sub ? `<br><span class="muted small">${esc(sub)}</span>` : ''}</span></label>`;
   const title = replaceKey ? t('nt.replaceTitle') : t('nt.title');
+  const acts = [['wandelen', t('app.act.wandelen')], ['fietsen', t('app.act.fietsen')], ['hardlopen', t('app.act.hardlopen')], ['zwemmen', t('app.act.zwemmen')], ['padel', t('nt.act.padel')]];
   dlg.innerHTML = `<form method="dialog" class="exd">
     <div class="exd-head"><div><div class="eyebrow">${title}</div><h2>${title}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
     <label>${t('nt.name')} <input name="name" maxlength="40" placeholder="${esc(t('nt.namePh'))}"></label>
     <div class="eyebrow" style="margin:0">${t('nt.start')}</div>
     <div class="ns-list">
       ${opt('empty:', t('nt.empty'), t('nt.emptySub'))}
+      <div class="muted small">${t('nt.activity')} · ${t('nt.activitySub')}</div>
+      ${acts.map(([id, label]) => opt('act:' + id, label)).join('')}
+      ${opt('act:other', t('nt.actOther'))}
+      <input name="actOther" class="ns-other" maxlength="40" placeholder="${esc(t('nt.actOtherPh'))}">
       ${copies.length ? `<div class="muted small">${t('nt.copy')}</div>${copies.map((x) => opt('copy:' + x.key, x.name, t('app.oefeningen', { count: x.exercises.length }))).join('')}` : ''}
       <div class="muted small">${t('nt.mine')}</div>${tplData.mine.length ? tplData.mine.map((x) => opt('template:' + x.id, x.name, t('tp.sum', { n: x.count, sets: x.sets, min: '' }))).join('') : `<div class="muted small">${t('nt.noTpl')}</div>`}
       ${tplData.shared.length ? `<div class="muted small">${t('nt.shared')}</div>${tplData.shared.map((x) => opt('template:' + x.id, x.name, t('nt.by', { name: x.owner }))).join('')}` : ''}
@@ -4110,14 +4131,30 @@ async function openSessionMaker({ replaceKey = null } = {}) {
     <div class="row gap end"><button value="close" class="btn ghost">${t('ed.cancel')}</button><button type="button" class="btn accent" id="nsMake">${replaceKey ? t('ed.replace') : t('nt.make')}</button></div>
   </form>`;
   dlg.querySelector('input[value="empty:"]').checked = true;
+  const makeBtn = dlg.querySelector('#nsMake');
+  const syncMake = () => {
+    const act = dlg.querySelector('input[name=ns]:checked')?.value.startsWith('act:');
+    makeBtn.textContent = replaceKey ? t('ed.replace') : (act ? t('nt.makeAct') : t('nt.make'));
+  };
+  dlg.querySelectorAll('input[name=ns]').forEach((el) => el.addEventListener('change', () => {
+    syncMake();
+    if (el.value === 'act:other') dlg.querySelector('input[name=actOther]')?.focus();
+  }));
   dlg.querySelector('#nsMake').addEventListener('click', () => busy(dlg.querySelector('#nsMake'), async () => {
-    const [mode, from] = dlg.querySelector('input[name=ns]:checked').value.split(/:(.*)/s);
+    const picked = dlg.querySelector('input[name=ns]:checked').value;
+    let mode, from;
+    if (picked === 'act:other') {
+      mode = 'activity';
+      from = dlg.querySelector('input[name=actOther]').value.trim();
+      if (!from) { toast(t('nt.actNeed'), true); return; }
+    } else if (picked.startsWith('act:')) { mode = 'activity'; from = picked.slice(4); }
+    else [mode, from] = picked.split(/:(.*)/s);
     try {
       const r = await api('POST', '/api/plan/session', { mode, from, name: dlg.querySelector('input[name=name]').value.trim() || undefined, ...(replaceKey ? { replace: replaceKey } : {}) });
       state.plan = r.plan; renderPlan(); dlg.close();
       const made = state.plan.sessions.find((s) => s.key === r.key);
       if (replaceKey) toast(t('ed.replaced', { name: made?.name || '' }));
-      if (!replaceKey || mode === 'empty') openEditor(r.key, edCtx());
+      if (mode !== 'activity' && (!replaceKey || mode === 'empty')) openEditor(r.key, edCtx());
     } catch (e) { toast(e.message, true); }
   }));
   dlg.showModal();

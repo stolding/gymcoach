@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.29.0 — 14 november 2026
+- Bij een nieuwe training of bij vervangen kun je een wandeling, fietstocht, zwemmen, padel of een andere activiteit invoegen. De rest van de week blijft staan.
+
 ## 2.28.0 — 14 november 2026
 - In het weekplan kun je één training wissen of vervangen. De andere trainingen van die week blijven staan.
 

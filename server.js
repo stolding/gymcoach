@@ -28,6 +28,7 @@ import * as mail from './lib/mail.js';
 import { workoutPdf, workoutMail } from './lib/summary.js';
 import { figureFor } from './public/bodymap.js';
 import * as exinfo from './lib/exinfo.js';
+import * as acttypes from './lib/acttypes.js';
 import * as ghUpdate from './lib/update.js';
 import { createReadStream } from 'node:fs';
 import { stat as fsStat } from 'node:fs/promises';
@@ -269,6 +270,35 @@ function refreshMuscles(plan) {
   plan.muscles = total;
   return plan;
 }
+// Vaste activiteiten in "Nieuwe training" / "Vervangen". Vrije tekst gaat via de Apple Health-namen.
+const ACTIVITY_PRESET = {
+  wandelen: { type: 'wandelen', title: 'app.act.wandelen' },
+  fietsen: { type: 'fietsen', title: 'app.act.fietsen' },
+  hardlopen: { type: 'hardlopen', title: 'app.act.hardlopen' },
+  zwemmen: { type: 'zwemmen', title: 'app.act.zwemmen' },
+  padel: { type: 'racket', title: 'nt.act.padel', match: 'Padel' },
+};
+function activityKind(raw) {
+  const s = String(raw || '').trim().slice(0, 40);
+  const preset = ACTIVITY_PRESET[s.toLowerCase()];
+  if (preset) return { type: preset.type, label: tr(preset.title), match: preset.match || '' };
+  const q = /wandel/i.test(s) ? 'walking' : s;
+  const c = acttypes.classify(q);
+  if (!s || c.label === 'Overige activiteit') return null;
+  return { type: c.type, label: c.label, match: c.label };
+}
+// Cardio buiten: geen oefeningen, wel een activiteit die via Apple Health terugkomt.
+function outdoorSession({ key, name, kind, minutes }) {
+  const easy = kind.type === 'wandelen' || kind.type === 'fietsen';
+  const label = String(name || kind.label).slice(0, 40);
+  return {
+    key, name: label, outdoor: true, type: 'buiten', activity: kind.type,
+    ...(kind.match ? { activityLabel: kind.match } : {}),
+    exercises: [], muscles: {}, estMinutes: minutes, custom: true, locked: true,
+    advice: easy ? tr('eng.wandelenOfFietsenIn') : tr('nt.actAdvice', { name: label }),
+  };
+}
+
 // Spierkaart en, als de week één plan is, het herstelraster. Verplaatst geen oefeningen.
 async function touchPlan(plan) {
   refreshMuscles(plan);
@@ -825,6 +855,16 @@ const routes = {
     const slot = replace ? plan.sessions.findIndex((x) => x.key === replace) : -1;
     if (replace && slot < 0) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
     const ctx = await context();
+    if (mode === 'activity') {
+      const kind = activityKind(from);
+      if (!kind) throw Object.assign(new Error(tr('nt.actNeed')), { status: 400 });
+      let n = 1; while (plan.sessions.some((x) => x.key === `X${n}`)) n++;
+      const old = slot >= 0 ? plan.sessions[slot] : null;
+      const sess = outdoorSession({ key: old ? old.key : `X${n}`, name, kind, minutes: Number(ctx.settings.minutesPerSession) || 45 });
+      if (old) plan.sessions[slot] = sess; else plan.sessions.push(sess);
+      await touchPlan(plan);
+      return { plan, key: sess.key };
+    }
     let base;
     let foreign = false;
     if (mode === 'copy') {

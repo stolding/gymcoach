@@ -936,6 +936,7 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .ns-opt { display: flex; gap: .6rem; align-items: flex-start; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
 .ns-opt:has(input:checked) { border-color: var(--accent); }
 .ns-opt input { margin-top: .2rem; accent-color: var(--accent); }
+.ns-other { margin: 0 .15rem .2rem 1.8rem; }
 
 /* supersets in de editor */
 .ed-ss { border: 1px dashed var(--b); border-radius: 14px; padding: .6rem; display: flex; flex-direction: column; gap: .5rem; background: color-mix(in srgb, var(--b) 6%, transparent); }

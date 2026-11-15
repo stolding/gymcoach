@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.13 — 15 november 2026
+- De handleiding toont elk tabblad van een voorbeeldgebruiker: een genummerde pagina en een close-up per blok, met uitleg wat je daar ziet. GymCoach Sync 1.13.4 laadt die afbeeldingen mee.
+
 ## 2.32.12 — 15 november 2026
 - De handleiding zegt stap voor stap waar de Withings-sleutels en de Apple Health-koppelsleutel vandaan komen, en welke knop je daarna indrukt.
 

@@ -65,6 +65,122 @@ export default [
     <p>Alles draait op je eigen server. Je gegevens gaan alleen naar Speediance, Withings en Apple (die je zelf koppelt) en, als je de AI-coach gebruikt, naar de AI-dienst die de beheerder heeft gekozen.</p>`,
   },
   {
+    id: 'schermen', title: 'De schermen',
+    html: `<p>De schermafbeeldingen zijn van een voorbeeldgebruiker, Sam Demo. Trainingen, weegschaal en Apple Health zijn verzonnen. Op het overzicht van een tab staan oranje nummers. Daarna volgt per blok een close-up.</p>
+    <h4>Overzicht</h4>
+    <p>Dit is de startpagina. Bovenaan een begroeting, daarna de blokken onder elkaar.</p>
+    <img class="guide-shot" src="/guide/overzicht.png" alt="Overzicht van Sam Demo, met een nummer op elk blok">
+    <ol>
+      <li><b>Begroeting.</b> Datum, je naam en een tip, bijvoorbeeld een record of hoeveel trainingen deze week nog openstaan.</li>
+      <li><b>Herstel en score.</b> Links of je uitgerust bent (rusthartslag, HRV, gehaalde herhalingen). Rechts de gezondheidsscore van 0 tot 10, hoger is beter, met de lijn over de weken.</li>
+      <li><b>Spierherstel.</b> Het lichaamsschema en de lijnen per spiergroep. Oranje is vermoeid, groen is hersteld. De knoppen zetten een spiergroep aan of uit.</li>
+      <li><b>Volgende training.</b> De eerstvolgende training die nog openstaat, met de geschatte tijd.</li>
+      <li><b>Weekdoel.</b> De ring telt hoeveel van de geplande trainingen deze week al gedaan zijn.</li>
+      <li><b>Reeks.</b> Hoeveel weken achter elkaar je het weekdoel haalde.</li>
+      <li><b>Volume.</b> Kilo deze week, vergeleken met vorige week.</li>
+      <li><b>Minuten.</b> Trainingstijd en kcal deze week.</li>
+      <li><b>Lichaam.</b> Laatste gewicht, vetpercentage en de richting van de laatste weken.</li>
+      <li><b>Gezondheidsstatus.</b> Een tekst van de AI-coach over de laatste vier weken. Zonder AI-coach blijft hier “Maak status” staan.</li>
+      <li><b>Doel.</b> Of je op schema ligt, met de streep voor kcal en eiwit van vandaag. De knop gaat naar het tabblad Doel.</li>
+      <li><b>Kracht.</b> Geschat 1RM van je zwaarste oefeningen in de laatste vier weken, met een kleine lijn.</li>
+      <li><b>Records.</b> Nieuwe records van de laatste veertien dagen.</li>
+      <li><b>Kalender.</b> Acht weken. Een vak is een trainingsdag; de kleur is de minuten van die dag. Klik een dag voor de oefeningen.</li>
+      <li><b>Plan deze week.</b> Het lichaamsschema van de geplande belasting, het aantal trainingen, de werksets en de zwaarste spiergroepen.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Herstel links en de gezondheidsscore rechts">
+    <p class="guide-cap muted small">Herstel en score naast elkaar. Groen betekent dat er niets tegenzit. De score noemt wat meewoog, hier vetpercentage en BMI.</p>
+    <img class="guide-shot" src="/guide/overzicht-spieren.png" alt="Spierherstel met lichaamsschema en lijnen">
+    <p class="guide-cap muted small">Spierherstel. Het figuur is de stand nu. De lijnen zijn het herstel per dag.</p>
+    <img class="guide-shot" src="/guide/overzicht-volgende.png" alt="Volgende training en de weekring">
+    <p class="guide-cap muted small">Links de volgende training, rechts de ring van het weekdoel.</p>
+    <img class="guide-shot" src="/guide/overzicht-midden.png" alt="Tegels, gezondheidsstatus en doel">
+    <p class="guide-cap muted small">De vier tegels, daaronder de gezondheidsstatus en de samenvatting van het doel.</p>
+    <img class="guide-shot" src="/guide/overzicht-kracht.png" alt="Kracht en records">
+    <p class="guide-cap muted small">Kracht links, records rechts.</p>
+    <img class="guide-shot" src="/guide/overzicht-kalender.png" alt="Trainingskalender en het plan van deze week">
+    <p class="guide-cap muted small">Kalender links, het plan van deze week rechts.</p>
+    <h4>Plan</h4>
+    <p>Hier staat de week die op de Gym Monster komt. Je wijzigt hem alleen op de computer.</p>
+    <img class="guide-shot" src="/guide/plan.png" alt="Tabblad Plan van Sam Demo">
+    <ol>
+      <li><b>Kop en knoppen.</b> De week, de pijlen naar een oudere week, en de knoppen voor een nieuwe training, een nieuw voorstel en de AI-coach.</li>
+      <li><b>Spieren en tijd.</b> Voor- en achterkant. De lijst ernaast is de geplande tijd en de sets per spiergroep. Klik een spiergroep om hem in het figuur te zien.</li>
+      <li><b>Trainingen.</b> Een kaart per dag: naam, minuten, oefeningen, en of hij al gedaan is. Opklappen toont sets en gewichten. Daaronder zet je hem op het toestel, bewerk je hem, of vervang je hem.</li>
+      <li><b>Sjablonen.</b> Eigen trainingen die je bewaart, en trainingen die op deze server gedeeld zijn.</li>
+      <li><b>Programma’s.</b> Wat er al op je Gym Monster-account staat. Die lijst haal je op met Toon programma’s.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/plan-spieren.png" alt="Lichaamsschema en de spierlijst van de week">
+    <p class="guide-cap muted small">Het weekoverzicht: figuur en de verdeling over de spiergroepen.</p>
+    <img class="guide-shot" src="/guide/plan-sessies.png" alt="Drie trainingskaarten, waarvan twee al gedaan">
+    <p class="guide-cap muted small">De dagen van de week. Een groene balk is al gedaan. Cardio buiten heeft geen programma op het toestel; die activiteit komt uit Apple Health.</p>
+    <h4>Doel</h4>
+    <p>Wat je eet tegenover wat bij het doel past. De weegschaal zelf blijft onder Lichaam.</p>
+    <img class="guide-shot" src="/guide/doel.png" alt="Tabblad Doel van Sam Demo">
+    <ol>
+      <li><b>Streef en stand.</b> De berekende kcal en het eiwit, en of vandaag daar al op zit.</li>
+      <li><b>Doel stellen.</b> Lichaam (kilogram en weken), kracht per spiergroep, stappen per dag en activiteiten per week. Bewaren laat het doel opnieuw beginnen.</li>
+      <li><b>Gewicht.</b> Je metingen en de rechte lijn naar het streefgewicht.</li>
+      <li><b>Inname.</b> Wat je at, tegen de streep van de streefkcal.</li>
+      <li><b>Kracht.</b> De index van de gekozen spiergroep, hier de rug, tegen de lijn van het krachtdoel.</li>
+      <li><b>Dagen.</b> Een tabel per dag: training, stappen, inname en of het binnen het doel viel.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/doel-formulier.png" alt="Het formulier om een doel te stellen">
+    <p class="guide-cap muted small">Het formulier. Stappen en activiteiten staan eronder; die zie je op de hele pagina hierboven.</p>
+    <h4>Lichaam</h4>
+    <p>De weegschaal en de samenstelling. Geen trainingsgrafiek.</p>
+    <img class="guide-shot" src="/guide/lichaam.png" alt="Tabblad Lichaam van Sam Demo">
+    <ol>
+      <li><b>Titel.</b> Lichaamsgewicht.</li>
+      <li><b>Weegschaal.</b> Of Withings gekoppeld is, en een knop om zelf een meting toe te voegen.</li>
+      <li><b>Gezondheidsscore.</b> Dezelfde score als op Overzicht, hier met de categorieën lichaam, hart, conditie en overig.</li>
+      <li><b>Samenstelling.</b> Tegels voor gewicht, vet, spiermassa en de andere waarden van de weegschaal, met een grafiek. Groen of rood volgt of de score er beter of slechter van wordt, niet of het getal steeg.</li>
+      <li><b>Metingen.</b> De lijst, ingeklapt. Openen toont elke weegdag.</li>
+    </ol>
+    <h4>Training</h4>
+    <p>Wat je op de Gym Monster hebt gedaan. Klik een rij voor de oefeningen, sets en gewichten.</p>
+    <img class="guide-shot" src="/guide/training.png" alt="Tabblad Training van Sam Demo">
+    <ol>
+      <li><b>Titel.</b> Training.</li>
+      <li><b>Grafieken.</b> Drie naast elkaar: trainingen per week, volume per week en minuten per week.</li>
+      <li><b>Trainingen.</b> De tabel. Een rij opent het rapport van die training.</li>
+      <li><b>Per oefening.</b> Kies een oefening. De grafiek is het verloop van het geschatte 1RM.</li>
+    </ol>
+    <h4>Terugkijken</h4>
+    <p>Alles over een periode die je rechtsboven kiest. Afdrukken en PDF gebruiken diezelfde periode. De pagina is lang; de nummers lopen van boven naar beneden.</p>
+    <img class="guide-shot" src="/guide/terugkijken.png" alt="Tabblad Terugkijken van Sam Demo">
+    <ol>
+      <li><b>Kop.</b> De periode, plus Afdrukken en PDF.</li>
+      <li><b>Cijfers.</b> Tegels over de periode: trainingen, per week, tijd, kcal, weekreeks, favoriete dag, volume, sets, herhalingen per set, zwaarste gewicht, records en spiergroepen.</li>
+      <li><b>Cardio.</b> Activiteiten uit Apple Health in deze periode.</li>
+      <li><b>Balans en massa.</b> Links de verdeling van het volume, rechts spiermassa tegen het trainingsvolume.</li>
+      <li><b>Kracht.</b> De index per spiergroep. 100 is het begin van de periode. Een stip zet een spiergroep aan of uit.</li>
+      <li><b>Kilometers en stappen.</b> Kilometers per week en stappen per dag.</li>
+      <li><b>Per spiergroep.</b> Volume, sets en het beste geschatte 1RM.</li>
+      <li><b>Sets per week.</b> Een balk per spiergroep. Groen valt in de richtlijn voor beginners, ongeveer 6 tot 12 werksets.</li>
+      <li><b>Detail.</b> Dezelfde spiergroepen in een tabel, per week.</li>
+      <li><b>Per oefening.</b> Volume en het zwaarste gewicht per oefening.</li>
+      <li><b>Patronen.</b> Welke bewegingspatronen (duwen, trekken, squat) je deed.</li>
+      <li><b>Kalender.</b> Dezelfde acht weken als op Overzicht, voor de gekozen periode.</li>
+      <li><b>Wanneer.</b> Op welke dagen en uren je traint. Het vinkje telt wandelen en fietsen mee.</li>
+      <li><b>Herstel en energie.</b> Of de belasting bij je herstel past, en de verbrande energie naast het gewicht.</li>
+    </ol>
+    <h4>Instellingen</h4>
+    <p>Links het menu, rechts het open onderdeel. Sam Demo is geen beheerder, dus AI-coach en Gebruikers ontbreken. Die twee zie je alleen als beheerder.</p>
+    <img class="guide-shot" src="/guide/instellingen.png" alt="Instellingen, met Speediance-account open">
+    <ul>
+      <li><b>Speediance-account.</b> E-mail, wachtwoord, regio en Gym Monster. Opslaan en testen haalt de catalogus op. Detecteer mijn toestel kiest het model.</li>
+      <li><b>Training.</b> Doel, dagen, minuten, ervaring, deload, warming-up, cooldown en of de week één plan is.</li>
+      <li><b>Lichaam en doelen.</b> Geslacht, geboortejaar, geboortedatum, maximale hartslag, figuur en lengte. Die sturen de grafieken en de score.</li>
+      <li><b>Apple Health.</b> Hier maak je de koppelsleutel. Hoe dat gaat staat bij Nieuw: koppelen.</li>
+      <li><b>Withings.</b> De knop Koppel Withings. De Client ID vult alleen de beheerder in.</li>
+      <li><b>E-mail.</b> Je adres, en of je na een training een PDF wilt. De mailserver stelt de beheerder in.</li>
+      <li><b>Sync en catalogus.</b> Wanneer de laatste sync was, en hoeveel oefeningen er voor je toestel staan.</li>
+      <li><b>Handleiding.</b> Deze tekst.</li>
+      <li><b>Voorwaarden.</b> De tekst die je bij de eerste start accepteert.</li>
+      <li><b>Over GymCoach.</b> Versie en licentie.</li>
+    </ul>`,
+  },
+  {
     id: 'plan', title: 'Het weekplan',
     html: `<p><b>Schema.</b> Het aantal trainingen per week bepaalt de indeling: 2 of 3 dagen full body (A/B/C), 4 dagen boven/onder. Elke training vult vaste bewegingspatronen (duwen, trekken, squat, hip hinge, …) met een oefening uit de catalogus van jouw toestel.</p>
     <p><b>Voorschrift per doel</b> (werksets):</p>

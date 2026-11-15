@@ -65,6 +65,122 @@ export default [
     <p>Alles läuft auf deinem eigenen Server. Deine Daten gehen nur an Speediance, Withings und Apple (die du selbst verbindest) und, wenn du den KI-Coach nutzt, an den KI-Dienst, den der Administrator gewählt hat.</p>`,
   },
   {
+    id: 'schermen', title: 'Die Bildschirme',
+    html: `<p>Die Bilder sind von einem Beispielnutzer, Sam Demo. Training, Waage und Apple Health sind erfunden. Auf der Übersicht eines Tabs stehen orange Nummern. Danach folgt eine Nahaufnahme jedes Blocks. Die Bilder zeigen die niederländische App.</p>
+    <h4>Übersicht</h4>
+    <p>Das ist die Startseite. Oben eine Begrüßung, danach die Blöcke untereinander.</p>
+    <img class="guide-shot" src="/guide/overzicht.png" alt="Übersicht von Sam Demo, mit einer Nummer auf jedem Block">
+    <ol>
+      <li><b>Begrüßung.</b> Datum, Name und ein Hinweis, zum Beispiel ein Rekord oder wie viele Trainings diese Woche noch offen sind.</li>
+      <li><b>Erholung und Score.</b> Links, ob du erholt bist (Ruhepuls, HRV, geschaffte Wiederholungen). Rechts der Gesundheitsscore von 0 bis 10, höher ist besser, mit der Linie über die Wochen.</li>
+      <li><b>Muskelerholung.</b> Die Figur und eine Linie je Muskelgruppe. Orange ist ermüdet, grün ist erholt. Die Knöpfe schalten eine Muskelgruppe an oder aus.</li>
+      <li><b>Nächstes Training.</b> Das nächste Training, das noch offen ist, mit der geschätzten Zeit.</li>
+      <li><b>Wochenziel.</b> Der Ring zählt, wie viele der geplanten Trainings diese Woche schon erledigt sind.</li>
+      <li><b>Serie.</b> Wie viele Wochen hintereinander du das Wochenziel geschafft hast.</li>
+      <li><b>Volumen.</b> Kilogramm diese Woche, verglichen mit der vorigen.</li>
+      <li><b>Minuten.</b> Trainingszeit und kcal diese Woche.</li>
+      <li><b>Körper.</b> Letztes Gewicht, Fettanteil und die Richtung der letzten Wochen.</li>
+      <li><b>Gesundheitsstatus.</b> Ein Text des KI-Coaches über die letzten vier Wochen. Ohne KI-Coach bleibt hier „Maak status“ stehen.</li>
+      <li><b>Ziel.</b> Ob du im Plan liegst, mit dem Balken für kcal und Eiweiß von heute. Der Knopf öffnet den Tab Ziel.</li>
+      <li><b>Kraft.</b> Geschätztes 1RM deiner schwersten Übungen der letzten vier Wochen, mit einer kleinen Linie.</li>
+      <li><b>Rekorde.</b> Neue Rekorde der letzten vierzehn Tage.</li>
+      <li><b>Kalender.</b> Acht Wochen. Ein Feld ist ein Trainingstag; die Farbe sind die Minuten des Tages. Ein Klick zeigt die Übungen.</li>
+      <li><b>Plan dieser Woche.</b> Die Figur der geplanten Belastung, die Zahl der Trainings, die Arbeitssätze und die schwersten Muskelgruppen.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Erholung links und der Gesundheitsscore rechts">
+    <p class="guide-cap muted small">Erholung und Score nebeneinander. Grün heißt, dass nichts dagegen spricht. Der Score nennt, was mitzählte, hier Fettanteil und BMI.</p>
+    <img class="guide-shot" src="/guide/overzicht-spieren.png" alt="Muskelerholung mit Figur und Linien">
+    <p class="guide-cap muted small">Muskelerholung. Die Figur ist der Stand jetzt. Die Linien sind die Erholung je Tag.</p>
+    <img class="guide-shot" src="/guide/overzicht-volgende.png" alt="Nächstes Training und der Wochenring">
+    <p class="guide-cap muted small">Links das nächste Training, rechts der Ring des Wochenziels.</p>
+    <img class="guide-shot" src="/guide/overzicht-midden.png" alt="Kacheln, Gesundheitsstatus und Ziel">
+    <p class="guide-cap muted small">Die vier Kacheln, darunter der Gesundheitsstatus und die Zusammenfassung des Ziels.</p>
+    <img class="guide-shot" src="/guide/overzicht-kracht.png" alt="Kraft und Rekorde">
+    <p class="guide-cap muted small">Kraft links, Rekorde rechts.</p>
+    <img class="guide-shot" src="/guide/overzicht-kalender.png" alt="Trainingskalender und der Plan dieser Woche">
+    <p class="guide-cap muted small">Kalender links, der Plan dieser Woche rechts.</p>
+    <h4>Plan</h4>
+    <p>Hier steht die Woche, die auf den Gym Monster kommt. Du änderst sie nur am Computer.</p>
+    <img class="guide-shot" src="/guide/plan.png" alt="Tab Plan von Sam Demo">
+    <ol>
+      <li><b>Kopf und Knöpfe.</b> Die Woche, die Pfeile zu einer älteren Woche und die Knöpfe für ein neues Training, einen neuen Vorschlag und den KI-Coach.</li>
+      <li><b>Muskeln und Zeit.</b> Vorne und hinten. Die Liste daneben ist die geplante Zeit und die Sätze je Muskelgruppe. Ein Klick zeigt die Gruppe in der Figur.</li>
+      <li><b>Trainings.</b> Eine Karte je Tag: Name, Minuten, Übungen und ob er schon erledigt ist. Aufklappen zeigt Sätze und Gewichte. Darunter schickst du ihn aufs Gerät, bearbeitest ihn oder ersetzt ihn.</li>
+      <li><b>Vorlagen.</b> Trainings, die du selbst speicherst, und Trainings, die auf diesem Server geteilt sind.</li>
+      <li><b>Programme.</b> Was schon auf deinem Gym-Monster-Konto steht. Die Liste holst du mit Programme anzeigen.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/plan-spieren.png" alt="Figur und die Muskelliste der Woche">
+    <p class="guide-cap muted small">Die Wochenübersicht: Figur und die Verteilung auf die Muskelgruppen.</p>
+    <img class="guide-shot" src="/guide/plan-sessies.png" alt="Drei Trainingskarten, zwei davon schon erledigt">
+    <p class="guide-cap muted small">Die Tage der Woche. Ein grüner Balken ist schon erledigt. Cardio draußen hat kein Programm auf dem Gerät; die Aktivität kommt aus Apple Health.</p>
+    <h4>Ziel</h4>
+    <p>Was du isst, gegenüber dem, was zum Ziel passt. Die Waage selbst bleibt unter Körper.</p>
+    <img class="guide-shot" src="/guide/doel.png" alt="Tab Ziel von Sam Demo">
+    <ol>
+      <li><b>Soll und Stand.</b> Die berechneten kcal und das Eiweiß, und ob der heutige Tag schon dort ist.</li>
+      <li><b>Ziel setzen.</b> Körper (Kilogramm und Wochen), Kraft je Muskelgruppe, Schritte je Tag und Aktivitäten je Woche. Speichern lässt das Ziel neu beginnen.</li>
+      <li><b>Gewicht.</b> Deine Messungen und die gerade Linie zum Sollgewicht.</li>
+      <li><b>Aufnahme.</b> Was du gegessen hast, gegen die Linie der Soll-kcal.</li>
+      <li><b>Kraft.</b> Der Index der gewählten Muskelgruppe, hier der Rücken, gegen die Linie des Kraftziels.</li>
+      <li><b>Tage.</b> Eine Tabelle je Tag: Training, Schritte, Aufnahme und ob es im Ziel blieb.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/doel-formulier.png" alt="Das Formular, um ein Ziel zu setzen">
+    <p class="guide-cap muted small">Das Formular. Schritte und Aktivitäten stehen darunter; die siehst du auf der ganzen Seite oben.</p>
+    <h4>Körper</h4>
+    <p>Die Waage und die Zusammensetzung. Keine Trainingsgrafik.</p>
+    <img class="guide-shot" src="/guide/lichaam.png" alt="Tab Körper von Sam Demo">
+    <ol>
+      <li><b>Titel.</b> Körpergewicht.</li>
+      <li><b>Waage.</b> Ob Withings verbunden ist, und ein Knopf, um selbst eine Messung einzutragen.</li>
+      <li><b>Gesundheitsscore.</b> Derselbe Score wie in der Übersicht, hier mit den Kategorien Körper, Herz, Fitness und Sonstiges.</li>
+      <li><b>Zusammensetzung.</b> Kacheln für Gewicht, Fett, Muskelmasse und die anderen Werte der Waage, mit einer Grafik. Grün oder rot folgt, ob der Score besser oder schlechter wird, nicht ob die Zahl stieg.</li>
+      <li><b>Messungen.</b> Die Liste, eingeklappt. Öffnen zeigt jeden Wiegetag.</li>
+    </ol>
+    <h4>Training</h4>
+    <p>Was du auf dem Gym Monster gemacht hast. Eine Zeile öffnet Übungen, Sätze und Gewichte.</p>
+    <img class="guide-shot" src="/guide/training.png" alt="Tab Training von Sam Demo">
+    <ol>
+      <li><b>Titel.</b> Training.</li>
+      <li><b>Grafiken.</b> Drei nebeneinander: Trainings je Woche, Volumen je Woche und Minuten je Woche.</li>
+      <li><b>Trainings.</b> Die Tabelle. Eine Zeile öffnet den Bericht dieses Trainings.</li>
+      <li><b>Je Übung.</b> Wähle eine Übung. Die Grafik ist der Verlauf des geschätzten 1RM.</li>
+    </ol>
+    <h4>Rückblick</h4>
+    <p>Alles über einen Zeitraum, den du rechts oben wählst. Drucken und PDF nutzen denselben Zeitraum. Die Seite ist lang; die Nummern laufen von oben nach unten.</p>
+    <img class="guide-shot" src="/guide/terugkijken.png" alt="Tab Rückblick von Sam Demo">
+    <ol>
+      <li><b>Kopf.</b> Der Zeitraum, plus Drucken und PDF.</li>
+      <li><b>Zahlen.</b> Kacheln für den Zeitraum: Trainings, je Woche, Zeit, kcal, Wochenserie, Lieblingstag, Volumen, Sätze, Wiederholungen je Satz, schwerstes Gewicht, Rekorde und Muskelgruppen.</li>
+      <li><b>Cardio.</b> Aktivitäten aus Apple Health in diesem Zeitraum.</li>
+      <li><b>Balance und Masse.</b> Links die Verteilung des Volumens, rechts Muskelmasse gegen das Trainingsvolumen.</li>
+      <li><b>Kraft.</b> Der Index je Muskelgruppe. 100 ist der Anfang des Zeitraums. Ein Punkt schaltet eine Gruppe an oder aus.</li>
+      <li><b>Kilometer und Schritte.</b> Kilometer je Woche und Schritte je Tag.</li>
+      <li><b>Je Muskelgruppe.</b> Volumen, Sätze und das beste geschätzte 1RM.</li>
+      <li><b>Sätze je Woche.</b> Ein Balken je Muskelgruppe. Grün liegt in der Richtlinie für Anfänger, etwa 6 bis 12 Arbeitssätze.</li>
+      <li><b>Detail.</b> Dieselben Muskelgruppen in einer Tabelle, je Woche.</li>
+      <li><b>Je Übung.</b> Volumen und das schwerste Gewicht je Übung.</li>
+      <li><b>Muster.</b> Welche Bewegungsmuster (Drücken, Ziehen, Kniebeuge) du gemacht hast.</li>
+      <li><b>Kalender.</b> Dieselben acht Wochen wie in der Übersicht, für den gewählten Zeitraum.</li>
+      <li><b>Wann.</b> An welchen Tagen und Stunden du trainierst. Das Häkchen zählt Gehen und Radfahren mit.</li>
+      <li><b>Erholung und Energie.</b> Ob die Belastung zur Erholung passt, und die verbrannte Energie neben dem Gewicht.</li>
+    </ol>
+    <h4>Einstellungen</h4>
+    <p>Links das Menü, rechts der offene Teil. Sam Demo ist kein Administrator, deshalb fehlen KI-Coach und Benutzer. Die beiden siehst du nur als Administrator.</p>
+    <img class="guide-shot" src="/guide/instellingen.png" alt="Einstellungen, mit dem Speediance-Konto offen">
+    <ul>
+      <li><b>Speediance-Konto.</b> E-Mail, Passwort, Region und Gym Monster. Speichern und testen holt den Katalog. Mein Gerät erkennen wählt das Modell.</li>
+      <li><b>Training.</b> Ziel, Tage, Minuten, Erfahrung, Deload, Aufwärmen, Abwärmen und ob die Woche ein Plan ist.</li>
+      <li><b>Körper und Ziele.</b> Geschlecht, Geburtsjahr, Geburtsdatum, maximale Herzfrequenz, Figur und Größe. Die steuern die Grafiken und den Score.</li>
+      <li><b>Apple Health.</b> Hier erstellst du den Verbindungsschlüssel. Wie das geht, steht unter Neu: verbinden.</li>
+      <li><b>Withings.</b> Der Knopf Withings verbinden. Die Client ID trägt nur der Administrator ein.</li>
+      <li><b>E-Mail.</b> Deine Adresse, und ob du nach einem Training ein PDF willst. Den Mailserver richtet der Administrator ein.</li>
+      <li><b>Sync und Katalog.</b> Wann die letzte Synchronisation war und wie viele Übungen es für dein Gerät gibt.</li>
+      <li><b>Anleitung.</b> Dieser Text.</li>
+      <li><b>Bedingungen.</b> Der Text, den du beim ersten Start akzeptierst.</li>
+      <li><b>Über GymCoach.</b> Version und Lizenz.</li>
+    </ul>`,
+  },
+  {
     id: 'plan', title: 'Der Wochenplan',
     html: `<p><b>Aufteilung.</b> Die Zahl der Trainings pro Woche bestimmt die Aufteilung: 2 oder 3 Tage Ganzkörper (A/B/C), 4 Tage Oberkörper/Unterkörper. Jedes Training füllt feste Bewegungsmuster (Drücken, Ziehen, Kniebeuge, Hüftbeuge, …) mit einer Übung aus dem Katalog deines Geräts.</p>
     <p><b>Vorgabe pro Ziel</b> (Arbeitssätze):</p>

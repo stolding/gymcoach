@@ -65,6 +65,122 @@ export default [
     <p>Alt kjører på din egen server. Dataene dine går bare til Speediance, Withings og Apple (som du kobler til selv) og, hvis du bruker KI-coachen, til KI-tjenesten administratoren har valgt.</p>`,
   },
   {
+    id: 'schermen', title: 'Skjermene',
+    html: `<p>Skjermbildene er av en eksempelbruker, Sam Demo. Treninger, vekt og Apple Health er oppdiktet. På oversikten av en fane står oransje nummer. Deretter kommer et nærbilde av hver blokk. Bildene viser den nederlandske appen.</p>
+    <h4>Oversikt</h4>
+    <p>Dette er startsiden. En hilsen øverst, deretter blokkene under hverandre.</p>
+    <img class="guide-shot" src="/guide/overzicht.png" alt="Oversikten til Sam Demo, med et nummer på hver blokk">
+    <ol>
+      <li><b>Hilsen.</b> Dato, navnet ditt og et tips, for eksempel en rekord eller hvor mange treninger som fortsatt er åpne denne uken.</li>
+      <li><b>Restitusjon og poeng.</b> Til venstre om du er uthvilt (hvilepuls, HRV, fullførte repetisjoner). Til høyre helsepoengene fra 0 til 10, høyere er bedre, med linjen over ukene.</li>
+      <li><b>Muskelrestitusjon.</b> Figuren og en linje per muskelgruppe. Oransje er sliten, grønn er uthvilt. Knappene slår en muskelgruppe av eller på.</li>
+      <li><b>Neste trening.</b> Den neste treningen som fortsatt er åpen, med beregnet tid.</li>
+      <li><b>Ukemål.</b> Ringen teller hvor mange av de planlagte treningene som allerede er gjort denne uken.</li>
+      <li><b>Rekke.</b> Hvor mange uker på rad du nådde ukemålet.</li>
+      <li><b>Volum.</b> Kilo denne uken, sammenlignet med forrige uke.</li>
+      <li><b>Minutter.</b> Treningstid og kcal denne uken.</li>
+      <li><b>Kropp.</b> Siste vekt, fettprosent og retningen de siste ukene.</li>
+      <li><b>Helsestatus.</b> En tekst fra KI-coachen om de siste fire ukene. Uten KI-coach står det «Maak status» her.</li>
+      <li><b>Mål.</b> Om du ligger på skjema, med streken for dagens kcal og protein. Knappen åpner fanen Mål.</li>
+      <li><b>Styrke.</b> Beregnet 1RM for de tyngste øvelsene de siste fire ukene, med en liten linje.</li>
+      <li><b>Rekorder.</b> Nye rekorder de siste fjorten dagene.</li>
+      <li><b>Kalender.</b> Åtte uker. En rute er en treningsdag; fargen er minuttene den dagen. Klikk en dag for øvelsene.</li>
+      <li><b>Planen denne uken.</b> Figuren for den planlagte belastningen, antall treninger, arbeidssettene og de tyngste muskelgruppene.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Restitusjon til venstre og helsepoengene til høyre">
+    <p class="guide-cap muted small">Restitusjon og poeng ved siden av hverandre. Grønt betyr at ingenting står imot. Poengene nevner hva som telte, her fettprosent og BMI.</p>
+    <img class="guide-shot" src="/guide/overzicht-spieren.png" alt="Muskelrestitusjon med figur og linjer">
+    <p class="guide-cap muted small">Muskelrestitusjon. Figuren er standen nå. Linjene er restitusjon per dag.</p>
+    <img class="guide-shot" src="/guide/overzicht-volgende.png" alt="Neste trening og ukeringen">
+    <p class="guide-cap muted small">Neste trening til venstre, ringen for ukemålet til høyre.</p>
+    <img class="guide-shot" src="/guide/overzicht-midden.png" alt="Fliser, helsestatus og mål">
+    <p class="guide-cap muted small">De fire flisene, deretter helsestatusen og sammendraget av målet.</p>
+    <img class="guide-shot" src="/guide/overzicht-kracht.png" alt="Styrke og rekorder">
+    <p class="guide-cap muted small">Styrke til venstre, rekorder til høyre.</p>
+    <img class="guide-shot" src="/guide/overzicht-kalender.png" alt="Treningskalender og planen for denne uken">
+    <p class="guide-cap muted small">Kalender til venstre, planen for denne uken til høyre.</p>
+    <h4>Plan</h4>
+    <p>Her ligger uken som går til Gym Monster. Du endrer den bare på datamaskinen.</p>
+    <img class="guide-shot" src="/guide/plan.png" alt="Fanen Plan for Sam Demo">
+    <ol>
+      <li><b>Topp og knapper.</b> Uken, pilene til en eldre uke, og knappene for en ny trening, et nytt forslag og KI-coachen.</li>
+      <li><b>Muskler og tid.</b> Foran og bak. Listen ved siden av er planlagt tid og sett per muskelgruppe. Klikk en gruppe for å se den på figuren.</li>
+      <li><b>Treninger.</b> Ett kort per dag: navn, minutter, øvelser, og om den allerede er gjort. Utviding viser sett og vekter. Under sender du den til apparatet, redigerer den eller bytter den ut.</li>
+      <li><b>Maler.</b> Treninger du lagrer selv, og treninger som er delt på denne serveren.</li>
+      <li><b>Programmer.</b> Det som allerede ligger på Gym Monster-kontoen din. Listen henter du med Vis programmer.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/plan-spieren.png" alt="Figuren og muskellisten for uken">
+    <p class="guide-cap muted small">Ukeoversikten: figuren og fordelingen på muskelgruppene.</p>
+    <img class="guide-shot" src="/guide/plan-sessies.png" alt="Tre treningskort, to av dem allerede gjort">
+    <p class="guide-cap muted small">Dagene i uken. En grønn stolpe er allerede gjort. Kardio ute har ikke et program på apparatet; aktiviteten kommer fra Apple Health.</p>
+    <h4>Mål</h4>
+    <p>Det du spiser mot det som passer målet. Vekten selv blir under Kropp.</p>
+    <img class="guide-shot" src="/guide/doel.png" alt="Fanen Mål for Sam Demo">
+    <ol>
+      <li><b>Mål og stand.</b> De beregnede kcal og proteinet, og om dagen allerede er der.</li>
+      <li><b>Sett et mål.</b> Kropp (kilo og uker), styrke per muskelgruppe, skritt per dag og aktiviteter per uke. Lagring lar målet begynne på nytt.</li>
+      <li><b>Vekt.</b> Målingene dine og den rette linjen til målvekten.</li>
+      <li><b>Inntak.</b> Det du spiste, mot streken for målkcal.</li>
+      <li><b>Styrke.</b> Indeksen for den valgte muskelgruppen, her ryggen, mot linjen for styrkemålet.</li>
+      <li><b>Dager.</b> En tabell per dag: trening, skritt, inntak og om det holdt seg innenfor målet.</li>
+    </ol>
+    <img class="guide-shot" src="/guide/doel-formulier.png" alt="Skjemaet for å sette et mål">
+    <p class="guide-cap muted small">Skjemaet. Skritt og aktiviteter står under; dem ser du på hele siden ovenfor.</p>
+    <h4>Kropp</h4>
+    <p>Vekten og sammensetningen. Ingen treningsgraf.</p>
+    <img class="guide-shot" src="/guide/lichaam.png" alt="Fanen Kropp for Sam Demo">
+    <ol>
+      <li><b>Tittel.</b> Kroppsvekt.</li>
+      <li><b>Vekt.</b> Om Withings er koblet til, og en knapp for å legge inn en måling selv.</li>
+      <li><b>Helsepoeng.</b> Samme poengsum som på Oversikt, her med kategoriene kropp, hjerte, kondisjon og annet.</li>
+      <li><b>Sammensetning.</b> Fliser for vekt, fett, muskelmasse og de andre verdiene fra vekten, med en graf. Grønt eller rødt følger om poengsummen blir bedre eller dårligere, ikke om tallet steg.</li>
+      <li><b>Målinger.</b> Listen, sammenfoldet. Åpne den for hver veiedag.</li>
+    </ol>
+    <h4>Trening</h4>
+    <p>Det du gjorde på Gym Monster. Klikk en rad for øvelser, sett og vekter.</p>
+    <img class="guide-shot" src="/guide/training.png" alt="Fanen Trening for Sam Demo">
+    <ol>
+      <li><b>Tittel.</b> Trening.</li>
+      <li><b>Grafer.</b> Tre ved siden av hverandre: treninger per uke, volum per uke og minutter per uke.</li>
+      <li><b>Treninger.</b> Tabellen. En rad åpner rapporten for den treningen.</li>
+      <li><b>Per øvelse.</b> Velg en øvelse. Grafen er utviklingen i beregnet 1RM.</li>
+    </ol>
+    <h4>Tilbakeblikk</h4>
+    <p>Alt for en periode du velger øverst til høyre. Utskrift og PDF bruker samme periode. Siden er lang; numrene går ovenfra og ned.</p>
+    <img class="guide-shot" src="/guide/terugkijken.png" alt="Fanen Tilbakeblikk for Sam Demo">
+    <ol>
+      <li><b>Topp.</b> Perioden, pluss Skriv ut og PDF.</li>
+      <li><b>Tall.</b> Fliser for perioden: treninger, per uke, tid, kcal, ukerekke, favorittdag, volum, sett, repetisjoner per sett, tyngste vekt, rekorder og muskelgrupper.</li>
+      <li><b>Kardio.</b> Aktiviteter fra Apple Health i denne perioden.</li>
+      <li><b>Balanse og masse.</b> Fordelingen av volumet til venstre, muskelmasse mot treningsvolumet til høyre.</li>
+      <li><b>Styrke.</b> Indeksen per muskelgruppe. 100 er starten av perioden. En prikk slår en gruppe av eller på.</li>
+      <li><b>Kilometer og skritt.</b> Kilometer per uke og skritt per dag.</li>
+      <li><b>Per muskelgruppe.</b> Volum, sett og det beste beregnede 1RM.</li>
+      <li><b>Sett per uke.</b> En stolpe per muskelgruppe. Grønt ligger i retningslinjen for nybegynnere, omtrent 6 til 12 arbeidssett.</li>
+      <li><b>Detalj.</b> De samme muskelgruppene i en tabell, per uke.</li>
+      <li><b>Per øvelse.</b> Volum og den tyngste vekten per øvelse.</li>
+      <li><b>Mønstre.</b> Hvilke bevegelsesmønstre (press, trekk, knebøy) du gjorde.</li>
+      <li><b>Kalender.</b> De samme åtte ukene som på Oversikt, for den valgte perioden.</li>
+      <li><b>Når.</b> Hvilke dager og timer du trener. Avkrysningen teller med gange og sykling.</li>
+      <li><b>Restitusjon og energi.</b> Om belastningen passer restitusjonen, og forbrent energi ved siden av vekten.</li>
+    </ol>
+    <h4>Innstillinger</h4>
+    <p>Menyen til venstre, den åpne delen til høyre. Sam Demo er ikke administrator, så KI-coach og Brukere mangler. De to ser du bare som administrator.</p>
+    <img class="guide-shot" src="/guide/instellingen.png" alt="Innstillinger, med Speediance-kontoen åpen">
+    <ul>
+      <li><b>Speediance-konto.</b> E-post, passord, region og Gym Monster. Lagre og test henter katalogen. Finn maskinen min velger modellen.</li>
+      <li><b>Trening.</b> Mål, dager, minutter, erfaring, deload, oppvarming, nedkjøling og om uken er én plan.</li>
+      <li><b>Kropp og mål.</b> Kjønn, fødselsår, fødselsdato, maksimal puls, figur og høyde. De styrer grafene og poengsummen.</li>
+      <li><b>Apple Health.</b> Her lager du tilkoblingsnøkkelen. Hvordan det gjøres, står under Ny: koble til.</li>
+      <li><b>Withings.</b> Knappen Koble til Withings. Bare administratoren fyller inn Client ID.</li>
+      <li><b>E-post.</b> Adressen din, og om du vil ha en PDF etter en trening. Administratoren setter opp e-postserveren.</li>
+      <li><b>Synk og katalog.</b> Når siste synkronisering var, og hvor mange øvelser det finnes for maskinen din.</li>
+      <li><b>Håndbok.</b> Denne teksten.</li>
+      <li><b>Vilkår.</b> Teksten du godtar ved første start.</li>
+      <li><b>Om GymCoach.</b> Versjon og lisens.</li>
+    </ul>`,
+  },
+  {
     id: 'plan', title: 'Ukeplanen',
     html: `<p><b>Oppsett.</b> Antall treningsøkter per uke bestemmer fordelingen: 2 eller 3 dager helkropp (A/B/C), 4 dager overkropp/underkropp. Hver treningsøkt fyller faste bevegelsesmønstre (press, trekk, knebøy, hoftehengsel, …) med en øvelse fra maskinens katalog.</p>
     <p><b>Forskrivning per mål</b> (arbeidssett):</p>

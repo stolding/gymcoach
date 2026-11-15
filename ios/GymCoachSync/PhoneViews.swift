@@ -1852,7 +1852,7 @@ struct GuideWeb: UIViewRepresentable {
         web.backgroundColor = .clear
         web.scrollView.backgroundColor = .clear
         page = web
-        web.loadHTMLString(html, baseURL: nil)
+        web.loadHTMLString(html, baseURL: try? GymServer.baseURL())
         return web
     }
 

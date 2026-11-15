@@ -43,6 +43,16 @@ struct PhoneSnapshot: Codable {
     var score: PhoneHealthScore?
 }
 
+struct GuideDoc: Codable {
+    var sections: [GuideSection]
+}
+
+struct GuideSection: Codable, Identifiable {
+    var id: String
+    var title: String
+    var html: String
+}
+
 struct PhoneHealth: Codable {
     var text: String
     var at: String
@@ -411,6 +421,15 @@ enum PhoneClient {
         for cookie in store.cookies ?? [] where cookie.domain.contains(host) || host.hasSuffix(cookie.domain.trimmingCharacters(in: CharacterSet(charactersIn: "."))) {
             store.deleteCookie(cookie)
         }
+    }
+
+    static func fetchGuide() async throws -> [GuideSection] {
+        let (data, http) = try await send(try request("api/guide"))
+        if http.statusCode == 401 { throw PhoneError.unauthorized }
+        if http.statusCode == 404 { throw PhoneError.oldServer }
+        guard http.statusCode == 200 else { throw PhoneError.server(http.statusCode, message(data) ?? "HTTP \(http.statusCode)") }
+        do { return try JSONDecoder().decode(GuideDoc.self, from: data).sections }
+        catch { throw PhoneError.decode }
     }
 
     static func fetchPhone() async throws -> PhoneSnapshot {

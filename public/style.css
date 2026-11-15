@@ -828,6 +828,9 @@ body.is-admin .fgrid .form-sub.admin-only { display: grid !important; }
 .explain-body p { margin: .5rem 0; }
 .explain-body ol { padding-left: 1.2rem; display: flex; flex-direction: column; gap: .4rem; }
 .explain-body .about-tbl { margin: .3rem 0 .4rem; }
+.set-pane .explain-body { max-height: none; overflow: visible; }
+.set-pane .explain-nav { position: sticky; top: .4rem; align-self: start; }
+.explain-body h4 { font-size: .95rem; margin: .8rem 0 .2rem; }
 .explain-dl dt { font-weight: 600; margin-top: .7rem; }
 .explain-dl dd { margin: .15rem 0 0; color: var(--ink); }
 @media (max-width: 700px) {

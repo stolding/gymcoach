@@ -1,4 +1,5 @@
 import SwiftUI
+import WebKit
 
 enum PhoneChrome {
     static let bg = Color(red: 0.059, green: 0.063, blue: 0.071)
@@ -1777,6 +1778,89 @@ struct GoalView: View {
     }
 }
 
+struct GuideView: View {
+    @State private var sections: [GuideSection] = []
+    @State private var error = ""
+    @State private var page: WKWebView?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if !sections.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(sections) { section in
+                            Button(section.title) {
+                                let id = section.id.replacingOccurrences(of: "'", with: "")
+                                page?.evaluateJavaScript("document.getElementById('\(id)')?.scrollIntoView({behavior:'smooth',block:'start'})")
+                            }
+                            .font(.caption.weight(.semibold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(PhoneChrome.card, in: Capsule())
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+                GuideWeb(html: guideHTML(sections), page: $page)
+            } else if !error.isEmpty {
+                Text(error).font(.subheadline).foregroundStyle(.secondary).padding(16)
+            } else {
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .background(PhoneChrome.bg.ignoresSafeArea())
+        .navigationTitle("Handleiding")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await loadGuide() }
+    }
+
+    private func loadGuide() async {
+        if !sections.isEmpty { return }
+        do { sections = try await PhoneClient.fetchGuide() }
+        catch { self.error = (error as? LocalizedError)?.errorDescription ?? "De handleiding is nu niet te laden." }
+    }
+}
+
+private func guideHTML(_ sections: [GuideSection]) -> String {
+    let body = sections.map { "<section id=\"\($0.id)\"><h2>\($0.title)</h2>\($0.html)</section>" }.joined()
+    return """
+    <!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+      body { margin: 0; padding: 8px 16px 32px; background: #0f1012; color: #ecebe7;
+        font: 16px/1.45 -apple-system, sans-serif; }
+      h2 { font-size: 1.15rem; margin: 1.4rem 0 .4rem; }
+      h4 { font-size: 1rem; margin: 1rem 0 .2rem; }
+      a { color: #ff7a2e; }
+      dt { font-weight: 650; margin-top: .8rem; }
+      dd { margin: .15rem 0 .2rem; }
+      table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+      td { border-bottom: 1px solid #2a2c31; padding: .3rem .35rem; vertical-align: top; }
+      code { font-size: .9em; }
+      .muted, .small { color: #9a9ca3; }
+    </style></head><body>\(body)</body></html>
+    """
+}
+
+struct GuideWeb: UIViewRepresentable {
+    var html: String
+    @Binding var page: WKWebView?
+
+    func makeUIView(context: Context) -> WKWebView {
+        let web = WKWebView()
+        web.isOpaque = false
+        web.backgroundColor = .clear
+        web.scrollView.backgroundColor = .clear
+        page = web
+        web.loadHTMLString(html, baseURL: nil)
+        return web
+    }
+
+    func updateUIView(_ web: WKWebView, context: Context) {
+        if page !== web { page = web }
+    }
+}
+
 struct MoreView: View {
     @EnvironmentObject var phone: PhoneModel
 
@@ -1795,6 +1879,7 @@ struct MoreView: View {
                 }
                 Section {
                     NavigationLink("Synchroniseren") { SyncSettingsView() }
+                    NavigationLink("Handleiding") { GuideView() }
                     NavigationLink("Over GymCoach") { AboutView() }
                 }
                 if let version = phone.snapshot?.version, !version.isEmpty {

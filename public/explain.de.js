@@ -3,6 +3,34 @@
 
 export default [
   {
+    id: 'starten', title: 'Neu: verbinden',
+    html: `<p>Drei Verbindungen setzen GymCoach in Gang. Speediance brauchst du für den Plan und die Trainings. Waage und Apple Health können warten: ohne diese Messungen bleiben Körper, Gesundheitsscore und Aktivitäten leer.</p>
+    <h4>Speediance-Konto</h4>
+    <ol>
+      <li>Öffne <b>Einstellungen → Speediance-Konto</b>.</li>
+      <li>Trag E-Mail und Passwort deines Speediance-Kontos ein. In Europa ist die Region meist <b>EU</b>.</li>
+      <li>Wähle deinen Gym Monster, oder tippe auf <b>Mein Gerät erkennen</b>.</li>
+      <li><b>Speichern und testen</b>. GymCoach holt danach den Übungskatalog dieses Geräts.</li>
+    </ol>
+    <p>Das Passwort bleibt auf deinem eigenen Server. Stell danach unter Training Ziel, Tage und Minuten ein und mach deinen ersten Wochenplan.</p>
+    <h4>Withings-Waage</h4>
+    <ol>
+      <li>Der Administrator legt einmalig eine kostenlose App auf developer.withings.com an (Dashboard → Create an application, Typ Public API).</li>
+      <li>Als Callback-URL nimmst du die Adresse, die GymCoach unter <b>Einstellungen → Withings</b> zeigt. Übernimm Client ID und Client secret und speichere.</li>
+      <li>Jeder Benutzer verbindet danach die eigene Waage auf derselben Seite.</li>
+    </ol>
+    <p>Danach kommen Gewicht, Fett, Muskelmasse, Pulswellengeschwindigkeit und die übrigen Withings-Werte an. Wiege möglichst nüchtern, morgens, vor dem Duschen. Der Ruhepuls auf der Waage ist eine stehende Momentmessung.</p>
+    <h4>Apple Health</h4>
+    <ol>
+      <li><b>Einstellungen → Apple Health → Verbindungsschlüssel erstellen</b>. Bewahre URL und Schlüssel auf; der Schlüssel wird nur einmal gezeigt.</li>
+      <li>Installiere <b>GymCoach Sync</b> über TestFlight und öffne die App.</li>
+      <li>Trag die Adresse deines Servers und den Verbindungsschlüssel ein. Die Adresse für Apple Health ist eine andere als die Adresse, mit der du den Bildschirm öffnest.</li>
+      <li>Tippe auf <b>Verbindung testen</b>, erlaube den Zugriff auf Gesundheit, und wähle <b>Gesamten Verlauf senden</b>, wenn ältere Workouts mit sollen.</li>
+    </ol>
+    <p>GymCoach Sync liest Workouts (Gehen, Radfahren und den Rest), Herzfrequenz, Schritte, aktive Energie, Distanz, Ruhepuls, HRV, VO2max und Ernährung (Kalorien, Eiweiß, Kohlenhydrate, Fett und Ballaststoffe). Krafttrainings, die Speediance selbst nach Apple Health schreibt, lässt GymCoach aus, damit nichts doppelt zählt. Auf derselben Einstellungsseite steht auch der Weg über Health Auto Export.</p>
+    <p>Der Ruhepuls der Apple Watch ist der Tageswert. GymCoach nutzt ihn, sobald genug Tage da sind; sonst die Messung der Waage.</p>`,
+  },
+  {
     id: 'kort', title: 'Kurz gesagt',
     html: `<ol>
       <li><b>Abrufen.</b> GymCoach holt deine Trainings aus deinem Speediance-Konto: pro Übung die Sätze, Wiederholungen, Gewichte, Zeiten und (wenn du einen Brustgurt trägst) deine Herzfrequenz.</li>
@@ -63,6 +91,7 @@ export default [
       <dt>Erholung</dt><dd>Der Erholungswert nutzt deinen Ruhepuls aus Apple Health (Apple Watch): den Durchschnitt der letzten 7 Tage gegenüber den 4 Wochen davor. Gibt es weniger als 10 solcher Tage, dann die Messungen der Withings-Waage. Im Rückblick und unter Körper kommt der Ruhepuls aus Apple Health, sobald es Tage gibt, sonst von der Waage. 3 Schläge höher: Achtung; 5 oder mehr: wahrscheinlich nicht erholt, oder du wirst krank.</dd>
       <dt>Körper</dt><dd>BMI nach der WHO. Körperfett nach den Tabellen von Gallagher et al. (2000), nach Alter und Geschlecht. FFMI (fettfreie Masse ÷ Größe²), mit Grenzen nach Geschlecht. Pulswellengeschwindigkeit mit Grenzen nach Alter; ein höherer Wert bedeutet steifere Gefäße. Gewicht, Fett, Muskelmasse, FFMI und Pulswellengeschwindigkeit kommen von der Withings-Waage. Ruhepuls, HRV und VO2max auf derselben Seite kommen von der Apple Watch.</dd>
       <dt>Energie und Schritte</dt><dd>Aktive Energie aus Apple Health (was du über deinen Grundumsatz hinaus verbrennst); ohne Apple Health die Kalorien deiner Trainings. Schrittziel standardmäßig 8.000 pro Tag. Für Gehen, Schwimmen und andere Aktivitäten stellst du unter Ziel ein Wochenziel. Der Vorschlag daneben kommt aus deinen letzten vier Wochen in Apple Health, oder aus einer festen Richtlinie, wenn diese Messung noch fehlt.</dd>
+      <dt>Gesundheitsscore</dt><dd>Eine Zahl von 1,0 bis 10,0 für dein Geschlecht und dein Alter, auf der Übersicht und unter Körper. Vier Kategorien zählen: Körperzusammensetzung, Herz und Gefäße, Kondition und Erholung, und Sonstiges. Jede Messung in einer Kategorie zählt gleich schwer. Gewicht, Fett, Muskelmasse, FFMI, viszerales Fett, Knochenanteil, Pulswellengeschwindigkeit, Gefäßalter, Stoffwechselalter, Nervengesundheit und das Verhältnis von extrazellulärem zu Gesamtkörperwasser kommen von der Withings-Waage, als Mittel der letzten zwei Wägungen. Ruhepuls und HRV sind sieben Tage aus Apple Health; VO2max ist die letzte Schätzung der Apple Watch. Ein höherer Score ist immer besser. Bei der Messung selbst ist Grün die gesündere Richtung: ein BMI, der auf 22 zugeht, ist grün, ein BMI, der sich weiter von 22 entfernt, ist rot. Die Scorezahl bekommt dieselbe Farbe. Das fasst deine eigenen Zahlen zusammen. Es ist keine Diagnose.</dd>
     </dl>
     <p class="muted small">Alle Werte sind Schätzungen für deinen eigenen Fortschritt, keine medizinischen Messungen.</p>`,
   },

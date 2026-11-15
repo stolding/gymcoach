@@ -3,6 +3,34 @@
 
 export default [
   {
+    id: 'starten', title: 'Nieuw: koppelen',
+    html: `<p>Drie koppelingen zetten GymCoach aan het werk. Speediance is nodig voor het plan en de trainingen. De weegschaal en Apple Health mogen later: zonder die metingen blijven Lichaam, de gezondheidsscore en de activiteiten leeg.</p>
+    <h4>Speediance-account</h4>
+    <ol>
+      <li>Ga naar <b>Instellingen → Speediance-account</b>.</li>
+      <li>Vul het e-mailadres en het wachtwoord van je Speediance-account in. In Europa is de regio meestal <b>EU</b>.</li>
+      <li>Kies je Gym Monster, of tik op <b>Detecteer mijn toestel</b>.</li>
+      <li><b>Opslaan en testen</b>. GymCoach haalt daarna de oefeningencatalogus van dat toestel op.</li>
+    </ol>
+    <p>Het wachtwoord blijft op je eigen server staan. Kies daarna bij Training je doel, dagen en minuten, en maak je eerste weekplan.</p>
+    <h4>Withings-weegschaal</h4>
+    <ol>
+      <li>De beheerder maakt eenmalig een gratis app op developer.withings.com (Dashboard → Create an application, type Public API).</li>
+      <li>Als Callback-URL vul je het adres dat GymCoach toont bij <b>Instellingen → Withings</b>. Neem Client ID en Client secret over en sla op.</li>
+      <li>Elke gebruiker koppelt daarna de eigen weegschaal op diezelfde pagina.</li>
+    </ol>
+    <p>Daarna komen gewicht, vet, spiermassa, polsgolfsnelheid en de andere Withings-waarden binnen. Weeg bij voorkeur nuchter, ’s ochtends, vóór het douchen. De rusthartslag op de weegschaal is een staande momentmeting.</p>
+    <h4>Apple Health</h4>
+    <ol>
+      <li><b>Instellingen → Apple Health → Koppelsleutel maken</b>. Bewaar de URL en de sleutel; de sleutel wordt maar één keer getoond.</li>
+      <li>Installeer <b>GymCoach Sync</b> via TestFlight en open de app.</li>
+      <li>Vul het adres van je server in en de koppelsleutel. Het adres voor Apple Health staat los van het adres waarmee je het scherm opent.</li>
+      <li>Tik op <b>Test verbinding</b>, sta toegang tot Gezondheid toe, en kies <b>Volledige historie versturen</b> als je oude workouts mee wilt.</li>
+    </ol>
+    <p>GymCoach Sync leest workouts (wandelen, fietsen en de rest), hartslag, stappen, actieve energie, afstand, rusthartslag, HRV, VO2max en voeding (calorieën, eiwit, koolhydraten, vet en vezels). Krachttrainingen die Speediance zelf naar Apple Health schrijft, slaat GymCoach over, zodat niets dubbel telt. Op dezelfde instellingenpagina staat ook de weg via Health Auto Export.</p>
+    <p>De rusthartslag van de Apple Watch is de dagwaarde. Die gebruikt GymCoach zodra er genoeg dagen zijn; anders de meting van de weegschaal.</p>`,
+  },
+  {
     id: 'kort', title: 'In het kort',
     html: `<ol>
       <li><b>Ophalen.</b> GymCoach haalt je trainingen op van je Speediance-account: per oefening de sets, herhalingen, gewichten, tijden en (als je een hartslagband draagt) je hartslag.</li>
@@ -63,6 +91,7 @@ export default [
       <dt>Herstel</dt><dd>De herstelscore gebruikt je hartslag in rust uit Apple Health (Apple Watch): het gemiddelde van de laatste 7 dagen tegenover de 4 weken daarvoor. Zijn er minder dan 10 van die dagen, dan de metingen van de Withings-weegschaal. Op Terugkijken en op Lichaam komt de hartslag in rust uit Apple Health zodra er dagen zijn, anders van de weegschaal. 3 slagen hoger: let op; 5 of meer: waarschijnlijk niet hersteld of je wordt ziek.</dd>
       <dt>Lichaam</dt><dd>BMI volgens de WHO. Vetpercentage tegen de tabellen van Gallagher e.a. (2000), naar leeftijd en geslacht. FFMI (vetvrije massa ÷ lengte²), met grenzen per geslacht. Polsgolfsnelheid met grenzen per leeftijd; een hogere waarde betekent stijvere vaten. Gewicht, vet, spiermassa, FFMI en polsgolfsnelheid komen van de Withings-weegschaal. Hartslag in rust, HRV en VO2max op dezelfde pagina komen van de Apple Watch.</dd>
       <dt>Energie en stappen</dt><dd>Actieve energie uit Apple Health (wat je verbrandt bovenop je rustverbruik); zonder Apple Health de calorieën van je trainingen. Stappendoel standaard 8.000 per dag. Voor wandelen, zwemmen en andere activiteiten stel je op Doel een weekdoel. Het voorstel ernaast komt uit je laatste vier weken in Apple Health, of uit een vaste richtlijn als die meting er nog niet is.</dd>
+      <dt>Gezondheidsscore</dt><dd>Een getal van 1,0 tot 10,0 voor jouw geslacht en leeftijd, op Overzicht en op Lichaam. Vier categorieën tellen mee: lichaamssamenstelling, hart en vaten, conditie en herstel, en overig. Elke meting in een categorie telt even zwaar. Gewicht, vet, spiermassa, FFMI, visceraal vet, botpercentage, polsgolfsnelheid, vaatleeftijd, metabole leeftijd, zenuwgezondheid en de verhouding buiten- en totaalwater komen van de Withings-weegschaal, als gemiddelde van de laatste twee wegingen. Rusthartslag en HRV zijn zeven dagen uit Apple Health; VO2max is de laatste schatting van de Apple Watch. Een hogere score is altijd beter. Bij de meting zelf is groen de gezondere richting: een BMI die naar 22 zakt is groen, een BMI die verder van 22 af gaat is rood. Het scoregetal krijgt dezelfde kleur. Dit vat je eigen cijfers samen. Het is geen diagnose.</dd>
     </dl>
     <p class="muted small">Alle waarden zijn schattingen voor je eigen voortgang, geen medische metingen.</p>`,
   },

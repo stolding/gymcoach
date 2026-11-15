@@ -3,6 +3,34 @@
 
 export default [
   {
+    id: 'starten', title: 'Ny: koble til',
+    html: `<p>Tre koblinger setter GymCoach i gang. Speediance trengs for planen og treningsøktene. Vekten og Apple Health kan vente: uten de målingene blir Kropp, helsescoren og aktivitetene tomme.</p>
+    <h4>Speediance-konto</h4>
+    <ol>
+      <li>Gå til <b>Innstillinger → Speediance-konto</b>.</li>
+      <li>Fyll inn e-postadressen og passordet til Speediance-kontoen din. I Europa er regionen som regel <b>EU</b>.</li>
+      <li>Velg Gym Monster, eller trykk <b>Finn maskinen min</b>.</li>
+      <li><b>Lagre og test</b>. GymCoach henter deretter øvelseskatalogen til den maskinen.</li>
+    </ol>
+    <p>Passordet blir på din egen server. Velg deretter mål, dager og minutter under Trening, og lag den første ukeplanen.</p>
+    <h4>Withings-vekt</h4>
+    <ol>
+      <li>Administratoren lager én gang en gratis app på developer.withings.com (Dashboard → Create an application, type Public API).</li>
+      <li>Som callback-URL bruker du adressen GymCoach viser under <b>Innstillinger → Withings</b>. Ta med Client ID og Client secret og lagre.</li>
+      <li>Hver bruker kobler deretter sin egen vekt på samme side.</li>
+    </ol>
+    <p>Deretter kommer vekt, fett, muskelmasse, pulsbølgehastighet og de andre Withings-verdiene inn. Vei deg helst fastende, om morgenen, før du dusjer. Hvilepulsen på vekten er en stående øyeblikksmåling.</p>
+    <h4>Apple Health</h4>
+    <ol>
+      <li><b>Innstillinger → Apple Health → Lag tilkoblingsnøkkel</b>. Ta vare på URL-en og nøkkelen; nøkkelen vises bare én gang.</li>
+      <li>Installer <b>GymCoach Sync</b> via TestFlight og åpne appen.</li>
+      <li>Fyll inn adressen til serveren din og tilkoblingsnøkkelen. Adressen for Apple Health er en annen enn adressen du åpner skjermen med.</li>
+      <li>Trykk <b>Test tilkobling</b>, gi tilgang til Helse, og velg <b>Send full historikk</b> hvis du vil ha med eldre økter.</li>
+    </ol>
+    <p>GymCoach Sync leser økter (gange, sykling og resten), puls, skritt, aktiv energi, distanse, hvilepuls, HRV, VO2max og kosthold (kalorier, protein, karbohydrater, fett og fiber). Styrkeøkter som Speediance selv skriver til Apple Health, hopper GymCoach over, slik at ingenting telles dobbelt. På samme innstillingsside står også veien via Health Auto Export.</p>
+    <p>Hvilepulsen fra Apple Watch er dagsverdien. GymCoach bruker den når det finnes nok dager; ellers målingen fra vekten.</p>`,
+  },
+  {
     id: 'kort', title: 'Kort sagt',
     html: `<ol>
       <li><b>Hent.</b> GymCoach henter treningsøktene dine fra Speediance-kontoen din: per øvelse sett, repetisjoner, vekter, tider og (hvis du bruker pulsbånd) pulsen din.</li>
@@ -63,6 +91,7 @@ export default [
       <dt>Restitusjon</dt><dd>Restitusjonsscoren bruker hvilepulsen din fra Apple Health (Apple Watch): gjennomsnittet av de siste 7 dagene mot de 4 ukene før. Er det færre enn 10 slike dager, brukes Withings-vekten. I Tilbakeblikk og under Kropp kommer hvilepulsen fra Apple Health så snart det finnes dager, ellers fra vekten. 3 slag høyere: pass på; 5 eller mer: sannsynligvis ikke restituert, eller du er i ferd med å bli syk.</dd>
       <dt>Kropp</dt><dd>BMI ifølge WHO. Kroppsfett mot tabellene til Gallagher et al. (2000), etter alder og kjønn. FFMI (fettfri masse ÷ høyde²), med grenser etter kjønn. Pulsbølgehastighet med grenser etter alder; en høyere verdi betyr stivere årer. Vekt, fett, muskelmasse, FFMI og pulsbølgehastighet kommer fra Withings-vekten. Hvilepuls, HRV og VO2max på samme side kommer fra Apple Watch.</dd>
       <dt>Energi og skritt</dt><dd>Aktiv energi fra Apple Health (det du forbrenner oppå hvileforbrenningen); uten Apple Health kaloriene fra treningsøktene dine. Skrittmål 8 000 per dag som standard. For gange, svømming og andre aktiviteter setter du et ukemål under Mål. Forslaget ved siden av kommer fra de siste fire ukene i Apple Health, eller fra en fast retningslinje når den målingen ikke er der ennå.</dd>
+      <dt>Helsescore</dt><dd>Et tall fra 1,0 til 10,0 for kjønn og alder, på Oversikt og under Kropp. Fire kategorier teller: kroppssammensetning, hjerte og årer, kondisjon og restitusjon, og annet. Hver måling i en kategori teller likt. Vekt, fett, muskelmasse, FFMI, visceralt fett, beinprosent, pulsbølgehastighet, karalder, metabolsk alder, nervehelse og forholdet mellom ekstracellulært vann og totalt kroppsvann kommer fra Withings-vekten, som gjennomsnitt av de to siste veiingene. Hvilepuls og HRV er sju dager fra Apple Health; VO2max er det siste anslaget fra Apple Watch. En høyere score er alltid bedre. For selve målingen er grønt den sunnere retningen: en BMI som går mot 22 er grønn, en BMI som går lenger fra 22 er rød. Scoretallet får samme farge. Dette oppsummerer dine egne tall. Det er ingen diagnose.</dd>
     </dl>
     <p class="muted small">Alle verdier er anslag for din egen fremgang, ikke medisinske målinger.</p>`,
   },

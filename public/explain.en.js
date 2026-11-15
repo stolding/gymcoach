@@ -3,6 +3,34 @@
 
 export default [
   {
+    id: 'starten', title: 'New: connecting',
+    html: `<p>Three connections put GymCoach to work. Speediance is required for the plan and the workouts. The scale and Apple Health can wait: without those readings, Body, the health score and activities stay empty.</p>
+    <h4>Speediance account</h4>
+    <ol>
+      <li>Open <b>Settings → Speediance account</b>.</li>
+      <li>Enter the email and password of your Speediance account. In Europe the region is usually <b>EU</b>.</li>
+      <li>Choose your Gym Monster, or tap <b>Detect my machine</b>.</li>
+      <li><b>Save and test</b>. GymCoach then fetches the exercise catalogue of that machine.</li>
+    </ol>
+    <p>The password stays on your own server. Then set your goal, days and minutes under Training, and make your first week plan.</p>
+    <h4>Withings scale</h4>
+    <ol>
+      <li>The administrator creates a free app once on developer.withings.com (Dashboard → Create an application, type Public API).</li>
+      <li>As the callback URL, use the address GymCoach shows under <b>Settings → Withings</b>. Copy the Client ID and Client secret and save.</li>
+      <li>Each user then connects their own scale on that same page.</li>
+    </ol>
+    <p>Weight, fat, muscle mass, pulse wave velocity and the other Withings values then come in. Weigh fasted if you can, in the morning, before showering. The resting heart rate on the scale is a standing snapshot.</p>
+    <h4>Apple Health</h4>
+    <ol>
+      <li><b>Settings → Apple Health → Create connection key</b>. Save the URL and the key; the key is shown only once.</li>
+      <li>Install <b>GymCoach Sync</b> through TestFlight and open the app.</li>
+      <li>Enter your server address and the connection key. The address for Apple Health is separate from the address that opens the screen.</li>
+      <li>Tap <b>Test connection</b>, allow access to Health, and choose <b>Send full history</b> if you want older workouts included.</li>
+    </ol>
+    <p>GymCoach Sync reads workouts (walking, cycling and the rest), heart rate, steps, active energy, distance, resting heart rate, HRV, VO2max and nutrition (calories, protein, carbohydrates, fat and fibre). Strength workouts that Speediance itself writes to Apple Health are skipped, so nothing is counted twice. The same settings page also explains Health Auto Export.</p>
+    <p>The Apple Watch resting heart rate is the day value. GymCoach uses it once there are enough days; otherwise it uses the scale.</p>`,
+  },
+  {
     id: 'kort', title: 'In short',
     html: `<ol>
       <li><b>Fetch.</b> GymCoach fetches your workouts from your Speediance account: per exercise the sets, reps, weights, times and (if you wear a heart rate strap) your heart rate.</li>
@@ -63,6 +91,7 @@ export default [
       <dt>Recovery</dt><dd>The recovery score uses your resting heart rate from Apple Health (Apple Watch): the average of the last 7 days against the 4 weeks before. With fewer than 10 of those days, it uses the Withings scale. On Review and on Body, resting heart rate comes from Apple Health as soon as there are days, otherwise from the scale. 3 beats higher: take care; 5 or more: probably not recovered, or you are getting ill.</dd>
       <dt>Body</dt><dd>BMI according to the WHO. Body fat against the tables of Gallagher et al. (2000), by age and sex. FFMI (fat-free mass ÷ height²), with ranges by sex. Pulse wave velocity with ranges by age; a higher value means stiffer vessels. Weight, fat, muscle mass, FFMI and pulse wave velocity come from the Withings scale. Resting heart rate, HRV and VO2max on the same page come from the Apple Watch.</dd>
       <dt>Energy and steps</dt><dd>Active energy from Apple Health (what you burn on top of your resting metabolism); without Apple Health the calories of your workouts. Step goal 8,000 per day by default. For walking, swimming and other activities you set a weekly goal on Goal. The suggestion beside it comes from your last four weeks in Apple Health, or from a fixed guideline when that measurement is not there yet.</dd>
+      <dt>Health score</dt><dd>A number from 1.0 to 10.0 for your sex and age, on Overview and on Body. Four categories count: body composition, heart and vessels, fitness and recovery, and other. Each reading in a category has equal weight. Weight, fat, muscle mass, FFMI, visceral fat, bone percentage, pulse wave velocity, vascular age, metabolic age, nerve health and the ratio of extracellular to total body water come from the Withings scale, as the average of the last two weigh-ins. Resting heart rate and HRV are seven days from Apple Health; VO2max is the latest Apple Watch estimate. A higher score is always better. For the reading itself, green is the healthier direction: a BMI moving toward 22 is green, a BMI moving further from 22 is red. The score number takes the same colour. This summarises your own numbers. It is not a diagnosis.</dd>
     </dl>
     <p class="muted small">All values are estimates for your own progress, not medical measurements.</p>`,
   },

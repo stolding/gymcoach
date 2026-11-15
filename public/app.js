@@ -1312,7 +1312,7 @@ function renderHealthMd(src) {
 }
 
 function renderHealth() {
-  const el = $('#healthCard');
+  const el = $('#healthStatusCard');
   if (!el) return;
   const h = state.meta?.healthStatus;
   el.classList.remove('hidden');
@@ -3969,6 +3969,7 @@ function showSetPane(key, remember = true) {
   const btn = $(`#setNav button[data-pane="${key}"]`);
   if (!btn || getComputedStyle(btn).display === 'none') key = 'account';
   else if (remember) { setPane = key; try { localStorage.setItem('gc-set-pane', key); } catch {} }
+  if (key === 'guide') renderGuidePane();
   document.querySelectorAll('#setNav button').forEach((b) => b.classList.toggle('on', b.dataset.pane === key));
   document.querySelectorAll('#tab-settings .set-pane').forEach((p) => p.classList.toggle('on', p.dataset.pane === key));
 }
@@ -4209,6 +4210,31 @@ function renderTermsPane() {
 }
 document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => { if (b.dataset.tab === 'settings') renderTermsPane(); }));
 $('#setNav').addEventListener('click', (ev) => { if (ev.target.closest('[data-pane=terms]')) renderTermsPane(); });
+
+// ---------- handleiding ----------
+function renderGuidePane() {
+  const el = $('#guidePane');
+  if (!el) return;
+  const lang = getLang();
+  if (el.dataset.lang === lang && el.querySelector('.explain')) return;
+  el.dataset.lang = lang;
+  const secs = explain();
+  el.innerHTML = `<h2>${t('ui.settings.handleiding')}</h2>
+    <p class="muted small" style="margin-top:-.4rem">${t('app.guideLead')}</p>
+    <div class="explain guide-page">
+      <nav class="explain-nav">${secs.map((x) => `<button type="button" data-sec="${x.id}">${esc(x.title)}</button>`).join('')}</nav>
+      <div class="explain-body">${secs.map((x) => `<section id="gd-${x.id}"><h3>${esc(x.title)}</h3>${x.html}</section>`).join('')}</div>
+    </div>`;
+  const nav = el.querySelector('.explain-nav');
+  const mark = (id) => nav.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.sec === id));
+  nav.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-sec]');
+    if (!b) return;
+    mark(b.dataset.sec);
+    el.querySelector('#gd-' + b.dataset.sec)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  mark(secs[0].id);
+}
 
 // ---------- uitleg: hoe GymCoach werkt ----------
 function openExplain(section = 'kort') {

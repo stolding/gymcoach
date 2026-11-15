@@ -17,6 +17,7 @@ import * as muscleRec from './lib/muscleRecovery.js';
 import * as weekbalance from './lib/weekbalance.js';
 import * as goal from './lib/goal.js';
 import * as phone from './lib/phone.js';
+import { guideSections } from './lib/guide.js';
 import { TERMS_VERSION } from './public/terms.js';
 import * as ai from './lib/ai.js';
 import * as withings from './lib/withings.js';
@@ -744,6 +745,7 @@ const routes = {
   },
   'GET /api/goal': async () => goalView(await context()),
   // iPhone, onderweg: overzicht, schema, voortgang, lichaam en doel in één klein antwoord. Alleen lezen.
+  'GET /api/guide': async () => ({ sections: guideSections() }),
   'GET /api/phone': async () => {
     const ctx = await context();
     const [rawPlan, daily, activities, meta] = await Promise.all([store.getPlan(), store.getHealthDaily(), store.getActivities(), store.getMeta()]);

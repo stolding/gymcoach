@@ -1217,7 +1217,7 @@ struct BodyView: View {
     private func tile(_ m: PhoneMetric, on: Bool) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(m.label).font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
-            Text("\(phoneKg(m.value)) \(m.unit)").font(.title3.monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
+            Text(metricValue(m)).font(.title3.monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
             Text(deltaLine(m)).font(.caption2).foregroundStyle(deltaColor(m)).lineLimit(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1232,10 +1232,18 @@ struct BodyView: View {
         }
     }
 
+    private func metricValue(_ m: PhoneMetric) -> String {
+        let digits = m.key == "ecwTbw" ? 3 : 1
+        let body = m.value.formatted(.number.precision(.fractionLength(digits)))
+        return m.unit.isEmpty ? body : "\(body) \(m.unit)"
+    }
+
     private func deltaLine(_ m: PhoneMetric) -> String {
         guard let d = m.delta else { return " " }
-        let n = (d > 0 ? "+" : "") + phoneKg(d)
-        return m.since.isEmpty ? "\(n) \(m.unit)" : "\(n) \(m.unit) sinds \(m.since)"
+        let digits = m.key == "ecwTbw" ? 3 : 1
+        let n = (d > 0 ? "+" : "") + d.formatted(.number.precision(.fractionLength(0...digits)))
+        let unit = m.unit.isEmpty ? "" : " \(m.unit)"
+        return m.since.isEmpty ? "\(n)\(unit)" : "\(n)\(unit) sinds \(m.since)"
     }
 
     private func deltaColor(_ m: PhoneMetric) -> Color {

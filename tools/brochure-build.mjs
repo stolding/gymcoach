@@ -73,7 +73,7 @@ const copy = {
   nl: {
     foot: 'GymCoach · voorbeelddata',
     pages: [
-      (n) => page(n, 'versie 2.32.14', `
+      (n) => page(n, 'versie 2.32.15', `
         <div class="cover-top"><div class="brand"><img src="${logo}" alt="">GymCoach</div><span class="pill">voor de Speediance Gym Monster</span></div>
         <h1 style="font-size:40px;margin-top:28px">Je eigen AI-trainer.<br>Een plan dat met je meegroeit.</h1>
         <p class="lead">GymCoach leest je trainingen, maakt elke week een schema, volgt je doel en je gezondheidsscore, en zet het plan met één klik op het toestel. Je data blijft op jouw server.</p>
@@ -154,7 +154,7 @@ const copy = {
         </div>
         <div class="grid2" style="margin-top:12px">
           <div class="card"><h2>De kleur volgt de score</h2><p>Groener als de meting de gezondheidsscore omhoog trekt. Een BMI die naar 22 gaat wordt groener, ook als het getal daalt. Een rusthartslag die stijgt wordt roder, ook al is “hoger” hier geen vooruitgang.</p></div>
-          <div class="card"><h2>Samenstelling</h2><p>Vet, spiermassa en de verdeling over armen, benen en romp. De segmenten komen van de Withings-weegschaal, zodra die is gekoppeld.</p></div>
+          <div class="card"><h2>Samenstelling</h2><p>Vet, spiermassa en de verdeling over armen, benen en romp. ECW/TBW is het water buiten de cellen gedeeld door al het lichaamswater; onder 0,40 is gebruikelijk. De cijfers komen van de Withings-weegschaal, zodra die is gekoppeld.</p></div>
           <div class="card"><h2>Hart en conditie</h2><p>Rusthartslag, HRV, VO2max en polsgolfsnelheid uit Apple Health. Stappen en activiteiten van dezelfde iPhone vullen het doel van de week.</p></div>
           <div class="card"><h2>Geen medisch oordeel</h2><p>De score en de kleuren zijn een samenvatting van je eigen metingen, om te zien of het de goede kant op gaat. Ze vervangen geen arts.</p></div>
         </div>`),
@@ -248,7 +248,7 @@ const copy = {
 };
 
 const enPages = [
-  (n) => page(n, 'version 2.32.14', `
+  (n) => page(n, 'version 2.32.15', `
     <div class="cover-top"><div class="brand"><img src="${logo}" alt="">GymCoach</div><span class="pill">for the Speediance Gym Monster</span></div>
     <h1 style="font-size:40px;margin-top:28px">Your own AI trainer.<br>A plan that grows with you.</h1>
     <p class="lead">GymCoach reads your sessions, builds each week, tracks your goal and your health score, and sends the plan to the machine in one click. Your data stays on your server.</p>
@@ -326,7 +326,7 @@ const enPages = [
     </div>
     <div class="grid2" style="margin-top:12px">
       <div class="card"><h2>Colour follows the score</h2><p>Greener when the reading pulls the health score up. A BMI moving toward 22 turns greener even if the number falls. A rising resting heart rate turns redder, because higher is not progress here.</p></div>
-      <div class="card"><h2>Composition</h2><p>Fat, muscle and the split across arms, legs and torso. Segments come from the Withings scale once it is linked.</p></div>
+      <div class="card"><h2>Composition</h2><p>Fat, muscle and the split across arms, legs and torso. ECW/TBW is the water outside the cells divided by all body water; below 0.40 is usual. The numbers come from the Withings scale once it is linked.</p></div>
       <div class="card"><h2>Heart and fitness</h2><p>Resting heart rate, HRV, VO2max and pulse-wave velocity from Apple Health. Steps and activities from the same iPhone fill the week’s goal.</p></div>
       <div class="card"><h2>Not a medical opinion</h2><p>The score and the colours summarise your own readings, so you can see the direction. They do not replace a doctor.</p></div>
     </div>`),
@@ -414,7 +414,7 @@ const enPages = [
 ];
 
 const dePages = [
-  (n) => page(n, 'Version 2.32.14', `
+  (n) => page(n, 'Version 2.32.15', `
     <div class="cover-top"><div class="brand"><img src="${logo}" alt="">GymCoach</div><span class="pill">für die Speediance Gym Monster</span></div>
     <h1 style="font-size:38px;margin-top:28px">Dein eigener KI-Trainer.<br>Ein Plan, der mitwächst.</h1>
     <p class="lead">GymCoach liest deine Einheiten, baut jede Woche, verfolgt Ziel und Gesundheitsscore und schickt den Plan mit einem Klick aufs Gerät. Deine Daten bleiben auf deinem Server.</p>
@@ -492,7 +492,7 @@ const dePages = [
     </div>
     <div class="grid2" style="margin-top:12px">
       <div class="card"><h2>Die Farbe folgt dem Score</h2><p>Grüner, wenn der Wert den Gesundheitsscore nach oben zieht. Ein BMI Richtung 22 wird grüner, auch wenn die Zahl sinkt. Ein steigender Ruhepuls wird röter, denn höher ist hier kein Fortschritt.</p></div>
-      <div class="card"><h2>Zusammensetzung</h2><p>Fett, Muskelmasse und die Verteilung auf Arme, Beine und Rumpf. Die Segmente kommen von der Withings-Waage, sobald sie verbunden ist.</p></div>
+      <div class="card"><h2>Zusammensetzung</h2><p>Fett, Muskelmasse und die Verteilung auf Arme, Beine und Rumpf. ECW/TBW ist das Wasser außerhalb der Zellen geteilt durch das gesamte Körperwasser; unter 0,40 ist üblich. Die Zahlen kommen von der Withings-Waage, sobald sie verbunden ist.</p></div>
       <div class="card"><h2>Herz und Kondition</h2><p>Ruhepuls, HRV, VO2max und Pulswellengeschwindigkeit aus Apple Health. Schritte und Aktivitäten desselben iPhones füllen das Wochenziel.</p></div>
       <div class="card"><h2>Kein medizinisches Urteil</h2><p>Score und Farben fassen deine eigenen Messungen zusammen, damit du die Richtung siehst. Sie ersetzen keinen Arzt.</p></div>
     </div>`),

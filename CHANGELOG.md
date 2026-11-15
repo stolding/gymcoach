@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.15 — 15 november 2026
+- Op Lichaam staat ECW/TBW: het water buiten de cellen gedeeld door al het lichaamswater, met uitleg en een grens bij 0,40. GymCoach Sync 1.13.5 toont dezelfde tegel.
+
 ## 2.32.14 — 15 november 2026
 - De brochure (Nederlands, Engels en Duits) volgt de app: doel, gezondheidsscore, Terugkijken met PDF, en de handleiding. De bron staat in `tools/brochure-build.mjs`.
 

@@ -2365,6 +2365,7 @@ const COMP = tmap([
   ['kg', '§app.comp.kg', 'kg', 'down'], ['fat', '§app.comp.fat', '%', 'down'], ['fatMass', '§app.comp.fatMass', 'kg', 'down'],
   ['muscle', '§app.comp.muscle', 'kg', 'up'], ['fatFree', '§app.comp.fatFree', 'kg', 'up'], ['bone', '§app.comp.bone', 'kg', 'up'],
   ['water', '§app.comp.water', 'kg', null], ['ecw', '§app.comp.ecw', 'kg', null], ['icw', '§app.comp.icw', 'kg', null],
+  ['ecwTbw', '§app.comp.ecwTbw', '', 'down'],
   ['visceral', '§app.comp.visceral', '', 'down'], ['bmr', '§app.comp.bmr', 'kcal', 'up'], ['metAge', '§app.comp.metAge', 'jr', 'down'],
   ['bmi', '§app.comp.bmi', '', null], ['ffmi', '§app.comp.ffmi', '', 'up'], ['musclePct', '§app.comp.musclePct', '%', 'up'],
   ['restHr', '§app.comp.restHr', 'bpm', 'down'], ['pwv', '§app.comp.pwv', 'm/s', 'down'], ['vascAge', '§app.comp.vascAge', 'jr', 'down'],
@@ -2501,6 +2502,7 @@ function healthBands(metric) {
       ];
       return { bands, legend, lead: `${t(sex === 'm' ? 'ui.ffmi.men' : 'ui.ffmi.women')}, ${cut.label}`, note: t('sig.vo2Note') };
     }
+    case 'ecwTbw': return { bands: B([-Infinity, 0.4, 'ok'], [0.4, 0.45, 'warn'], [0.45, Infinity, 'bad']), note: t('ui.ecw.note') };
     case 'nerve': return { bands: B([-Infinity, 40, 'bad'], [40, 60, 'warn'], [60, Infinity, 'ok']), note: t('app.richtwaardeVanaf60S') };
     case 'metAge': case 'vascAge': return age ? { bands: ageBands(age), note: t('app.groenGelijkAanOf', { age }) } : { bands: null, note: t('app.vulJeGeboortejaarIn') };
     default: return null;
@@ -2543,6 +2545,7 @@ function withBmi(log) {
     if (h && b.kg) o.bmi = Math.round((b.kg / (h * h)) * 10) / 10;
     if (h && b.fatFree) o.ffmi = Math.round((b.fatFree / (h * h)) * 10) / 10;
     if (b.muscle && b.kg) o.musclePct = Math.round((b.muscle / b.kg) * 1000) / 10;
+    if (b.ecw > 0 && b.water > 0) o.ecwTbw = Math.round((b.ecw / b.water) * 1000) / 1000;
     return o;
   });
 }
@@ -2634,18 +2637,23 @@ function renderComposition() {
   const tiles = avail.map(([k, label, unit, good]) => {
     const cur = lastWith(log, k);
     const old = lastWith(log, k, daysBefore(cur.date, 30)) || log.find((b) => b[k] != null);
-    const d = old && old !== cur ? Math.round((cur[k] - old[k]) * 10) / 10 : null;
-    const cls = d == null || d === 0 || !good ? 'muted' : (d > 0) === (good === 'up') ? 'up' : 'down';
+    const places = k === 'ecwTbw' ? 3 : 1;
+    const roundTo = (v) => Math.round(v * 10 ** places) / 10 ** places;
+    const d = old && old !== cur ? roundTo(cur[k] - old[k]) : null;
+    const quiet = k === 'ecwTbw' && d != null && Math.abs(d) < 0.005;
+    const cls = d == null || d === 0 || !good || quiet ? 'muted' : (d > 0) === (good === 'up') ? 'up' : 'down';
+    const num = (v) => k === 'ecwTbw' ? v.toLocaleString(localeOf(), { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : v;
     const zc = BAND_COLORS[bandOf(healthBands(k)?.bands, cur[k])];
-    const hasInfo = k === 'ffmi' || k === 'vo2max' || k === 'pwv';
-    const infoLabel = k === 'ffmi' ? t('ui.ffmi.info') : k === 'vo2max' ? t('ui.vo2.info') : t('ui.pwv.info');
+    const infoOf = { ffmi: ['ui.ffmi.info'], vo2max: ['ui.vo2.info'], pwv: ['ui.pwv.info'], ecwTbw: ['ui.ecw.info'] };
+    const hasInfo = k in infoOf;
+    const infoLabel = hasInfo ? t(infoOf[k][0]) : '';
     const info = hasInfo ? `<button type="button" class="info-i" data-metric-info="${k}" aria-label="${esc(infoLabel)}"><span aria-hidden="true">i</span></button>` : '';
     const open = hasInfo ? '<div' : '<button';
     const close = hasInfo ? '</div>' : '</button>';
     const role = hasInfo ? ' role="button" tabindex="0"' : '';
     return `${open} class="ctile zoned ${k === compMetric ? 'on' : ''}" data-k="${k}"${role}${zoneStyle(zc)}>
-      ${info}<div class="eyebrow">${label}</div><div class="mid">${cur[k]}<small> ${unit}</small></div>
-      <div class="small ${cls}">${d == null ? '—' : `${d > 0 ? '+' : ''}${d} ${unit}`} <span class="muted">${old && old !== cur ? t('app.sinds', { a: esc(old.date.slice(5)) }) : ''}</span></div>${close}`;
+      ${info}<div class="eyebrow">${label}</div><div class="mid">${num(cur[k])}<small> ${unit}</small></div>
+      <div class="small ${cls}">${d == null ? '—' : `${d > 0 ? '+' : ''}${num(d)} ${unit}`} <span class="muted">${old && old !== cur ? t('app.sinds', { a: esc(old.date.slice(5)) }) : ''}</span></div>${close}`;
   }).join('');
   const [, mLabel, mUnit, mGood] = COMP.find(([k]) => k === compMetric);
   const ptsAll = log.filter((b) => b[compMetric] != null).map((b) => ({ x: b.date, y: b[compMetric] }));
@@ -2656,7 +2664,8 @@ function renderComposition() {
   if (tr) {
     const goodDir = compMetric === 'kg' ? (state.settings.goal === 'spieropbouw' ? 'up' : 'down') : mGood;
     const cls = !goodDir || Math.abs(tr.slope) < 0.005 ? '' : (tr.slope > 0) === (goodDir === 'up') ? 'up' : 'down';
-    trendTxt = `${t('app.trendChart', { a: esc(tr.to.slice(5)) })} <b class="${cls}">${tr.slope >= 0 ? '+' : ''}${tr.slope.toFixed(2)} ${compMetric === 'fat' ? t('app.puntWeek') : mUnit ? esc(mUnit) + t('app.week4') : t('app.perWeek')}</b>`;
+    const slopeTxt = tr.slope.toFixed(compMetric === 'ecwTbw' ? 3 : 2);
+    trendTxt = `${t('app.trendChart', { a: esc(tr.to.slice(5)) })} <b class="${cls}">${tr.slope >= 0 ? '+' : ''}${slopeTxt} ${compMetric === 'fat' ? t('app.puntWeek') : mUnit ? esc(mUnit) + t('app.week4') : t('app.perWeek')}</b>`;
     if (compMetric === 'kg') trendTxt += ` (${tr.pct.toFixed(2)}%)${state.settings.goal !== 'spieropbouw' ? ' <span class="muted">' + t('app.richtwaardeBijAfvallenCa') + '</span>' : ''}`;
   }
   card.innerHTML = `<div class="row between wrap gap"><h2>${t('app.lichaamssamenstelling')}</h2><span class="muted">${t('app.laatsteMeting', { a: esc(lastWith(log, 'kg')?.date || '') })}</span></div>
@@ -2700,7 +2709,7 @@ function renderComposition() {
     ev.stopPropagation();
     const key = btn.dataset.metricInfo;
     if (compMetric !== key) { compMetric = key; renderComposition(); }
-    const dlg = $('#' + ({ ffmi: 'ffmiDlg', vo2max: 'vo2Dlg', pwv: 'pwvDlg' }[key] || 'ffmiDlg'));
+    const dlg = $('#' + ({ ffmi: 'ffmiDlg', vo2max: 'vo2Dlg', pwv: 'pwvDlg', ecwTbw: 'ecwDlg' }[key] || 'ffmiDlg'));
     if (key === 'vo2max') markVo2Row(dlg);
     if (key === 'pwv') markPwvRow(dlg);
     if (dlg && !dlg.open) dlg.showModal();

@@ -451,7 +451,7 @@ function renderPlan() {
 
   const slotBtns = `<button class="btn ghost" data-act="replace">${t('ed.replace')}</button><button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>`;
   wrap.innerHTML = plan.sessions.map((s) => s.outdoor ? `
-    <article class="card session outdoor${outdoorActs(s).length ? ' done' : ''}" data-key="${esc(s.key)}">
+    <article class="card session outdoor${outdoorCardClass(s)}" data-key="${esc(s.key)}">
       <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}</h3><div class="muted small">${outdoorMeta(s)}</div></div>
         <div class="out-ico" aria-hidden="true">${ACT[s.activity]?.[2] || '🚶‍♂️🚴'}</div></header>
       <p class="small">${esc(s.advice || '')}</p>
@@ -527,6 +527,18 @@ function outdoorTotals(s) {
   return { acts, min, km };
 }
 // Zonder binnenkomst blijft de planning staan. Mét binnenkomst staan minuten en kilometers in de kop en in het overzicht.
+// Gehaald: dichte groene rand. Al bezig maar het weekdoel nog open: gestippelde oranje rand.
+function outdoorCardClass(s) {
+  const o = outdoorTotals(s);
+  if (!o.acts.length) return '';
+  const open = goalsForCard(s).some((g) => {
+    const leftTimes = Math.max(0, g.times - o.acts.length);
+    const leftMin = Math.max(0, g.times * g.minutes - o.min);
+    const leftKm = g.km ? Math.max(0, Number(g.km) - o.km) : 0;
+    return leftTimes > 0 || leftMin > 0 || leftKm > 0.05;
+  });
+  return open ? ' partial' : ' done';
+}
 function outdoorDone(s) {
   if (outdoorTotals(s).acts.length) return '';
   const name = outdoorBadge(s);

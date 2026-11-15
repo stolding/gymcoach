@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.17 — 15 november 2026
+- Een activiteit buiten het toestel krijgt een dichte groene rand als het weekdoel gehaald is, en een gestippelde oranje rand als je al bezig bent maar nog niet klaar.
+
 ## 2.32.16 — 15 november 2026
 - De ring van het weekdoel telt ook de extra trainingen uit het plan. Boven het doel loopt een helderdere oranje ring over de buitenste helft. GymCoach Sync 1.13.6 doet hetzelfde.
 

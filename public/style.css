@@ -522,7 +522,8 @@ button.linklike:hover { text-decoration: underline; }
 .day-row { display: grid; grid-template-columns: 52px 1fr auto; gap: .5rem; align-items: center; }
 .day-row select { margin: 0; }
 .day-n { font-size: .82rem; color: var(--muted); font-weight: 600; }
-.session.outdoor { border-style: dashed; }
+.session.outdoor.partial { border-style: dashed; border-color: var(--accent); }
+.session.outdoor.done { border-style: solid; }
 .session.outdoor .out-ico { font-size: 1.6rem; }
 
 .cd { position: relative; }

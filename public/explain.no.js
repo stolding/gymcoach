@@ -112,7 +112,7 @@ export default [
     <img class="guide-shot" src="/guide/plan-spieren.png" alt="Figuren og muskellisten for uken">
     <p class="guide-cap muted small">Ukeoversikten: figuren og fordelingen på muskelgruppene.</p>
     <img class="guide-shot" src="/guide/plan-sessies.png" alt="Tre treningskort, to av dem allerede gjort">
-    <p class="guide-cap muted small">Dagene i uken. En grønn stolpe er allerede gjort. Kardio ute har ikke et program på apparatet; aktiviteten kommer fra Apple Health.</p>
+    <p class="guide-cap muted small">Dagene i uken. En fullført økt har en heltrukken grønn kant. En uteaktivitet som er i gang men ikke har nådd ukemålet, har en stiplet oransje kant. Kardio ute har ikke et program på apparatet; aktiviteten kommer fra Apple Health.</p>
     <h4>Mål</h4>
     <p>Det du spiser mot det som passer målet. Vekten selv blir under Kropp.</p>
     <img class="guide-shot" src="/guide/doel.png" alt="Fanen Mål for Sam Demo">

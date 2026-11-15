@@ -112,7 +112,7 @@ export default [
     <img class="guide-shot" src="/guide/plan-spieren.png" alt="Figur und die Muskelliste der Woche">
     <p class="guide-cap muted small">Die Wochenübersicht: Figur und die Verteilung auf die Muskelgruppen.</p>
     <img class="guide-shot" src="/guide/plan-sessies.png" alt="Drei Trainingskarten, zwei davon schon erledigt">
-    <p class="guide-cap muted small">Die Tage der Woche. Ein grüner Balken ist schon erledigt. Cardio draußen hat kein Programm auf dem Gerät; die Aktivität kommt aus Apple Health.</p>
+    <p class="guide-cap muted small">Die Tage der Woche. Eine erledigte Einheit hat einen durchgezogenen grünen Rand. Eine Aktivität draußen, die schon läuft aber das Wochenziel noch nicht erreicht, hat einen gestrichelten orangen Rand. Cardio draußen hat kein Programm auf dem Gerät; die Aktivität kommt aus Apple Health.</p>
     <h4>Ziel</h4>
     <p>Was du isst, gegenüber dem, was zum Ziel passt. Die Waage selbst bleibt unter Körper.</p>
     <img class="guide-shot" src="/guide/doel.png" alt="Tab Ziel von Sam Demo">

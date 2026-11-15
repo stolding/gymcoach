@@ -112,7 +112,7 @@ export default [
     <img class="guide-shot" src="/guide/plan-spieren.png" alt="Body figure and the week's muscle list">
     <p class="guide-cap muted small">The week overview: the figure and the split across muscle groups.</p>
     <img class="guide-shot" src="/guide/plan-sessies.png" alt="Three workout cards, two of them already done">
-    <p class="guide-cap muted small">The days of the week. A finished session has a solid green border. An outdoor activity that has started but has not met its weekly goal has a dashed orange border. Outdoor cardio has no programme on the machine; that activity comes from Apple Health.</p>
+    <p class="guide-cap muted small">The days of the week. A finished session has a solid green border. A bar under the goal shows when you went past it: the extra part is brighter. An outdoor activity that has started but has not met its weekly goal has a dashed orange border. Outdoor cardio has no programme on the machine; that activity comes from Apple Health.</p>
     <h4>Goal</h4>
     <p>What you eat against what fits the goal. The scale itself stays under Body.</p>
     <img class="guide-shot" src="/guide/doel.png" alt="Sam Demo's Goal tab">

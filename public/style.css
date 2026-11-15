@@ -522,6 +522,14 @@ button.linklike:hover { text-decoration: underline; }
 .day-row { display: grid; grid-template-columns: 52px 1fr auto; gap: .5rem; align-items: center; }
 .day-row select { margin: 0; }
 .day-n { font-size: .82rem; color: var(--muted); font-weight: 600; }
+.act-meters { display: flex; flex-direction: column; gap: .4rem; margin: .15rem 0 .35rem; }
+.act-meter { font-size: .82rem; }
+.act-meter .row { gap: .6rem; }
+.act-meter .row span:last-child { color: var(--muted); text-align: right; }
+.act-track { display: flex; height: 8px; margin-top: .22rem; border-radius: 99px; background: var(--line); overflow: hidden; }
+.act-plan { height: 100%; background: var(--ok); }
+.act-plan.mid { background: var(--accent); }
+.act-extra { height: 100%; background: #ffb15a; }
 .session.outdoor.partial { border-style: dashed; border-color: var(--accent); }
 .session.outdoor.done { border-style: solid; }
 .session.outdoor .out-ico { font-size: 1.6rem; }

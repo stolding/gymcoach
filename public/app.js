@@ -457,6 +457,7 @@ function renderPlan() {
       <p class="small">${esc(s.advice || '')}</p>
       ${outdoorDone(s)}
       ${outdoorGoalLine(s)}
+      ${outdoorMeters(s)}
       <p class="muted small">${t('app.geenProgrammaVoorDe')}</p>
       ${outdoorActBanners(s)}
       <footer>${slotBtns}</footer>
@@ -569,6 +570,36 @@ function goalsForCard(session) {
 }
 function outdoorGoalLine(s) {
   return goalsForCard(s).map((g) => `<p class="small">${esc(t('goal.form.yourWeek', { name: actGoalName(g.id), a: actGoalText(g) }))}</p>`).join('');
+}
+function actNum(n, unit) {
+  const v = Number(n) || 0;
+  return unit === 'km' ? v.toLocaleString(localeOf(), { maximumFractionDigits: 1 }) : Math.round(v).toLocaleString(localeOf());
+}
+function actMeter(label, done, goal, unit) {
+  const d = Math.max(0, Number(done) || 0);
+  const g = Math.max(0, Number(goal) || 0);
+  if (!(g > 0)) return '';
+  const slack = unit === 'km' ? 0.05 : 0.5;
+  const over = d > g + slack;
+  const scale = Math.max(d, g);
+  const planPct = (Math.min(d, g) / scale) * 100;
+  const extraPct = over ? ((d - g) / scale) * 100 : 0;
+  const extraBit = over ? (unit === '×' ? actNum(d - g, unit) + '×' : actNum(d - g, unit) + ' ' + unit) : '';
+  const pair = unit === '×' ? `${actNum(d, unit)}× / ${actNum(g, unit)}×` : `${actNum(d, unit)} / ${actNum(g, unit)} ${unit}`;
+  const right = pair + (extraBit ? ' · ' + t('app.actExtra', { a: extraBit }) : '');
+  return `<div class="act-meter"><div class="row between"><span>${esc(label)}</span><span>${esc(right)}</span></div>
+    <div class="act-track" role="img" aria-label="${esc(t('app.actMeter', { label, done: actNum(d, unit), goal: actNum(g, unit), unit: unit === '×' ? '×' : unit }))}"><span class="act-plan ${d + slack >= g ? 'ok' : 'mid'}" style="width:${planPct}%"></span><span class="act-extra" style="width:${extraPct}%"></span></div></div>`;
+}
+function outdoorMeters(s) {
+  const o = outdoorTotals(s);
+  return goalsForCard(s).map((g) => {
+    const rows = [
+      actMeter(t('app.actTimes'), o.acts.length, g.times, '×'),
+      g.minutes > 0 && g.times > 0 ? actMeter(t('app.actMin'), o.min, g.times * g.minutes, 'min') : '',
+      g.km ? actMeter(t('app.afstand'), o.km, g.km, 'km') : '',
+    ].join('');
+    return rows ? `<div class="act-meters">${rows}</div>` : '';
+  }).join('');
 }
 function actWhen(date) {
   return new Date(date + 'T12:00:00').toLocaleDateString(localeOf(), { weekday: 'short', day: 'numeric', month: 'short' });

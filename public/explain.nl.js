@@ -112,7 +112,7 @@ export default [
     <img class="guide-shot" src="/guide/plan-spieren.png" alt="Lichaamsschema en de spierlijst van de week">
     <p class="guide-cap muted small">Het weekoverzicht: figuur en de verdeling over de spiergroepen.</p>
     <img class="guide-shot" src="/guide/plan-sessies.png" alt="Drie trainingskaarten, waarvan twee al gedaan">
-    <p class="guide-cap muted small">De dagen van de week. Een gehaalde training heeft een dichte groene rand. Een activiteit buiten die al bezig is maar het weekdoel nog niet haalt, heeft een gestippelde oranje rand. Cardio buiten heeft geen programma op het toestel; die activiteit komt uit Apple Health.</p>
+    <p class="guide-cap muted small">De dagen van de week. Een gehaalde training heeft een dichte groene rand. Een balk onder het doel toont of je eroverheen ging: het extra stuk is helderder. Een activiteit buiten die al bezig is maar het weekdoel nog niet haalt, heeft een gestippelde oranje rand. Cardio buiten heeft geen programma op het toestel; die activiteit komt uit Apple Health.</p>
     <h4>Doel</h4>
     <p>Wat je eet tegenover wat bij het doel past. De weegschaal zelf blijft onder Lichaam.</p>
     <img class="guide-shot" src="/guide/doel.png" alt="Tabblad Doel van Sam Demo">

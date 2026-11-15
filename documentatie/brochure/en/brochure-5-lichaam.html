@@ -1,0 +1,67 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #101114; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: #f3f1ec; }
+  .page {
+    width: 794px; height: 1123px; overflow: hidden; position: relative;
+    background: #101114; padding: 40px 42px 50px;
+    page-break-after: always; break-after: page;
+  }
+  .kicker { color: #ff7a2e; font-weight: 700; letter-spacing: .12em; font-size: 13px; text-transform: uppercase; }
+  h1 { font-size: 38px; line-height: 1.05; letter-spacing: -.02em; margin: 10px 0 12px; font-weight: 750; }
+  .lead { color: #b7b8be; font-size: 16.5px; line-height: 1.4; margin: 0 0 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .card { background: #1b1d22; border: 1px solid #2c2e34; border-radius: 14px; padding: 16px 16px; }
+  .card h2 { margin: 2px 0 6px; font-size: 16.5px; }
+  .card p, .card li { margin: 0; color: #c5c6cc; font-size: 13.5px; line-height: 1.4; }
+  .card ul { margin: 4px 0 0; padding-left: 16px; }
+  .card li { margin: 2px 0; }
+  .ico { color: #ff7a2e; font-size: 14px; }
+  footer {
+    position: absolute; left: 40px; right: 40px; bottom: 18px;
+    display: flex; justify-content: space-between; color: #8d8f96;
+    font-size: 11px; border-top: 1px solid #2a2c31; padding-top: 8px;
+  }
+  .mock { background: #17181c; border: 1px solid #2c2e34; border-radius: 16px; padding: 14px; }
+  .row { display: flex; gap: 10px; }
+  .pill { background: #26282e; border-radius: 999px; padding: 3px 8px; font-size: 11px; color: #d7d8de; }
+  .orange { color: #ff7a2e; }
+  .bar { height: 7px; background: #2a2c31; border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: #ff7a2e; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tile { background: #1b1d22; border-radius: 10px; padding: 8px; }
+  .tile b { display: block; font-size: 16px; }
+  .tile span { color: #9a9ca3; font-size: 10px; }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; gap: 8px; align-items: center; font-weight: 700; }
+  .brand img { width: 28px; height: 28px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.mini td { padding: 5px 0; border-bottom: 1px solid #2a2c31; }
+  table.mini td:last-child { text-align: right; color: #ff7a2e; }
+  .note { margin-top: 10px; color: #9a9ca3; font-size: 12px; }
+  .steps { display: flex; gap: 8px; margin-top: 12px; }
+  .step { flex: 1; background: #1b1d22; border-radius: 12px; padding: 10px; }
+  .step b { display: block; color: #ff7a2e; font-size: 12px; }
+  .step span { font-size: 12px; color: #d7d8de; }
+  @page { size: 210mm 297mm; margin: 0; }
+</style></head><body><section class="page">
+    <div class="kicker">Withings and Apple Health</div>
+    <h1>Your body, next to your training.</h1>
+    <p class="lead">The scale and the iPhone fill the same tab. Colour says whether the reading got healthier, not whether the number went up.</p>
+    <div class="tiles">
+      <div class="tile"><span>Weight</span><b>82.4</b></div>
+      <div class="tile"><span>Fat</span><b>18%</b></div>
+      <div class="tile"><span>Muscle</span><b>64 kg</b></div>
+      <div class="tile"><span>FFMI</span><b>21</b></div>
+      <div class="tile"><span>Pulse wave</span><b>6.4</b></div>
+      <div class="tile"><span>HRV</span><b>48</b></div>
+      <div class="tile"><span>VO2max</span><b>44</b></div>
+      <div class="tile"><span>Score</span><b>6.3</b></div>
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="card"><h2>Colour follows the score</h2><p>Greener when the reading pulls the health score up. A BMI moving toward 22 turns greener even if the number falls. A rising resting heart rate turns redder, because higher is not progress here.</p></div>
+      <div class="card"><h2>Composition</h2><p>Fat, muscle and the split across arms, legs and torso. Segments come from the Withings scale once it is linked.</p></div>
+      <div class="card"><h2>Heart and fitness</h2><p>Resting heart rate, HRV, VO2max and pulse-wave velocity from Apple Health. Steps and activities from the same iPhone fill the week’s goal.</p></div>
+      <div class="card"><h2>Not a medical opinion</h2><p>The score and the colours summarise your own readings, so you can see the direction. They do not replace a doctor.</p></div>
+    </div><footer><span>Body</span><span>5</span></footer></section></body></html>

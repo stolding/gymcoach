@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #101114; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: #f3f1ec; }
+  .page {
+    width: 794px; height: 1123px; overflow: hidden; position: relative;
+    background: #101114; padding: 40px 42px 50px;
+    page-break-after: always; break-after: page;
+  }
+  .kicker { color: #ff7a2e; font-weight: 700; letter-spacing: .12em; font-size: 13px; text-transform: uppercase; }
+  h1 { font-size: 38px; line-height: 1.05; letter-spacing: -.02em; margin: 10px 0 12px; font-weight: 750; }
+  .lead { color: #b7b8be; font-size: 16.5px; line-height: 1.4; margin: 0 0 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .card { background: #1b1d22; border: 1px solid #2c2e34; border-radius: 14px; padding: 16px 16px; }
+  .card h2 { margin: 2px 0 6px; font-size: 16.5px; }
+  .card p, .card li { margin: 0; color: #c5c6cc; font-size: 13.5px; line-height: 1.4; }
+  .card ul { margin: 4px 0 0; padding-left: 16px; }
+  .card li { margin: 2px 0; }
+  .ico { color: #ff7a2e; font-size: 14px; }
+  footer {
+    position: absolute; left: 40px; right: 40px; bottom: 18px;
+    display: flex; justify-content: space-between; color: #8d8f96;
+    font-size: 11px; border-top: 1px solid #2a2c31; padding-top: 8px;
+  }
+  .mock { background: #17181c; border: 1px solid #2c2e34; border-radius: 16px; padding: 14px; }
+  .row { display: flex; gap: 10px; }
+  .pill { background: #26282e; border-radius: 999px; padding: 3px 8px; font-size: 11px; color: #d7d8de; }
+  .orange { color: #ff7a2e; }
+  .bar { height: 7px; background: #2a2c31; border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: #ff7a2e; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tile { background: #1b1d22; border-radius: 10px; padding: 8px; }
+  .tile b { display: block; font-size: 16px; }
+  .tile span { color: #9a9ca3; font-size: 10px; }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; gap: 8px; align-items: center; font-weight: 700; }
+  .brand img { width: 28px; height: 28px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.mini td { padding: 5px 0; border-bottom: 1px solid #2a2c31; }
+  table.mini td:last-child { text-align: right; color: #ff7a2e; }
+  .note { margin-top: 10px; color: #9a9ca3; font-size: 12px; }
+  .steps { display: flex; gap: 8px; margin-top: 12px; }
+  .step { flex: 1; background: #1b1d22; border-radius: 12px; padding: 10px; }
+  .step b { display: block; color: #ff7a2e; font-size: 12px; }
+  .step span { font-size: 12px; color: #d7d8de; }
+  @page { size: 210mm 297mm; margin: 0; }
+</style></head><body><section class="page">
+    <div class="kicker">In your inbox</div>
+    <h1>Your workout report, mailed after every session.</h1>
+    <p class="lead">Once the session has arrived, GymCoach builds a PDF and mails it to you. Or you open it in the app.</p>
+    <div class="grid2">
+      <div class="card"><h2>Headline numbers</h2><p>Duration, sets, volume, calories and heart rate, plus the figure with sets per muscle.</p></div>
+      <div class="card"><h2>Compared with last time</h2><p>Duration, volume, sets and heart rate against the average of the last four times you did the same session.</p></div>
+      <div class="card"><h2>Time under tension</h2><p>How much of the session was real work, how much was rest, and how long each rep took.</p></div>
+      <div class="card"><h2>Heart rate zones</h2><p>The Apple Watch trace, with minutes per zone, from recovery to max.</p></div>
+      <div class="card"><h2>Every exercise</h2><p>Sets, reps, weight and records against last time, and whether the last reps slowed down.</p></div>
+      <div class="card"><h2>Your own mailbox</h2><p>On or off per user under Settings → Email. Works with any mailbox you run (SMTP). The report in this brochure is sample data.</p></div>
+    </div><footer><span>After every session</span><span>7</span></footer></section></body></html>

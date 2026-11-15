@@ -1,0 +1,213 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #101114; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: #f3f1ec; }
+  .page {
+    width: 794px; height: 1123px; overflow: hidden; position: relative;
+    background: #101114; padding: 40px 42px 50px;
+    page-break-after: always; break-after: page;
+  }
+  .kicker { color: #ff7a2e; font-weight: 700; letter-spacing: .12em; font-size: 13px; text-transform: uppercase; }
+  h1 { font-size: 38px; line-height: 1.05; letter-spacing: -.02em; margin: 10px 0 12px; font-weight: 750; }
+  .lead { color: #b7b8be; font-size: 16.5px; line-height: 1.4; margin: 0 0 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .card { background: #1b1d22; border: 1px solid #2c2e34; border-radius: 14px; padding: 16px 16px; }
+  .card h2 { margin: 2px 0 6px; font-size: 16.5px; }
+  .card p, .card li { margin: 0; color: #c5c6cc; font-size: 13.5px; line-height: 1.4; }
+  .card ul { margin: 4px 0 0; padding-left: 16px; }
+  .card li { margin: 2px 0; }
+  .ico { color: #ff7a2e; font-size: 14px; }
+  footer {
+    position: absolute; left: 40px; right: 40px; bottom: 18px;
+    display: flex; justify-content: space-between; color: #8d8f96;
+    font-size: 11px; border-top: 1px solid #2a2c31; padding-top: 8px;
+  }
+  .mock { background: #17181c; border: 1px solid #2c2e34; border-radius: 16px; padding: 14px; }
+  .row { display: flex; gap: 10px; }
+  .pill { background: #26282e; border-radius: 999px; padding: 3px 8px; font-size: 11px; color: #d7d8de; }
+  .orange { color: #ff7a2e; }
+  .bar { height: 7px; background: #2a2c31; border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: #ff7a2e; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tile { background: #1b1d22; border-radius: 10px; padding: 8px; }
+  .tile b { display: block; font-size: 16px; }
+  .tile span { color: #9a9ca3; font-size: 10px; }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; gap: 8px; align-items: center; font-weight: 700; }
+  .brand img { width: 28px; height: 28px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.mini td { padding: 5px 0; border-bottom: 1px solid #2a2c31; }
+  table.mini td:last-child { text-align: right; color: #ff7a2e; }
+  .note { margin-top: 10px; color: #9a9ca3; font-size: 12px; }
+  .steps { display: flex; gap: 8px; margin-top: 12px; }
+  .step { flex: 1; background: #1b1d22; border-radius: 12px; padding: 10px; }
+  .step b { display: block; color: #ff7a2e; font-size: 12px; }
+  .step span { font-size: 12px; color: #d7d8de; }
+  @page { size: 210mm 297mm; margin: 0; }
+</style></head><body><section class="page">
+        <div class="cover-top"><div class="brand"><img src="../../public/logo.svg" alt="">GymCoach</div><span class="pill">voor de Speediance Gym Monster</span></div>
+        <h1 style="font-size:40px;margin-top:28px">Je eigen AI-trainer.<br>Een plan dat met je meegroeit.</h1>
+        <p class="lead">GymCoach leest je trainingen, maakt elke week een schema, volgt je doel en je gezondheidsscore, en zet het plan met één klik op het toestel. Je data blijft op jouw server.</p>
+        <div class="mock">
+          <div class="row" style="justify-content:space-between"><div><div class="kicker">Volgende training</div><b>Full Body A</b><div style="color:#9a9ca3;font-size:12px">12 oefeningen · ±45 min</div></div><div style="text-align:right"><b class="orange">2 / 3</b><div style="color:#9a9ca3;font-size:12px">deze week</div></div></div>
+          <div class="tiles" style="margin-top:12px">
+            <div class="tile"><span>Reeks</span><b>4</b></div>
+            <div class="tile"><span>Volume</span><b>9,2 t</b></div>
+            <div class="tile"><span>Kracht</span><b>+26%</b></div>
+            <div class="tile"><span>Score</span><b>6,3</b></div>
+          </div>
+        </div>
+        <div class="grid3" style="margin-top:16px">
+          <div class="card"><div class="ico">01</div><h2>Persoonlijk weekplan</h2><p>Op wat je de vorige keer echt tilde, en op spieren die nog moeten herstellen.</p></div>
+          <div class="card"><div class="ico">02</div><h2>Doel en score</h2><p>Lichaam, kracht, stappen en activiteiten. De gezondheidsscore loopt van 0 tot 10.</p></div>
+          <div class="card"><div class="ico">03</div><h2>Thuis, en onderweg</h2><p>In de browser en alleen-lezen op de iPhone. De handleiding zit in de app.</p></div>
+        </div>
+        <div class="card" style="margin-top:16px"><h2>Verder in deze brochure</h2><p>Het weekplan en de editor. Lichaam, Withings en Apple Health. Terugkijken, met afdrukken en PDF. Het rapport na elke training. Doel, gezondheidsscore en de handleiding. En hoe je het op je eigen server zet.</p></div><footer><span>versie 2.32.14</span><span>1</span></footer></section>
+<section class="page">
+        <div class="kicker">Van toestel naar plan</div>
+        <h1>GymCoach doet het werk tussen twee trainingen.</h1>
+        <p class="lead">De Gym Monster stuurt elke set naar de Speediance-cloud. GymCoach haalt die binnen en maakt het volgende voorstel.</p>
+        <div class="grid2">
+          <div class="card"><h2>Slimme progressie</h2><p>Haal je het maximum, dan gaat het gewicht omhoog. Mis je het twee keer, dan 10% terug. Elke zesde week is een deload, eerder als herstel daarom vraagt. Een sessie die ver van de mediaan van die oefening ligt, telt niet mee in de krachtindex.</p></div>
+          <div class="card"><h2>Past in jouw week</h2><p>Per dag kracht, circuit of buiten, met een focus. De week is één plan: een oefening schuift naar een latere dag als die spier nog niet hersteld is. Een wandeling of andere activiteit hoort in dezelfde week.</p></div>
+          <div class="card"><h2>Warming-up en cooldown</h2><p>Rek- en spieractivatie van de spiergroepen van die dag, en een cooldown erna. Klaar om te starten, niet alleen een lijst oefeningen.</p></div>
+          <div class="card"><h2>AI-coach</h2><p>Stel een vraag over je schema. Het antwoord gebruikt je echte cijfers: volume, herstel en wat je de vorige keer tilde. Jij beslist wat je overneemt.</p></div>
+          <div class="card"><h2>Eén klik naar het toestel</h2><p>Controleren, dan versturen. Eén training wissen of vervangen laat de rest staan. Oefeningen staan ingeklapt tot je ze opent. De volgorde volgt de kabelpositie op de Gym Monster.</p></div>
+          <div class="card"><h2>Lichaam, Health en score</h2><p>Withings levert gewicht, vet en spiermassa. Apple Health levert activiteiten, stappen, hartslag, HRV en VO2max. Daaroverheen ligt een gezondheidsscore van 0 tot 10.</p></div>
+        </div>
+        <div class="steps"><div class="step"><b>1 · Plan</b><span>De week staat klaar.</span></div><div class="step"><b>2 · Train</b><span>Op de Gym Monster.</span></div><div class="step"><b>3 · Sync</b><span>Sets komen binnen.</span></div><div class="step"><b>4 · Groei</b><span>Het plan schuift mee.</span></div></div><footer><span>Wat GymCoach doet</span><span>2</span></footer></section>
+<section class="page">
+        <div class="kicker">Elke week opnieuw</div>
+        <h1>Een schema op jouw cijfers, niet op een standaardprogramma.</h1>
+        <p class="lead">Spiergroepen, focus en de trainingen van deze week. Open een oefening voor sets, gewicht en waarom het plan dit voorstelt.</p>
+        <div class="mock">
+          <div class="row" style="gap:6px;margin-bottom:10px"><span class="pill orange">Borst</span><span class="pill">Rug</span><span class="pill">Benen</span><span class="pill">Schouders</span></div>
+          <div style="margin-bottom:6px;font-size:12px;color:#9a9ca3">Borst · 12 / 16 sets</div>
+          <div class="bar"><span style="width:75%"></span></div>
+          <div style="margin:10px 0 6px;font-size:12px;color:#9a9ca3">Rug · 10 / 16 sets</div>
+          <div class="bar"><span style="width:62%"></span></div>
+          <div class="card" style="margin-top:12px">
+            <b>Maandag · Full Body A · kracht</b>
+            <p>1. Dual-Handle Bench Press · 4×8–12 · 32 kg<br>2. Lat Pulldown · 4×8–12 · 40 kg</p>
+          </div>
+        </div>
+        <div class="grid3" style="margin-top:12px">
+          <div class="card"><h2>Eén plan</h2><p>Herstel verdeelt oefeningen over de week. Een zware spier komt niet twee dagen achter elkaar terug.</p></div>
+          <div class="card"><h2>Activiteiten</h2><p>Wandelen, zwemmen of een sport buiten de krachttraining. Apple Health vult de balk als je het gedaan hebt.</p></div>
+          <div class="card"><h2>Zelf bijsturen</h2><p>Eén training wissen of vervangen. De rest van de week blijft. Oefeningen klap je open als je ze wilt zien.</p></div>
+        </div><footer><span>Het weekplan</span><span>3</span></footer></section>
+<section class="page">
+        <div class="kicker">De editor</div>
+        <h1>Pas elk voorstel aan. Of bouw je eigen training.</h1>
+        <p class="lead">Bewerk een training uit het plan, begin leeg, kopieer er een of kies een sjabloon. De figuur en de sets per spiergroep rekenen direct mee.</p>
+        <div class="grid3">
+          <div class="card"><h2>Alles per set</h2><p>Herhalingen, gewicht, rust en de modus van de Gym Monster: standaard, excentrisch, isokinetisch, constant of spotter. Met piramide en opwarmset in één klik.</p></div>
+          <div class="card"><h2>Supersets</h2><p>Twee of meer oefeningen om en om, zonder rust ertussen. Op het toestel staan ze als afwisselende stappen, met rust na elke ronde.</p></div>
+          <div class="card"><h2>Oefeningen bekijken</h2><p>Blader per spiergroep en soort, met video, aandachtspunten en uitleg. Eén keer opgehaald en op je eigen server bewaard.</p></div>
+          <div class="card"><h2>Vastgezet, en toch vooruit</h2><p>Een bewerkte training blijft staan bij een nieuw plan. De gewichten groeien mee met je progressie, behalve waar je vast gewicht kiest.</p></div>
+          <div class="card"><h2>Sjablonen delen</h2><p>Bewaar een training als sjabloon. Op een server met meer gebruikers krijgt ieder zijn eigen geschiedenis.</p></div>
+          <div class="card"><h2>AI-coach kijkt mee</h2><p>Ook bij je eigen training. De opbouw blijft staan; elk voorstel heeft een reden en jij vinkt aan wat je overneemt.</p></div>
+        </div>
+        <p class="note">Warming-up en cooldown stel je op dezelfde manier samen. De volgorde van de oefeningen volgt de kabelpositie, zodat je op het toestel niet steeds opnieuw hoeft te wisselen.</p><footer><span>Zelf samenstellen</span><span>4</span></footer></section>
+<section class="page">
+        <div class="kicker">Withings en Apple Health</div>
+        <h1>Je lichaam, naast je training.</h1>
+        <p class="lead">De weegschaal en de iPhone vullen dezelfde tab. De kleur zegt of de meting gezonder werd, niet of het getal steeg.</p>
+        <div class="tiles">
+          <div class="tile"><span>Gewicht</span><b>82,4</b></div>
+          <div class="tile"><span>Vet</span><b>18%</b></div>
+          <div class="tile"><span>Spier</span><b>64 kg</b></div>
+          <div class="tile"><span>FFMI</span><b>21</b></div>
+          <div class="tile"><span>Polsgolf</span><b>6,4</b></div>
+          <div class="tile"><span>HRV</span><b>48</b></div>
+          <div class="tile"><span>VO2max</span><b>44</b></div>
+          <div class="tile"><span>Score</span><b>6,3</b></div>
+        </div>
+        <div class="grid2" style="margin-top:12px">
+          <div class="card"><h2>De kleur volgt de score</h2><p>Groener als de meting de gezondheidsscore omhoog trekt. Een BMI die naar 22 gaat wordt groener, ook als het getal daalt. Een rusthartslag die stijgt wordt roder, ook al is “hoger” hier geen vooruitgang.</p></div>
+          <div class="card"><h2>Samenstelling</h2><p>Vet, spiermassa en de verdeling over armen, benen en romp. De segmenten komen van de Withings-weegschaal, zodra die is gekoppeld.</p></div>
+          <div class="card"><h2>Hart en conditie</h2><p>Rusthartslag, HRV, VO2max en polsgolfsnelheid uit Apple Health. Stappen en activiteiten van dezelfde iPhone vullen het doel van de week.</p></div>
+          <div class="card"><h2>Geen medisch oordeel</h2><p>De score en de kleuren zijn een samenvatting van je eigen metingen, om te zien of het de goede kant op gaat. Ze vervangen geen arts.</p></div>
+        </div><footer><span>Lichaam</span><span>5</span></footer></section>
+<section class="page">
+        <div class="kicker">Cijfers over langere tijd</div>
+        <h1>Terugkijken: kracht, volume en herstel in één tab.</h1>
+        <p class="lead">Voorheen heette dit Analyse. Dezelfde grafieken, plus afdrukken en een PDF van de hele tab.</p>
+        <div class="grid2">
+          <div class="card"><h2>Krachtindex</h2><p>100 is je start. De lijn is de mediaan van je sessies, zodat één uitschieter het beeld niet trekt. Een sessie die meer dan 15% van die mediaan afwijkt, telt niet mee.</p></div>
+          <div class="card"><h2>Volume en sets</h2><p>Totaal per week, per spiergroep, en of de week in balans is. Een spiergroep die achterblijft zie je terug in het volgende plan.</p></div>
+          <div class="card"><h2>Wanneer en herstel</h2><p>Op welke dagen je trainde, hoe lang je herstelde, en of de verbrande energie meeloopt met je gewicht.</p></div>
+          <div class="card"><h2>Kilometers en stappen</h2><p>Cardio en de stappenteller naast de krachttraining, uit Apple Health. Zo zie je de week zoals je die echt bewoog.</p></div>
+          <div class="card"><h2>Afdrukken en PDF</h2><p>De hele tab past op papier. Een blok dat niet meer op de pagina past, schuift in zijn geheel naar de volgende.</p></div>
+          <div class="card"><h2>Records</h2><p>Je zwaarste set per oefening, en wanneer die viel. Het trainingsrapport na afloop mailt dezelfde soort cijfers per sessie.</p></div>
+        </div><footer><span>Terugkijken</span><span>6</span></footer></section>
+<section class="page">
+        <div class="kicker">In je mailbox</div>
+        <h1>Je trainingsrapport, vanzelf na elke sessie.</h1>
+        <p class="lead">Zodra de training binnen is, maakt GymCoach een PDF en mailt die naar je toe. Of je opent hem in de app.</p>
+        <div class="grid2">
+          <div class="card"><h2>Kerncijfers</h2><p>Duur, sets, volume, calorieën en hartslag, plus de figuur met de sets per spiergroep.</p></div>
+          <div class="card"><h2>Vergeleken met de vorige keer</h2><p>Duur, volume, sets en hartslag tegenover het gemiddelde van de laatste vier keer dezelfde training.</p></div>
+          <div class="card"><h2>Tijd onder spanning</h2><p>Hoeveel van de training echt aan het werk was, hoeveel rust, en hoe lang per herhaling.</p></div>
+          <div class="card"><h2>Hartslag met zones</h2><p>Het verloop van de Apple Watch, met de minuten per zone, van herstel tot maximaal.</p></div>
+          <div class="card"><h2>Elke oefening</h2><p>Sets, herhalingen, gewicht en records, vergeleken met de vorige keer, en of de laatste herhalingen trager werden.</p></div>
+          <div class="card"><h2>Je eigen mailbox</h2><p>Aan of uit per gebruiker bij Instellingen → E-mail. Werkt met elke eigen SMTP-server. Het rapport in de brochure is voorbeelddata.</p></div>
+        </div><footer><span>Na elke training</span><span>7</span></footer></section>
+<section class="page">
+        <div class="kicker">Mannen, vrouwen, en je eigen herstel</div>
+        <h1>Hetzelfde programma, andere cijfers.</h1>
+        <p class="lead">Geslacht, hartslag en herstel bepalen de rust, de sets en de kleuren. Iedereen houdt zijn eigen geschiedenis.</p>
+        <div class="grid2">
+          <div class="card"><h2>Rust en sets</h2><p>Vrouwen krijgen in de standaard ongeveer 20% kortere rust en waar het past een set extra. De formules voor maximale hartslag verschillen per geslacht. Je kunt de rust ook zelf vastzetten.</p></div>
+          <div class="card"><h2>Je eigen herstel</h2><p>Na een zware sessie wacht een spiergroep langer. Dat is jouw patroon, niet een tabel uit een boek. De week schuift de oefening naar een dag waarop die spier weer mee kan.</p></div>
+          <div class="card"><h2>Taal</h2><p>Nederlands, Engels, Duits en Noors. De brochure zelf is er in het Nederlands, Engels en Duits.</p></div>
+          <div class="card"><h2>Handleiding</h2><p>Instellingen → Handleiding, en op de iPhone onder Meer. Koppelen, hoe er gemeten wordt, de gezondheidsscore, en elk scherm met een voorbeeld.</p></div>
+        </div>
+        <div class="card" style="margin-top:10px"><h2>Wat je zelf invult</h2><p>Geslacht, geboortedatum, lengte en eenheden staan bij Instellingen. Het stappendoel, de activiteiten en het lichaamsdoel staan op de tab Doel. De weegschaal koppel je eenmalig; daarna komen de metingen vanzelf.</p></div><footer><span>Afgestemd op jou</span><span>8</span></footer></section>
+<section class="page">
+        <div class="kicker">Op je eigen server</div>
+        <h1>Geen account bij ons. Geen abonnement.</h1>
+        <p class="lead">GymCoach is open source (MIT). De site praat alleen met jouw server. Er gaan geen trainingsgegevens naar een dienst van derden, behalve de koppelingen die je zelf aanzet.</p>
+        <div class="card"><h2>Installeren</h2><p>git clone, daarna bash install.sh, daarna de browser op http://ip-van-de-server:8765. Node.js 22.5 of nieuwer. Linux. Getest met Gym Monster model 1.</p></div>
+        <div class="grid2" style="margin-top:10px">
+          <div class="card"><h2>Nodig</h2><ul><li>Speediance Gym Monster</li><li>Een Linux-server met Node 22.5+</li><li>Een browser op je laptop</li></ul></div>
+          <div class="card"><h2>Optioneel</h2><ul><li>Withings-weegschaal</li><li>GymCoach Sync op de iPhone</li><li>Eigen mailbox (SMTP)</li><li>Claude, of een lokaal model</li></ul></div>
+        </div>
+        <p class="note">De iPhone-app leest alleen: overzicht, plan, doel en lichaam. Koppelen van Apple Health gebruikt een aparte sleutel, niet je inlogsessie. De sleutel maak je in GymCoach; op de telefoon vul je het adres van de site in.</p><footer><span>Techniek</span><span>9</span></footer></section>
+<section class="page">
+        <div class="kicker">Waar je naartoe werkt</div>
+        <h1>Een doel voor lichaam, kracht, stappen en activiteiten.</h1>
+        <p class="lead">De tab Doel houdt de lijn bij. De weegschaal zelf blijft op Lichaam. Profiel en eenheden blijven bij Instellingen.</p>
+        <div class="grid2">
+          <div class="card"><h2>Lichaam</h2><p>Kies hoeveel kilo je wilt bewegen en in hoeveel weken. GymCoach trekt de rechte lijn en zet je wegingen ernaast. Vetpercentage en spiermassa kunnen mee, als je die invult.</p></div>
+          <div class="card"><h2>Kracht per spiergroep</h2><p>Tot zes spiergroepen, met een percentage en een datum. Het plan kiest de oefeningen die daarbij horen. Je hoeft geen oefening voor oefening een doel te zetten.</p></div>
+          <div class="card"><h2>Stappen</h2><p>Een doel per dag. De iPhone levert het aantal via Apple Health, samen met de rest van de dagtotalen.</p></div>
+          <div class="card"><h2>Activiteiten</h2><p>Wandelen, zwemmen, padel: hoe vaak, hoe lang, en eventueel een afstand. GymCoach stelt doelen voor uit je laatste vier weken. Apple Health kleurt de balk als het gelukt is.</p></div>
+          <div class="card"><h2>Eten</h2><p>De streefinname komt uit Mifflin-St Jeor, met je doel erin verwerkt, plus een hoeveelheid eiwit. Uurwaarden uit Apple Health worden opgeteld tot een dagtotaal.</p></div>
+          <div class="card"><h2>Het schema blijft van jou</h2><p>Het plan kan meeschuiven met je doel, als je dat aanzet. Zet je het uit, dan blijft het schema zoals je het had, en volgt alleen de grafiek je lijn.</p></div>
+        </div><footer><span>Doel</span><span>10</span></footer></section>
+<section class="page">
+        <div class="kicker">0 tot 10</div>
+        <h1>Eén score, opgebouwd uit je eigen metingen.</h1>
+        <p class="lead">Hoger is beter. De score staat op Overzicht en op Lichaam, en in GymCoach Sync met dezelfde koppen.</p>
+        <div class="mock">
+          <div class="row" style="align-items:center;justify-content:space-between"><div><div class="kicker">Nu</div><b style="font-size:28px">6,3</b></div><div style="flex:1;margin-left:16px"><div class="bar"><span style="width:63%"></span></div></div></div>
+          <table class="mini" style="margin-top:8px"><tr><td>Lichaam</td><td>vet, visceraal vet, FFMI, BMI, bot</td></tr><tr><td>Hart</td><td>rusthartslag, polsgolf, vasculaire leeftijd</td></tr><tr><td>Conditie</td><td>VO2max en HRV</td></tr><tr><td>Overig</td><td>zenuw, metabole leeftijd, ECW/TBW</td></tr></table>
+        </div>
+        <div class="grid2" style="margin-top:12px">
+          <div class="card"><h2>De pijl is niet het doel</h2><p>Een getal dat stijgt is niet vanzelf goed. De kleur kijkt of die meting de score omhoog of omlaag trekt. Zo wordt een dalend vetpercentage groen en een stijgende rusthartslag rood.</p></div>
+          <div class="card"><h2>Op de iPhone</h2><p>Koppen per categorie, een icoon per meting, en een tabel met het verloop. Alleen lezen: wijzigen doe je op de site.</p></div>
+        </div>
+        <p class="note">De score is een hulpmiddel om je reeks metingen te volgen. Het is geen diagnose en geen advies van een arts.</p><footer><span>Gezondheidsscore</span><span>11</span></footer></section>
+<section class="page">
+        <div class="kicker">In de app, en op de iPhone</div>
+        <h1>Uitleg bij elk scherm, met een voorbeeld.</h1>
+        <p class="lead">Instellingen → Handleiding. Op de iPhone staat hetzelfde onder Meer. De plaatjes zijn van een voorbeeldgebruiker, zodat je ziet wat elk blok toont.</p>
+        <div class="grid2">
+          <div class="card"><h2>Nieuw: koppelen</h2><p>Withings: de beheerder maakt een app op developer.withings.com, daarna Koppel Withings. Apple Health: in GymCoach een koppelsleutel (begint met gch_), op de iPhone het adres van de site. Dat adres is niet het ingest-adres.</p></div>
+          <div class="card"><h2>De schermen</h2><p>Overzicht, Plan, Doel, Lichaam, Training, Terugkijken en Instellingen. Per tab een genummerde pagina en een close-up per blok, met wat je daar ziet.</p></div>
+          <div class="card"><h2>Hoe er gemeten wordt</h2><p>Progressie, herstel, de gezondheidsscore en waar een cijfer vandaan komt. Dezelfde tekst als deze brochure, maar naast de knoppen die je echt gebruikt.</p></div>
+          <div class="card"><h2>Onderweg</h2><p>GymCoach Sync toont overzicht, plan, doel, lichaam en de score. Wijzigen, mail en de koppelingen doe je op de site. Zonder wifi thuis kan de health-sync wachten, als je dat zo instelt.</p></div>
+        </div>
+        <p class="note">De handleiding volgt de taal van de app: Nederlands, Engels, Duits of Noors.</p><footer><span>Handleiding</span><span>12</span></footer></section></body></html>

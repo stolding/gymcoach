@@ -1,0 +1,59 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #101114; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: #f3f1ec; }
+  .page {
+    width: 794px; height: 1123px; overflow: hidden; position: relative;
+    background: #101114; padding: 40px 42px 50px;
+    page-break-after: always; break-after: page;
+  }
+  .kicker { color: #ff7a2e; font-weight: 700; letter-spacing: .12em; font-size: 13px; text-transform: uppercase; }
+  h1 { font-size: 38px; line-height: 1.05; letter-spacing: -.02em; margin: 10px 0 12px; font-weight: 750; }
+  .lead { color: #b7b8be; font-size: 16.5px; line-height: 1.4; margin: 0 0 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .card { background: #1b1d22; border: 1px solid #2c2e34; border-radius: 14px; padding: 16px 16px; }
+  .card h2 { margin: 2px 0 6px; font-size: 16.5px; }
+  .card p, .card li { margin: 0; color: #c5c6cc; font-size: 13.5px; line-height: 1.4; }
+  .card ul { margin: 4px 0 0; padding-left: 16px; }
+  .card li { margin: 2px 0; }
+  .ico { color: #ff7a2e; font-size: 14px; }
+  footer {
+    position: absolute; left: 40px; right: 40px; bottom: 18px;
+    display: flex; justify-content: space-between; color: #8d8f96;
+    font-size: 11px; border-top: 1px solid #2a2c31; padding-top: 8px;
+  }
+  .mock { background: #17181c; border: 1px solid #2c2e34; border-radius: 16px; padding: 14px; }
+  .row { display: flex; gap: 10px; }
+  .pill { background: #26282e; border-radius: 999px; padding: 3px 8px; font-size: 11px; color: #d7d8de; }
+  .orange { color: #ff7a2e; }
+  .bar { height: 7px; background: #2a2c31; border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: #ff7a2e; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tile { background: #1b1d22; border-radius: 10px; padding: 8px; }
+  .tile b { display: block; font-size: 16px; }
+  .tile span { color: #9a9ca3; font-size: 10px; }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; gap: 8px; align-items: center; font-weight: 700; }
+  .brand img { width: 28px; height: 28px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.mini td { padding: 5px 0; border-bottom: 1px solid #2a2c31; }
+  table.mini td:last-child { text-align: right; color: #ff7a2e; }
+  .note { margin-top: 10px; color: #9a9ca3; font-size: 12px; }
+  .steps { display: flex; gap: 8px; margin-top: 12px; }
+  .step { flex: 1; background: #1b1d22; border-radius: 12px; padding: 10px; }
+  .step b { display: block; color: #ff7a2e; font-size: 12px; }
+  .step span { font-size: 12px; color: #d7d8de; }
+  @page { size: 210mm 297mm; margin: 0; }
+</style></head><body><section class="page">
+    <div class="kicker">Zahlen über längere Zeit</div>
+    <h1>Zurückblicken: Kraft, Volumen und Erholung in einem Tab.</h1>
+    <p class="lead">Früher hieß das Analyse. Dieselben Grafiken, plus Drucken und ein PDF des ganzen Tabs.</p>
+    <div class="grid2">
+      <div class="card"><h2>Kraftindex</h2><p>100 ist dein Start. Die Linie ist der Median deiner Einheiten, damit ein Ausreißer das Bild nicht zieht. Eine Einheit, die mehr als 15% von diesem Median abweicht, zählt nicht.</p></div>
+      <div class="card"><h2>Volumen und Sätze</h2><p>Summe pro Woche, pro Muskel, und ob die Woche im Gleichgewicht ist. Ein Muskel, der zurückbleibt, taucht im nächsten Plan auf.</p></div>
+      <div class="card"><h2>Wann und Erholung</h2><p>An welchen Tagen du trainiert hast, wie lange du erholt hast, und ob die verbrannte Energie mit dem Gewicht mitläuft.</p></div>
+      <div class="card"><h2>Kilometer und Schritte</h2><p>Cardio und der Schrittzähler neben dem Krafttraining, aus Apple Health. Die Woche, wie du sie wirklich bewegt hast.</p></div>
+      <div class="card"><h2>Drucken und PDF</h2><p>Der ganze Tab passt auf Papier. Ein Block, der nicht mehr auf die Seite passt, rutscht vollständig auf die nächste.</p></div>
+      <div class="card"><h2>Rekorde</h2><p>Dein schwerster Satz pro Übung, und wann er fiel. Der Bericht nach der Einheit mailt dieselbe Art Zahlen pro Sitzung.</p></div>
+    </div><footer><span>Zurückblicken</span><span>6</span></footer></section></body></html>

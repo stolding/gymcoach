@@ -1,0 +1,66 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #101114; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: #f3f1ec; }
+  .page {
+    width: 794px; height: 1123px; overflow: hidden; position: relative;
+    background: #101114; padding: 40px 42px 50px;
+    page-break-after: always; break-after: page;
+  }
+  .kicker { color: #ff7a2e; font-weight: 700; letter-spacing: .12em; font-size: 13px; text-transform: uppercase; }
+  h1 { font-size: 38px; line-height: 1.05; letter-spacing: -.02em; margin: 10px 0 12px; font-weight: 750; }
+  .lead { color: #b7b8be; font-size: 16.5px; line-height: 1.4; margin: 0 0 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .card { background: #1b1d22; border: 1px solid #2c2e34; border-radius: 14px; padding: 16px 16px; }
+  .card h2 { margin: 2px 0 6px; font-size: 16.5px; }
+  .card p, .card li { margin: 0; color: #c5c6cc; font-size: 13.5px; line-height: 1.4; }
+  .card ul { margin: 4px 0 0; padding-left: 16px; }
+  .card li { margin: 2px 0; }
+  .ico { color: #ff7a2e; font-size: 14px; }
+  footer {
+    position: absolute; left: 40px; right: 40px; bottom: 18px;
+    display: flex; justify-content: space-between; color: #8d8f96;
+    font-size: 11px; border-top: 1px solid #2a2c31; padding-top: 8px;
+  }
+  .mock { background: #17181c; border: 1px solid #2c2e34; border-radius: 16px; padding: 14px; }
+  .row { display: flex; gap: 10px; }
+  .pill { background: #26282e; border-radius: 999px; padding: 3px 8px; font-size: 11px; color: #d7d8de; }
+  .orange { color: #ff7a2e; }
+  .bar { height: 7px; background: #2a2c31; border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: #ff7a2e; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tile { background: #1b1d22; border-radius: 10px; padding: 8px; }
+  .tile b { display: block; font-size: 16px; }
+  .tile span { color: #9a9ca3; font-size: 10px; }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; gap: 8px; align-items: center; font-weight: 700; }
+  .brand img { width: 28px; height: 28px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.mini td { padding: 5px 0; border-bottom: 1px solid #2a2c31; }
+  table.mini td:last-child { text-align: right; color: #ff7a2e; }
+  .note { margin-top: 10px; color: #9a9ca3; font-size: 12px; }
+  .steps { display: flex; gap: 8px; margin-top: 12px; }
+  .step { flex: 1; background: #1b1d22; border-radius: 12px; padding: 10px; }
+  .step b { display: block; color: #ff7a2e; font-size: 12px; }
+  .step span { font-size: 12px; color: #d7d8de; }
+  @page { size: 210mm 297mm; margin: 0; }
+</style></head><body><section class="page">
+    <div class="cover-top"><div class="brand"><img src="../../public/logo.svg" alt="">GymCoach</div><span class="pill">for the Speediance Gym Monster</span></div>
+    <h1 style="font-size:40px;margin-top:28px">Your own AI trainer.<br>A plan that grows with you.</h1>
+    <p class="lead">GymCoach reads your sessions, builds each week, tracks your goal and your health score, and sends the plan to the machine in one click. Your data stays on your server.</p>
+    <div class="mock">
+      <div class="row" style="justify-content:space-between"><div><div class="kicker">Next session</div><b>Full Body A</b><div style="color:#9a9ca3;font-size:12px">12 exercises · ±45 min</div></div><div style="text-align:right"><b class="orange">2 / 3</b><div style="color:#9a9ca3;font-size:12px">this week</div></div></div>
+      <div class="tiles" style="margin-top:12px">
+        <div class="tile"><span>Streak</span><b>4</b></div>
+        <div class="tile"><span>Volume</span><b>9.2 t</b></div>
+        <div class="tile"><span>Strength</span><b>+26%</b></div>
+        <div class="tile"><span>Score</span><b>6.3</b></div>
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><div class="ico">01</div><h2>A personal week</h2><p>Based on what you actually lifted, and on muscles that still need to recover.</p></div>
+      <div class="card"><div class="ico">02</div><h2>Goal and score</h2><p>Body, strength, steps and activities. The health score runs from 0 to 10.</p></div>
+      <div class="card"><div class="ico">03</div><h2>At home, and away</h2><p>In the browser, and read-only on iPhone. The guide lives in the app.</p></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>Also in this brochure</h2><p>The week plan and the editor. Body, Withings and Apple Health. Looking back, with print and PDF. The report after every session. Goal, health score and the guide. And how to run it on your own server.</p></div><footer><span>version 2.32.14</span><span>1</span></footer></section></body></html>

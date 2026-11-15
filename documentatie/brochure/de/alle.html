@@ -1,0 +1,210 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #101114; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; color: #f3f1ec; }
+  .page {
+    width: 794px; height: 1123px; overflow: hidden; position: relative;
+    background: #101114; padding: 40px 42px 50px;
+    page-break-after: always; break-after: page;
+  }
+  .kicker { color: #ff7a2e; font-weight: 700; letter-spacing: .12em; font-size: 13px; text-transform: uppercase; }
+  h1 { font-size: 38px; line-height: 1.05; letter-spacing: -.02em; margin: 10px 0 12px; font-weight: 750; }
+  .lead { color: #b7b8be; font-size: 16.5px; line-height: 1.4; margin: 0 0 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .card { background: #1b1d22; border: 1px solid #2c2e34; border-radius: 14px; padding: 16px 16px; }
+  .card h2 { margin: 2px 0 6px; font-size: 16.5px; }
+  .card p, .card li { margin: 0; color: #c5c6cc; font-size: 13.5px; line-height: 1.4; }
+  .card ul { margin: 4px 0 0; padding-left: 16px; }
+  .card li { margin: 2px 0; }
+  .ico { color: #ff7a2e; font-size: 14px; }
+  footer {
+    position: absolute; left: 40px; right: 40px; bottom: 18px;
+    display: flex; justify-content: space-between; color: #8d8f96;
+    font-size: 11px; border-top: 1px solid #2a2c31; padding-top: 8px;
+  }
+  .mock { background: #17181c; border: 1px solid #2c2e34; border-radius: 16px; padding: 14px; }
+  .row { display: flex; gap: 10px; }
+  .pill { background: #26282e; border-radius: 999px; padding: 3px 8px; font-size: 11px; color: #d7d8de; }
+  .orange { color: #ff7a2e; }
+  .bar { height: 7px; background: #2a2c31; border-radius: 99px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: #ff7a2e; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tile { background: #1b1d22; border-radius: 10px; padding: 8px; }
+  .tile b { display: block; font-size: 16px; }
+  .tile span { color: #9a9ca3; font-size: 10px; }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; gap: 8px; align-items: center; font-weight: 700; }
+  .brand img { width: 28px; height: 28px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.mini td { padding: 5px 0; border-bottom: 1px solid #2a2c31; }
+  table.mini td:last-child { text-align: right; color: #ff7a2e; }
+  .note { margin-top: 10px; color: #9a9ca3; font-size: 12px; }
+  .steps { display: flex; gap: 8px; margin-top: 12px; }
+  .step { flex: 1; background: #1b1d22; border-radius: 12px; padding: 10px; }
+  .step b { display: block; color: #ff7a2e; font-size: 12px; }
+  .step span { font-size: 12px; color: #d7d8de; }
+  @page { size: 210mm 297mm; margin: 0; }
+</style></head><body><section class="page">
+    <div class="cover-top"><div class="brand"><img src="../../public/logo.svg" alt="">GymCoach</div><span class="pill">für die Speediance Gym Monster</span></div>
+    <h1 style="font-size:38px;margin-top:28px">Dein eigener KI-Trainer.<br>Ein Plan, der mitwächst.</h1>
+    <p class="lead">GymCoach liest deine Einheiten, baut jede Woche, verfolgt Ziel und Gesundheitsscore und schickt den Plan mit einem Klick aufs Gerät. Deine Daten bleiben auf deinem Server.</p>
+    <div class="mock">
+      <div class="row" style="justify-content:space-between"><div><div class="kicker">Nächste Einheit</div><b>Full Body A</b><div style="color:#9a9ca3;font-size:12px">12 Übungen · ±45 Min.</div></div><div style="text-align:right"><b class="orange">2 / 3</b><div style="color:#9a9ca3;font-size:12px">diese Woche</div></div></div>
+      <div class="tiles" style="margin-top:12px">
+        <div class="tile"><span>Serie</span><b>4</b></div>
+        <div class="tile"><span>Volumen</span><b>9,2 t</b></div>
+        <div class="tile"><span>Kraft</span><b>+26%</b></div>
+        <div class="tile"><span>Score</span><b>6,3</b></div>
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><div class="ico">01</div><h2>Persönliche Woche</h2><p>Nach dem, was du wirklich gehoben hast, und nach Muskeln, die noch erholen müssen.</p></div>
+      <div class="card"><div class="ico">02</div><h2>Ziel und Score</h2><p>Körper, Kraft, Schritte und Aktivitäten. Der Gesundheitsscore läuft von 0 bis 10.</p></div>
+      <div class="card"><div class="ico">03</div><h2>Zu Hause und unterwegs</h2><p>Im Browser und nur lesend auf dem iPhone. Die Anleitung steckt in der App.</p></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>Weiter in dieser Broschüre</h2><p>Der Wochenplan und der Editor. Körper, Withings und Apple Health. Zurückblicken, mit Drucken und PDF. Der Bericht nach jeder Einheit. Ziel, Gesundheitsscore und die Anleitung. Und wie du es auf deinem eigenen Server laufen lässt.</p></div><footer><span>Version 2.32.14</span><span>1</span></footer></section>
+<section class="page">
+    <div class="kicker">Vom Gerät zum Plan</div>
+    <h1>GymCoach arbeitet zwischen zwei Einheiten.</h1>
+    <p class="lead">Die Gym Monster schickt jeden Satz in die Speediance-Cloud. GymCoach holt das ab und macht den nächsten Vorschlag.</p>
+    <div class="grid2">
+      <div class="card"><h2>Kluge Steigerung</h2><p>Schaftest du das Maximum, steigt das Gewicht. Verfehlst du es zweimal, geht es 10% zurück. Jede sechste Woche ist ein Deload, früher wenn die Erholung das verlangt. Eine Einheit weit weg vom Median dieser Übung zählt nicht im Kraftindex.</p></div>
+      <div class="card"><h2>Passt in deine Woche</h2><p>Pro Tag Kraft, Zirkel oder draußen, mit einem Fokus. Die Woche ist ein Plan: eine Übung rutscht auf einen späteren Tag, wenn der Muskel noch nicht erholt ist. Ein Spaziergang gehört in dieselbe Woche.</p></div>
+      <div class="card"><h2>Aufwärmen und Cool-down</h2><p>Mobilisation und Aktivierung der Muskeln dieses Tages, und ein Cool-down danach. Startklar, nicht nur eine Übungsliste.</p></div>
+      <div class="card"><h2>KI-Coach</h2><p>Frag nach deinem Plan. Die Antwort nutzt deine echten Zahlen: Volumen, Erholung und was du zuletzt gehoben hast. Du entscheidest, was du übernimmst.</p></div>
+      <div class="card"><h2>Ein Klick aufs Gerät</h2><p>Prüfen, dann senden. Eine Einheit löschen oder ersetzen lässt den Rest stehen. Übungen bleiben eingeklappt, bis du sie öffnest. Die Reihenfolge folgt der Kabelposition.</p></div>
+      <div class="card"><h2>Körper, Health und Score</h2><p>Withings liefert Gewicht, Fett und Muskelmasse. Apple Health liefert Aktivitäten, Schritte, Puls, HRV und VO2max. Darüber liegt ein Gesundheitsscore von 0 bis 10.</p></div>
+    </div>
+    <div class="steps"><div class="step"><b>1 · Plan</b><span>Die Woche steht.</span></div><div class="step"><b>2 · Trainieren</b><span>An der Gym Monster.</span></div><div class="step"><b>3 · Sync</b><span>Sätze kommen an.</span></div><div class="step"><b>4 · Wachsen</b><span>Der Plan zieht mit.</span></div></div><footer><span>Was GymCoach tut</span><span>2</span></footer></section>
+<section class="page">
+    <div class="kicker">Jede Woche neu</div>
+    <h1>Ein Plan aus deinen Zahlen, nicht aus einem Standardprogramm.</h1>
+    <p class="lead">Muskelgruppen, Fokus und die Einheiten dieser Woche. Öffne eine Übung für Sätze, Gewicht und den Grund des Vorschlags.</p>
+    <div class="mock">
+      <div class="row" style="gap:6px;margin-bottom:10px"><span class="pill orange">Brust</span><span class="pill">Rücken</span><span class="pill">Beine</span><span class="pill">Schultern</span></div>
+      <div style="margin-bottom:6px;font-size:12px;color:#9a9ca3">Brust · 12 / 16 Sätze</div>
+      <div class="bar"><span style="width:75%"></span></div>
+      <div style="margin:10px 0 6px;font-size:12px;color:#9a9ca3">Rücken · 10 / 16 Sätze</div>
+      <div class="bar"><span style="width:62%"></span></div>
+      <div class="card" style="margin-top:12px"><b>Montag · Full Body A · Kraft</b><p>1. Dual-Handle Bench Press · 4×8–12 · 32 kg<br>2. Lat Pulldown · 4×8–12 · 40 kg</p></div>
+    </div>
+    <div class="grid3" style="margin-top:12px">
+      <div class="card"><h2>Ein Plan</h2><p>Die Erholung verteilt Übungen über die Woche. Ein müder Muskel kommt nicht am nächsten Tag wieder.</p></div>
+      <div class="card"><h2>Aktivitäten</h2><p>Gehen, Schwimmen oder eine Sportart neben dem Krafttraining. Apple Health füllt den Balken, wenn du es geschafft hast.</p></div>
+      <div class="card"><h2>Selbst nachsteuern</h2><p>Eine Einheit löschen oder ersetzen. Der Rest der Woche bleibt. Übungen klappst du auf, wenn du sie sehen willst.</p></div>
+    </div><footer><span>Der Wochenplan</span><span>3</span></footer></section>
+<section class="page">
+    <div class="kicker">Der Editor</div>
+    <h1>Pass jeden Vorschlag an. Oder bau deine eigene Einheit.</h1>
+    <p class="lead">Bearbeite eine Einheit aus dem Plan, fang leer an, kopiere eine oder wähle eine Vorlage. Figur und Sätze pro Muskel rechnen sofort mit.</p>
+    <div class="grid3">
+      <div class="card"><h2>Alles pro Satz</h2><p>Wiederholungen, Gewicht, Pause und der Modus der Gym Monster: Standard, exzentrisch, isokinetisch, konstant oder Spotter. Pyramide und Aufwärmsatz in einem Klick.</p></div>
+      <div class="card"><h2>Supersätze</h2><p>Zwei oder mehr Übungen im Wechsel, ohne Pause dazwischen. Am Gerät sind das wechselnde Schritte, mit Pause nach jeder Runde.</p></div>
+      <div class="card"><h2>Übungen ansehen</h2><p>Nach Muskel und Art, mit Video, Hinweisen und Erklärung. Einmal geholt und auf deinem Server gespeichert.</p></div>
+      <div class="card"><h2>Fest, und trotzdem voran</h2><p>Eine bearbeitete Einheit bleibt bei einem neuen Plan stehen. Die Gewichte wachsen mit, außer wo du das Gewicht festgesetzt hast.</p></div>
+      <div class="card"><h2>Vorlagen teilen</h2><p>Speichere eine Einheit als Vorlage. Auf einem Server mit mehreren Personen hat jeder seine eigene Geschichte.</p></div>
+      <div class="card"><h2>Der KI-Coach schaut mit</h2><p>Auch bei deiner eigenen Einheit. Der Aufbau bleibt; jeder Vorschlag hat einen Grund, und du hakst an, was du übernimmst.</p></div>
+    </div>
+    <p class="note">Aufwärmen und Cool-down stellst du genauso zusammen. Die Reihenfolge folgt der Kabelposition, damit du am Gerät nicht ständig umsteckst.</p><footer><span>Selbst zusammenstellen</span><span>4</span></footer></section>
+<section class="page">
+    <div class="kicker">Withings und Apple Health</div>
+    <h1>Dein Körper, neben dem Training.</h1>
+    <p class="lead">Waage und iPhone füllen denselben Tab. Die Farbe sagt, ob der Wert gesünder wurde, nicht ob die Zahl stieg.</p>
+    <div class="tiles">
+      <div class="tile"><span>Gewicht</span><b>82,4</b></div>
+      <div class="tile"><span>Fett</span><b>18%</b></div>
+      <div class="tile"><span>Muskel</span><b>64 kg</b></div>
+      <div class="tile"><span>FFMI</span><b>21</b></div>
+      <div class="tile"><span>Pulswelle</span><b>6,4</b></div>
+      <div class="tile"><span>HRV</span><b>48</b></div>
+      <div class="tile"><span>VO2max</span><b>44</b></div>
+      <div class="tile"><span>Score</span><b>6,3</b></div>
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="card"><h2>Die Farbe folgt dem Score</h2><p>Grüner, wenn der Wert den Gesundheitsscore nach oben zieht. Ein BMI Richtung 22 wird grüner, auch wenn die Zahl sinkt. Ein steigender Ruhepuls wird röter, denn höher ist hier kein Fortschritt.</p></div>
+      <div class="card"><h2>Zusammensetzung</h2><p>Fett, Muskelmasse und die Verteilung auf Arme, Beine und Rumpf. Die Segmente kommen von der Withings-Waage, sobald sie verbunden ist.</p></div>
+      <div class="card"><h2>Herz und Kondition</h2><p>Ruhepuls, HRV, VO2max und Pulswellengeschwindigkeit aus Apple Health. Schritte und Aktivitäten desselben iPhones füllen das Wochenziel.</p></div>
+      <div class="card"><h2>Kein medizinisches Urteil</h2><p>Score und Farben fassen deine eigenen Messungen zusammen, damit du die Richtung siehst. Sie ersetzen keinen Arzt.</p></div>
+    </div><footer><span>Körper</span><span>5</span></footer></section>
+<section class="page">
+    <div class="kicker">Zahlen über längere Zeit</div>
+    <h1>Zurückblicken: Kraft, Volumen und Erholung in einem Tab.</h1>
+    <p class="lead">Früher hieß das Analyse. Dieselben Grafiken, plus Drucken und ein PDF des ganzen Tabs.</p>
+    <div class="grid2">
+      <div class="card"><h2>Kraftindex</h2><p>100 ist dein Start. Die Linie ist der Median deiner Einheiten, damit ein Ausreißer das Bild nicht zieht. Eine Einheit, die mehr als 15% von diesem Median abweicht, zählt nicht.</p></div>
+      <div class="card"><h2>Volumen und Sätze</h2><p>Summe pro Woche, pro Muskel, und ob die Woche im Gleichgewicht ist. Ein Muskel, der zurückbleibt, taucht im nächsten Plan auf.</p></div>
+      <div class="card"><h2>Wann und Erholung</h2><p>An welchen Tagen du trainiert hast, wie lange du erholt hast, und ob die verbrannte Energie mit dem Gewicht mitläuft.</p></div>
+      <div class="card"><h2>Kilometer und Schritte</h2><p>Cardio und der Schrittzähler neben dem Krafttraining, aus Apple Health. Die Woche, wie du sie wirklich bewegt hast.</p></div>
+      <div class="card"><h2>Drucken und PDF</h2><p>Der ganze Tab passt auf Papier. Ein Block, der nicht mehr auf die Seite passt, rutscht vollständig auf die nächste.</p></div>
+      <div class="card"><h2>Rekorde</h2><p>Dein schwerster Satz pro Übung, und wann er fiel. Der Bericht nach der Einheit mailt dieselbe Art Zahlen pro Sitzung.</p></div>
+    </div><footer><span>Zurückblicken</span><span>6</span></footer></section>
+<section class="page">
+    <div class="kicker">In deinem Postfach</div>
+    <h1>Dein Trainingsbericht, von selbst nach jeder Einheit.</h1>
+    <p class="lead">Sobald die Einheit da ist, macht GymCoach ein PDF und schickt es dir. Oder du öffnest es in der App.</p>
+    <div class="grid2">
+      <div class="card"><h2>Kennzahlen</h2><p>Dauer, Sätze, Volumen, Kalorien und Puls, plus die Figur mit den Sätzen pro Muskel.</p></div>
+      <div class="card"><h2>Gegen das letzte Mal</h2><p>Dauer, Volumen, Sätze und Puls gegen den Schnitt der letzten vier Male derselben Einheit.</p></div>
+      <div class="card"><h2>Zeit unter Spannung</h2><p>Wie viel der Einheit echte Arbeit war, wie viel Pause, und wie lange pro Wiederholung.</p></div>
+      <div class="card"><h2>Puls mit Zonen</h2><p>Der Verlauf der Apple Watch, mit den Minuten pro Zone, von Erholung bis maximal.</p></div>
+      <div class="card"><h2>Jede Übung</h2><p>Sätze, Wiederholungen, Gewicht und Rekorde gegen das letzte Mal, und ob die letzten Wiederholungen langsamer wurden.</p></div>
+      <div class="card"><h2>Dein eigenes Postfach</h2><p>An oder aus pro Nutzer unter Einstellungen → E-Mail. Funktioniert mit jedem eigenen SMTP-Server. Der Bericht in der Broschüre sind Beispieldaten.</p></div>
+    </div><footer><span>Nach jeder Einheit</span><span>7</span></footer></section>
+<section class="page">
+    <div class="kicker">Männer, Frauen, und deine Erholung</div>
+    <h1>Dasselbe Programm, andere Zahlen.</h1>
+    <p class="lead">Geschlecht, Puls und Erholung bestimmen Pause, Sätze und Farben. Jeder behält seine eigene Geschichte.</p>
+    <div class="grid2">
+      <div class="card"><h2>Pause und Sätze</h2><p>Frauen bekommen standardmäßig etwa 20% kürzere Pausen und wo es passt einen Satz extra. Die Formeln für den Maximalpuls unterscheiden sich. Die Pause kannst du auch selbst festsetzen.</p></div>
+      <div class="card"><h2>Deine Erholung</h2><p>Nach einer harten Einheit wartet eine Muskelgruppe länger. Das ist dein Muster, keine Tabelle aus einem Buch. Die Woche schiebt die Übung auf einen Tag, an dem der Muskel wieder kann.</p></div>
+      <div class="card"><h2>Sprache</h2><p>Niederländisch, Englisch, Deutsch und Norwegisch. Die Broschüre gibt es auf Niederländisch, Englisch und Deutsch.</p></div>
+      <div class="card"><h2>Anleitung</h2><p>Einstellungen → Anleitung, und auf dem iPhone unter Mehr. Verbinden, wie gemessen wird, der Gesundheitsscore, und jeder Bildschirm mit einem Beispiel.</p></div>
+    </div>
+    <div class="card" style="margin-top:10px"><h2>Was du selbst einträgst</h2><p>Geschlecht, Geburtsdatum, Größe und Einheiten stehen unter Einstellungen. Schrittziel, Aktivitäten und Körperziel stehen auf dem Tab Ziel. Die Waage verbindest du einmal; danach kommen die Messungen von selbst.</p></div><footer><span>Auf dich abgestimmt</span><span>8</span></footer></section>
+<section class="page">
+    <div class="kicker">Auf deinem eigenen Server</div>
+    <h1>Kein Konto bei uns. Kein Abo.</h1>
+    <p class="lead">GymCoach ist Open Source (MIT). Die Seite spricht nur mit deinem Server. Trainingsdaten gehen an keinen Dritten, außer den Verbindungen, die du selbst einschaltest.</p>
+    <div class="card"><h2>Installieren</h2><p>git clone, dann bash install.sh, dann den Browser auf http://ip-des-servers:8765. Node.js 22.5 oder neuer. Linux. Getestet mit Gym Monster Modell 1.</p></div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="card"><h2>Nötig</h2><ul><li>Speediance Gym Monster</li><li>Ein Linux-Server mit Node 22.5+</li><li>Ein Browser auf dem Laptop</li></ul></div>
+      <div class="card"><h2>Optional</h2><ul><li>Withings-Waage</li><li>GymCoach Sync auf dem iPhone</li><li>Eigenes Postfach (SMTP)</li><li>Claude oder ein lokales Modell</li></ul></div>
+    </div>
+    <p class="note">Die iPhone-App liest nur: Übersicht, Plan, Ziel und Körper. Apple Health koppelt mit einem eigenen Schlüssel, nicht mit deiner Anmeldung. Den Schlüssel erstellst du in GymCoach; auf dem Telefon trägst du die Adresse der Seite ein.</p><footer><span>Technik</span><span>9</span></footer></section>
+<section class="page">
+    <div class="kicker">Worauf du hinarbeitest</div>
+    <h1>Ein Ziel für Körper, Kraft, Schritte und Aktivitäten.</h1>
+    <p class="lead">Der Tab Ziel hält die Linie. Die Waage selbst bleibt unter Körper. Profil und Einheiten bleiben unter Einstellungen.</p>
+    <div class="grid2">
+      <div class="card"><h2>Körper</h2><p>Wähle, wie viele Kilo du bewegen willst und in wie vielen Wochen. GymCoach zieht die gerade Linie und setzt deine Wiegungen daneben. Fettanteil und Muskelmasse können mit, wenn du sie einträgst.</p></div>
+      <div class="card"><h2>Kraft pro Muskelgruppe</h2><p>Bis zu sechs Muskelgruppen, mit einem Prozent und einem Datum. Der Plan wählt die passenden Übungen. Du musst nicht Übung für Übung ein Ziel setzen.</p></div>
+      <div class="card"><h2>Schritte</h2><p>Ein Ziel pro Tag. Das iPhone liefert die Zahl über Apple Health, zusammen mit den übrigen Tagessummen.</p></div>
+      <div class="card"><h2>Aktivitäten</h2><p>Gehen, Schwimmen, Padel: wie oft, wie lange, und auf Wunsch eine Distanz. GymCoach schlägt Ziele aus deinen letzten vier Wochen vor. Apple Health färbt den Balken, wenn es geklappt hat.</p></div>
+      <div class="card"><h2>Essen</h2><p>Die Zielaufnahme kommt aus Mifflin-St Jeor, mit deinem Ziel verrechnet, plus eine Proteinmenge. Stundenwerte aus Apple Health werden zu einer Tagessumme addiert.</p></div>
+      <div class="card"><h2>Der Plan bleibt deiner</h2><p>Der Plan kann deinem Ziel folgen, wenn du das einschaltest. Lässt du es aus, bleibt der Plan wie er war, und nur die Grafik folgt deiner Linie.</p></div>
+    </div><footer><span>Ziel</span><span>10</span></footer></section>
+<section class="page">
+    <div class="kicker">0 bis 10</div>
+    <h1>Ein Score aus deinen eigenen Messungen.</h1>
+    <p class="lead">Höher ist besser. Der Score steht auf Übersicht und auf Körper, und in GymCoach Sync unter denselben Überschriften.</p>
+    <div class="mock">
+      <div class="row" style="align-items:center"><div><div class="kicker">Jetzt</div><b style="font-size:28px">6,3</b></div><div style="flex:1;margin-left:16px"><div class="bar"><span style="width:63%"></span></div></div></div>
+      <table class="mini" style="margin-top:8px"><tr><td>Körper</td><td>Fett, viszerales Fett, FFMI, BMI, Knochen</td></tr><tr><td>Herz</td><td>Ruhepuls, Pulswelle, Gefäßalter</td></tr><tr><td>Kondition</td><td>VO2max und HRV</td></tr><tr><td>Weiteres</td><td>Nerv, Stoffwechselalter, ECW/TBW</td></tr></table>
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="card"><h2>Der Pfeil ist nicht das Ziel</h2><p>Eine steigende Zahl ist nicht von selbst gut. Die Farbe schaut, ob der Wert den Score nach oben oder unten zieht. Ein sinkender Fettanteil wird grün, ein steigender Ruhepuls rot.</p></div>
+      <div class="card"><h2>Auf dem iPhone</h2><p>Überschriften je Kategorie, ein Symbol je Messung, und eine Tabelle mit dem Verlauf. Nur lesen: ändern tust du auf der Seite.</p></div>
+    </div>
+    <p class="note">Der Score hilft, deine eigene Messreihe zu verfolgen. Er ist keine Diagnose und kein ärztlicher Rat.</p><footer><span>Gesundheitsscore</span><span>11</span></footer></section>
+<section class="page">
+    <div class="kicker">In der App und auf dem iPhone</div>
+    <h1>Erklärung zu jedem Bildschirm, mit einem Beispiel.</h1>
+    <p class="lead">Einstellungen → Anleitung. Auf dem iPhone steht dasselbe unter Mehr. Die Bilder sind von einem Beispielnutzer, damit du siehst, was jeder Block zeigt.</p>
+    <div class="grid2">
+      <div class="card"><h2>Neu: verbinden</h2><p>Withings: der Verwalter legt eine App auf developer.withings.com an, danach Withings verbinden. Apple Health: in GymCoach einen Kopplungsschlüssel (beginnt mit gch_), auf dem iPhone die Adresse der Seite. Das ist nicht die Ingest-Adresse.</p></div>
+      <div class="card"><h2>Die Bildschirme</h2><p>Übersicht, Plan, Ziel, Körper, Training, Zurückblicken und Einstellungen. Pro Tab eine nummerierte Seite und eine Nahaufnahme je Block, mit dem, was du dort siehst.</p></div>
+      <div class="card"><h2>Wie gemessen wird</h2><p>Steigerung, Erholung, der Gesundheitsscore und woher eine Zahl kommt. Dieselbe Geschichte wie diese Broschüre, neben den Knöpfen, die du wirklich benutzt.</p></div>
+      <div class="card"><h2>Unterwegs</h2><p>GymCoach Sync zeigt Übersicht, Plan, Ziel, Körper und den Score. Ändern, Mail und die Verbindungen bleiben auf der Seite. Ohne WLAN zu Hause kann der Health-Sync warten, wenn du das so einstellst.</p></div>
+    </div>
+    <p class="note">Die Anleitung folgt der Sprache der App: Niederländisch, Englisch, Deutsch oder Norwegisch.</p><footer><span>Anleitung</span><span>12</span></footer></section></body></html>

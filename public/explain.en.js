@@ -14,20 +14,44 @@ export default [
     </ol>
     <p>The password stays on your own server. Then set your goal, days and minutes under Training, and make your first week plan.</p>
     <h4>Withings scale</h4>
+    <p>This has two parts. First the administrator creates a connection at Withings, once. Then each user connects their own scale. The keys are not on the scale and not in the Withings app on your phone. Withings creates them on the developer site.</p>
+    <p><b>Once, by the administrator</b></p>
     <ol>
-      <li>The administrator creates a free app once on developer.withings.com (Dashboard → Create an application, type Public API).</li>
-      <li>As the callback URL, use the address GymCoach shows under <b>Settings → Withings</b>. Copy the Client ID and Client secret and save.</li>
-      <li>Each user then connects their own scale on that same page.</li>
+      <li>Go to <b>developer.withings.com</b> and log in with a Withings account.</li>
+      <li>Open <b>Dashboard</b> and choose <b>Create an application</b>. Type: <b>Public API</b>. Name the app, for example GymCoach.</li>
+      <li>Withings then shows a <b>Client ID</b> and a <b>Client secret</b>. Those are the keys. Copy them and keep that page open until they are in GymCoach.</li>
+      <li>In GymCoach: <b>Settings → Withings</b>. You only see the <b>Withings app</b> block if you are the administrator.</li>
+      <li>Next to Callback URL, click <b>Fill in this page's address</b>. An address appears that ends in <code>/api/withings/callback</code>. Click <b>Copy</b> and paste it into the callback field at Withings. It has to be exactly the same.</li>
+      <li>Paste the Client ID and Client secret into GymCoach and click <b>Save</b>.</li>
     </ol>
-    <p>Weight, fat, muscle mass, pulse wave velocity and the other Withings values then come in. Weigh fasted if you can, in the morning, before showering. The resting heart rate on the scale is a standing snapshot.</p>
+    <p><b>Then, by each user</b>, including the administrator</p>
+    <ol>
+      <li>Stay on <b>Settings → Withings</b>.</li>
+      <li>Click the orange button <b>Connect Withings</b>. A Withings page opens.</li>
+      <li>Log in with the Withings account that owns the scale, the same account as in the Withings app on your phone. Allow access.</li>
+      <li>You see <b>Withings connected</b>. Close that tab. GymCoach then shows <b>connected</b> and the measurements have been fetched.</li>
+    </ol>
+    <p>If the <b>Connect Withings</b> button is missing, the administrator has not saved the Client ID and Client secret yet. You do not change anything on the scale itself. Weigh as usual, fasted if you can, in the morning, before showering. The resting heart rate on the scale is a standing snapshot.</p>
     <h4>Apple Health</h4>
+    <p>You create the connection key yourself in GymCoach. You do not look it up anywhere else. It starts with <code>gch_</code> and is shown only once. If you lose it, click <b>New key</b>. The old one stops working.</p>
+    <p><b>On the computer, in GymCoach</b></p>
     <ol>
-      <li><b>Settings → Apple Health → Create connection key</b>. Save the URL and the key; the key is shown only once.</li>
-      <li>Install <b>GymCoach Sync</b> through TestFlight and open the app.</li>
-      <li>Enter your server address and the connection key. The address for Apple Health is separate from the address that opens the screen.</li>
-      <li>Tap <b>Test connection</b>, allow access to Health, and choose <b>Send full history</b> if you want older workouts included.</li>
+      <li>Go to <b>Settings → Apple Health</b>.</li>
+      <li>Click <b>Create connection key</b>.</li>
+      <li>A green box appears with two lines. The <b>URL</b> line ends in <code>/api/health/ingest</code>. Do not paste that whole line into the iPhone. You need your GymCoach address, without that ending. For example <code>https://gymcoach.stolding.com</code>, or at home <code>http://192.168.1.50:8765</code>.</li>
+      <li>The other line is the key. Click <b>Copy key</b> and keep it until it is on the iPhone.</li>
     </ol>
-    <p>GymCoach Sync reads workouts (walking, cycling and the rest), heart rate, steps, active energy, distance, resting heart rate, HRV, VO2max and nutrition (calories, protein, carbohydrates, fat and fibre). Strength workouts that Speediance itself writes to Apple Health are skipped, so nothing is counted twice. The same settings page also explains Health Auto Export.</p>
+    <p><b>On the iPhone, in GymCoach Sync</b></p>
+    <p>The app has two addresses. Do not mix them up. The buttons on the iPhone are in Dutch.</p>
+    <ol>
+      <li>Install <b>GymCoach Sync</b> through TestFlight and open the app.</li>
+      <li>To look at the plan, log in with your GymCoach site address, your username and your GymCoach password. That is not the connection key.</li>
+      <li>To send Apple Health: tab <b>Meer</b> → <b>Synchroniseren</b>. Enter the same address there, without <code>/api/health/ingest</code>. In <b>Koppelsleutel</b>, paste the key that starts with <code>gch_</code>. Tap <b>Toon</b> if you want to check it.</li>
+      <li>Tap <b>Test verbinding</b>. The iPhone asks for access to Health. Allow what GymCoach asks: workouts, heart rate, steps, energy, distance, resting heart rate, HRV, VO2max and nutrition.</li>
+      <li>Then tap <b>Volledige historie versturen</b> once, so older walks and days are included. After that, new data goes by itself, at most once an hour.</li>
+    </ol>
+    <p><b>Automatisch alleen thuis</b> means: only on wifi, and only when your server is reachable. Turn it off if you use GymCoach over the internet. <b>Test verbinding</b> and <b>Nu synchroniseren</b> still work.</p>
+    <p>GymCoach Sync reads workouts (walking, cycling and the rest), heart rate, steps, active energy, distance, resting heart rate, HRV, VO2max and nutrition. Strength workouts that Speediance itself writes to Apple Health are skipped, so nothing is counted twice. Prefer another app: under Settings → Apple Health, <b>Or: set up Health Auto Export</b> explains where that same URL and key go. The key belongs in the <code>Authorization</code> header, as <code>Bearer</code> followed by the key.</p>
     <p>The Apple Watch resting heart rate is the day value. GymCoach uses it once there are enough days; otherwise it uses the scale.</p>`,
   },
   {

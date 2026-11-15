@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.12 — 15 november 2026
+- De handleiding zegt stap voor stap waar de Withings-sleutels en de Apple Health-koppelsleutel vandaan komen, en welke knop je daarna indrukt.
+
 ## 2.32.11 — 15 november 2026
 - Instellingen → Apple Health toont weer de koppeling. De handleiding staat in Instellingen en in GymCoach Sync 1.13.3 onder Meer: bronnen, hoe er gemeten wordt, en hoe je weegschaal, Apple Health en Speediance koppelt.
 

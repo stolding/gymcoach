@@ -14,20 +14,44 @@ export default [
     </ol>
     <p>Passordet blir på din egen server. Velg deretter mål, dager og minutter under Trening, og lag den første ukeplanen.</p>
     <h4>Withings-vekt</h4>
+    <p>Dette har to deler. Først lager administratoren en tilkobling hos Withings, én gang. Deretter kobler hver bruker sin egen vekt. Nøklene står ikke på vekten og ikke i Withings-appen på telefonen. Withings lager dem på utviklersiden.</p>
+    <p><b>Én gang, av administratoren</b></p>
     <ol>
-      <li>Administratoren lager én gang en gratis app på developer.withings.com (Dashboard → Create an application, type Public API).</li>
-      <li>Som callback-URL bruker du adressen GymCoach viser under <b>Innstillinger → Withings</b>. Ta med Client ID og Client secret og lagre.</li>
-      <li>Hver bruker kobler deretter sin egen vekt på samme side.</li>
+      <li>Gå til <b>developer.withings.com</b> og logg inn med en Withings-konto.</li>
+      <li>Åpne <b>Dashboard</b> og velg <b>Create an application</b>. Type: <b>Public API</b>. Gi appen et navn, for eksempel GymCoach.</li>
+      <li>Withings viser deretter en <b>Client ID</b> og en <b>Client secret</b>. Det er nøklene. Kopier dem og la siden stå åpen til de er inne i GymCoach.</li>
+      <li>I GymCoach: <b>Innstillinger → Withings</b>. Blokken <b>Withings-app</b> ser du bare som administrator.</li>
+      <li>Ved Callback-URL trykker du <b>Fyll inn adressen til denne siden</b>. Det kommer en adresse som slutter på <code>/api/withings/callback</code>. Trykk <b>Kopier</b> og lim den inn i callback-feltet hos Withings. Den må være helt lik.</li>
+      <li>Lim Client ID og Client secret inn i GymCoach og trykk <b>Lagre</b>.</li>
     </ol>
-    <p>Deretter kommer vekt, fett, muskelmasse, pulsbølgehastighet og de andre Withings-verdiene inn. Vei deg helst fastende, om morgenen, før du dusjer. Hvilepulsen på vekten er en stående øyeblikksmåling.</p>
+    <p><b>Deretter, av hver bruker</b>, også administratoren</p>
+    <ol>
+      <li>Bli på <b>Innstillinger → Withings</b>.</li>
+      <li>Trykk den oransje knappen <b>Koble til Withings</b>. En Withings-side åpnes.</li>
+      <li>Logg inn med Withings-kontoen til vekten, samme konto som i Withings-appen på telefonen. Gi tilgang.</li>
+      <li>Du ser <b>Withings koblet til</b>. Lukk fanen. I GymCoach står det deretter <b>koblet til</b>, og målingene er hentet.</li>
+    </ol>
+    <p>Mangler knappen <b>Koble til Withings</b>, har administratoren ikke lagret Client ID og Client secret ennå. På selve vekten stiller du ingenting. Vei deg som vanlig, helst fastende, om morgenen, før du dusjer. Hvilepulsen på vekten er en stående øyeblikksmåling.</p>
     <h4>Apple Health</h4>
+    <p>Tilkoblingsnøkkelen lager du selv i GymCoach. Den finner du ingen andre steder. Den begynner med <code>gch_</code> og vises bare én gang. Mister du den, trykk <b>Ny nøkkel</b>. Den gamle virker da ikke lenger.</p>
+    <p><b>På datamaskinen, i GymCoach</b></p>
     <ol>
-      <li><b>Innstillinger → Apple Health → Lag tilkoblingsnøkkel</b>. Ta vare på URL-en og nøkkelen; nøkkelen vises bare én gang.</li>
-      <li>Installer <b>GymCoach Sync</b> via TestFlight og åpne appen.</li>
-      <li>Fyll inn adressen til serveren din og tilkoblingsnøkkelen. Adressen for Apple Health er en annen enn adressen du åpner skjermen med.</li>
-      <li>Trykk <b>Test tilkobling</b>, gi tilgang til Helse, og velg <b>Send full historikk</b> hvis du vil ha med eldre økter.</li>
+      <li>Gå til <b>Innstillinger → Apple Health</b>.</li>
+      <li>Trykk <b>Lag tilkoblingsnøkkel</b>.</li>
+      <li>En grønn boks vises med to linjer. Linjen <b>URL</b> slutter på <code>/api/health/ingest</code>. Hele den linjen limer du ikke inn på iPhone. Du trenger adressen til GymCoach, uten den slutten. For eksempel <code>https://gymcoach.stolding.com</code>, eller hjemme <code>http://192.168.1.50:8765</code>.</li>
+      <li>Den andre linjen er nøkkelen. Trykk <b>Kopier nøkkel</b> og ta vare på den til den står på iPhone.</li>
     </ol>
-    <p>GymCoach Sync leser økter (gange, sykling og resten), puls, skritt, aktiv energi, distanse, hvilepuls, HRV, VO2max og kosthold (kalorier, protein, karbohydrater, fett og fiber). Styrkeøkter som Speediance selv skriver til Apple Health, hopper GymCoach over, slik at ingenting telles dobbelt. På samme innstillingsside står også veien via Health Auto Export.</p>
+    <p><b>På iPhone, i GymCoach Sync</b></p>
+    <p>Appen har to adresser. De må du ikke blande. Knappene på iPhone er på nederlandsk.</p>
+    <ol>
+      <li>Installer <b>GymCoach Sync</b> via TestFlight og åpne appen.</li>
+      <li>For å se planen logger du inn med adressen til GymCoach-siden, brukernavnet ditt og passordet til GymCoach. Det er ikke tilkoblingsnøkkelen.</li>
+      <li>For å sende Apple Health: fane <b>Meer</b> → <b>Synchroniseren</b>. Fyll inn samme adresse der, uten <code>/api/health/ingest</code>. I feltet <b>Koppelsleutel</b> limer du inn nøkkelen som begynner med <code>gch_</code>. Trykk <b>Toon</b> hvis du vil sjekke at den stemmer.</li>
+      <li>Trykk <b>Test verbinding</b>. iPhone spør om tilgang til Helse. Gi tilgang til det GymCoach ber om: økter, puls, skritt, energi, distanse, hvilepuls, HRV, VO2max og kosthold.</li>
+      <li>Trykk deretter én gang på <b>Volledige historie versturen</b>, slik at eldre turer og dager kommer med. Nye data går deretter av seg selv, høyst én gang i timen.</li>
+    </ol>
+    <p><b>Automatisch alleen thuis</b> betyr: bare på wifi, og bare når serveren din er tilgjengelig. Slå det av hvis du bruker GymCoach over internett. <b>Test verbinding</b> og <b>Nu synchroniseren</b> virker likevel.</p>
+    <p>GymCoach Sync leser økter (gange, sykling og resten), puls, skritt, aktiv energi, distanse, hvilepuls, HRV, VO2max og kosthold. Styrkeøkter som Speediance selv skriver til Apple Health, hopper GymCoach over, slik at ingenting telles dobbelt. Heller en annen app: under Innstillinger → Apple Health står <b>Eller: sett opp Health Auto Export</b>, der samme URL og nøkkel skal inn. Nøkkelen hører i headeren <code>Authorization</code>, som <code>Bearer</code> etterfulgt av nøkkelen.</p>
     <p>Hvilepulsen fra Apple Watch er dagsverdien. GymCoach bruker den når det finnes nok dager; ellers målingen fra vekten.</p>`,
   },
   {

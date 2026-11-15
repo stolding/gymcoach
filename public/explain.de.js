@@ -14,20 +14,44 @@ export default [
     </ol>
     <p>Das Passwort bleibt auf deinem eigenen Server. Stell danach unter Training Ziel, Tage und Minuten ein und mach deinen ersten Wochenplan.</p>
     <h4>Withings-Waage</h4>
+    <p>Das hat zwei Teile. Zuerst legt der Administrator einmalig eine Verbindung bei Withings an. Danach verbindet jeder Benutzer die eigene Waage. Die Schlüssel stehen nicht auf der Waage und nicht in der Withings-App auf dem Telefon. Withings erzeugt sie auf der Entwicklerseite.</p>
+    <p><b>Einmalig, durch den Administrator</b></p>
     <ol>
-      <li>Der Administrator legt einmalig eine kostenlose App auf developer.withings.com an (Dashboard → Create an application, Typ Public API).</li>
-      <li>Als Callback-URL nimmst du die Adresse, die GymCoach unter <b>Einstellungen → Withings</b> zeigt. Übernimm Client ID und Client secret und speichere.</li>
-      <li>Jeder Benutzer verbindet danach die eigene Waage auf derselben Seite.</li>
+      <li>Geh zu <b>developer.withings.com</b> und melde dich mit einem Withings-Konto an.</li>
+      <li>Öffne <b>Dashboard</b> und wähle <b>Create an application</b>. Typ: <b>Public API</b>. Gib der App einen Namen, zum Beispiel GymCoach.</li>
+      <li>Withings zeigt danach eine <b>Client ID</b> und ein <b>Client secret</b>. Das sind die Schlüssel. Kopiere sie und lass die Seite offen, bis sie in GymCoach stehen.</li>
+      <li>In GymCoach: <b>Einstellungen → Withings</b>. Den Block <b>Withings-App</b> siehst du nur als Administrator.</li>
+      <li>Bei Callback-URL klickst du auf <b>Adresse dieser Seite eintragen</b>. Es erscheint eine Adresse, die auf <code>/api/withings/callback</code> endet. Klick auf <b>Kopieren</b> und füge sie bei Withings ins Callback-Feld ein. Sie muss genau gleich sein.</li>
+      <li>Füge Client ID und Client secret in GymCoach ein und klick auf <b>Speichern</b>.</li>
     </ol>
-    <p>Danach kommen Gewicht, Fett, Muskelmasse, Pulswellengeschwindigkeit und die übrigen Withings-Werte an. Wiege möglichst nüchtern, morgens, vor dem Duschen. Der Ruhepuls auf der Waage ist eine stehende Momentmessung.</p>
+    <p><b>Danach, durch jeden Benutzer</b>, auch den Administrator</p>
+    <ol>
+      <li>Bleib auf <b>Einstellungen → Withings</b>.</li>
+      <li>Klick auf den orangen Knopf <b>Withings verbinden</b>. Eine Withings-Seite öffnet sich.</li>
+      <li>Melde dich mit dem Withings-Konto der Waage an, demselben Konto wie in der Withings-App auf dem Telefon. Erlaube den Zugriff.</li>
+      <li>Du siehst <b>Withings verbunden</b>. Schließ den Tab. In GymCoach steht danach <b>verbunden</b> und die Messungen sind geholt.</li>
+    </ol>
+    <p>Fehlt der Knopf <b>Withings verbinden</b>, hat der Administrator Client ID und Client secret noch nicht gespeichert. An der Waage selbst stellst du nichts um. Wiege wie gewohnt, möglichst nüchtern, morgens, vor dem Duschen. Der Ruhepuls auf der Waage ist eine stehende Momentmessung.</p>
     <h4>Apple Health</h4>
+    <p>Den Verbindungsschlüssel erstellst du selbst in GymCoach. Den suchst du nirgends sonst. Er beginnt mit <code>gch_</code> und wird nur einmal gezeigt. Verlierst du ihn, klick auf <b>Neuer Schlüssel</b>. Der alte funktioniert dann nicht mehr.</p>
+    <p><b>Am Computer, in GymCoach</b></p>
     <ol>
-      <li><b>Einstellungen → Apple Health → Verbindungsschlüssel erstellen</b>. Bewahre URL und Schlüssel auf; der Schlüssel wird nur einmal gezeigt.</li>
-      <li>Installiere <b>GymCoach Sync</b> über TestFlight und öffne die App.</li>
-      <li>Trag die Adresse deines Servers und den Verbindungsschlüssel ein. Die Adresse für Apple Health ist eine andere als die Adresse, mit der du den Bildschirm öffnest.</li>
-      <li>Tippe auf <b>Verbindung testen</b>, erlaube den Zugriff auf Gesundheit, und wähle <b>Gesamten Verlauf senden</b>, wenn ältere Workouts mit sollen.</li>
+      <li>Geh zu <b>Einstellungen → Apple Health</b>.</li>
+      <li>Klick auf <b>Verbindungsschlüssel erstellen</b>.</li>
+      <li>Ein grünes Feld erscheint mit zwei Zeilen. Die Zeile <b>URL</b> endet auf <code>/api/health/ingest</code>. Die ganze Zeile fügst du nicht ins iPhone ein. Du brauchst die Adresse deines GymCoach, ohne dieses Ende. Zum Beispiel <code>https://gymcoach.stolding.com</code>, oder zu Hause <code>http://192.168.1.50:8765</code>.</li>
+      <li>Die andere Zeile ist der Schlüssel. Klick auf <b>Schlüssel kopieren</b> und behalte ihn, bis er im iPhone steht.</li>
     </ol>
-    <p>GymCoach Sync liest Workouts (Gehen, Radfahren und den Rest), Herzfrequenz, Schritte, aktive Energie, Distanz, Ruhepuls, HRV, VO2max und Ernährung (Kalorien, Eiweiß, Kohlenhydrate, Fett und Ballaststoffe). Krafttrainings, die Speediance selbst nach Apple Health schreibt, lässt GymCoach aus, damit nichts doppelt zählt. Auf derselben Einstellungsseite steht auch der Weg über Health Auto Export.</p>
+    <p><b>Auf dem iPhone, in GymCoach Sync</b></p>
+    <p>Die App hat zwei Adressen. Die darfst du nicht vertauschen. Die Knöpfe auf dem iPhone sind auf Niederländisch.</p>
+    <ol>
+      <li>Installiere <b>GymCoach Sync</b> über TestFlight und öffne die App.</li>
+      <li>Um den Plan zu sehen, meldest du dich mit der Adresse deiner GymCoach-Seite, deinem Benutzernamen und dem GymCoach-Passwort an. Das ist nicht der Verbindungsschlüssel.</li>
+      <li>Um Apple Health zu senden: Tab <b>Meer</b> → <b>Synchroniseren</b>. Trag dort dieselbe Adresse ein, ohne <code>/api/health/ingest</code>. Ins Feld <b>Koppelsleutel</b> fügst du den Schlüssel ein, der mit <code>gch_</code> beginnt. Tipp auf <b>Toon</b>, wenn du prüfen willst, ob er stimmt.</li>
+      <li>Tipp auf <b>Test verbinding</b>. Das iPhone fragt nach dem Zugriff auf Gesundheit. Erlaube, was GymCoach verlangt: Workouts, Herzfrequenz, Schritte, Energie, Distanz, Ruhepuls, HRV, VO2max und Ernährung.</li>
+      <li>Tipp danach einmal auf <b>Volledige historie versturen</b>, damit ältere Wege und Tage mitkommen. Neue Daten gehen danach von selbst, höchstens einmal pro Stunde.</li>
+    </ol>
+    <p><b>Automatisch alleen thuis</b> heißt: nur im WLAN, und nur wenn dein Server erreichbar ist. Schalt das aus, wenn du GymCoach über das Internet nutzt. <b>Test verbinding</b> und <b>Nu synchroniseren</b> funktionieren trotzdem.</p>
+    <p>GymCoach Sync liest Workouts (Gehen, Radfahren und den Rest), Herzfrequenz, Schritte, aktive Energie, Distanz, Ruhepuls, HRV, VO2max und Ernährung. Krafttrainings, die Speediance selbst nach Apple Health schreibt, lässt GymCoach aus, damit nichts doppelt zählt. Lieber eine andere App: unter Einstellungen → Apple Health steht bei <b>Oder: Health Auto Export einrichten</b>, wohin dieselbe URL und derselbe Schlüssel gehören. Der Schlüssel kommt in den Header <code>Authorization</code>, als <code>Bearer</code> gefolgt vom Schlüssel.</p>
     <p>Der Ruhepuls der Apple Watch ist der Tageswert. GymCoach nutzt ihn, sobald genug Tage da sind; sonst die Messung der Waage.</p>`,
   },
   {

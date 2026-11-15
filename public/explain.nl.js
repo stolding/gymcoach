@@ -14,20 +14,44 @@ export default [
     </ol>
     <p>Het wachtwoord blijft op je eigen server staan. Kies daarna bij Training je doel, dagen en minuten, en maak je eerste weekplan.</p>
     <h4>Withings-weegschaal</h4>
+    <p>Dit gaat in twee delen. Eerst maakt de beheerder eenmalig een koppeling bij Withings. Daarna koppelt iedere gebruiker de eigen weegschaal. De sleutels staan niet op de weegschaal en niet in de Withings-app op je telefoon. Withings maakt ze aan op de ontwikkelaarssite.</p>
+    <p><b>Eenmalig, door de beheerder</b></p>
     <ol>
-      <li>De beheerder maakt eenmalig een gratis app op developer.withings.com (Dashboard → Create an application, type Public API).</li>
-      <li>Als Callback-URL vul je het adres dat GymCoach toont bij <b>Instellingen → Withings</b>. Neem Client ID en Client secret over en sla op.</li>
-      <li>Elke gebruiker koppelt daarna de eigen weegschaal op diezelfde pagina.</li>
+      <li>Ga naar <b>developer.withings.com</b> en log in met een Withings-account.</li>
+      <li>Open <b>Dashboard</b> en kies <b>Create an application</b>. Type: <b>Public API</b>. Geef de app een naam, bijvoorbeeld GymCoach.</li>
+      <li>Withings toont daarna een <b>Client ID</b> en een <b>Client secret</b>. Dat zijn de sleutels. Kopieer ze en laat die pagina open tot ze in GymCoach staan.</li>
+      <li>In GymCoach: <b>Instellingen → Withings</b>. Het blok <b>Withings-app</b> zie je alleen als beheerder.</li>
+      <li>Bij Callback-URL klik je op <b>Vul adres van deze pagina in</b>. Er komt een adres dat eindigt op <code>/api/withings/callback</code>. Klik op <b>Kopieer</b> en plak het bij Withings in het veld voor de callback. Het moet precies hetzelfde zijn.</li>
+      <li>Plak Client ID en Client secret in GymCoach en klik op <b>Opslaan</b>.</li>
     </ol>
-    <p>Daarna komen gewicht, vet, spiermassa, polsgolfsnelheid en de andere Withings-waarden binnen. Weeg bij voorkeur nuchter, ’s ochtends, vóór het douchen. De rusthartslag op de weegschaal is een staande momentmeting.</p>
+    <p><b>Daarna, door iedere gebruiker</b>, ook de beheerder zelf</p>
+    <ol>
+      <li>Blijf op <b>Instellingen → Withings</b>.</li>
+      <li>Klik op de oranje knop <b>Koppel Withings</b>. Er opent een pagina van Withings.</li>
+      <li>Log in met het Withings-account van de weegschaal, hetzelfde account als in de Withings-app op je telefoon. Sta toegang toe.</li>
+      <li>Je ziet <b>Withings gekoppeld</b>. Sluit dat tabblad. In GymCoach staat daarna <b>gekoppeld</b> en de metingen zijn opgehaald.</li>
+    </ol>
+    <p>Staat de knop <b>Koppel Withings</b> er niet, dan heeft de beheerder Client ID en Client secret nog niet opgeslagen. Op de weegschaal zelf hoef je niets in te stellen. Weeg zoals je gewend bent, bij voorkeur nuchter, ’s ochtends, vóór het douchen. De rusthartslag op de weegschaal is een staande momentmeting.</p>
     <h4>Apple Health</h4>
+    <p>De koppelsleutel maak je zelf in GymCoach. Die haal je nergens anders vandaan. Hij begint met <code>gch_</code> en wordt maar één keer getoond. Ben je hem kwijt, klik dan op <b>Nieuwe sleutel</b>. De oude werkt dan niet meer.</p>
+    <p><b>Op de computer, in GymCoach</b></p>
     <ol>
-      <li><b>Instellingen → Apple Health → Koppelsleutel maken</b>. Bewaar de URL en de sleutel; de sleutel wordt maar één keer getoond.</li>
-      <li>Installeer <b>GymCoach Sync</b> via TestFlight en open de app.</li>
-      <li>Vul het adres van je server in en de koppelsleutel. Het adres voor Apple Health staat los van het adres waarmee je het scherm opent.</li>
-      <li>Tik op <b>Test verbinding</b>, sta toegang tot Gezondheid toe, en kies <b>Volledige historie versturen</b> als je oude workouts mee wilt.</li>
+      <li>Ga naar <b>Instellingen → Apple Health</b>.</li>
+      <li>Klik op <b>Koppelsleutel maken</b>.</li>
+      <li>Er verschijnt een groen vak met twee regels. De regel <b>URL</b> eindigt op <code>/api/health/ingest</code>. Die hele regel plak je niet in de iPhone. Je hebt het adres van je GymCoach nodig, zonder dat eind. Bijvoorbeeld <code>https://gymcoach.stolding.com</code>, of thuis <code>http://192.168.1.50:8765</code>.</li>
+      <li>De andere regel is de sleutel. Klik op <b>Kopieer sleutel</b> en bewaar hem tot hij in de iPhone staat.</li>
     </ol>
-    <p>GymCoach Sync leest workouts (wandelen, fietsen en de rest), hartslag, stappen, actieve energie, afstand, rusthartslag, HRV, VO2max en voeding (calorieën, eiwit, koolhydraten, vet en vezels). Krachttrainingen die Speediance zelf naar Apple Health schrijft, slaat GymCoach over, zodat niets dubbel telt. Op dezelfde instellingenpagina staat ook de weg via Health Auto Export.</p>
+    <p><b>Op de iPhone, in GymCoach Sync</b></p>
+    <p>De app heeft twee adressen. Die mag je niet door elkaar halen.</p>
+    <ol>
+      <li>Installeer <b>GymCoach Sync</b> via TestFlight en open de app.</li>
+      <li>Om het plan te bekijken log je in met het adres van je GymCoach-site, je gebruikersnaam en het wachtwoord van GymCoach. Dat is niet de koppelsleutel.</li>
+      <li>Om Apple Health te sturen: tab <b>Meer</b> → <b>Synchroniseren</b>. Vul daar hetzelfde adres in, zonder <code>/api/health/ingest</code>. In het veld <b>Koppelsleutel</b> plak je de sleutel die met <code>gch_</code> begint. Tik op <b>Toon</b> als je wilt zien of hij goed staat.</li>
+      <li>Tik op <b>Test verbinding</b>. De iPhone vraagt toegang tot Gezondheid. Sta toe wat GymCoach vraagt: workouts, hartslag, stappen, energie, afstand, rusthartslag, HRV, VO2max en voeding.</li>
+      <li>Tik daarna één keer op <b>Volledige historie versturen</b>, zodat oudere wandelingen en dagen meekomen. Nieuwe gegevens gaan daarna vanzelf, hooguit één keer per uur.</li>
+    </ol>
+    <p><b>Automatisch alleen thuis</b> betekent: alleen op wifi, en alleen als je server bereikbaar is. Zet dat uit als je GymCoach via internet gebruikt. <b>Test verbinding</b> en <b>Nu synchroniseren</b> werken ook dan.</p>
+    <p>GymCoach Sync leest workouts (wandelen, fietsen en de rest), hartslag, stappen, actieve energie, afstand, rusthartslag, HRV, VO2max en voeding. Krachttrainingen die Speediance zelf naar Apple Health schrijft, slaat GymCoach over, zodat niets dubbel telt. Liever een andere app: op Instellingen → Apple Health staat onder <b>Of: Health Auto Export instellen</b> hoe je dezelfde URL en sleutel daar invult. De sleutel hoort in de header <code>Authorization</code>, als <code>Bearer</code> gevolgd door de sleutel.</p>
     <p>De rusthartslag van de Apple Watch is de dagwaarde. Die gebruikt GymCoach zodra er genoeg dagen zijn; anders de meting van de weegschaal.</p>`,
   },
   {

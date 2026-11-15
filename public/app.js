@@ -486,6 +486,14 @@ function renderPlan() {
   highlightSessions();
 }
 
+// Zelfde telling als "4 van 5 gedaan": kracht uit het plan én een wandeling die deze week binnen is.
+function planRingCount() {
+  const plan = state.plan;
+  const gym = state.overview?.week?.done || 0;
+  if (!plan?.sessions?.length) return { done: gym, planned: 0 };
+  const done = plan.sessions.filter((x) => (x.outdoor || x.type === 'buiten') ? outdoorActs(x).length > 0 : doneOf(x)).length;
+  return { done, planned: plan.sessions.length };
+}
 // training uit het plan die deze week al gedaan is
 const normName = (x) => String(x || '').toLowerCase().replace(/[（(].*?[)）]/g, '').replace(/[^a-z0-9]+/g, '');
 const doneOf = (s) => state.planDone?.[s.key] || null;
@@ -1359,13 +1367,30 @@ function goalSpark(rows) {
   return drawn ? `<svg class="goal-sp" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">${drawn}</svg>` : '';
 }
 // Voortgangsring (SVG), bijv. trainingen deze week.
-function ring(done, target) {
-  const R = 52, C = 2 * Math.PI * R, f = Math.min(1, target ? done / target : 0);
-  return `<svg viewBox="0 0 130 130" class="ring" role="img" aria-label="${t('app.ringLabel', { done, target })}">
-    <circle cx="65" cy="65" r="${R}" class="ring-bg"/>
-    <circle cx="65" cy="65" r="${R}" class="ring-fg" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - f)}" transform="rotate(-90 65 65)"/>
-    <text x="65" y="63" text-anchor="middle" class="ring-num">${done}<tspan class="ring-of">/${target}</tspan></text>
-    <text x="65" y="84" text-anchor="middle" class="ring-lbl">${t('app.dezeWeek')}</text></svg>`;
+function ring(done, target, planned) {
+  const R = 52, sw = 11;
+  const goalF = Math.min(1, target ? done / target : 0);
+  const extraN = Math.max(0, done - (target || 0));
+  const room = Math.max(0, (planned || 0) - (target || 0));
+  const extraF = extraN <= 0 ? 0 : room > 0 ? Math.min(1, extraN / room) : (target ? Math.min(1, extraN / target) : 0);
+  const label = extraN > 0 ? t('app.ringExtra', { done, target, extra: extraN }) : t('app.ringLabel', { done, target });
+  const num = `<text x="65" y="63" text-anchor="middle" class="ring-num">${done}<tspan class="ring-of">/${target}</tspan></text>
+    <text x="65" y="84" text-anchor="middle" class="ring-lbl">${t('app.dezeWeek')}</text>`;
+  if (!(extraF > 0)) {
+    const C = 2 * Math.PI * R;
+    return `<svg viewBox="0 0 130 130" class="ring" role="img" aria-label="${esc(label)}">
+      <circle cx="65" cy="65" r="${R}" class="ring-bg"/>
+      <circle cx="65" cy="65" r="${R}" class="ring-fg" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - goalF)}" transform="rotate(-90 65 65)"/>
+      ${num}</svg>`;
+  }
+  const half = sw / 2, rIn = R - half / 2, rOut = R + half / 2;
+  const cIn = 2 * Math.PI * rIn, cOut = 2 * Math.PI * rOut;
+  return `<svg viewBox="0 0 130 130" class="ring" role="img" aria-label="${esc(label)}">
+    <circle cx="65" cy="65" r="${rIn}" class="ring-bg ring-half"/>
+    <circle cx="65" cy="65" r="${rOut}" class="ring-bg ring-half"/>
+    <circle cx="65" cy="65" r="${rIn}" class="ring-fg ring-half" stroke-dasharray="${cIn}" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
+    <circle cx="65" cy="65" r="${rOut}" class="ring-extra ring-half" stroke-dasharray="${cOut}" stroke-dashoffset="${cOut * (1 - extraF)}" transform="rotate(-90 65 65)"/>
+    ${num}</svg>`;
 }
 const fmt = (n) => Number(n || 0).toLocaleString(localeOf());
 // Verschil met vorige week als gekleurd percentage.
@@ -1780,7 +1805,8 @@ function renderHome() {
   $('#heroView')?.addEventListener('click', () => document.querySelector('.tab[data-tab=plan]').click());
   $('#heroGen')?.addEventListener('click', () => $('#genBtn').click());
 
-  $('#weekRing').innerHTML = `<div class="eyebrow">${t('app.weekdoel')}</div>${ring(o.week.done, o.week.target)}`;
+  const ringDone = planRingCount();
+  $('#weekRing').innerHTML = `<div class="eyebrow">${t('app.weekdoel')}</div>${ring(ringDone.done, o.week.target, ringDone.planned)}`;
   $('#tStreak').innerHTML = `<div class="eyebrow">${t('app.streak')}</div><div class="big">${o.streak}<small> ${o.streak === 1 ? t('app.week') : t('app.weken')}</small></div><div class="muted">${t('app.opRijJeWeekdoel')}</div>`;
   $('#tVolume').innerHTML = `<div class="eyebrow">${t('app.volumeDezeWeek')}</div><div class="big">${fmt(o.week.volume)}<small> kg</small></div><div class="small">${delta(o.week.volume, o.week.prevVolume)}</div>`;
   $('#tMinutes').innerHTML = `<div class="eyebrow">${t('app.trainingstijd')}</div><div class="big">${o.week.minutes}<small> min</small></div><div class="muted">${t('app.kcalDezeWeek', { a: fmt(o.week.calories) })}</div>`;

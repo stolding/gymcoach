@@ -1394,6 +1394,7 @@ export default {
   "app.sig.let_op": "Dein Ruhepuls ist etwas höher als normal. Schlaf und ruh dich gut aus; ein leichteres Training schadet nicht.",
   "app.sig.hoog": "Dein Ruhepuls ist deutlich höher als normal. Vielleicht bist du noch nicht erholt oder wirst krank: mach einen Ruhetag oder trainiere leicht.",
   "app.ringLabel": "{done} von {target}",
+  "app.ringExtra": "{done} von {target}, {extra} extra",
   "app.inBalansMeer": "ausgeglichener",
   "app.inBalansMinder": "weniger ausgeglichen",
   "app.segNameFor": "Name für Position {p}",

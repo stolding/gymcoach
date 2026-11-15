@@ -1394,6 +1394,7 @@ export default {
   "app.sig.let_op": "Hvilepulsen din er litt høyere enn normalt. Sov og hvil godt; en lettere treningsøkt skader ikke.",
   "app.sig.hoog": "Hvilepulsen din er tydelig høyere enn normalt. Du er kanskje ikke restituert ennå, eller du holder på å bli syk: ta en hviledag eller tren lett.",
   "app.ringLabel": "{done} av {target}",
+  "app.ringExtra": "{done} av {target}, {extra} ekstra",
   "app.inBalansMeer": "mer i balanse",
   "app.inBalansMinder": "mindre i balanse",
   "app.segNameFor": "Navn for posisjon {p}",

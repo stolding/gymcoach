@@ -75,7 +75,7 @@ export default [
       <li><b>Restitusjon og poeng.</b> Til venstre om du er uthvilt (hvilepuls, HRV, fullførte repetisjoner). Til høyre helsepoengene fra 0 til 10, høyere er bedre, med linjen over ukene.</li>
       <li><b>Muskelrestitusjon.</b> Figuren og en linje per muskelgruppe. Oransje er sliten, grønn er uthvilt. Knappene slår en muskelgruppe av eller på.</li>
       <li><b>Neste trening.</b> Den neste treningen som fortsatt er åpen, med beregnet tid.</li>
-      <li><b>Ukemål.</b> Ringen teller hvor mange av de planlagte treningene som allerede er gjort denne uken.</li>
+      <li><b>Ukemål.</b> Ringen teller øktene i planen, også en gåtur. Ved ukemålet er sirkelen full. Gjør du mer, går en lysere oransje ring langs den ytre halvdelen, til hele planen er full.</li>
       <li><b>Rekke.</b> Hvor mange uker på rad du nådde ukemålet.</li>
       <li><b>Volum.</b> Kilo denne uken, sammenlignet med forrige uke.</li>
       <li><b>Minutter.</b> Treningstid og kcal denne uken.</li>

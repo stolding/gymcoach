@@ -567,16 +567,37 @@ struct DashboardView: View {
     }
 
     private func weekRing(_ week: PhoneWeek) -> some View {
-        VStack(spacing: 6) {
+        let target = max(week.target, 0)
+        let done = max(week.done, 0)
+        let planned = week.planned > 0 ? week.planned : target
+        let goal = target > 0 ? min(1, CGFloat(done) / CGFloat(target)) : 0
+        let extraN = max(0, done - target)
+        let room = max(0, planned - target)
+        let extraF: CGFloat = extraN == 0 ? 0 : room > 0 ? min(1, CGFloat(extraN) / CGFloat(room)) : (target > 0 ? min(1, CGFloat(extraN) / CGFloat(target)) : 0)
+        let over = extraF > 0
+        let bright = Color(red: 1, green: 0.70, blue: 0.35)
+        let track = Color.white.opacity(0.12)
+        return VStack(spacing: 6) {
             ZStack {
-                Circle().stroke(Color.white.opacity(0.12), lineWidth: 8)
+                Circle().stroke(track, lineWidth: over ? 4 : 8)
+                    .frame(width: over ? 72 : 76, height: over ? 72 : 76)
                 Circle()
-                    .trim(from: 0, to: week.target > 0 ? min(1, CGFloat(week.done) / CGFloat(week.target)) : 0)
-                    .stroke(orange, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                    .trim(from: 0, to: goal)
+                    .stroke(orange, style: StrokeStyle(lineWidth: over ? 4 : 8, lineCap: .round))
+                    .frame(width: over ? 72 : 76, height: over ? 72 : 76)
                     .rotationEffect(.degrees(-90))
-                Text("\(week.done)/\(week.target)").font(.headline.monospacedDigit())
+                if over {
+                    Circle().stroke(track, lineWidth: 4)
+                        .frame(width: 80, height: 80)
+                    Circle()
+                        .trim(from: 0, to: extraF)
+                        .stroke(bright, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .frame(width: 80, height: 80)
+                        .rotationEffect(.degrees(-90))
+                }
+                Text("\(done)/\(target)").font(.headline.monospacedDigit())
             }
-            .frame(width: 84, height: 84)
+            .frame(width: 88, height: 88)
             Text("Weekdoel").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             Text("deze week").font(.caption2).foregroundStyle(.secondary)
         }

@@ -1383,6 +1383,7 @@ export default {
   // handmatig
   'app.focusDezeWeek': 'focus deze week',
   'app.ringLabel': '{done} van {target}',
+  'app.ringExtra': '{done} van {target}, {extra} extra',
   'app.inBalansMeer': 'meer in balans',
   'app.inBalansMinder': 'minder in balans',
   'app.segNameFor': 'Naam voor positie {p}',

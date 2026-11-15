@@ -1394,6 +1394,7 @@ export default {
   "app.sig.let_op": "Your resting heart rate is slightly higher than normal. Sleep and rest well; a lighter workout won't hurt.",
   "app.sig.hoog": "Your resting heart rate is clearly higher than normal. You may not have recovered yet, or you may be getting ill: take a rest day or train lightly.",
   "app.ringLabel": "{done} of {target}",
+  "app.ringExtra": "{done} of {target}, {extra} extra",
   "app.inBalansMeer": "more balanced",
   "app.inBalansMinder": "less balanced",
   "app.segNameFor": "Name for position {p}",

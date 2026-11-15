@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.16 — 15 november 2026
+- De ring van het weekdoel telt ook de extra trainingen uit het plan. Boven het doel loopt een helderdere oranje ring over de buitenste helft. GymCoach Sync 1.13.6 doet hetzelfde.
+
 ## 2.32.15 — 15 november 2026
 - Op Lichaam staat ECW/TBW: het water buiten de cellen gedeeld door al het lichaamswater, met uitleg en een grens bij 0,40. GymCoach Sync 1.13.5 toont dezelfde tegel.
 

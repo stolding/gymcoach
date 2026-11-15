@@ -91,11 +91,36 @@ struct PhoneHealthCat: Codable, Identifiable {
 struct PhoneWeek: Codable {
     var done: Int
     var target: Int
+    var planned: Int
     var minutes: Int
     var streak: Int
     var kcal: Int
     var volume: Int
     var volumeNote: String
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        done = try c.decode(Int.self, forKey: .done)
+        target = try c.decode(Int.self, forKey: .target)
+        planned = try c.decodeIfPresent(Int.self, forKey: .planned) ?? 0
+        minutes = try c.decode(Int.self, forKey: .minutes)
+        streak = try c.decode(Int.self, forKey: .streak)
+        kcal = try c.decode(Int.self, forKey: .kcal)
+        volume = try c.decode(Int.self, forKey: .volume)
+        volumeNote = try c.decode(String.self, forKey: .volumeNote)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(done, forKey: .done)
+        try c.encode(target, forKey: .target)
+        try c.encode(planned, forKey: .planned)
+        try c.encode(minutes, forKey: .minutes)
+        try c.encode(streak, forKey: .streak)
+        try c.encode(kcal, forKey: .kcal)
+        try c.encode(volume, forKey: .volume)
+        try c.encode(volumeNote, forKey: .volumeNote)
+    }
 }
 
 struct PhoneRecovery: Codable {

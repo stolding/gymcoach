@@ -75,7 +75,7 @@ export default [
       <li><b>Herstel en score.</b> Links of je uitgerust bent (rusthartslag, HRV, gehaalde herhalingen). Rechts de gezondheidsscore van 0 tot 10, hoger is beter, met de lijn over de weken.</li>
       <li><b>Spierherstel.</b> Het lichaamsschema en de lijnen per spiergroep. Oranje is vermoeid, groen is hersteld. De knoppen zetten een spiergroep aan of uit.</li>
       <li><b>Volgende training.</b> De eerstvolgende training die nog openstaat, met de geschatte tijd.</li>
-      <li><b>Weekdoel.</b> De ring telt hoeveel van de geplande trainingen deze week al gedaan zijn.</li>
+      <li><b>Weekdoel.</b> De ring telt de trainingen uit het plan, ook een wandeling. Bij het weekdoel is de cirkel vol. Doe je er meer, dan loopt een helderdere oranje ring over de buitenste helft, tot het hele plan vol is.</li>
       <li><b>Reeks.</b> Hoeveel weken achter elkaar je het weekdoel haalde.</li>
       <li><b>Volume.</b> Kilo deze week, vergeleken met vorige week.</li>
       <li><b>Minuten.</b> Trainingstijd en kcal deze week.</li>

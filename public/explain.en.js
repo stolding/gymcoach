@@ -75,7 +75,7 @@ export default [
       <li><b>Recovery and score.</b> On the left, whether you are rested (resting heart rate, HRV, reps you completed). On the right, the health score from 0 to 10, higher is better, with the line across the weeks.</li>
       <li><b>Muscle recovery.</b> The body figure and a line per muscle group. Orange is tired, green has recovered. The buttons turn a muscle group on or off.</li>
       <li><b>Next workout.</b> The next workout that is still open, with the estimated time.</li>
-      <li><b>Week goal.</b> The ring counts how many of the planned workouts are already done this week.</li>
+      <li><b>Week goal.</b> The ring counts the sessions in the plan, including a walk. At the weekly goal the circle is full. Do more and a brighter orange ring runs along the outer half, until the whole plan is done.</li>
       <li><b>Streak.</b> How many weeks in a row you hit the week goal.</li>
       <li><b>Volume.</b> Kilograms this week, compared with last week.</li>
       <li><b>Minutes.</b> Training time and kcal this week.</li>

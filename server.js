@@ -749,12 +749,15 @@ const routes = {
     const [rawPlan, daily, activities, meta] = await Promise.all([store.getPlan(), store.getHealthDaily(), store.getActivities(), store.getMeta()]);
     const gv = await goalView(ctx, daily);
     const hs = meta.healthStatus?.text ? { text: meta.healthStatus.text, at: meta.healthStatus.at || '' } : null;
+    let scoreView = null;
+    try { scoreView = await scores.present(180); } catch { scoreView = null; }
     return phone.view({
       version: VERSION, name: auth.publicUser(store.currentUser())?.name || '', today: goal.todayISO(),
       plan: rawPlan, settings: ctx.settings, workouts: ctx.workouts, sessions: ctx.sessions,
       history: ctx.history, bodyLog: ctx.bodyLog, daily, goalView: gv, activities,
       recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }),
       health: hs,
+      score: scoreView,
     });
   },
   'PUT /api/goal': async (req) => {

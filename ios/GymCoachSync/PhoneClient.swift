@@ -40,11 +40,42 @@ struct PhoneSnapshot: Codable {
     var records: [PhoneRecord]
     var weekPlan: PhoneWeekPlan
     var health: PhoneHealth?
+    var score: PhoneHealthScore?
 }
 
 struct PhoneHealth: Codable {
     var text: String
     var at: String
+    var blocks: [PhoneHealthBlock]?
+}
+
+struct PhoneHealthBlock: Codable {
+    var type: String
+    var text: String?
+    var icon: String?
+    var items: [String]?
+    var columns: [String]?
+    var kinds: [String]?
+    var rows: [PhoneHealthRow]?
+}
+
+struct PhoneHealthRow: Codable {
+    var cells: [String]
+    var tone: String
+}
+
+struct PhoneHealthScore: Codable {
+    var total: Double
+    var delta: Double?
+    var trend: String
+    var since: String
+    var categories: [PhoneHealthCat]
+}
+
+struct PhoneHealthCat: Codable, Identifiable {
+    var id: String
+    var label: String
+    var score: Double
 }
 
 struct PhoneWeek: Codable {

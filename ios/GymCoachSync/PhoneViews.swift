@@ -202,21 +202,219 @@ struct DashboardView: View {
     }
 
     @ViewBuilder private func healthCard(_ snap: PhoneSnapshot) -> some View {
-        if let health = snap.health, !health.text.isEmpty {
+        let blocks = snap.health?.blocks ?? []
+        let hasText = !(snap.health?.text ?? "").isEmpty
+        if snap.score != nil || hasText {
             PhoneCard {
                 Text("Gezondheidsstatus").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                Text(markdown(health.text)).font(.subheadline).textSelection(.enabled)
-                if !healthWhen(health.at).isEmpty {
-                    Text(healthWhen(health.at)).font(.caption2).foregroundStyle(.secondary)
+                if let score = snap.score { healthScore(score) }
+                if !blocks.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                            healthBlock(block)
+                        }
+                    }
+                } else if hasText, let health = snap.health {
+                    Text(markdown(health.text)).font(.subheadline).textSelection(.enabled)
+                }
+                if let at = snap.health?.at, !healthWhen(at).isEmpty {
+                    Text(healthWhen(at)).font(.caption2).foregroundStyle(.secondary)
                 }
             }
         }
+    }
+
+    private func healthScore(_ score: PhoneHealthScore) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Image(systemName: "heart.text.square").foregroundStyle(scoreColor(score.total))
+                Text(scoreNumber(score.total)).font(.title.weight(.semibold)).monospacedDigit()
+                Text("/ 10").font(.subheadline).foregroundStyle(.secondary)
+                Spacer(minLength: 8)
+                if let delta = score.delta {
+                    HStack(spacing: 4) {
+                        Image(systemName: trendSymbol(score.trend))
+                        Text(scoreDelta(delta, since: score.since))
+                    }
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(score.trend == "up" ? scoreGood : score.trend == "down" ? scoreLow : .secondary)
+                }
+            }
+            ForEach(score.categories) { cat in
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 8) {
+                        Image(systemName: catIcon(cat.id)).frame(width: 18).foregroundStyle(scoreColor(cat.score))
+                        Text(cat.label).font(.subheadline)
+                        Spacer(minLength: 8)
+                        Text(scoreNumber(cat.score)).font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(scoreColor(cat.score))
+                    }
+                    Capsule()
+                        .fill(Color.white.opacity(0.08))
+                        .overlay(alignment: .leading) {
+                            Capsule()
+                                .fill(scoreColor(cat.score))
+                                .scaleEffect(x: min(1, max(0.04, cat.score / 10)), y: 1, anchor: .leading)
+                        }
+                        .frame(height: 4)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private func healthBlock(_ block: PhoneHealthBlock) -> some View {
+        switch block.type {
+        case "h":
+            HStack(spacing: 8) {
+                Image(systemName: block.icon ?? "smallcircle.filled.circle").foregroundStyle(orange)
+                Text(block.text ?? "").font(.subheadline.weight(.semibold))
+            }
+            .padding(.top, 4)
+        case "ul":
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array((block.items ?? []).enumerated()), id: \.offset) { _, item in
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Image(systemName: "circle.fill").font(.system(size: 5)).foregroundStyle(.secondary)
+                        Text(inlineMd(item)).font(.subheadline).textSelection(.enabled)
+                    }
+                }
+            }
+        case "ol":
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array((block.items ?? []).enumerated()), id: \.offset) { i, item in
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text("\(i + 1)").font(.caption.weight(.semibold).monospacedDigit()).foregroundStyle(.secondary).frame(width: 16, alignment: .leading)
+                        Text(inlineMd(item)).font(.subheadline).textSelection(.enabled)
+                    }
+                }
+            }
+        case "table":
+            healthTable(block)
+        default:
+            Text(inlineMd(block.text ?? "")).font(.subheadline).textSelection(.enabled)
+        }
+    }
+
+    private func healthTable(_ block: PhoneHealthBlock) -> some View {
+        let kinds = block.kinds ?? []
+        return VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array((block.rows ?? []).enumerated()), id: \.offset) { i, row in
+                if i > 0 { Divider().overlay(Color.white.opacity(0.08)) }
+                healthRow(row, kinds: kinds)
+            }
+        }
+    }
+
+    private func healthRow(_ row: PhoneHealthRow, kinds: [String]) -> some View {
+        let cells = row.cells
+        let kindAt: (String) -> String? = { kind in
+            guard let i = kinds.firstIndex(of: kind), i < cells.count else { return nil }
+            let s = cells[i].trimmingCharacters(in: .whitespaces)
+            return s.isEmpty ? nil : s
+        }
+        let extras = cells.enumerated().compactMap { i, value -> String? in
+            let kind = i < kinds.count ? kinds[i] : ""
+            let s = value.trimmingCharacters(in: .whitespaces)
+            return (i > 0 && kind.isEmpty && !s.isEmpty) ? s : nil
+        }
+        var detail: [String] = []
+        if extras.count >= 2 { detail.append(extras.joined(separator: " → ")) }
+        else if let one = extras.first { detail.append(one) }
+        if let delta = kindAt("delta") { detail.append("Δ \(delta)") }
+        let tone = row.tone
+        return HStack(alignment: .center, spacing: 10) {
+            Image(systemName: toneIcon(tone)).foregroundStyle(toneColor(tone)).frame(width: 18)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(cells.first ?? "").font(.subheadline.weight(.semibold)).textSelection(.enabled)
+                if !detail.isEmpty {
+                    Text(detail.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                }
+            }
+            Spacer(minLength: 8)
+            if let trend = kindAt("trend") {
+                Image(systemName: arrowSymbol(trend)).foregroundStyle(toneColor(tone))
+            }
+            if let judge = kindAt("judge") {
+                Text(judge).font(.caption.weight(.medium)).foregroundStyle(toneColor(tone)).multilineTextAlignment(.trailing).frame(maxWidth: 96, alignment: .trailing)
+            }
+        }
+        .padding(.vertical, 7)
+    }
+
+    private func inlineMd(_ raw: String) -> AttributedString {
+        var options = AttributedString.MarkdownParsingOptions()
+        options.interpretedSyntax = .inlineOnlyPreservingWhitespace
+        return (try? AttributedString(markdown: raw, options: options)) ?? AttributedString(raw)
     }
 
     private func markdown(_ raw: String) -> AttributedString {
         var options = AttributedString.MarkdownParsingOptions()
         options.interpretedSyntax = .full
         return (try? AttributedString(markdown: raw, options: options)) ?? AttributedString(raw)
+    }
+
+    private var scoreGood: Color { Color(red: 0.30, green: 0.76, blue: 0.42) }
+    private var scoreMid: Color { Color(red: 0.90, green: 0.72, blue: 0.29) }
+    private var scoreLow: Color { Color(red: 1, green: 0.42, blue: 0.42) }
+
+    private func scoreColor(_ n: Double) -> Color {
+        if n >= 7 { return scoreGood }
+        if n >= 5.5 { return scoreMid }
+        return scoreLow
+    }
+
+    private func scoreNumber(_ n: Double) -> String {
+        n.formatted(.number.precision(.fractionLength(1)))
+    }
+
+    private func scoreDelta(_ delta: Double, since: String) -> String {
+        let n = delta.formatted(.number.precision(.fractionLength(1)).sign(strategy: .always(includingZero: true)))
+        guard let date = scoreDate(since) else { return n }
+        return "\(n) sinds \(date)"
+    }
+
+    private func scoreDate(_ iso: String) -> String? {
+        let parts = iso.split(separator: "-")
+        guard parts.count == 3, let y = Int(parts[0]), let m = Int(parts[1]), let d = Int(parts[2]) else { return nil }
+        var c = DateComponents()
+        c.year = y; c.month = m; c.day = d
+        guard let date = Calendar.current.date(from: c) else { return nil }
+        return date.formatted(.dateTime.day().month(.abbreviated))
+    }
+
+    private func trendSymbol(_ trend: String) -> String {
+        if trend == "up" { return "arrow.up" }
+        if trend == "down" { return "arrow.down" }
+        return "arrow.right"
+    }
+
+    private func arrowSymbol(_ raw: String) -> String {
+        if raw.contains("↓") || raw.contains("⬇") { return "arrow.down" }
+        if raw.contains("↑") || raw.contains("⬆") { return "arrow.up" }
+        return "arrow.right"
+    }
+
+    private func toneIcon(_ tone: String) -> String {
+        if tone == "good" { return "checkmark.circle.fill" }
+        if tone == "watch" { return "exclamationmark.triangle.fill" }
+        if tone == "bad" { return "xmark.circle.fill" }
+        return "minus.circle"
+    }
+
+    private func toneColor(_ tone: String) -> Color {
+        if tone == "good" { return scoreGood }
+        if tone == "watch" { return scoreMid }
+        if tone == "bad" { return scoreLow }
+        return .secondary
+    }
+
+    private func catIcon(_ id: String) -> String {
+        switch id {
+        case "body": return "figure.stand"
+        case "heart": return "heart.fill"
+        case "fitness": return "bolt.heart"
+        case "other": return "sparkles"
+        default: return "circle.fill"
+        }
     }
 
     private func healthWhen(_ iso: String) -> String {

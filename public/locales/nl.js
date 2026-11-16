@@ -31,6 +31,8 @@ export default {
   'ed.exSum': '{n} oefeningen · {sets} sets',
   'ed.empty': 'Leeg. Een blok mag leeg blijven.',
   'ed.restoreBlock': 'Voorstel terugzetten',
+  'ed.regen': 'Opnieuw',
+  'ed.regenHint': 'Andere oefeningen uit de catalogus. Opslaan bewaart ze bij deze training.',
   'ed.addExercise': '+ Oefening toevoegen',
   'ed.addSoon': 'Oefeningen toevoegen komt in de volgende stap.',
   'ed.up': 'Omhoog',

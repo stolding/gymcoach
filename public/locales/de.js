@@ -29,6 +29,8 @@ export default {
   "ed.exSum": "{n} Übungen · {sets} Sätze",
   "ed.empty": "Leer. Ein Block darf leer bleiben.",
   "ed.restoreBlock": "Vorschlag wiederherstellen",
+  "ed.regen": "Neu",
+  "ed.regenHint": "Andere Übungen aus dem Katalog. Speichern behält sie bei dieser Einheit.",
   "ed.addExercise": "+ Übung hinzufügen",
   "ed.addSoon": "Übungen hinzufügen kommt im nächsten Schritt.",
   "ed.up": "Nach oben",

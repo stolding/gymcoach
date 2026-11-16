@@ -29,6 +29,8 @@ export default {
   "ed.exSum": "{n} exercises · {sets} sets",
   "ed.empty": "Empty. A block may stay empty.",
   "ed.restoreBlock": "Restore proposal",
+  "ed.regen": "Again",
+  "ed.regenHint": "Other exercises from the catalogue. Save keeps them with this workout.",
   "ed.addExercise": "+ Add exercise",
   "ed.addSoon": "Adding exercises comes in the next step.",
   "ed.up": "Up",

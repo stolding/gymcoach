@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.12 — 16 november 2026
+- In Bewerken kies je met Opnieuw een andere warming-up of cooldown voor die ene training. Toevoegen, weghalen en de seconden aanpassen blijven.
+
+## 2.34.11 — 16 november 2026
+- Warming-up en cooldown wisselen per training en per week. De oefeningen komen uit de catalogus en passen bij boven- of onderlichaam.
+
 ## 2.34.10 — 16 november 2026
 - GymCoach Sync 1.13.8 bouwt weer: de weekring kon niet worden gelezen omdat de sleutels ontbraken. TestFlight volgt deze build.
 

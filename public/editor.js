@@ -77,6 +77,7 @@ export function openEditor(key, ctx) {
   const saved = tpl ? { key: '__tpl', warmup: { mobility: [], cable: [] }, cooldown: [], ...clone(tpl.session) } : plan.sessions[idx];
   const original = saved.original ? clone(saved.original) : (() => { const o = clone(saved); delete o.original; return o; })();
   let draft = clone(saved); delete draft.original;
+  let warmTry = 1;
   if (draft.locked == null && !tpl) draft.locked = true; // bewerken = standaard vastzetten
   const undo = [];
   let changes = 0, open = 0, selMuscle = null;
@@ -138,7 +139,7 @@ export function openEditor(key, ctx) {
     const items = [...(draft.warmup?.mobility || []).map((x, i) => ['mobility', i, x]), ...(draft.warmup?.cable || []).map((x, i) => ['cable', i, x])];
     const min = items.length ? 6 : 0;
     return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.warmup')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min })}</span></div>
-      <div class="row gap">${!items.length && (original.warmup?.mobility?.length || original.warmup?.cable?.length) ? `<button type="button" class="btn ghost small" data-ed="restore-warm">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-warm">${t('ed.add')}</button></div></div>
+      <div class="row gap">${draft.outdoor ? '' : `<button type="button" class="btn ghost small" data-ed="regen-warm" title="${esc(t('ed.regenHint'))}">${t('ed.regen')}</button>`}${!items.length && (original.warmup?.mobility?.length || original.warmup?.cable?.length) ? `<button type="button" class="btn ghost small" data-ed="restore-warm">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-warm">${t('ed.add')}</button></div></div>
       ${items.length ? `<div class="ed-wc">${items.map(([kind, i, x]) => `<div class="ed-wci"><span>${esc(x.title)}${kind === 'mobility' && sideOf(x.dose) ? ` <span class="muted small">${esc(doseText(sideOf(x.dose)))}</span>` : ''}</span>
         ${kind === 'cable' ? `<label>${t('ed.reps')}<input type="number" min="1" max="30" value="${x.reps}" data-ed="wc" data-kind="cable" data-i="${i}" data-f="reps"></label><label>${t('ed.kg')}<input type="number" min="0" step="0.5" value="${x.weight}" data-ed="wc" data-kind="cable" data-i="${i}" data-f="weight"></label>`
         : `<label>${t('ed.secs')}<input type="number" min="5" max="180" step="5" value="${secsOf(x.dose)}" data-ed="wc" data-kind="mobility" data-i="${i}" data-f="secs"></label>`}
@@ -148,7 +149,7 @@ export function openEditor(key, ctx) {
   function coolBlock() {
     const items = draft.cooldown || [];
     return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.cooldown')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min: items.length ? 4 : 0 })}</span></div>
-      <div class="row gap">${!items.length && original.cooldown?.length ? `<button type="button" class="btn ghost small" data-ed="restore-cool">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-cool">${t('ed.add')}</button></div></div>
+      <div class="row gap">${draft.outdoor ? '' : `<button type="button" class="btn ghost small" data-ed="regen-cool" title="${esc(t('ed.regenHint'))}">${t('ed.regen')}</button>`}${!items.length && original.cooldown?.length ? `<button type="button" class="btn ghost small" data-ed="restore-cool">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-cool">${t('ed.add')}</button></div></div>
       ${items.length ? `<div class="ed-wc">${items.map((x, i) => `<div class="ed-wci"><span>${esc(x.title)} <span class="muted small">${esc(doseText(x.dose || '').replace(/^\d+\s*s\s*/, ''))}</span></span>
         <label>${t('ed.secs')}<input type="number" min="5" max="180" step="5" value="${secsOf(x.dose)}" data-ed="cool" data-i="${i}"></label>
         <button type="button" class="ed-x" aria-label="${t('ed.remove')}" data-ed="cool-del" data-i="${i}">×</button></div>`).join('')}</div>` : `<div class="muted small">${t('ed.empty')}</div>`}
@@ -284,6 +285,17 @@ export function openEditor(key, ctx) {
       case 'cool-del': snapshot(); draft.cooldown.splice(i, 1); break;
       case 'restore-warm': snapshot(); draft.warmup = clone(original.warmup); break;
       case 'restore-cool': snapshot(); draft.cooldown = clone(original.cooldown); break;
+      case 'regen-warm': case 'regen-cool': {
+        const cool = a === 'regen-cool';
+        const except = cool ? (draft.cooldown || []).map((x) => x.id) : [...(draft.warmup?.mobility || []), ...(draft.warmup?.cable || [])].map((x) => x.id);
+        try {
+          const r = await ctx.api('POST', '/api/plan/warmcool', { key: draft.key, part: cool ? 'cool' : 'warm', except, salt: ++warmTry });
+          snapshot();
+          if (cool) draft.cooldown = r.cooldown || [];
+          else draft.warmup = r.warmup || { mobility: [], cable: [] };
+        } catch (err) { ctx.toast(err.message, true); }
+        break;
+      }
       case 'add': case 'add-warm': case 'add-cool': {
         const start = a === 'add' ? 'ex' : a === 'add-warm' ? 'warm' : 'cool';
         const ids = [...draft.exercises, ...(draft.warmup?.mobility || []), ...(draft.warmup?.cable || []), ...(draft.cooldown || [])].map((x) => x.id);

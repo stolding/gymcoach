@@ -29,6 +29,8 @@ export default {
   "ed.exSum": "{n} øvelser · {sets} sett",
   "ed.empty": "Tomt. En blokk kan stå tom.",
   "ed.restoreBlock": "Gjenopprett forslag",
+  "ed.regen": "På nytt",
+  "ed.regenHint": "Andre øvelser fra katalogen. Lagre beholder dem på denne økten.",
   "ed.addExercise": "+ Legg til øvelse",
   "ed.addSoon": "Å legge til øvelser kommer i neste steg.",
   "ed.up": "Opp",

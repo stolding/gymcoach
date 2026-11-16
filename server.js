@@ -563,6 +563,18 @@ const routes = {
     return { plan: await generatePlan(prefs) };
   },
   'GET /api/focus': async () => ({ focus: Object.fromEntries(Object.entries(engine.FOCUS).map(([k, v]) => [k, v.label])), dayTypes: engine.DAY_TYPES }),
+  // Nieuwe warming-up of cooldown voor de editor. Het plan wordt pas bewaard als je opslaat.
+  'POST /api/plan/warmcool': async (req) => {
+    const b = await body(req);
+    const ctx = await context();
+    const part = b.part === 'cool' ? 'cool' : 'warm';
+    const block = engine.buildWarmCool(ctx.library, String(b.key || 'F'), {
+      salt: Number.isFinite(+b.salt) ? +b.salt : 1,
+      avoidIds: ctx.settings.avoidIds,
+      exceptIds: Array.isArray(b.except) ? b.except : [],
+    });
+    return part === 'cool' ? { cooldown: block.cooldown } : { warmup: block.warmup };
+  },
   'POST /api/plan/when': async (req) => {
     const b = await body(req);
     const plan = await store.getPlan();

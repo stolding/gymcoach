@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.32.19 — 16 november 2026
+- De AI-coach over het plan leest een antwoord ook als het model een komma vergeet of 3|null schrijft.
+
 ## 2.32.18 — 15 november 2026
 - Op een activiteit buiten het toestel tonen balken hoeveel keer, minuten en kilometers je deed. Wat boven het doel uitkomt, staat als een helderder stuk.
 

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { refreshGrid } from '../lib/weekbalance.js';
-import { defaultWeekdays, orderTrainingDays, sessionAtHours, sessionOffsetHours } from '../lib/weekdays.js';
+import { defaultWeekdays, orderTrainingDays, preferNamedOutdoor, sessionAtHours, sessionOffsetHours } from '../lib/weekdays.js';
 
 function plan(items) {
   return {
@@ -52,6 +52,24 @@ test('an earlier hour the next day leaves less recovery', () => {
   const late = refreshGrid(plan([{ weekday: 0, slot: 4 }, { weekday: 1, slot: 4 }]), { history: {}, now });
   assert.equal(sessionAtHours(early.sessions, 1) - sessionAtHours(early.sessions, 0), 12);
   assert.ok(quad(early, 5) < quad(late, 7));
+});
+
+test('a named walk takes the place of the generic outdoor card on the same day', () => {
+  const plan = {
+    dayTypes: ['combinatie', 'buiten', 'circuit'],
+    weekdays: [0, 1, 2],
+    slots: [4, 4, 4],
+    daysPerWeek: 3,
+    sessions: [
+      { key: 'A', name: 'Full Body A', weekday: 0, slot: 4, exercises: [] },
+      { key: 'OUT', name: 'Cardio buiten', outdoor: true, type: 'buiten', weekday: 1, slot: 4, exercises: [] },
+      { key: 'X1', name: 'Wandelen', outdoor: true, activity: 'wandelen', weekday: 1, slot: 4, exercises: [] },
+    ],
+  };
+  assert.equal(preferNamedOutdoor(plan), true);
+  assert.deepEqual(plan.sessions.map((s) => s.name), ['Full Body A', 'Wandelen']);
+  assert.deepEqual(plan.dayTypes, ['combinatie', 'circuit']);
+  assert.equal(plan.daysPerWeek, 2);
 });
 
 test('a weekday stays with its workout when the rows are out of order', () => {

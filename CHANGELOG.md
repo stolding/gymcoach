@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.1 — 16 november 2026
+- Een vastgezet wandelen vult de cardio-buiten-dag. Dezelfde dag en hetzelfde uur geven geen tweede kaart meer.
+
 ## 2.34.0 — 16 november 2026
 - Het herstel op het weekplan is een balk over alle dagen, in blokken van 6 uur. Bij het plan kies je ook het dagdeel, want dat bepaalt de hersteltijd.
 

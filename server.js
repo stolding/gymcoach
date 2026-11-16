@@ -15,7 +15,7 @@ import * as insights from './lib/insights.js';
 import * as signals from './lib/signals.js';
 import * as muscleRec from './lib/muscleRecovery.js';
 import * as weekbalance from './lib/weekbalance.js';
-import { alignPlanDays, assignFreeWeekday, slotNum, weekdayNum } from './lib/weekdays.js';
+import { alignPlanDays, assignFreeWeekday, preferNamedOutdoor, slotNum, weekdayNum } from './lib/weekdays.js';
 import * as goal from './lib/goal.js';
 import * as phone from './lib/phone.js';
 import { guideSections } from './lib/guide.js';
@@ -370,10 +370,16 @@ async function generatePlan(prefs) {
   // alleen oefeningen met accessoires die je gebruikt (Instellingen → Training)
   const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes, weekdays, slots, earlyDeload });
   // vastgezette trainingen blijven staan, met progressie op basis van de historie (behalve bij vast gewicht)
+  const filled = new Set();
   for (const ls of (prev?.sessions || []).filter((x) => x.locked)) {
     const kept = engine.progressSession(ls, ctx.history);
-    const i = plan.sessions.findIndex((x) => x.key === ls.key);
+    let i = plan.sessions.findIndex((x) => x.key === ls.key);
+    // een vastgezette wandeling vult de cardio-buiten-dag, in plaats van er een tweede van te maken
+    if (i < 0 && (ls.outdoor || ls.type === 'buiten' || ls.activity)) {
+      i = plan.sessions.findIndex((x, n) => !filled.has(n) && (x.outdoor || x.type === 'buiten') && !x.activity && !x.custom);
+    }
     if (i >= 0) {
+      filled.add(i);
       if (weekdayNum(plan.sessions[i].weekday) != null) kept.weekday = plan.sessions[i].weekday;
       if (slotNum(plan.sessions[i].slot) != null) kept.slot = plan.sessions[i].slot;
       plan.sessions[i] = kept;
@@ -382,6 +388,7 @@ async function generatePlan(prefs) {
       plan.sessions.push(kept);
     }
   }
+  preferNamedOutdoor(plan);
   alignPlanDays(plan);
   engine.placeStrengthLift(plan, { settings: ctx.settings, library: ctx.library, history: ctx.history });
   if (ctx.settings.weekBalance === 'off') weekbalance.clearWeekBalance(plan);
@@ -407,6 +414,11 @@ const routes = {
   'GET /api/state': async () => {
     const ctx = await context();
     const [rawPlan, meta] = await Promise.all([store.getPlan(), store.getMeta()]);
+    if (rawPlan && preferNamedOutdoor(rawPlan)) {
+      refreshMuscles(rawPlan);
+      if (rawPlan.weekBalance) weekbalance.refreshGrid(rawPlan, { history: ctx.history });
+      await store.savePlan(rawPlan);
+    }
     const plan = engine.localizePlan(rawPlan);
     if (plan?.weekBalance) weekbalance.refreshGrid(plan, { history: ctx.history });
     // eerste keer: stappen voor een nieuwe gebruiker (account, voorkeuren, eerste plan)

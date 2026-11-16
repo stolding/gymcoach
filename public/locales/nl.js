@@ -466,6 +466,7 @@ export default {
   'ui.setTraining.weekBalanceHint': 'Oefeningen schuiven naar een latere dag als die spiergroep nog niet uitgerust is. Uit houdt de vaste dagen. Maak daarna een nieuw weekplan.',
   'plan.balanceTitle': 'Herstel aan het begin van elke training',
   'plan.balanceHint': 'Groen is uitgerust, vanaf 90%. Een gevulde stip is de hoofdspier, een open stip werkt mee.',
+  'plan.balanceDays': 'De kolommen volgen de weekdagen die je bij het plan koos. Eén dag ertussen telt anders dan drie.',
   'plan.shift': '{title} staat hier. Op {from} waren de {muscle} nog niet uitgerust ({pct}%).',
   'ui.setTraining.mobiliteitEnStretchesOok': 'Mobiliteit en stretches ook op het toestel zetten',
   'ui.setTraining.ja': 'Ja',
@@ -1637,6 +1638,8 @@ export default {
   'app.selectItem': 'Selecteer {name}',
   'app.dayTypeOf': 'Soort training dag {n}',
   'app.dayRemove': 'Dag {n} verwijderen',
+  'app.weekdayOf': 'Weekdag van dag {n}',
+  'app.weekdayHint': 'Het herstel telt de dagen tussen deze weekdagen.',
 
   // summary.js
   'sum.nieuwRecordBij': '🏆 Nieuw record bij {a}',

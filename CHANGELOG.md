@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.33.0 — 16 november 2026
+- Bij een nieuw weekplan kies je de weekdag van elke training. Het herstel rekent met de dagen daartussen, dus één dag telt anders dan drie.
+
 ## 2.32.20 — 16 november 2026
 - De AI-coach vraagt het planadvies als een vast formulier, en leest het denkblok als de zichtbare tekst geen JSON is.
 

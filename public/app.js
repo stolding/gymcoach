@@ -452,7 +452,7 @@ function renderPlan() {
   const slotBtns = `<button class="btn ghost" data-act="replace">${t('ed.replace')}</button><button class="btn ghost" data-act="remove">${t('ed.removeFromPlan')}</button>`;
   wrap.innerHTML = plan.sessions.map((s) => s.outdoor ? `
     <article class="card session outdoor${outdoorCardClass(s)}" data-key="${esc(s.key)}">
-      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}</h3><div class="muted small">${outdoorMeta(s)}</div></div>
+      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${weekdayBadge(s)}${esc(s.name)}</h3><div class="muted small">${outdoorMeta(s)}</div></div>
         <div class="out-ico" aria-hidden="true">${ACT[s.activity]?.[2] || '🚶‍♂️🚴'}</div></header>
       <p class="small">${esc(s.advice || '')}</p>
       ${outdoorDone(s)}
@@ -463,7 +463,7 @@ function renderPlan() {
       <footer>${slotBtns}</footer>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}${exOpen.has(s.key) ? '' : ' ex-shut'}" data-key="${esc(s.key)}">
-      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
+      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${weekdayBadge(s)}${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div>${exerciseRows(s) ? `<div class="ex-pop">${exerciseRows(s)}</div>` : ''}</header>
       ${(s.shifts || []).map((sh) => `<p class="small shift">${esc(t('plan.shift', { title: sh.title, from: sh.from, muscle: t('bm.' + sh.muscle), pct: sh.pct }))}</p>`).join('')}
       ${exerciseRows(s) ? `<button type="button" class="ex-fold-btn" data-act="fold" aria-expanded="${exOpen.has(s.key) ? 'true' : 'false'}">${t('app.exList')}<span class="ri-chev" aria-hidden="true">›</span></button><div class="ex-fold">${exerciseRows(s)}</div>` : ''}
@@ -675,10 +675,19 @@ function renderWeekMap() {
 }
 
 // Herstel aan het begin van elke training. Alleen aanwezig als de week als één plan is gemaakt.
+function weekdayName(n) {
+  const d = Number(n);
+  if (!Number.isInteger(d) || d < 0 || d > 6) return '';
+  return new Date(2026, 0, 5 + d).toLocaleDateString(localeOf(), { weekday: 'short' }).replace('.', '');
+}
+function weekdayBadge(s) {
+  const name = weekdayName(s?.weekday);
+  return name ? `<span class="badge">${esc(name)}</span> ` : '';
+}
 function balanceHtml(plan) {
   const b = plan.balance;
   if (!b?.rows?.length || !b.days?.length) return '';
-  const head = b.days.map((d) => `<th>${esc(d.name)}</th>`).join('');
+  const head = b.days.map((d) => `<th>${weekdayName(d.weekday) ? `<span class="wb-dow">${esc(weekdayName(d.weekday))}</span>` : ''}${esc(d.name)}</th>`).join('');
   const body = b.rows.map((row) => `<tr><th>${esc(t('bm.' + row.key))}</th>${row.cells.map((c, i) => {
     const band = c.pct >= (b.fresh || 90) ? 'hi' : c.pct >= 70 ? 'mid' : 'lo';
     const dot = c.role ? `<i class="wb-dot ${c.role === 'prime' ? 'prime' : ''}"></i>` : '';
@@ -686,7 +695,8 @@ function balanceHtml(plan) {
     const jump = c.role != null && day ? ` data-jump="${esc(day.key)}|${c.i}"` : '';
     return `<td><button type="button" class="wb-cell ${band}"${jump}>${dot}<span>${c.pct}</span></button></td>`;
   }).join('')}</tr>`).join('');
-  return `<div class="wb"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-scroll"><table><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table></div><p class="muted small">${t('plan.balanceHint')}</p></div>`;
+  const daysNote = b.days.some((d) => d.weekday != null) ? ` ${t('plan.balanceDays')}` : '';
+  return `<div class="wb"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-scroll"><table><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table></div><p class="muted small">${t('plan.balanceHint')}${daysNote}</p></div>`;
 }
 
 // gekozen spiergroep ook in de trainingskaarten uitlichten (primair sterk, secundair licht, rest gedimd)
@@ -1175,6 +1185,7 @@ function openGenerate() {
       <button type="button" class="btn small ghost" data-pre="3k1b">${t('app.3Kracht1Buiten')}</button>
     </div>
     <div id="dayList" class="day-list"></div>
+    <p class="muted small" style="margin:.2rem 0 0">${t('app.weekdayHint')}</p>
     <div class="row gap"><button type="button" class="btn small ghost" data-x="addday">${t('app.dag')}</button><span class="muted small" id="dayNote"></span></div>
     <div class="eyebrow" style="margin:.4rem 0 0">${t('app.focusDezeWeek')}</div>
     <div class="focus-chips">${Object.entries(FOCUS_LABELS).map(([k, l]) => `<label class="chip-check"><input type="checkbox" name="focus" value="${k}" ${cur.has(k) ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
@@ -1191,21 +1202,68 @@ function openGenerate() {
   const f = dlg.querySelector('#genForm');
   // dagen: start met het vorige plan, anders met de instellingen
   let days = (state.plan?.dayTypes?.length ? [...state.plan.dayTypes] : Array.from({ length: +state.settings.daysPerWeek || 3 }, () => state.settings.goal || 'combinatie'));
+  // Zelfde verdeling als lib/weekdays.js: eerste en laatste training zes dagen uit elkaar.
+  const spreadDays = (n) => {
+    const count = Math.min(6, Math.max(1, n));
+    const used = new Set();
+    const out = [];
+    for (let i = 0; i < count; i++) {
+      let d = count === 1 ? 0 : Math.round(i * 6 / (count - 1));
+      if (d > 6) d = 6;
+      while (used.has(d)) d = (d + 1) % 7;
+      used.add(d);
+      out.push(d);
+    }
+    return out.sort((a, b) => a - b);
+  };
+  const savedDays = Array.isArray(state.plan?.weekdays) ? state.plan.weekdays.map(Number) : [];
+  let weekdays = savedDays.length === days.length && savedDays.every((d) => Number.isInteger(d) && d >= 0 && d <= 6) && new Set(savedDays).size === savedDays.length ? savedDays : spreadDays(days.length);
+  const sortDays = () => {
+    const rows = days.map((type, i) => ({ type, w: weekdays[i] }));
+    rows.sort((a, b) => a.w - b.w);
+    days = rows.map((r) => r.type);
+    weekdays = rows.map((r) => r.w);
+  };
   const drawDays = () => {
-    $('#dayList').innerHTML = days.map((t, i) => `<div class="day-row"><span class="day-n">${tx('app.dag2', { a: i + 1 })}</span>
-      <select data-d="${i}" aria-label="${tx('app.dayTypeOf', { n: i + 1 })}">${Object.entries(DAY_TYPES).map(([k, l]) => `<option value="${k}" ${k === t ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    const names = weekdaysShort();
+    $('#dayList').innerHTML = days.map((type, i) => `<div class="day-row"><span class="day-n">${tx('app.dag2', { a: i + 1 })}</span>
+      <select data-d="${i}" aria-label="${tx('app.dayTypeOf', { n: i + 1 })}">${Object.entries(DAY_TYPES).map(([k, l]) => `<option value="${k}" ${k === type ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <select data-w="${i}" class="day-wd" aria-label="${tx('app.weekdayOf', { n: i + 1 })}">${names.map((name, d) => `<option value="${d}" ${d === weekdays[i] ? 'selected' : ''}>${esc(name)}</option>`).join('')}</select>
       <button type="button" class="btn small ghost" data-del="${i}" aria-label="${tx('app.dayRemove', { n: i + 1 })}" ${days.length <= 1 ? 'disabled' : ''}>✕</button></div>`).join('');
-    const nK = days.filter((t) => !['circuit', 'buiten'].includes(t)).length;
+    const nK = days.filter((type) => !['circuit', 'buiten'].includes(type)).length;
     $('#dayNote').textContent = t('app.kracht', { nK, a: days.length - nK ? t('app.cardio', { a: days.length - nK }) : '', b: nK ? ` → ${nK === 1 ? 'full body' : nK <= 3 ? 'full body A/B' + (nK === 3 ? '/C' : '') : 'upper/lower'}` : '' });
   };
+  sortDays();
   drawDays();
-  $('#dayList').addEventListener('change', (ev) => { const sel = ev.target.closest('[data-d]'); if (sel) { days[+sel.dataset.d] = sel.value; drawDays(); } });
-  $('#dayList').addEventListener('click', (ev) => { const b = ev.target.closest('[data-del]'); if (b && days.length > 1) { days.splice(+b.dataset.del, 1); drawDays(); } });
-  f.querySelector('[data-x=addday]').addEventListener('click', () => { if (days.length < 6) { days.push(days[days.length - 1] || 'combinatie'); drawDays(); } });
+  $('#dayList').addEventListener('change', (ev) => {
+    const kind = ev.target.closest('[data-d]');
+    if (kind) { days[+kind.dataset.d] = kind.value; drawDays(); return; }
+    const wd = ev.target.closest('[data-w]');
+    if (!wd) return;
+    const i = +wd.dataset.w;
+    const v = +wd.value;
+    const other = weekdays.indexOf(v);
+    if (other >= 0 && other !== i) weekdays[other] = weekdays[i];
+    weekdays[i] = v;
+    sortDays();
+    drawDays();
+  });
+  $('#dayList').addEventListener('click', (ev) => { const b = ev.target.closest('[data-del]'); if (b && days.length > 1) { days.splice(+b.dataset.del, 1); weekdays.splice(+b.dataset.del, 1); drawDays(); } });
+  f.querySelector('[data-x=addday]').addEventListener('click', () => {
+    if (days.length >= 6) return;
+    days.push(days[days.length - 1] || 'combinatie');
+    const used = new Set(weekdays);
+    let free = 0;
+    while (used.has(free) && free < 7) free++;
+    weekdays.push(free < 7 ? free : 0);
+    sortDays();
+    drawDays();
+  });
   f.querySelector('.presets').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-pre]'); if (!b) return;
     const k = ['spieropbouw', 'afvallen'].includes(state.settings.goal) ? state.settings.goal : 'combinatie';
     days = { same: Array.from({ length: +state.settings.daysPerWeek || 3 }, () => state.settings.goal || 'combinatie'), '2k1c': [k, 'circuit', k], '2k1b': [k, 'buiten', k], '3k1b': [k, k, 'buiten', k] }[b.dataset.pre];
+    weekdays = spreadDays(days.length);
     drawDays();
   });
   f.wish.addEventListener('input', () => {
@@ -1219,7 +1277,7 @@ function openGenerate() {
     const focus = [...f.querySelectorAll('input[name=focus]:checked')].map((c) => c.value);
     const btn = $('#genBtn'); btn.disabled = true;
     try {
-      state.plan = (await api('POST', '/api/plan/generate', { focus, wish: f.wish.value.trim(), dayTypes: days })).plan;
+      state.plan = (await api('POST', '/api/plan/generate', { focus, wish: f.wish.value.trim(), dayTypes: days, weekdays })).plan;
       if (state.meta) state.meta.coach = null; renderCoach(null);
       renderPlan(); toast(focus.length ? t('app.planGemaaktMetFocus', { a: focus.map((x) => FOCUS_LABELS[x]).join(', ') }) : t('app.nieuwEvenwichtigPlanGemaakt'));
       if (f.coach?.checked) $('#coachBtn').click();
@@ -3045,6 +3103,7 @@ async function offerAlignedPlan() {
   const prev = state.plan?.dayTypes || [];
   const body = { focus: state.plan?.focus || [], wish: state.plan?.wish || '' };
   if (prev.length) body.dayTypes = prev.map((d) => (d === 'circuit' || d === 'buiten' ? d : style));
+  if (Array.isArray(state.plan?.weekdays) && state.plan.weekdays.length === body.dayTypes?.length) body.weekdays = state.plan.weekdays;
   state.plan = (await api('POST', '/api/plan/generate', body)).plan;
   renderPlan();
   if ($('#tab-home').classList.contains('active')) renderHome();

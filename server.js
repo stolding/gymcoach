@@ -15,6 +15,7 @@ import * as insights from './lib/insights.js';
 import * as signals from './lib/signals.js';
 import * as muscleRec from './lib/muscleRecovery.js';
 import * as weekbalance from './lib/weekbalance.js';
+import { alignPlanDays, assignFreeWeekday, weekdayNum } from './lib/weekdays.js';
 import * as goal from './lib/goal.js';
 import * as phone from './lib/phone.js';
 import { guideSections } from './lib/guide.js';
@@ -304,6 +305,7 @@ function outdoorSession({ key, name, kind, minutes }) {
 // Spierkaart en, als de week één plan is, het herstelraster. Verplaatst geen oefeningen.
 async function touchPlan(plan) {
   refreshMuscles(plan);
+  alignPlanDays(plan);
   if (plan.weekBalance) {
     const ctx = await context();
     weekbalance.refreshGrid(plan, { history: ctx.history });
@@ -362,15 +364,23 @@ async function generatePlan(prefs) {
   const focus = prefs?.focus ?? prev?.focus ?? [];
   const wish = prefs?.wish ?? prev?.wish ?? '';
   const dayTypes = prefs?.dayTypes ?? prev?.dayTypes ?? null;
+  const weekdays = prefs?.weekdays ?? prev?.weekdays ?? null;
   const snapshot = JSON.parse(await readFile(path.join(ROOT, 'lib', 'library.snapshot.json'), 'utf8'));
   // alleen oefeningen met accessoires die je gebruikt (Instellingen → Training)
-  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes, earlyDeload });
+  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes, weekdays, earlyDeload });
   // vastgezette trainingen blijven staan, met progressie op basis van de historie (behalve bij vast gewicht)
   for (const ls of (prev?.sessions || []).filter((x) => x.locked)) {
     const kept = engine.progressSession(ls, ctx.history);
     const i = plan.sessions.findIndex((x) => x.key === ls.key);
-    if (i >= 0) plan.sessions[i] = kept; else plan.sessions.push(kept);
+    if (i >= 0) {
+      if (weekdayNum(plan.sessions[i].weekday) != null) kept.weekday = plan.sessions[i].weekday;
+      plan.sessions[i] = kept;
+    } else {
+      assignFreeWeekday(plan, kept);
+      plan.sessions.push(kept);
+    }
   }
+  alignPlanDays(plan);
   engine.placeStrengthLift(plan, { settings: ctx.settings, library: ctx.library, history: ctx.history });
   if (ctx.settings.weekBalance === 'off') weekbalance.clearWeekBalance(plan);
   else weekbalance.applyWeekBalance(plan, { history: ctx.history });
@@ -526,6 +536,10 @@ const routes = {
       const t = b.dayTypes.map(String).filter((x) => engine.DAY_TYPES[x]).slice(0, 6);
       if (!t.length) throw Object.assign(new Error(tr('srv.kiesMinstensEenTrainingsdag')), { status: 400 });
       prefs.dayTypes = t;
+      if (Array.isArray(b.weekdays)) {
+        const w = b.weekdays.slice(0, t.length).map((x) => Math.round(Number(x)));
+        if (w.length === t.length && w.every((x) => x >= 0 && x <= 6) && new Set(w).size === w.length) prefs.weekdays = w;
+      }
     }
     return { plan: await generatePlan(prefs) };
   },
@@ -908,7 +922,13 @@ const routes = {
       const draft = { outdoor: true, activity: kind.type, activityLabel: kind.match || '' };
       const wanted = actgoal.goalFor(draft, actgoal.normalize(ctx.settings.activityGoals));
       const sess = outdoorSession({ key: old ? old.key : `X${n}`, name, kind, minutes: wanted?.minutes || Number(ctx.settings.minutesPerSession) || 45 });
-      if (old) plan.sessions[slot] = sess; else plan.sessions.push(sess);
+      if (old) {
+        if (weekdayNum(old.weekday) != null) sess.weekday = old.weekday;
+        plan.sessions[slot] = sess;
+      } else {
+        assignFreeWeekday(plan, sess);
+        plan.sessions.push(sess);
+      }
       await touchPlan(plan);
       return { plan, key: sess.key };
     }
@@ -935,6 +955,7 @@ const routes = {
     sess.estMinutes = sess.estMinutes || 45;
     if (old) {
       if (old.pushedAt || old.changedAfterPush) sess.changedAfterPush = true;
+      if (weekdayNum(old.weekday) != null) sess.weekday = old.weekday;
       delete sess.shifts;
       delete sess.original;
       delete sess.edited;
@@ -942,6 +963,7 @@ const routes = {
       plan.sessions[slot] = sess;
     } else {
       Object.assign(sess, { custom: true, locked: true });
+      assignFreeWeekday(plan, sess);
       plan.sessions.push(sess);
     }
     await touchPlan(plan);

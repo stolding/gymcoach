@@ -485,6 +485,7 @@ function renderPlan() {
       </footer>
     </article>`).join('');
   highlightSessions();
+  bindWhenDrag();
 }
 
 // Zelfde telling als "4 van 5 gedaan": kracht uit het plan én een wandeling die deze week binnen is.
@@ -672,6 +673,7 @@ function renderWeekMap() {
       <div class="legend"><span class="sq m1"></span>${t('app.licht')} <span class="sq m2"></span>${t('app.gemiddeld')} <span class="sq m3"></span>${t('app.veel')}</div>
     </div></div>`;
   highlightSessions();
+  bindWhenDrop();
 }
 
 // Herstel als balk door de week. Alleen aanwezig als de week als één plan is gemaakt.
@@ -686,7 +688,16 @@ function weekdayBadge(s) {
   const name = weekdayName(s?.weekday);
   if (!name) return '';
   const slot = slotText(s?.slot);
-  return `<span class="badge">${esc(name)}${slot ? ` ${esc(slot)}` : ''}</span> `;
+  return `<span class="badge wb-drag" draggable="true" data-drag="${esc(s.key)}" title="${esc(t('app.dragWhen'))}">${esc(name)}${slot ? ` ${esc(slot)}` : ''}</span> `;
+}
+function nearestSlot(hour) {
+  let best = 0, dist = Infinity;
+  DAY_SLOTS.forEach((s, i) => {
+    const mid = (s[0] + s[1]) / 2;
+    const d = Math.abs(mid - hour);
+    if (d < dist) { dist = d; best = i; }
+  });
+  return best;
 }
 // Geleidelijk van oranje (0, vermoeid) naar groen (100, hersteld), zonder sprong op de helft.
 function recoveryBlend(pct) {
@@ -700,7 +711,7 @@ function balanceHtml(plan) {
   if (!b?.rows?.length || !b?.rows[0]?.blocks) return '';
   const mix = state.settings?.recoveryBars === 'stack' ? 'stack' : 'gradient';
   const perDay = (b.blockHours ? 24 / b.blockHours : 4);
-  const head = `<div class="wb-days">${[0, 1, 2, 3, 4, 5, 6].map((d) => `<span>${esc(weekdayName(d))}</span>`).join('')}</div>`;
+  const head = `<div class="wb-days">${[0, 1, 2, 3, 4, 5, 6].map((d) => `<span data-drop-day="${d}">${esc(weekdayName(d))}</span>`).join('')}</div>`;
   const body = b.rows.map((row) => {
     const days = [];
     for (let d = 0; d < 7; d++) {
@@ -713,9 +724,10 @@ function balanceHtml(plan) {
         const inner = mix === 'stack' ? `<span class="wb-stack"><i class="wb-fresh" style="height:${fresh}%"></i><i class="wb-tired" style="height:${100 - fresh}%"></i></span>` : '';
         const paint = mix === 'stack' ? '' : ` style="background:${recoveryBlend(fresh)}"`;
         const tip = hit ? `${hit.name} · ${pct}%` : `${pct}%`;
+        const drop = ` data-drop-block="${block}"`;
         return hit
-          ? `<button type="button" class="wb-seg ${mix}" title="${esc(tip)}"${paint}${jump}>${inner}${dot}</button>`
-          : `<span class="wb-seg ${mix}" title="${esc(tip)}"${paint}>${inner}</span>`;
+          ? `<button type="button" class="wb-seg ${mix}" title="${esc(tip)}"${paint}${jump}${drop}>${inner}${dot}</button>`
+          : `<span class="wb-seg ${mix}" title="${esc(tip)}"${paint}${drop}>${inner}</span>`;
       }).join('');
       days.push(`<span class="wb-day">${segs}</span>`);
     }
@@ -723,6 +735,53 @@ function balanceHtml(plan) {
   }).join('');
   const modeBtn = (id, icon) => `<button type="button" class="wb-mode-btn${mix === id ? ' on' : ''}" data-wb-mode="${id}" title="${esc(t(id === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient'))}" aria-pressed="${mix === id}" aria-label="${esc(t(id === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient'))}">${icon}</button>`;
   return `<div class="wb"><div class="wb-top"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-mode" role="group" aria-label="${esc(t('plan.balanceMode'))}">${modeBtn('gradient', WB_GRAD)}${modeBtn('stack', WB_STACK)}</div></div><div class="wb-bar"><div class="wb-line wb-head"><span></span>${head}</div>${body}</div><p class="muted small">${t(mix === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient')} ${t('plan.balanceHint')} ${t('plan.balanceDays')}</p></div>`;
+}
+function bindWhenDrag() {
+  document.querySelectorAll('[data-drag]').forEach((el) => {
+    el.addEventListener('dragstart', (ev) => {
+      ev.stopPropagation();
+      ev.dataTransfer.setData('text/plain', el.dataset.drag);
+      ev.dataTransfer.effectAllowed = 'move';
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      document.querySelectorAll('.wb-over').forEach((n) => n.classList.remove('wb-over'));
+    });
+    el.addEventListener('click', (ev) => ev.stopPropagation());
+    el.addEventListener('keydown', (ev) => ev.stopPropagation());
+  });
+}
+function bindWhenDrop() {
+  document.querySelectorAll('[data-drop-day], [data-drop-block]').forEach((el) => {
+    el.addEventListener('dragover', (ev) => { ev.preventDefault(); el.classList.add('wb-over'); if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'move'; });
+    el.addEventListener('dragleave', () => el.classList.remove('wb-over'));
+    el.addEventListener('drop', (ev) => { ev.preventDefault(); el.classList.remove('wb-over'); dropWhen(ev, el); });
+  });
+}
+async function dropWhen(ev, el) {
+  const key = ev.dataTransfer?.getData('text/plain');
+  const s = state.plan?.sessions?.find((x) => x.key === key);
+  if (!s || pastWeek) return;
+  let weekday;
+  let slot;
+  if (el.dataset.dropBlock != null) {
+    const block = +el.dataset.dropBlock;
+    const per = state.plan?.balance?.blockHours ? Math.round(24 / state.plan.balance.blockHours) : 4;
+    const hours = state.plan?.balance?.blockHours || 6;
+    weekday = Math.floor(block / per);
+    const rect = el.getBoundingClientRect();
+    const f = rect.width ? Math.min(0.999, Math.max(0, (ev.clientX - rect.left) / rect.width)) : 0.5;
+    slot = nearestSlot((block % per) * hours + f * hours);
+  } else {
+    weekday = +el.dataset.dropDay;
+    slot = Number.isInteger(Number(s.slot)) ? Number(s.slot) : 4;
+  }
+  if (Number(s.weekday) === weekday && Number(s.slot ?? 4) === slot) return;
+  try {
+    state.plan = (await api('POST', '/api/plan/when', { key, weekday, slot })).plan;
+    renderPlan();
+  } catch (e) { toast(e.message, true); }
 }
 async function setRecoveryBars(mode) {
   const next = mode === 'stack' ? 'stack' : 'gradient';

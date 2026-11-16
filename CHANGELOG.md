@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.5 — 16 november 2026
+- Sleep de dag en het uur van een training naar een andere plek in het weekherstel. De andere trainingen van die dag gaan mee, en het herstel wordt meteen herberekend.
+
 ## 2.34.4 — 16 november 2026
 - Het weekherstel opent als een geleidelijk kleurverloop van oranje naar groen. Een knop zet de stapel aan. De keuze blijft per gebruiker bewaard. GymCoach Sync 1.13.8 volgt die keuze.
 

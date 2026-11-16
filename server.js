@@ -15,7 +15,7 @@ import * as insights from './lib/insights.js';
 import * as signals from './lib/signals.js';
 import * as muscleRec from './lib/muscleRecovery.js';
 import * as weekbalance from './lib/weekbalance.js';
-import { alignPlanDays, assignFreeWeekday, preferNamedOutdoor, slotNum, weekdayNum } from './lib/weekdays.js';
+import { alignPlanDays, assignFreeWeekday, moveTrainingDay, preferNamedOutdoor, slotNum, weekdayNum } from './lib/weekdays.js';
 import * as goal from './lib/goal.js';
 import * as phone from './lib/phone.js';
 import { guideSections } from './lib/guide.js';
@@ -563,6 +563,24 @@ const routes = {
     return { plan: await generatePlan(prefs) };
   },
   'GET /api/focus': async () => ({ focus: Object.fromEntries(Object.entries(engine.FOCUS).map(([k, v]) => [k, v.label])), dayTypes: engine.DAY_TYPES }),
+  'POST /api/plan/when': async (req) => {
+    const b = await body(req);
+    const plan = await store.getPlan();
+    if (!plan?.sessions) throw Object.assign(new Error(tr('srv.ongeldigPlan')), { status: 400 });
+    const day = weekdayNum(b.weekday);
+    const slot = slotNum(b.slot);
+    if (day == null || slot == null) throw Object.assign(new Error(tr('srv.ongeldigPlan')), { status: 400 });
+    const session = plan.sessions.find((s) => s.key === b.key);
+    if (!session) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
+    if (!moveTrainingDay(plan.sessions, session.key, day, slot)) return { plan };
+    alignPlanDays(plan);
+    if (plan.weekBalance || plan.balance) {
+      const ctx = await context();
+      weekbalance.refreshGrid(plan, { history: ctx.history });
+    }
+    await store.savePlan(plan);
+    return { plan };
+  },
   'PUT /api/plan': async (req) => {
     const plan = await body(req);
     if (!plan?.sessions) throw Object.assign(new Error(tr('srv.ongeldigPlan')), { status: 400 });

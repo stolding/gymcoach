@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { refreshGrid } from '../lib/weekbalance.js';
-import { defaultWeekdays, orderTrainingDays, preferNamedOutdoor, sessionAtHours, sessionOffsetHours } from '../lib/weekdays.js';
+import { defaultWeekdays, moveTrainingDay, orderTrainingDays, preferNamedOutdoor, sessionAtHours, sessionOffsetHours } from '../lib/weekdays.js';
 
 function plan(items) {
   return {
@@ -70,6 +70,29 @@ test('a named walk takes the place of the generic outdoor card on the same day',
   assert.deepEqual(plan.sessions.map((s) => s.name), ['Full Body A', 'Wandelen']);
   assert.deepEqual(plan.dayTypes, ['combinatie', 'circuit']);
   assert.equal(plan.daysPerWeek, 2);
+});
+
+test('dragging one workout moves every workout of that day by the same day and time', () => {
+  const sessions = [
+    { key: 'a', weekday: 0, slot: 1 },
+    { key: 'b', weekday: 0, slot: 4 },
+    { key: 'c', weekday: 3, slot: 4 },
+  ];
+  assert.equal(moveTrainingDay(sessions, 'a', 2, 2), true);
+  assert.deepEqual(sessions.find((s) => s.key === 'a'), { key: 'a', weekday: 2, slot: 2 });
+  assert.deepEqual(sessions.find((s) => s.key === 'b'), { key: 'b', weekday: 2, slot: 5 });
+  assert.deepEqual(sessions.find((s) => s.key === 'c'), { key: 'c', weekday: 3, slot: 4 });
+});
+
+test('a moved workout takes the nearest free hour when the target is taken', () => {
+  const sessions = [
+    { key: 'a', weekday: 0, slot: 4 },
+    { key: 'c', weekday: 2, slot: 4 },
+  ];
+  assert.equal(moveTrainingDay(sessions, 'a', 2, 4), true);
+  assert.equal(sessions.find((s) => s.key === 'a').weekday, 2);
+  assert.equal(sessions.find((s) => s.key === 'a').slot, 5);
+  assert.equal(sessions.find((s) => s.key === 'c').slot, 4);
 });
 
 test('a weekday stays with its workout when the rows are out of order', () => {

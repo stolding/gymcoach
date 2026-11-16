@@ -84,6 +84,30 @@ test('dragging one workout moves every workout of that day by the same day and t
   assert.deepEqual(sessions.find((s) => s.key === 'c'), { key: 'c', weekday: 3, slot: 4 });
 });
 
+test('moving one column keeps two neighbouring workouts in two columns', () => {
+  const sessions = [
+    { key: 'a', weekday: 0, slot: 3 },
+    { key: 'b', weekday: 0, slot: 4 },
+  ];
+  assert.equal(moveTrainingDay(sessions, 'a', 0, 5), true);
+  assert.equal(sessions.find((s) => s.key === 'a').weekday, 0);
+  assert.equal(sessions.find((s) => s.key === 'a').slot, 5);
+  assert.equal(sessions.find((s) => s.key === 'b').weekday, 1);
+  assert.equal(sessions.find((s) => s.key === 'b').slot, 0);
+});
+
+test('moving the later column left keeps the two workouts apart', () => {
+  const sessions = [
+    { key: 'a', weekday: 0, slot: 3 },
+    { key: 'b', weekday: 0, slot: 4 },
+  ];
+  assert.equal(moveTrainingDay(sessions, 'b', 0, 2), true);
+  assert.equal(sessions.find((s) => s.key === 'a').weekday, 0);
+  assert.equal(sessions.find((s) => s.key === 'a').slot, 1);
+  assert.equal(sessions.find((s) => s.key === 'b').weekday, 0);
+  assert.equal(sessions.find((s) => s.key === 'b').slot, 2);
+});
+
 test('a moved workout takes the nearest free hour when the target is taken', () => {
   const sessions = [
     { key: 'a', weekday: 0, slot: 4 },

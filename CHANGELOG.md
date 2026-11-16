@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.8 — 16 november 2026
+- Slepen in het weekherstel verschuift per kolom van 6 uur. Twee trainingen naast elkaar blijven twee kolommen, ook als je de linker of de rechter sleept.
+
 ## 2.34.7 — 16 november 2026
 - Een training verschuif je door het bolletje in het weekherstel te slepen. De andere trainingen van die dag gaan mee.
 

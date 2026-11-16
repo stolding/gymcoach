@@ -690,14 +690,14 @@ function weekdayBadge(s) {
   const slot = slotText(s?.slot);
   return `<span class="badge">${esc(name)}${slot ? ` ${esc(slot)}` : ''}</span> `;
 }
-function nearestSlot(hour) {
-  let best = 0, dist = Infinity;
-  DAY_SLOTS.forEach((s, i) => {
-    const mid = (s[0] + s[1]) / 2;
-    const d = Math.abs(mid - hour);
-    if (d < dist) { dist = d; best = i; }
-  });
-  return best;
+// Een kolom is 6 uur en bevat twee dagdelen. Het bolletje houdt zijn helft van de kolom.
+function slotInColumn(dayBlock, fromSlot) {
+  const start = dayBlock * 6;
+  const found = [];
+  DAY_SLOTS.forEach((s, i) => { if (s[0] >= start && s[0] < start + 6) found.push(i); });
+  if (!found.length) return 0;
+  const half = Number(fromSlot) % 2 === 1 ? 1 : 0;
+  return found[Math.min(half, found.length - 1)];
 }
 // Geleidelijk van oranje (0, vermoeid) naar groen (100, hersteld), zonder sprong op de helft.
 function recoveryBlend(pct) {
@@ -766,11 +766,9 @@ async function dropWhen(ev, el) {
   if (el.dataset.dropBlock != null) {
     const block = +el.dataset.dropBlock;
     const per = state.plan?.balance?.blockHours ? Math.round(24 / state.plan.balance.blockHours) : 4;
-    const hours = state.plan?.balance?.blockHours || 6;
     weekday = Math.floor(block / per);
-    const rect = el.getBoundingClientRect();
-    const f = rect.width ? Math.min(0.999, Math.max(0, (ev.clientX - rect.left) / rect.width)) : 0.5;
-    slot = nearestSlot((block % per) * hours + f * hours);
+    const fromSlot = Number.isInteger(Number(s.slot)) ? Number(s.slot) : 4;
+    slot = slotInColumn(block % per, fromSlot);
   } else {
     weekday = +el.dataset.dropDay;
     slot = Number.isInteger(Number(s.slot)) ? Number(s.slot) : 4;

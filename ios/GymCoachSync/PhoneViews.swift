@@ -110,7 +110,11 @@ struct SessionCard: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(session.name).font(.headline).foregroundStyle(PhoneChrome.ink).multilineTextAlignment(.leading)
                 HStack(spacing: 8) {
-                    if let m = session.minutes { Text("\(m) min") }
+                    if session.outdoor {
+                        Text(session.when.isEmpty ? "Deze week" : session.when)
+                    } else if let m = session.minutes {
+                        Text("\(m) min")
+                    }
                     if session.done, !session.doneDate.isEmpty { Text(session.doneDate) }
                 }
                 .font(.subheadline)
@@ -550,8 +554,12 @@ struct DashboardView: View {
 
     private func metaLine(_ s: PhoneSession, _ snap: PhoneSnapshot) -> some View {
         var bits: [String] = []
-        if let m = s.minutes { bits.append("~\(m) min") }
-        if !s.outdoor { bits.append("\(s.exercises.count) oefeningen") }
+        if s.outdoor {
+            bits.append(s.when.isEmpty ? "Deze week" : s.when)
+        } else {
+            if let m = s.minutes { bits.append("~\(m) min") }
+            bits.append("\(s.exercises.count) oefeningen")
+        }
         if !snap.weekPlan.goal.isEmpty { bits.append(snap.weekPlan.goal) }
         return VStack(alignment: .leading, spacing: 4) {
             Text(bits.joined(separator: " · "))

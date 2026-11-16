@@ -547,6 +547,10 @@ function outdoorDone(s) {
 }
 function outdoorMeta(s) {
   const badge = `<span class="badge">${esc(outdoorBadge(s))}</span>`;
+  const goals = goalsForCard(s);
+  if (goals.length === 1 && goals[0].times > 0 && goals[0].minutes > 0) {
+    return `${esc(t('goal.form.proposalLine', { times: goals[0].times, min: goals[0].minutes, km: '' }))} ${badge}`;
+  }
   return `${t('app.min', { estMinutes: s.estMinutes })} ${badge}`;
 }
 function actGoalName(id) { return id === 'padel' ? t('nt.act.padel') : (ACT[id]?.[0] || id); }
@@ -685,6 +689,7 @@ function weekdayName(n) {
 const DAY_SLOTS = [[6, 9], [9, 12], [12, 15], [15, 18], [18, 21], [21, 24]];
 const slotText = (n) => { const s = DAY_SLOTS[Number(n)]; return s ? `${s[0]}\u2013${s[1]}` : ''; };
 function weekdayBadge(s) {
+  if (s?.outdoor || s?.type === 'buiten') return `<span class="badge">${esc(t('ui.stats.dezeWeek'))}</span> `;
   const name = weekdayName(s?.weekday);
   if (!name) return '';
   const slot = slotText(s?.slot);
@@ -1315,9 +1320,14 @@ function openGenerate() {
     return out.sort((a, b) => a - b);
   };
   const savedDays = Array.isArray(state.plan?.weekdays) ? state.plan.weekdays.map(Number) : [];
-  let weekdays = savedDays.length === days.length && savedDays.every((d) => Number.isInteger(d) && d >= 0 && d <= 6) ? savedDays : spreadDays(days.length);
+  const spread = spreadDays(days.length);
+  let weekdays = savedDays.length === days.length
+    ? savedDays.map((d, i) => (Number.isInteger(d) && d >= 0 && d <= 6 ? d : spread[i]))
+    : spread;
   const savedSlots = Array.isArray(state.plan?.slots) ? state.plan.slots.map(Number) : [];
-  let slots = savedSlots.length === days.length && savedSlots.every((s) => Number.isInteger(s) && s >= 0 && s < DAY_SLOTS.length) ? savedSlots : Array(days.length).fill(4);
+  let slots = savedSlots.length === days.length
+    ? savedSlots.map((s) => (Number.isInteger(s) && s >= 0 && s < DAY_SLOTS.length ? s : 4))
+    : Array(days.length).fill(4);
   const sortDays = () => {
     const rows = days.map((type, i) => ({ type, w: weekdays[i], slot: slots[i] }));
     rows.sort((a, b) => a.w - b.w || a.slot - b.slot);
@@ -1329,8 +1339,8 @@ function openGenerate() {
     const names = weekdaysShort();
     $('#dayList').innerHTML = days.map((type, i) => `<div class="day-row"><span class="day-n">${tx('app.dag2', { a: i + 1 })}</span>
       <select data-d="${i}" aria-label="${tx('app.dayTypeOf', { n: i + 1 })}">${Object.entries(DAY_TYPES).map(([k, l]) => `<option value="${k}" ${k === type ? 'selected' : ''}>${l}</option>`).join('')}</select>
-      <select data-w="${i}" class="day-wd" aria-label="${tx('app.weekdayOf', { n: i + 1 })}">${names.map((name, d) => `<option value="${d}" ${d === weekdays[i] ? 'selected' : ''}>${esc(name)}</option>`).join('')}</select>
-      <select data-s="${i}" class="day-slot" aria-label="${tx('app.slotOf', { n: i + 1 })}">${DAY_SLOTS.map((s, n) => `<option value="${n}" ${n === slots[i] ? 'selected' : ''}>${s[0]}\u2013${s[1]}</option>`).join('')}</select>
+      ${type === 'buiten' ? `<span class="muted small">${esc(tx('ui.stats.dezeWeek'))}</span>` : `<select data-w="${i}" class="day-wd" aria-label="${tx('app.weekdayOf', { n: i + 1 })}">${names.map((name, d) => `<option value="${d}" ${d === weekdays[i] ? 'selected' : ''}>${esc(name)}</option>`).join('')}</select>
+      <select data-s="${i}" class="day-slot" aria-label="${tx('app.slotOf', { n: i + 1 })}">${DAY_SLOTS.map((s, n) => `<option value="${n}" ${n === slots[i] ? 'selected' : ''}>${s[0]}\u2013${s[1]}</option>`).join('')}</select>`}
       <button type="button" class="btn small ghost" data-del="${i}" aria-label="${tx('app.dayRemove', { n: i + 1 })}" ${days.length <= 1 ? 'disabled' : ''}>✕</button></div>`).join('');
     const nK = days.filter((type) => !['circuit', 'buiten'].includes(type)).length;
     $('#dayNote').textContent = t('app.kracht', { nK, a: days.length - nK ? t('app.cardio', { a: days.length - nK }) : '', b: nK ? ` → ${nK === 1 ? 'full body' : nK <= 3 ? 'full body A/B' + (nK === 3 ? '/C' : '') : 'upper/lower'}` : '' });

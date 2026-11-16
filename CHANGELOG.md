@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.2 — 16 november 2026
+- Wandelen en andere activiteiten buiten de Gym Monster horen bij de hele week, niet bij één dag en uur. GymCoach Sync 1.13.10 toont hetzelfde.
+
 ## 2.35.1 — 16 november 2026
 - GymCoach Sync 1.13.9 draait mee: staand en liggend. Ondersteboven blijft uit.
 

@@ -304,6 +304,20 @@ function outdoorSession({ key, name, kind, minutes }) {
 }
 
 // Spierkaart en, als de week één plan is, het herstelraster. Verplaatst geen oefeningen.
+async function settleWeekActivities(plan, history) {
+  if (!plan?.sessions) return plan;
+  const before = plan.sessions.map((s) => `${s.key}:${s.weekday ?? ''}:${s.slot ?? ''}`).join('|');
+  alignPlanDays(plan);
+  preferNamedOutdoor(plan);
+  const after = plan.sessions.map((s) => `${s.key}:${s.weekday ?? ''}:${s.slot ?? ''}`).join('|');
+  if (before !== after) {
+    refreshMuscles(plan);
+    if (plan.weekBalance) weekbalance.refreshGrid(plan, { history });
+    await store.savePlan(plan);
+  }
+  return plan;
+}
+
 async function touchPlan(plan) {
   refreshMuscles(plan);
   alignPlanDays(plan);
@@ -381,8 +395,13 @@ async function generatePlan(prefs) {
     }
     if (i >= 0) {
       filled.add(i);
-      if (weekdayNum(plan.sessions[i].weekday) != null) kept.weekday = plan.sessions[i].weekday;
-      if (slotNum(plan.sessions[i].slot) != null) kept.slot = plan.sessions[i].slot;
+      if (!(kept.outdoor || kept.type === 'buiten')) {
+        if (weekdayNum(plan.sessions[i].weekday) != null) kept.weekday = plan.sessions[i].weekday;
+        if (slotNum(plan.sessions[i].slot) != null) kept.slot = plan.sessions[i].slot;
+      } else {
+        delete kept.weekday;
+        delete kept.slot;
+      }
       plan.sessions[i] = kept;
     } else {
       assignFreeWeekday(plan, kept);
@@ -415,11 +434,7 @@ const routes = {
   'GET /api/state': async () => {
     const ctx = await context();
     const [rawPlan, meta] = await Promise.all([store.getPlan(), store.getMeta()]);
-    if (rawPlan && preferNamedOutdoor(rawPlan)) {
-      refreshMuscles(rawPlan);
-      if (rawPlan.weekBalance) weekbalance.refreshGrid(rawPlan, { history: ctx.history });
-      await store.savePlan(rawPlan);
-    }
+    await settleWeekActivities(rawPlan, ctx.history);
     const plan = engine.localizePlan(rawPlan);
     if (plan?.weekBalance) weekbalance.refreshGrid(plan, { history: ctx.history });
     // eerste keer: stappen voor een nieuwe gebruiker (account, voorkeuren, eerste plan)
@@ -560,12 +575,20 @@ const routes = {
       if (!t.length) throw Object.assign(new Error(tr('srv.kiesMinstensEenTrainingsdag')), { status: 400 });
       prefs.dayTypes = t;
       if (Array.isArray(b.weekdays)) {
-        const w = b.weekdays.slice(0, t.length).map((x) => Math.round(Number(x)));
-        if (w.length === t.length && w.every((x) => x >= 0 && x <= 6)) prefs.weekdays = w;
+        const w = t.map((type, i) => {
+          const n = Math.round(Number(b.weekdays[i]));
+          if (Number.isInteger(n) && n >= 0 && n <= 6) return n;
+          return type === 'buiten' ? 0 : null;
+        });
+        if (w.every((x) => x != null)) prefs.weekdays = w;
       }
       if (Array.isArray(b.slots)) {
-        const s = b.slots.slice(0, t.length).map((x) => Math.round(Number(x)));
-        if (s.length === t.length && s.every((x) => x >= 0 && x <= 5)) prefs.slots = s;
+        const s = t.map((type, i) => {
+          const n = Math.round(Number(b.slots[i]));
+          if (Number.isInteger(n) && n >= 0 && n <= 5) return n;
+          return type === 'buiten' ? 4 : null;
+        });
+        if (s.every((x) => x != null)) prefs.slots = s;
       }
     }
     return { plan: await generatePlan(prefs) };
@@ -822,6 +845,7 @@ const routes = {
   'GET /api/phone': async () => {
     const ctx = await context();
     const [rawPlan, daily, activities, meta] = await Promise.all([store.getPlan(), store.getHealthDaily(), store.getActivities(), store.getMeta()]);
+    await settleWeekActivities(rawPlan, ctx.history);
     const gv = await goalView(ctx, daily);
     const hs = meta.healthStatus?.text ? { text: meta.healthStatus.text, at: meta.healthStatus.at || '' } : null;
     let scoreView = null;
@@ -981,14 +1005,9 @@ const routes = {
       const draft = { outdoor: true, activity: kind.type, activityLabel: kind.match || '' };
       const wanted = actgoal.goalFor(draft, actgoal.normalize(ctx.settings.activityGoals));
       const sess = outdoorSession({ key: old ? old.key : `X${n}`, name, kind, minutes: wanted?.minutes || Number(ctx.settings.minutesPerSession) || 45 });
-      if (old) {
-        if (weekdayNum(old.weekday) != null) sess.weekday = old.weekday;
-        if (slotNum(old.slot) != null) sess.slot = old.slot;
-        plan.sessions[slot] = sess;
-      } else {
-        assignFreeWeekday(plan, sess);
-        plan.sessions.push(sess);
-      }
+      if (old) plan.sessions[slot] = sess;
+      else plan.sessions.push(sess);
+      assignFreeWeekday(plan, sess);
       await touchPlan(plan);
       return { plan, key: sess.key };
     }

@@ -176,6 +176,7 @@ struct PhoneSession: Codable, Identifiable {
     var key: String
     var name: String
     var minutes: Int?
+    var when: String = ""
     var outdoor: Bool
     var advice: String
     var done: Bool
@@ -187,7 +188,7 @@ struct PhoneSession: Codable, Identifiable {
     var id: String { key }
 
     enum CodingKeys: String, CodingKey {
-        case key, name, minutes, outdoor, advice, done, doneDate, onDevice, superset, exercises, shifts
+        case key, name, minutes, when, outdoor, advice, done, doneDate, onDevice, superset, exercises, shifts
     }
 
     init(from decoder: Decoder) throws {
@@ -195,6 +196,7 @@ struct PhoneSession: Codable, Identifiable {
         key = try c.decode(String.self, forKey: .key)
         name = try c.decode(String.self, forKey: .name)
         minutes = try c.decodeIfPresent(Int.self, forKey: .minutes)
+        when = try c.decodeIfPresent(String.self, forKey: .when) ?? ""
         outdoor = try c.decode(Bool.self, forKey: .outdoor)
         advice = try c.decode(String.self, forKey: .advice)
         done = try c.decode(Bool.self, forKey: .done)
@@ -210,6 +212,7 @@ struct PhoneSession: Codable, Identifiable {
         try c.encode(key, forKey: .key)
         try c.encode(name, forKey: .name)
         try c.encodeIfPresent(minutes, forKey: .minutes)
+        try c.encode(when, forKey: .when)
         try c.encode(outdoor, forKey: .outdoor)
         try c.encode(advice, forKey: .advice)
         try c.encode(done, forKey: .done)

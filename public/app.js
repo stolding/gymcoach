@@ -4154,6 +4154,7 @@ $('#reviewPrint')?.addEventListener('click', () => {
   window.print();
 });
 $('#reviewPdf')?.addEventListener('click', () => { window.open('/api/stats/review.pdf?' + reviewQuery(), '_blank', 'noopener'); });
+$('#yearPdf')?.addEventListener('click', () => { window.open('/api/stats/year.pdf', '_blank', 'noopener'); });
 
 // ---------- analyse ----------
 let analysisData = null;

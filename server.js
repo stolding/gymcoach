@@ -12,6 +12,7 @@ import { tr, userLang, parseAccept, err } from './lib/lang.js';
 // taal voor uitleg en beelden van Speediance: die van de gebruiker als Speediance hem goed levert, anders Engels
 const infoLang = () => (exinfo.INFO_LANGS.includes(userLang()) ? userLang() : 'en');
 import * as insights from './lib/insights.js';
+import * as year from './lib/year.js';
 import * as signals from './lib/signals.js';
 import * as muscleRec from './lib/muscleRecovery.js';
 import * as weekbalance from './lib/weekbalance.js';
@@ -485,6 +486,13 @@ const routes = {
     const an = insights.analysis({ history: ctx.history, workouts: ctx.workouts, sessions: ctx.sessions, workoutHealth, activities, daily, bodyLog: ctx.bodyLog }, since);
     const who = store.currentUser()?.name || '';
     return { __binary: { type: 'application/pdf', data: insights.reviewPdf({ stats: st, extra, analysis: an, since, userName: who }), filename: 'GymCoach-terugkijken.pdf' } };
+  },
+  'GET /api/stats/year.pdf': async () => {
+    const ctx = await context();
+    const view = await scores.present(400);
+    const who = store.currentUser()?.name || '';
+    const data = year.yearSeries({ workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, scores: view.history || [] });
+    return { __binary: { type: 'application/pdf', data: year.yearPdf(data, { userName: who }), filename: 'GymCoach-jaaroverzicht.pdf' } };
   },
   'GET /api/analysis': async (req, url) => {
     const ctx = await context();

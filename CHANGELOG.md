@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.1 — 16 november 2026
+- GymCoach Sync 1.13.9 draait mee: staand en liggend. Ondersteboven blijft uit.
+
+## 2.35.0 — 16 november 2026
+- Op Terugkijken opent Jaaroverzicht een PDF van één pagina: lijnen voor gewicht, oefeningen en duur per week over de laatste 52 weken, plus de gezondheidsscore en de belangrijkste cijfers. Alleen Gym Monster-trainingen.
+
 ## 2.34.14 — 16 november 2026
 - De vergelijking in het trainingsrapport telt alleen de Gym Monster-sessie. Een wandeling op dezelfde dag telt niet meer mee in duur, calorieën of hartslag.
 

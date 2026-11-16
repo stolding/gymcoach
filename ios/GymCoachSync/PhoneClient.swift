@@ -98,6 +98,10 @@ struct PhoneWeek: Codable {
     var volume: Int
     var volumeNote: String
 
+    enum CodingKeys: String, CodingKey {
+        case done, target, planned, minutes, streak, kcal, volume, volumeNote
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         done = try c.decode(Int.self, forKey: .done)

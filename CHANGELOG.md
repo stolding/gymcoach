@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.10 — 16 november 2026
+- GymCoach Sync 1.13.8 bouwt weer: de weekring kon niet worden gelezen omdat de sleutels ontbraken. TestFlight volgt deze build.
+
 ## 2.34.9 — 16 november 2026
 - Een AI-voorstel voor meer gewicht gaat tot 15% boven de vorige keer van die oefening. Zonder historie blijft het plafond 15% boven het voorstel.
 

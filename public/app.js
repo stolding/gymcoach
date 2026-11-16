@@ -688,9 +688,17 @@ function weekdayBadge(s) {
   const slot = slotText(s?.slot);
   return `<span class="badge">${esc(name)}${slot ? ` ${esc(slot)}` : ''}</span> `;
 }
+// Geleidelijk van oranje (0, vermoeid) naar groen (100, hersteld), zonder sprong op de helft.
+function recoveryBlend(pct) {
+  const n = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
+  return `color-mix(in oklab, var(--ok) ${n}%, var(--accent))`;
+}
+const WB_GRAD = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><defs><linearGradient id="wbGrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--ok)"/></linearGradient></defs><rect x="1.5" y="1.5" width="13" height="13" rx="2" fill="url(#wbGrad)"/></svg>';
+const WB_STACK = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="9" width="13" height="5.5" rx="1.2" fill="var(--accent)"/><rect x="1.5" y="1.5" width="13" height="6.5" rx="1.2" fill="var(--ok)"/></svg>';
 function balanceHtml(plan) {
   const b = plan.balance;
   if (!b?.rows?.length || !b?.rows[0]?.blocks) return '';
+  const mix = state.settings?.recoveryBars === 'stack' ? 'stack' : 'gradient';
   const perDay = (b.blockHours ? 24 / b.blockHours : 4);
   const head = `<div class="wb-days">${[0, 1, 2, 3, 4, 5, 6].map((d) => `<span>${esc(weekdayName(d))}</span>`).join('')}</div>`;
   const body = b.rows.map((row) => {
@@ -702,17 +710,34 @@ function balanceHtml(plan) {
         const jump = hit ? ` data-jump="${esc(hit.key)}|${hit.i}"` : '';
         const dot = hit ? `<i class="wb-dot ${hit.role === 'prime' ? 'prime' : ''}"></i>` : '';
         const fresh = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
-        const stack = `<span class="wb-stack"><i class="wb-fresh" style="height:${fresh}%"></i><i class="wb-tired" style="height:${100 - fresh}%"></i></span>`;
+        const inner = mix === 'stack' ? `<span class="wb-stack"><i class="wb-fresh" style="height:${fresh}%"></i><i class="wb-tired" style="height:${100 - fresh}%"></i></span>` : '';
+        const paint = mix === 'stack' ? '' : ` style="background:${recoveryBlend(fresh)}"`;
         const tip = hit ? `${hit.name} · ${pct}%` : `${pct}%`;
         return hit
-          ? `<button type="button" class="wb-seg" title="${esc(tip)}"${jump}>${stack}${dot}</button>`
-          : `<span class="wb-seg" title="${esc(tip)}">${stack}</span>`;
+          ? `<button type="button" class="wb-seg ${mix}" title="${esc(tip)}"${paint}${jump}>${inner}${dot}</button>`
+          : `<span class="wb-seg ${mix}" title="${esc(tip)}"${paint}>${inner}</span>`;
       }).join('');
       days.push(`<span class="wb-day">${segs}</span>`);
     }
     return `<div class="wb-line"><span class="wb-name">${esc(t('bm.' + row.key))}</span><span class="wb-track">${days.join('')}</span></div>`;
   }).join('');
-  return `<div class="wb"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-bar"><div class="wb-line wb-head"><span></span>${head}</div>${body}</div><p class="muted small">${t('plan.balanceHint')} ${t('plan.balanceDays')}</p></div>`;
+  const modeBtn = (id, icon) => `<button type="button" class="wb-mode-btn${mix === id ? ' on' : ''}" data-wb-mode="${id}" title="${esc(t(id === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient'))}" aria-pressed="${mix === id}" aria-label="${esc(t(id === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient'))}">${icon}</button>`;
+  return `<div class="wb"><div class="wb-top"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-mode" role="group" aria-label="${esc(t('plan.balanceMode'))}">${modeBtn('gradient', WB_GRAD)}${modeBtn('stack', WB_STACK)}</div></div><div class="wb-bar"><div class="wb-line wb-head"><span></span>${head}</div>${body}</div><p class="muted small">${t(mix === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient')} ${t('plan.balanceHint')} ${t('plan.balanceDays')}</p></div>`;
+}
+async function setRecoveryBars(mode) {
+  const next = mode === 'stack' ? 'stack' : 'gradient';
+  if ((state.settings?.recoveryBars === 'stack' ? 'stack' : 'gradient') === next) return;
+  const prev = state.settings.recoveryBars;
+  state.settings.recoveryBars = next;
+  renderWeekMap();
+  try {
+    const r = await api('PUT', '/api/settings', { recoveryBars: next });
+    state.settings = r.settings;
+  } catch (e) {
+    state.settings.recoveryBars = prev;
+    renderWeekMap();
+    toast(e.message, true);
+  }
 }
 
 // gekozen spiergroep ook in de trainingskaarten uitlichten (primair sterk, secundair licht, rest gedimd)
@@ -755,6 +780,8 @@ function highlightSessions() {
   });
 }
 $('#planOverview').addEventListener('click', (ev) => {
+  const modeBtn = ev.target.closest('[data-wb-mode]');
+  if (modeBtn) { setRecoveryBars(modeBtn.dataset.wbMode); return; }
   if (ev.target.closest('[data-clear]')) { selMuscle = null; renderWeekMap(); return; }
   const j = ev.target.closest('[data-jump]');
   if (j) {

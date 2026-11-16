@@ -288,6 +288,11 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
 .wish { font-style: italic; margin-top: .5rem; color: var(--ink); }
 .mbars { display: flex; flex-direction: column; gap: .3rem; margin-top: .35rem; }
 .wb { margin-top: .7rem; }
+.wb-top { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.wb-mode { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.wb-mode-btn { display: grid; place-items: center; width: 30px; height: 24px; padding: 0; border: 0; background: transparent; color: var(--muted); }
+.wb-mode-btn + .wb-mode-btn { border-left: 1px solid var(--line); }
+.wb-mode-btn.on { background: color-mix(in srgb, var(--ink) 12%, transparent); color: var(--ink); }
 .wb-bar { display: flex; flex-direction: column; gap: 2px; }
 .wb-line { display: grid; grid-template-columns: 8.4rem minmax(0, 1fr); gap: .45rem; align-items: center; }
 .wb-head { margin-bottom: .1rem; }

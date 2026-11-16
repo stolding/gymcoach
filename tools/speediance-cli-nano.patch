@@ -58,3 +58,12 @@
  		"Mobiledevices":   mobileDevices,
  		"Token":           "THE_TOKEN",
  		"App_user_id":     "99",
+--- a/internal/version/version.go
++++ b/internal/version/version.go
+@@ -92,4 +92,4 @@ func Info() Build {
+ // String is the short, human one-liner used by `--version`.
+ func (b Build) String() string {
+-	return b.Version + " (commit " + b.Commit + ", built " + b.Date + ", " + b.Go + ")"
++	return b.Version + " (commit " + b.Commit + ", built " + b.Date + ", " + b.Go + ", NANO)"
+ }
+

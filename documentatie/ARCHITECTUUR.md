@@ -57,7 +57,7 @@ Hoe de code in elkaar zit, voor wie GymCoach wil aanpassen of uitbreiden. Wat de
 | `public/terms.js` | Voorwaarden en gezondheidsverklaring (met versienummer). |
 | `backup.js`, `restore.js` | Back-up maken; oude JSON-gegevens terugzetten. |
 | `Dockerfile`, `docker-compose.yml` | Container met Node.js 22 en speediance-cli; gegevens in het volume `/data`. Het image wordt gebouwd door `.github/workflows/docker.yml` (amd64 en arm64, naar ghcr.io). |
-| `install.sh` | Installatie zonder Docker: Node-controle, speediance-cli, systemd-dienst. |
+| `install.sh`, `tools/build-cli.sh` | Installatie zonder Docker: Node-controle, speediance-cli gebouwd met de NANO-patch, systemd-dienst. |
 | `lib/update.js` | Bijwerken vanaf GitHub `main`: vergelijken, syntaxcontrole, `reset --hard`, herstart van de systemd-gebruikersdienst. Alleen de beheerder, alleen een eigen git-checkout. |
 | `deploy/tunnel/` | Optioneel: reverse SSH-tunnel naar je eigen VPS, met bewaker. |
 | `ios/` | iPhone-app GymCoach Sync (SwiftUI, HealthKit), gebouwd via GitHub Actions. |

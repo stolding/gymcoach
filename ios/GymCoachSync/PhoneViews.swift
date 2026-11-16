@@ -799,7 +799,9 @@ struct WeekBalanceStrip: View {
                 .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             if usesBlocks {
                 blockGrid
-                Text("Oranje onder is vermoeid, groen erboven is hersteld. Een stip is een training.")
+                Text(stacked
+                     ? "Oranje onder is vermoeid, groen erboven is hersteld. Een stip is een training."
+                     : "De kleur loopt geleidelijk van oranje naar groen. Een stip is een training.")
                     .font(.caption2).foregroundStyle(.secondary)
             } else {
                 legacyGrid
@@ -810,6 +812,13 @@ struct WeekBalanceStrip: View {
     private var usesBlocks: Bool {
         guard let blocks = grid.rows.first?.blocks else { return false }
         return !blocks.isEmpty
+    }
+
+    private var stacked: Bool { grid.mode == "stack" }
+
+    private func blend(_ pct: Int) -> Color {
+        let t = CGFloat(min(100, max(0, pct))) / 100
+        return Color(red: 1 + (0.30 - 1) * t, green: 0.48 + (0.76 - 0.48) * t, blue: 0.18 + (0.42 - 0.18) * t)
     }
 
     private var blockGrid: some View {
@@ -831,7 +840,7 @@ struct WeekBalanceStrip: View {
                         HStack(spacing: 1) {
                             ForEach(0..<per, id: \.self) { j in
                                 let index = day * per + j
-                                stack(pct: index < blocks.count ? blocks[index] : 0, role: (row.hits ?? []).first { $0.block == index }?.role ?? "")
+                                block(pct: index < blocks.count ? blocks[index] : 0, role: (row.hits ?? []).first { $0.block == index }?.role ?? "")
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -841,12 +850,16 @@ struct WeekBalanceStrip: View {
         }
     }
 
-    private func stack(pct: Int, role: String) -> some View {
+    private func block(pct: Int, role: String) -> some View {
         let freshPct = min(100, max(0, pct))
         return ZStack {
-            VStack(spacing: 0) {
-                Rectangle().fill(fresh).frame(height: 20 * CGFloat(freshPct) / 100)
-                Rectangle().fill(tired).frame(height: 20 * CGFloat(100 - freshPct) / 100)
+            if stacked {
+                VStack(spacing: 0) {
+                    Rectangle().fill(fresh).frame(height: 20 * CGFloat(freshPct) / 100)
+                    Rectangle().fill(tired).frame(height: 20 * CGFloat(100 - freshPct) / 100)
+                }
+            } else {
+                Rectangle().fill(blend(pct))
             }
             if role == "prime" {
                 Circle().fill(Color.primary).frame(width: 4, height: 4)

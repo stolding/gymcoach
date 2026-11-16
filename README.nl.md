@@ -95,7 +95,7 @@ cd ~/gymcoach
 bash install.sh
 ```
 
-Het script controleert Node.js, installeert `speediance-cli` in `~/.local/bin` en start GymCoach als systemd-gebruikersdienst op poort 8765. Bijwerken: na het inloggen, en daarna elk uur zolang GymCoach openstaat, krijgt de beheerder een venster als `main` op GitHub nieuwer is, met de wijzigingen en een knop *Bijwerken*. Dezelfde controle staat onder Instellingen → Over GymCoach → *Controleren op updates*. Die haalt `main` van GitHub en herstart de dienst. De map moet een git-clone zijn (`git clone`, zoals hierboven); `data/` en `.env` blijven staan.
+Het script controleert Node.js, bouwt `speediance-cli` in `~/.local/bin` (inloggen als NANO) en start GymCoach als systemd-gebruikersdienst op poort 8765. Bijwerken: na het inloggen, en daarna elk uur zolang GymCoach openstaat, krijgt de beheerder een venster als `main` op GitHub nieuwer is, met de wijzigingen en een knop *Bijwerken*. Dezelfde controle staat onder Instellingen → Over GymCoach → *Controleren op updates*. Die haalt `main` van GitHub en herstart de dienst. De map moet een git-clone zijn (`git clone`, zoals hierboven); `data/` en `.env` blijven staan.
 
 ## Instellingen
 
@@ -192,7 +192,7 @@ docker compose exec gymcoach node backup.js /data/backups   # Docker: in data/ba
 
 **Upgraden vanaf een versie met JSON-bestanden:** bij de eerste start importeert GymCoach `data/*.json` en `data/users/*/*.json` automatisch. De oude bestanden krijgen de extensie `.imported`.
 
-De Speediance-API is onofficieel. Breekt een app-update van Speediance iets, dan komt er een nieuwe `speediance-cli`: met Docker zit die in een nieuw image (`CLI_VERSION` in de `Dockerfile`); zonder Docker zet je `CLI_VERSION` in `install.sh` op de nieuwste versie, verwijder je `~/.local/bin/speediance-cli` en draai je het script opnieuw. Het Docker-image bouwt die CLI met `tools/speediance-cli-nano.patch`, zodat GymCoach inlogt als NANO. Een geldig token wordt hergebruikt. Daardoor blijven de Speediance-app op de iPhone en de Gym Monster ingelogd.
+De Speediance-API is onofficieel. Breekt een app-update van Speediance iets, dan komt er een nieuwe `speediance-cli`: met Docker zit die in een nieuw image (`CLI_VERSION` in de `Dockerfile`); zonder Docker staat die versie in `tools/build-cli.sh`. Zowel het image als die bouw past `tools/speediance-cli-nano.patch` toe, zodat GymCoach altijd inlogt als NANO. Een geldig token wordt hergebruikt. Een al aanwezige officiële binary wordt vervangen, ook bij Bijwerken en bij de volgende start. Daardoor blijven de Speediance-app op de iPhone en de Gym Monster ingelogd.
 
 ## Andere Gym Monster-modellen
 

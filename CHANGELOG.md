@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.4 — 16 november 2026
+- Het weekherstel opent als een geleidelijk kleurverloop van oranje naar groen. Een knop zet de stapel aan. De keuze blijft per gebruiker bewaard. GymCoach Sync 1.13.8 volgt die keuze.
+
+## 2.34.3 — 16 november 2026
+- Zonder Docker bouwt GymCoach de speediance-cli zelf met de NANO-patch en vervangt een oude binary. Inloggen blijft NANO, ook na Bijwerken.
+
 ## 2.34.2 — 16 november 2026
 - Elk blok van het weekherstel is een stapel: oranje onder is de vermoeidheid, groen erboven het herstel. GymCoach Sync 1.13.7 toont dezelfde blokken.
 

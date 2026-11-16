@@ -8,7 +8,6 @@ BIN_DIR="$HOME/.local/bin"
 CFG_DIR="$HOME/.config/speediance"
 CFG="$CFG_DIR/config.json"
 CLI="$BIN_DIR/speediance-cli"
-CLI_VERSION="v2.0.0"
 PORT="${PORT:-8765}"
 # Op een VPS achter Plesk/nginx: HOST=127.0.0.1 TRUST_PROXY=1 bash install.sh
 HOST="${HOST:-0.0.0.0}"
@@ -25,23 +24,9 @@ fi
 NODE_BIN="$(command -v node)"
 echo "Node $(node -v) gevonden"
 
-# 2. speediance-cli
-case "$(uname -m)" in
-  x86_64|amd64) ARCH=x86_64 ;;
-  aarch64|arm64) ARCH=arm64 ;;
-  *) echo "Onbekende architectuur $(uname -m)"; exit 1 ;;
-esac
-if [ ! -x "$CLI" ]; then
-  echo "speediance-cli $CLI_VERSION downloaden ($ARCH)..."
-  mkdir -p "$BIN_DIR"
-  TMP="$(mktemp -d)"
-  curl -fsSL "https://github.com/stozo04/speediance-cli/releases/download/$CLI_VERSION/speediance-cli_Linux_${ARCH}.tar.gz" -o "$TMP/cli.tgz"
-  tar xzf "$TMP/cli.tgz" -C "$TMP"
-  install -m 0755 "$TMP/speediance-cli" "$CLI"
-  rm -rf "$TMP"
-fi
+# 2. speediance-cli, gebouwd met de NANO-patch (nooit de officiële SOFTWARE-binary)
+bash "$APP_DIR/tools/build-cli.sh"
 echo "speediance-cli: $("$CLI" version 2>/dev/null | head -1)"
-echo "Let op: deze losse binary logt in als SOFTWARE. Het Docker-image past tools/speediance-cli-nano.patch toe en logt in als NANO, zodat de iPhone-app en de Gym Monster ingelogd blijven."
 
 # 3. Speediance-accounts stel je per gebruiker in via het dashboard (Instellingen).
 #    Een bestaande ~/.config/speediance/config.json wordt bij het aanmaken van de

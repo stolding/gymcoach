@@ -328,6 +328,7 @@ struct PhoneBalanceRow: Codable, Identifiable {
 struct PhoneBalance: Codable {
     var days: [String]
     var rows: [PhoneBalanceRow]
+    var mode: String?
 }
 
 struct PhoneWeekPlan: Codable {

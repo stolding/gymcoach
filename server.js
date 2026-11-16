@@ -738,7 +738,9 @@ const routes = {
     next.email = String(next.email || '').trim();
     if (next.email && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(next.email)) throw Object.assign(new Error(tr('srv.ongeldigEMailadres')), { status: 400 });
     if (!['on', 'off'].includes(next.mailSummary)) next.mailSummary = cur.mailSummary;
-    if (!incoming.ai && !incoming.smtp && !incoming.withings) next.prefsConfirmed = true;
+    if (incoming.recoveryBars != null) next.recoveryBars = incoming.recoveryBars === 'stack' ? 'stack' : 'gradient';
+    const onlyBars = Object.keys(incoming).every((k) => k === 'recoveryBars');
+    if (!onlyBars && !incoming.ai && !incoming.smtp && !incoming.withings) next.prefsConfirmed = true;
     else if (incoming.goal || incoming.daysPerWeek) next.prefsConfirmed = true;
     // eerste keer voorkeuren vastgelegd door een nieuwe gebruiker: een eerder automatisch gemaakt plan vervalt
     if (next.prefsConfirmed && !cur.prefsConfirmed && !(await store.getWorkouts()).length) await store.savePlan(null);
@@ -1351,6 +1353,7 @@ function scheduleAutoSync(g) {
 // eenmalig: oude JSON-opslag overzetten naar de database (vóór er verzoeken binnenkomen)
 try { const imp = await store.importJsonStore(); if (imp) console.log('JSON-bestanden geïmporteerd in de database:', JSON.stringify(imp)); } catch (e) { console.error('import mislukt:', e.message); }
 
+await cli.ensureNano();
 server.listen(PORT, HOST, async () => {
   await store.hardenPermissions();
   console.log(`GymCoach draait op http://${HOST}:${PORT}`);

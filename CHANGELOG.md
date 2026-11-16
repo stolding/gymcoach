@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.13 — 16 november 2026
+- Een training die je vandaag zwaarder hebt gedaan telt zo mee in het weekherstel. Het geplande aantal sets geldt alleen zolang die oefening nog niet gedaan is.
+
 ## 2.34.12 — 16 november 2026
 - In Bewerken kies je met Opnieuw een andere warming-up of cooldown voor die ene training. Toevoegen, weghalen en de seconden aanpassen blijven.
 

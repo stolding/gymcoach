@@ -46,6 +46,25 @@ test('one day between workouts leaves less recovery than six days', () => {
   assert.equal(close.balance.rows.find((r) => r.key === 'quads').hits[0].role, 'prime');
 });
 
+test('a heavier set done today leaves less recovery than the planned weight', () => {
+  const now = Date.parse('2026-11-16T20:00:00');
+  const sessions = [{
+    key: 'A', name: 'A', weekday: 0, slot: 0,
+    exercises: [{ id: 9, pattern: 'squat', sets: [{ reps: 8, weight: 40 }, { reps: 8, weight: 40 }] }],
+  }];
+  const planned = refreshGrid({ sessions }, { history: {}, now });
+  const old = Array.from({ length: 8 }, () => ({ reps: 8, weight: 40 }));
+  const history = {
+    9: { id: 9, muscle: 'quads', log: [
+      { date: '2026-10-20', sets: old },
+      { date: '2026-11-16', sets: [{ reps: 8, weight: 60 }, { reps: 8, weight: 60 }] },
+    ] },
+  };
+  const done = refreshGrid({ sessions: sessions.map((s) => ({ ...s, exercises: s.exercises.map((e) => ({ ...e })) })) }, { history, now });
+  const end = 3;
+  assert.ok(quad(done, end) < quad(planned, end));
+});
+
 test('an earlier hour the next day leaves less recovery', () => {
   const now = Date.parse('2026-11-16T12:00:00');
   const early = refreshGrid(plan([{ weekday: 0, slot: 4 }, { weekday: 1, slot: 0 }]), { history: {}, now });

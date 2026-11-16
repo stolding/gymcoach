@@ -226,7 +226,7 @@ export default [
       <dt>Styrkeindeks</dt><dd>Per muskelgruppe det anslåtte 1RM sett i forhold til første gang i den valgte perioden (= 100). 110 betyr 10% sterkere.</dd>
       <dt>Balanse</dt><dd>Arbeidssett press mot trekk, og overkropp mot underkropp. Omtrent 1 : 1 er balansert.</dd>
       <dt>Rekorder</dt><dd>En rekord er en treningsøkt der en øvelse nådde et høyere anslått 1RM enn noen gang før.</dd>
-      <dt>Sammenligning i rapporten</dt><dd>Med gjennomsnittet av de siste 4 gangene du gjorde den samme treningsøkten (ukenummeret i navnet teller ikke), ellers de siste 4 treningsøktene dine.</dd>
+      <dt>Sammenligning i rapporten</dt><dd>Med gjennomsnittet av de siste 4 gangene du gjorde den samme økten på Gym Monster (ukenummeret i navnet teller ikke), ellers de siste 4 treningsøktene dine. En gåtur samme dag teller ikke.</dd>
       <dt>Tid under spenning og pause</dt><dd>Fra tidene Gym Monster lagrer per repetisjon og per pause.</dd>
       <dt>Puls</dt><dd>Per sett fra Gym Monster (med pulsbånd); forløpet over hele treningsøkten, også i pausene, kommer fra Apple Health (Apple Watch). Soner: 50–60% av makspulsen din restitusjon, 60–70% basis, 70–80% aerob, 80–90% terskel, 90%+ maksimal.</dd>
       <dt>Restitusjon</dt><dd>Restitusjonsscoren bruker hvilepulsen din fra Apple Health (Apple Watch): gjennomsnittet av de siste 7 dagene mot de 4 ukene før. Er det færre enn 10 slike dager, brukes Withings-vekten. I Tilbakeblikk og under Kropp kommer hvilepulsen fra Apple Health så snart det finnes dager, ellers fra vekten. 3 slag høyere: pass på; 5 eller mer: sannsynligvis ikke restituert, eller du er i ferd med å bli syk.</dd>

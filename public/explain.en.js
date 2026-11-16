@@ -226,7 +226,7 @@ export default [
       <dt>Strength index</dt><dd>Per muscle group the estimated 1RM relative to the first time in the chosen period (= 100). 110 means 10% stronger.</dd>
       <dt>Balance</dt><dd>Working sets push versus pull, and upper body versus lower body. Around 1 : 1 is balanced.</dd>
       <dt>Records</dt><dd>A record is a workout in which an exercise reached a higher estimated 1RM than ever before.</dd>
-      <dt>Comparison in the report</dt><dd>With the average of the last 4 times you did the same workout (the week number in the name does not count), or otherwise your last 4 workouts.</dd>
+      <dt>Comparison in the report</dt><dd>With the average of the last 4 times you did the same workout on the Gym Monster (the week number in the name does not count), or otherwise your last 4 workouts. A walk on the same day does not count.</dd>
       <dt>Time under tension and rest</dt><dd>From the times the Gym Monster stores per rep and per pause.</dd>
       <dt>Heart rate</dt><dd>Per set from the Gym Monster (with a heart rate strap); the course over the whole workout, including rest, comes from Apple Health (Apple Watch). Zones: 50–60% of your maximum recovery, 60–70% base, 70–80% aerobic, 80–90% threshold, 90%+ maximum.</dd>
       <dt>Recovery</dt><dd>The recovery score uses your resting heart rate from Apple Health (Apple Watch): the average of the last 7 days against the 4 weeks before. With fewer than 10 of those days, it uses the Withings scale. On Review and on Body, resting heart rate comes from Apple Health as soon as there are days, otherwise from the scale. 3 beats higher: take care; 5 or more: probably not recovered, or you are getting ill.</dd>

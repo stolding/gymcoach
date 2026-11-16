@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.14 — 16 november 2026
+- De vergelijking in het trainingsrapport telt alleen de Gym Monster-sessie. Een wandeling op dezelfde dag telt niet meer mee in duur, calorieën of hartslag.
+
 ## 2.34.13 — 16 november 2026
 - Een training die je vandaag zwaarder hebt gedaan telt zo mee in het weekherstel. Het geplande aantal sets geldt alleen zolang die oefening nog niet gedaan is.
 

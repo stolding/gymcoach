@@ -226,7 +226,7 @@ export default [
       <dt>Krachtindex</dt><dd>Per spiergroep het geschatte 1RM ten opzichte van de eerste keer in de gekozen periode (= 100). 110 betekent 10% sterker.</dd>
       <dt>Balans</dt><dd>Werksets duwen tegenover trekken, en bovenlichaam tegenover onderlichaam. Rond 1 : 1 is evenwichtig.</dd>
       <dt>Records</dt><dd>Een record is een training waarin een oefening een hoger geschat 1RM haalde dan ooit ervoor.</dd>
-      <dt>Vergelijking in het rapport</dt><dd>Met het gemiddelde van de laatste 4 keer dezelfde training (het weeknummer in de naam telt niet mee), of anders je laatste 4 trainingen.</dd>
+      <dt>Vergelijking in het rapport</dt><dd>Met het gemiddelde van de laatste 4 keer dezelfde training op de Gym Monster (het weeknummer in de naam telt niet mee), of anders je laatste 4 trainingen. Een wandeling op dezelfde dag telt niet mee.</dd>
       <dt>Tijd onder spanning en rust</dt><dd>Uit de tijden die de Gym Monster per herhaling en per pauze opslaat.</dd>
       <dt>Hartslag</dt><dd>Per set van de Gym Monster (met hartslagband); het verloop over de hele training, ook in de rust, komt van Apple Health (Apple Watch). Zones: 50–60% van je maximum herstel, 60–70% basis, 70–80% aeroob, 80–90% drempel, 90%+ maximaal.</dd>
       <dt>Herstel</dt><dd>De herstelscore gebruikt je hartslag in rust uit Apple Health (Apple Watch): het gemiddelde van de laatste 7 dagen tegenover de 4 weken daarvoor. Zijn er minder dan 10 van die dagen, dan de metingen van de Withings-weegschaal. Op Terugkijken en op Lichaam komt de hartslag in rust uit Apple Health zodra er dagen zijn, anders van de weegschaal. 3 slagen hoger: let op; 5 of meer: waarschijnlijk niet hersteld of je wordt ziek.</dd>

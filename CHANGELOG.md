@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.9 — 16 november 2026
+- Een AI-voorstel voor meer gewicht gaat tot 15% boven de vorige keer van die oefening. Zonder historie blijft het plafond 15% boven het voorstel.
+
 ## 2.34.8 — 16 november 2026
 - Slepen in het weekherstel verschuift per kolom van 6 uur. Twee trainingen naast elkaar blijven twee kolommen, ook als je de linker of de rechter sleept.
 

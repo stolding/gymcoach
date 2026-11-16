@@ -671,7 +671,7 @@ const routes = {
     const library = await getLibrary();
     const libById = new Map(library.map((e) => [Number(e.id), e]));
     const allowed = new Set(allowedExercises(library, await store.getSettings()).map((a) => Number(a.id)));
-    const safe = ai.validateAdjustments(adjustments, plan, allowed);
+    const safe = ai.validateAdjustments(adjustments, plan, allowed, null, (await context()).history);
     ai.applyAdjustments(plan, safe, libById);
     refreshMuscles(plan);
     await store.savePlan(plan);

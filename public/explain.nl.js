@@ -249,7 +249,7 @@ export default [
   },
   {
     id: 'ai', title: 'De AI-coach',
-    html: `<p>De AI-coach krijgt je instellingen, leeftijd en geslacht, je recente trainingen, gewicht en activiteiten, en het plan van de regels. Hij mag oefeningen wisselen (alleen uit je eigen catalogus), en sets (2–5), herhalingen (5–20) en gewicht (hooguit 15%) aanpassen. Elke wijziging wordt gecontroleerd en jij kiest wat je overneemt.</p>
+    html: `<p>De AI-coach krijgt je instellingen, leeftijd en geslacht, je recente trainingen, gewicht en activiteiten, en het plan van de regels. Hij mag oefeningen wisselen (alleen uit je eigen catalogus), en sets (2–5), herhalingen (5–20) en gewicht (hooguit 15% boven de vorige keer van die oefening) aanpassen. Elke wijziging wordt gecontroleerd en jij kiest wat je overneemt.</p>
     <p><b>Eigen trainingen.</b> De coach ziet welke trainingen je zelf hebt gemaakt, bewerkt of vastgezet, met hun opbouw (supersets, modi, rust, vast gewicht). Daar stelt hij alleen iets voor met een reden, en die voorstellen staan standaard uit. Neem je er een over, dan blijft de opbouw staan: gewicht en herhalingen schuiven per set mee, vast gewicht verandert nooit. Met <i>AI-advies</i> op een training vraag je advies voor alleen die training.</p>
     <p><b>Gezondheidsstatus.</b> Op Overzicht maakt dezelfde koppeling een samenvatting van de metingen over de laatste 4 weken: Withings, de Apple Watch en het trainingsvolume. De opdracht gaat uit van een nuchtere ochtendmeting, vóór het douchen, en van een staande rusthartslag op de weegschaal. Slaapduur gaat niet mee, die bewaart GymCoach niet. Het is geen diagnose en het plan verandert er niet door.</p>
     <p>De coach antwoordt in jouw taal.</p>

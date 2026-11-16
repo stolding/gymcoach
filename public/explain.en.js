@@ -249,7 +249,7 @@ export default [
   },
   {
     id: 'ai', title: 'The AI coach',
-    html: `<p>The AI coach receives your settings, age and sex, your recent workouts, weight and activities, and the plan made by the rules. It may swap exercises (only from your own catalogue), and adjust sets (2–5), reps (5–20) and weight (at most 15%). Every change is checked and you choose what to accept.</p>
+    html: `<p>The AI coach receives your settings, age and sex, your recent workouts, weight and activities, and the plan made by the rules. It may swap exercises (only from your own catalogue), and adjust sets (2–5), reps (5–20) and weight (at most 15% above the last time that exercise was done). Every change is checked and you choose what to accept.</p>
     <p><b>Your own workouts.</b> The coach sees which workouts you built, edited or locked yourself, with their structure (supersets, modes, rest, fixed weight). It only suggests changes there with a reason, and those suggestions are unticked by default. If you accept one, the structure stays: weight and reps shift per set, a fixed weight never changes. With <i>AI advice</i> on a workout you ask for advice on that workout alone.</p>
     <p><b>Health status.</b> On Overview the same connection summarises the measurements of the last 4 weeks: Withings, the Apple Watch and training volume. The instruction assumes a fasted morning measurement, before showering, and a standing resting heart rate on the scale. Sleep duration is not included; GymCoach does not store it. It is not a diagnosis and it does not change the plan.</p>
     <p>The coach answers in your language.</p>

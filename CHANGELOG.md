@@ -5,6 +5,12 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.7 — 16 november 2026
+- Een training verschuif je door het bolletje in het weekherstel te slepen. De andere trainingen van die dag gaan mee.
+
+## 2.34.6 — 16 november 2026
+- De AI-coach leest het advies ook als het model geen geldige JSON teruggeeft: losse tekst blijft het advies, en een afgekapt antwoord wordt één keer opnieuw gevraagd.
+
 ## 2.34.5 — 16 november 2026
 - Sleep de dag en het uur van een training naar een andere plek in het weekherstel. De andere trainingen van die dag gaan mee, en het herstel wordt meteen herberekend.
 

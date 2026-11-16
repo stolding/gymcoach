@@ -293,8 +293,6 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
 .wb-mode-btn { display: grid; place-items: center; width: 30px; height: 24px; padding: 0; border: 0; background: transparent; color: var(--muted); }
 .wb-mode-btn + .wb-mode-btn { border-left: 1px solid var(--line); }
 .wb-mode-btn.on { background: color-mix(in srgb, var(--ink) 12%, transparent); color: var(--ink); }
-.badge.wb-drag { cursor: grab; }
-.badge.wb-drag.dragging { opacity: .55; }
 .wb-days span[data-drop-day] { border-radius: 4px; }
 .wb-seg.wb-over, .wb-days span.wb-over { box-shadow: inset 0 0 0 2px var(--accent); }
 .wb-bar { display: flex; flex-direction: column; gap: 2px; }
@@ -312,8 +310,10 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
 .wb-fresh, .wb-tired { display: block; width: 100%; }
 .wb-fresh { background: var(--ok); }
 .wb-tired { background: var(--accent); }
-button.wb-seg { cursor: pointer; }
-.wb-dot { position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; transform: translate(-50%, -50%); border-radius: 50%; border: 1.5px solid var(--ink); background: transparent; pointer-events: none; }
+.wb-seg.has-hit { cursor: pointer; }
+.wb-dot { position: absolute; left: 50%; top: 50%; width: 11px; height: 11px; transform: translate(-50%, -50%); border-radius: 50%; border: 1.5px solid var(--ink); background: transparent; z-index: 1; }
+.wb-dot[draggable="true"] { cursor: grab; }
+.wb-dot.dragging { opacity: .45; }
 .wb-dot.prime { background: var(--ink); }
 @media (max-width: 720px) {
   .wb-line { grid-template-columns: 5.8rem minmax(0, 1fr); gap: .3rem; }

@@ -485,7 +485,6 @@ function renderPlan() {
       </footer>
     </article>`).join('');
   highlightSessions();
-  bindWhenDrag();
 }
 
 // Zelfde telling als "4 van 5 gedaan": kracht uit het plan én een wandeling die deze week binnen is.
@@ -674,6 +673,7 @@ function renderWeekMap() {
     </div></div>`;
   highlightSessions();
   bindWhenDrop();
+  bindWhenDrag();
 }
 
 // Herstel als balk door de week. Alleen aanwezig als de week als één plan is gemaakt.
@@ -688,7 +688,7 @@ function weekdayBadge(s) {
   const name = weekdayName(s?.weekday);
   if (!name) return '';
   const slot = slotText(s?.slot);
-  return `<span class="badge wb-drag" draggable="true" data-drag="${esc(s.key)}" title="${esc(t('app.dragWhen'))}">${esc(name)}${slot ? ` ${esc(slot)}` : ''}</span> `;
+  return `<span class="badge">${esc(name)}${slot ? ` ${esc(slot)}` : ''}</span> `;
 }
 function nearestSlot(hour) {
   let best = 0, dist = Infinity;
@@ -719,15 +719,13 @@ function balanceHtml(plan) {
         const block = d * perDay + j;
         const hit = (row.hits || []).find((h) => h.block === block);
         const jump = hit ? ` data-jump="${esc(hit.key)}|${hit.i}"` : '';
-        const dot = hit ? `<i class="wb-dot ${hit.role === 'prime' ? 'prime' : ''}"></i>` : '';
+        const dot = hit ? `<i class="wb-dot ${hit.role === 'prime' ? 'prime' : ''}"${pastWeek ? '' : ` draggable="true" data-drag="${esc(hit.key)}" title="${esc(t('app.dragWhen'))}"`}></i>` : '';
         const fresh = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
         const inner = mix === 'stack' ? `<span class="wb-stack"><i class="wb-fresh" style="height:${fresh}%"></i><i class="wb-tired" style="height:${100 - fresh}%"></i></span>` : '';
         const paint = mix === 'stack' ? '' : ` style="background:${recoveryBlend(fresh)}"`;
         const tip = hit ? `${hit.name} · ${pct}%` : `${pct}%`;
         const drop = ` data-drop-block="${block}"`;
-        return hit
-          ? `<button type="button" class="wb-seg ${mix}" title="${esc(tip)}"${paint}${jump}${drop}>${inner}${dot}</button>`
-          : `<span class="wb-seg ${mix}" title="${esc(tip)}"${paint}${drop}>${inner}</span>`;
+        return `<span class="wb-seg ${mix}${hit ? ' has-hit' : ''}" title="${esc(tip)}"${paint}${jump}${drop}>${inner}${dot}</span>`;
       }).join('');
       days.push(`<span class="wb-day">${segs}</span>`);
     }

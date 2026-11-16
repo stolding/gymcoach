@@ -1644,7 +1644,7 @@ export default {
   'app.weekdayOf': 'Weekdag van dag {n}',
   'app.slotOf': 'Tijdstip van dag {n}',
   'app.weekdayHint': 'Het herstel telt de dagen tussen deze weekdagen.',
-  'app.dragWhen': 'Sleep naar een andere dag of tijd. De andere trainingen van die dag gaan mee.',
+  'app.dragWhen': 'Sleep dit bolletje naar een ander moment. De andere trainingen van die dag gaan mee.',
 
   // summary.js
   'sum.nieuwRecordBij': '🏆 Nieuw record bij {a}',

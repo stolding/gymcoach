@@ -1648,7 +1648,7 @@ export default {
   "app.weekdayOf": "Weekday of day {n}",
   "app.slotOf": "Time of day {n}",
   "app.weekdayHint": "Recovery counts the days between these weekdays.",
-  "app.dragWhen": "Drag to another day or time. The other workouts of that day move with it.",
+  "app.dragWhen": "Drag this dot to another moment. The other workouts of that day move with it.",
   "sum.nieuwRecordBij": "🏆 New record on {a}",
   "sum.zwaarderDanVorigeKeer": "↑ Heavier than last time: {a}",
   "sum.openGymcoach": "Open GymCoach",

@@ -1648,7 +1648,7 @@ export default {
   "app.weekdayOf": "Ukedag for dag {n}",
   "app.slotOf": "Tidspunkt for dag {n}",
   "app.weekdayHint": "Restitusjonen teller dagene mellom disse ukedagene.",
-  "app.dragWhen": "Dra til en annen dag eller et annet tidspunkt. De andre øktene den dagen følger med.",
+  "app.dragWhen": "Dra denne prikken til et annet tidspunkt. De andre øktene den dagen følger med.",
   "sum.nieuwRecordBij": "🏆 Ny rekord på {a}",
   "sum.zwaarderDanVorigeKeer": "↑ Tyngre enn forrige gang: {a}",
   "sum.openGymcoach": "Åpne GymCoach",

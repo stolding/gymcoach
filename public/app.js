@@ -674,29 +674,43 @@ function renderWeekMap() {
   highlightSessions();
 }
 
-// Herstel aan het begin van elke training. Alleen aanwezig als de week als één plan is gemaakt.
+// Herstel als balk door de week. Alleen aanwezig als de week als één plan is gemaakt.
 function weekdayName(n) {
   const d = Number(n);
   if (!Number.isInteger(d) || d < 0 || d > 6) return '';
   return new Date(2026, 0, 5 + d).toLocaleDateString(localeOf(), { weekday: 'short' }).replace('.', '');
 }
+const DAY_SLOTS = [[6, 9], [9, 12], [12, 15], [15, 18], [18, 21], [21, 24]];
+const slotText = (n) => { const s = DAY_SLOTS[Number(n)]; return s ? `${s[0]}\u2013${s[1]}` : ''; };
 function weekdayBadge(s) {
   const name = weekdayName(s?.weekday);
-  return name ? `<span class="badge">${esc(name)}</span> ` : '';
+  if (!name) return '';
+  const slot = slotText(s?.slot);
+  return `<span class="badge">${esc(name)}${slot ? ` ${esc(slot)}` : ''}</span> `;
 }
 function balanceHtml(plan) {
   const b = plan.balance;
-  if (!b?.rows?.length || !b.days?.length) return '';
-  const head = b.days.map((d) => `<th>${weekdayName(d.weekday) ? `<span class="wb-dow">${esc(weekdayName(d.weekday))}</span>` : ''}${esc(d.name)}</th>`).join('');
-  const body = b.rows.map((row) => `<tr><th>${esc(t('bm.' + row.key))}</th>${row.cells.map((c, i) => {
-    const band = c.pct >= (b.fresh || 90) ? 'hi' : c.pct >= 70 ? 'mid' : 'lo';
-    const dot = c.role ? `<i class="wb-dot ${c.role === 'prime' ? 'prime' : ''}"></i>` : '';
-    const day = b.days[i];
-    const jump = c.role != null && day ? ` data-jump="${esc(day.key)}|${c.i}"` : '';
-    return `<td><button type="button" class="wb-cell ${band}"${jump}>${dot}<span>${c.pct}</span></button></td>`;
-  }).join('')}</tr>`).join('');
-  const daysNote = b.days.some((d) => d.weekday != null) ? ` ${t('plan.balanceDays')}` : '';
-  return `<div class="wb"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-scroll"><table><thead><tr><th></th>${head}</tr></thead><tbody>${body}</tbody></table></div><p class="muted small">${t('plan.balanceHint')}${daysNote}</p></div>`;
+  if (!b?.rows?.length || !b?.rows[0]?.blocks) return '';
+  const perDay = (b.blockHours ? 24 / b.blockHours : 4);
+  const head = `<div class="wb-days">${[0, 1, 2, 3, 4, 5, 6].map((d) => `<span>${esc(weekdayName(d))}</span>`).join('')}</div>`;
+  const body = b.rows.map((row) => {
+    const days = [];
+    for (let d = 0; d < 7; d++) {
+      const segs = row.blocks.slice(d * perDay, (d + 1) * perDay).map((pct, j) => {
+        const block = d * perDay + j;
+        const hit = (row.hits || []).find((h) => h.block === block);
+        const jump = hit ? ` data-jump="${esc(hit.key)}|${hit.i}"` : '';
+        const dot = hit ? `<i class="wb-dot ${hit.role === 'prime' ? 'prime' : ''}"></i>` : '';
+        const tip = hit ? `${hit.name} · ${pct}%` : `${pct}%`;
+        return hit
+          ? `<button type="button" class="wb-seg" style="background:${recoveryFill(pct)}" title="${esc(tip)}"${jump}>${dot}</button>`
+          : `<span class="wb-seg" style="background:${recoveryFill(pct)}" title="${esc(tip)}"></span>`;
+      }).join('');
+      days.push(`<span class="wb-day">${segs}</span>`);
+    }
+    return `<div class="wb-line"><span class="wb-name">${esc(t('bm.' + row.key))}</span><span class="wb-track">${days.join('')}</span></div>`;
+  }).join('');
+  return `<div class="wb"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-bar"><div class="wb-line wb-head"><span></span>${head}</div>${body}</div><p class="muted small">${t('plan.balanceHint')} ${t('plan.balanceDays')}</p></div>`;
 }
 
 // gekozen spiergroep ook in de trainingskaarten uitlichten (primair sterk, secundair licht, rest gedimd)
@@ -1217,18 +1231,22 @@ function openGenerate() {
     return out.sort((a, b) => a - b);
   };
   const savedDays = Array.isArray(state.plan?.weekdays) ? state.plan.weekdays.map(Number) : [];
-  let weekdays = savedDays.length === days.length && savedDays.every((d) => Number.isInteger(d) && d >= 0 && d <= 6) && new Set(savedDays).size === savedDays.length ? savedDays : spreadDays(days.length);
+  let weekdays = savedDays.length === days.length && savedDays.every((d) => Number.isInteger(d) && d >= 0 && d <= 6) ? savedDays : spreadDays(days.length);
+  const savedSlots = Array.isArray(state.plan?.slots) ? state.plan.slots.map(Number) : [];
+  let slots = savedSlots.length === days.length && savedSlots.every((s) => Number.isInteger(s) && s >= 0 && s < DAY_SLOTS.length) ? savedSlots : Array(days.length).fill(4);
   const sortDays = () => {
-    const rows = days.map((type, i) => ({ type, w: weekdays[i] }));
-    rows.sort((a, b) => a.w - b.w);
+    const rows = days.map((type, i) => ({ type, w: weekdays[i], slot: slots[i] }));
+    rows.sort((a, b) => a.w - b.w || a.slot - b.slot);
     days = rows.map((r) => r.type);
     weekdays = rows.map((r) => r.w);
+    slots = rows.map((r) => r.slot);
   };
   const drawDays = () => {
     const names = weekdaysShort();
     $('#dayList').innerHTML = days.map((type, i) => `<div class="day-row"><span class="day-n">${tx('app.dag2', { a: i + 1 })}</span>
       <select data-d="${i}" aria-label="${tx('app.dayTypeOf', { n: i + 1 })}">${Object.entries(DAY_TYPES).map(([k, l]) => `<option value="${k}" ${k === type ? 'selected' : ''}>${l}</option>`).join('')}</select>
       <select data-w="${i}" class="day-wd" aria-label="${tx('app.weekdayOf', { n: i + 1 })}">${names.map((name, d) => `<option value="${d}" ${d === weekdays[i] ? 'selected' : ''}>${esc(name)}</option>`).join('')}</select>
+      <select data-s="${i}" class="day-slot" aria-label="${tx('app.slotOf', { n: i + 1 })}">${DAY_SLOTS.map((s, n) => `<option value="${n}" ${n === slots[i] ? 'selected' : ''}>${s[0]}\u2013${s[1]}</option>`).join('')}</select>
       <button type="button" class="btn small ghost" data-del="${i}" aria-label="${tx('app.dayRemove', { n: i + 1 })}" ${days.length <= 1 ? 'disabled' : ''}>✕</button></div>`).join('');
     const nK = days.filter((type) => !['circuit', 'buiten'].includes(type)).length;
     $('#dayNote').textContent = t('app.kracht', { nK, a: days.length - nK ? t('app.cardio', { a: days.length - nK }) : '', b: nK ? ` → ${nK === 1 ? 'full body' : nK <= 3 ? 'full body A/B' + (nK === 3 ? '/C' : '') : 'upper/lower'}` : '' });
@@ -1239,23 +1257,31 @@ function openGenerate() {
     const kind = ev.target.closest('[data-d]');
     if (kind) { days[+kind.dataset.d] = kind.value; drawDays(); return; }
     const wd = ev.target.closest('[data-w]');
-    if (!wd) return;
-    const i = +wd.dataset.w;
-    const v = +wd.value;
-    const other = weekdays.indexOf(v);
-    if (other >= 0 && other !== i) weekdays[other] = weekdays[i];
-    weekdays[i] = v;
+    if (wd) {
+      weekdays[+wd.dataset.w] = +wd.value;
+      sortDays();
+      drawDays();
+      return;
+    }
+    const sl = ev.target.closest('[data-s]');
+    if (!sl) return;
+    const i = +sl.dataset.s;
+    let v = +sl.value;
+    const taken = new Set(slots.filter((_, j) => j !== i && weekdays[j] === weekdays[i]));
+    if (taken.has(v)) { const free = DAY_SLOTS.findIndex((_, n) => !taken.has(n)); if (free >= 0) v = free; }
+    slots[i] = v;
     sortDays();
     drawDays();
   });
-  $('#dayList').addEventListener('click', (ev) => { const b = ev.target.closest('[data-del]'); if (b && days.length > 1) { days.splice(+b.dataset.del, 1); weekdays.splice(+b.dataset.del, 1); drawDays(); } });
+  $('#dayList').addEventListener('click', (ev) => { const b = ev.target.closest('[data-del]'); if (b && days.length > 1) { const i = +b.dataset.del; days.splice(i, 1); weekdays.splice(i, 1); slots.splice(i, 1); drawDays(); } });
   f.querySelector('[data-x=addday]').addEventListener('click', () => {
     if (days.length >= 6) return;
     days.push(days[days.length - 1] || 'combinatie');
     const used = new Set(weekdays);
     let free = 0;
     while (used.has(free) && free < 7) free++;
-    weekdays.push(free < 7 ? free : 0);
+    weekdays.push(free < 7 ? free : weekdays[weekdays.length - 1]);
+    slots.push(4);
     sortDays();
     drawDays();
   });
@@ -1264,6 +1290,7 @@ function openGenerate() {
     const k = ['spieropbouw', 'afvallen'].includes(state.settings.goal) ? state.settings.goal : 'combinatie';
     days = { same: Array.from({ length: +state.settings.daysPerWeek || 3 }, () => state.settings.goal || 'combinatie'), '2k1c': [k, 'circuit', k], '2k1b': [k, 'buiten', k], '3k1b': [k, k, 'buiten', k] }[b.dataset.pre];
     weekdays = spreadDays(days.length);
+    slots = Array(days.length).fill(4);
     drawDays();
   });
   f.wish.addEventListener('input', () => {
@@ -1277,7 +1304,7 @@ function openGenerate() {
     const focus = [...f.querySelectorAll('input[name=focus]:checked')].map((c) => c.value);
     const btn = $('#genBtn'); btn.disabled = true;
     try {
-      state.plan = (await api('POST', '/api/plan/generate', { focus, wish: f.wish.value.trim(), dayTypes: days, weekdays })).plan;
+      state.plan = (await api('POST', '/api/plan/generate', { focus, wish: f.wish.value.trim(), dayTypes: days, weekdays, slots })).plan;
       if (state.meta) state.meta.coach = null; renderCoach(null);
       renderPlan(); toast(focus.length ? t('app.planGemaaktMetFocus', { a: focus.map((x) => FOCUS_LABELS[x]).join(', ') }) : t('app.nieuwEvenwichtigPlanGemaakt'));
       if (f.coach?.checked) $('#coachBtn').click();
@@ -3104,6 +3131,7 @@ async function offerAlignedPlan() {
   const body = { focus: state.plan?.focus || [], wish: state.plan?.wish || '' };
   if (prev.length) body.dayTypes = prev.map((d) => (d === 'circuit' || d === 'buiten' ? d : style));
   if (Array.isArray(state.plan?.weekdays) && state.plan.weekdays.length === body.dayTypes?.length) body.weekdays = state.plan.weekdays;
+  if (Array.isArray(state.plan?.slots) && state.plan.slots.length === body.dayTypes?.length) body.slots = state.plan.slots;
   state.plan = (await api('POST', '/api/plan/generate', body)).plan;
   renderPlan();
   if ($('#tab-home').classList.contains('active')) renderHome();

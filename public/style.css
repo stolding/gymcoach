@@ -287,18 +287,25 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
 .chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
 .wish { font-style: italic; margin-top: .5rem; color: var(--ink); }
 .mbars { display: flex; flex-direction: column; gap: .3rem; margin-top: .35rem; }
-.wb { margin-top: 1rem; }
-.wb-scroll { overflow-x: auto; }
-.wb table { border-collapse: separate; border-spacing: .35rem .3rem; width: 100%; }
-.wb th { font-weight: 500; font-size: .8rem; text-align: center; }
-.wb th:first-child, .wb td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
-.wb-cell { display: flex; flex-direction: column; align-items: center; gap: .15rem; min-width: 2.6rem; padding: .28rem .2rem; border: 0; border-radius: 8px; color: inherit; font: inherit; cursor: default; }
-.wb-cell[data-jump] { cursor: pointer; }
-.wb-cell.hi { background: color-mix(in srgb, var(--ok) 32%, transparent); }
-.wb-cell.mid { background: color-mix(in srgb, #e5b84b 38%, transparent); }
-.wb-cell.lo { background: color-mix(in srgb, var(--warn) 38%, transparent); }
-.wb-dot { width: .5rem; height: .5rem; border-radius: 50%; border: 2px solid currentColor; }
-.wb-dot.prime { background: currentColor; }
+.wb { margin-top: .7rem; }
+.wb-bar { display: flex; flex-direction: column; gap: 2px; }
+.wb-line { display: grid; grid-template-columns: 8.4rem minmax(0, 1fr); gap: .45rem; align-items: center; }
+.wb-head { margin-bottom: .1rem; }
+.wb-name { font-size: .75rem; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wb-days, .wb-track { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.wb-days span, .wb-day { min-width: 0; }
+.wb-days span { text-align: center; font-size: .72rem; font-weight: 700; text-transform: capitalize; color: var(--muted); }
+.wb-day { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; height: 14px; }
+.wb-seg { position: relative; display: block; height: 14px; min-width: 0; padding: 0; border: 0; }
+.wb-seg:first-child { border-radius: 3px 0 0 3px; }
+.wb-seg:last-child { border-radius: 0 3px 3px 0; }
+button.wb-seg { cursor: pointer; }
+.wb-dot { position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; transform: translate(-50%, -50%); border-radius: 50%; border: 1.5px solid var(--ink); background: transparent; pointer-events: none; }
+.wb-dot.prime { background: var(--ink); }
+@media (max-width: 720px) {
+  .wb-line { grid-template-columns: 5.8rem minmax(0, 1fr); gap: .3rem; }
+  .wb-name { font-size: .68rem; }
+}
 .shift { margin: .15rem 0 .35rem; }
 .mbar { display: grid; grid-template-columns: 160px 1fr 38px; gap: .5rem; align-items: center; font-size: .82rem; }
 .mbar b { text-align: right; font-variant-numeric: tabular-nums; }
@@ -519,7 +526,7 @@ button.linklike:hover { text-decoration: underline; }
 
 /* nieuw plan: dagen kiezen */
 .day-list { display: flex; flex-direction: column; gap: .4rem; }
-.day-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) 5.6rem auto; gap: .5rem; align-items: center; }
+.day-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) 4.3rem 4.6rem auto; gap: .4rem; align-items: center; }
 .day-row select { margin: 0; }
 .day-wd { text-transform: capitalize; }
 .wb-dow { display: block; font-weight: 700; text-transform: capitalize; }

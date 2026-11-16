@@ -15,7 +15,7 @@ import * as insights from './lib/insights.js';
 import * as signals from './lib/signals.js';
 import * as muscleRec from './lib/muscleRecovery.js';
 import * as weekbalance from './lib/weekbalance.js';
-import { alignPlanDays, assignFreeWeekday, weekdayNum } from './lib/weekdays.js';
+import { alignPlanDays, assignFreeWeekday, slotNum, weekdayNum } from './lib/weekdays.js';
 import * as goal from './lib/goal.js';
 import * as phone from './lib/phone.js';
 import { guideSections } from './lib/guide.js';
@@ -365,15 +365,17 @@ async function generatePlan(prefs) {
   const wish = prefs?.wish ?? prev?.wish ?? '';
   const dayTypes = prefs?.dayTypes ?? prev?.dayTypes ?? null;
   const weekdays = prefs?.weekdays ?? prev?.weekdays ?? null;
+  const slots = prefs?.slots ?? prev?.slots ?? null;
   const snapshot = JSON.parse(await readFile(path.join(ROOT, 'lib', 'library.snapshot.json'), 'utf8'));
   // alleen oefeningen met accessoires die je gebruikt (Instellingen → Training)
-  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes, weekdays, earlyDeload });
+  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes, weekdays, slots, earlyDeload });
   // vastgezette trainingen blijven staan, met progressie op basis van de historie (behalve bij vast gewicht)
   for (const ls of (prev?.sessions || []).filter((x) => x.locked)) {
     const kept = engine.progressSession(ls, ctx.history);
     const i = plan.sessions.findIndex((x) => x.key === ls.key);
     if (i >= 0) {
       if (weekdayNum(plan.sessions[i].weekday) != null) kept.weekday = plan.sessions[i].weekday;
+      if (slotNum(plan.sessions[i].slot) != null) kept.slot = plan.sessions[i].slot;
       plan.sessions[i] = kept;
     } else {
       assignFreeWeekday(plan, kept);
@@ -406,6 +408,7 @@ const routes = {
     const ctx = await context();
     const [rawPlan, meta] = await Promise.all([store.getPlan(), store.getMeta()]);
     const plan = engine.localizePlan(rawPlan);
+    if (plan?.weekBalance) weekbalance.refreshGrid(plan, { history: ctx.history });
     // eerste keer: stappen voor een nieuwe gebruiker (account, voorkeuren, eerste plan)
     const setup = { terms: Number(ctx.settings.termsVersion) >= TERMS_VERSION, termsAt: ctx.settings.termsAt || null, speediance: hasSpeediance() && !meta.speedianceLoginFailed, prefs: !!ctx.settings.prefsConfirmed || ctx.workouts.length > 0, plan: !!plan && !plan.auto };
     setup.needed = !setup.terms || !setup.speediance || !setup.prefs || !setup.plan;
@@ -538,7 +541,11 @@ const routes = {
       prefs.dayTypes = t;
       if (Array.isArray(b.weekdays)) {
         const w = b.weekdays.slice(0, t.length).map((x) => Math.round(Number(x)));
-        if (w.length === t.length && w.every((x) => x >= 0 && x <= 6) && new Set(w).size === w.length) prefs.weekdays = w;
+        if (w.length === t.length && w.every((x) => x >= 0 && x <= 6)) prefs.weekdays = w;
+      }
+      if (Array.isArray(b.slots)) {
+        const s = b.slots.slice(0, t.length).map((x) => Math.round(Number(x)));
+        if (s.length === t.length && s.every((x) => x >= 0 && x <= 5)) prefs.slots = s;
       }
     }
     return { plan: await generatePlan(prefs) };
@@ -924,6 +931,7 @@ const routes = {
       const sess = outdoorSession({ key: old ? old.key : `X${n}`, name, kind, minutes: wanted?.minutes || Number(ctx.settings.minutesPerSession) || 45 });
       if (old) {
         if (weekdayNum(old.weekday) != null) sess.weekday = old.weekday;
+        if (slotNum(old.slot) != null) sess.slot = old.slot;
         plan.sessions[slot] = sess;
       } else {
         assignFreeWeekday(plan, sess);
@@ -956,6 +964,7 @@ const routes = {
     if (old) {
       if (old.pushedAt || old.changedAfterPush) sess.changedAfterPush = true;
       if (weekdayNum(old.weekday) != null) sess.weekday = old.weekday;
+      if (slotNum(old.slot) != null) sess.slot = old.slot;
       delete sess.shifts;
       delete sess.original;
       delete sess.edited;

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.0 — 16 november 2026
+- Het herstel op het weekplan is een balk over alle dagen, in blokken van 6 uur. Bij het plan kies je ook het dagdeel, want dat bepaalt de hersteltijd.
+
 ## 2.33.0 — 16 november 2026
 - Bij een nieuw weekplan kies je de weekdag van elke training. Het herstel rekent met de dagen daartussen, dus één dag telt anders dan drie.
 

@@ -429,6 +429,7 @@ export default {
   "year.sets": "Sett",
   "year.weeks": "Uker med trening",
   "year.score": "Helsescore",
+  "year.scoreWeek": "Helsescore per uke",
   "year.note": "Økter er Gym Monster og øvrig idrett. Øvelser er Gym Monster. Vekten er snittet av veiingene den uken.",
   "year.empty": "Ingen data",
   "year.muscle": "Muskelmasse",

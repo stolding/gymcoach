@@ -412,6 +412,7 @@ export default {
   'year.sets': 'Sets',
   'year.weeks': 'Weken getraind',
   'year.score': 'Gezondheidsscore',
+  'year.scoreWeek': 'Gezondheidsscore per week',
   'year.note': 'Trainingen zijn de Gym Monster en je andere sporten. Oefeningen zijn de Gym Monster. Gewicht is het gemiddelde van je weegmomenten die week.',
   'year.empty': 'Geen gegevens',
   'year.muscle': 'Spiermassa',

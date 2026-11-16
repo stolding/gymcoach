@@ -429,6 +429,7 @@ export default {
   "year.sets": "Sets",
   "year.weeks": "Weeks trained",
   "year.score": "Health score",
+  "year.scoreWeek": "Health score per week",
   "year.note": "Workouts are the Gym Monster and your other sports. Exercises are the Gym Monster. Weight is the average of your weigh-ins that week.",
   "year.empty": "No data",
   "year.muscle": "Muscle mass",

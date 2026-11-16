@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.4 — 16 november 2026
+- Het jaaroverzicht toont de gezondheidsscore per week, zodat de verandering over het jaar te zien is.
+
 ## 2.35.3 — 16 november 2026
 - Het jaaroverzicht telt alle trainingen. Per week een staaf, en de trainingen gestapeld per soort sport.
 

@@ -429,6 +429,7 @@ export default {
   "year.sets": "Sätze",
   "year.weeks": "Trainierte Wochen",
   "year.score": "Gesundheitsscore",
+  "year.scoreWeek": "Gesundheitsscore pro Woche",
   "year.note": "Trainings sind das Gym Monster und deine anderen Sportarten. Übungen sind das Gym Monster. Das Gewicht ist der Durchschnitt deiner Wägungen in der Woche.",
   "year.empty": "Keine Daten",
   "year.muscle": "Muskelmasse",

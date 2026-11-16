@@ -53,6 +53,9 @@ test('weekly weight average, gym exercises and minutes, score over the year', ()
   assert.equal(data.kpi.weeksTrained, 2);
   assert.equal(data.kpi.score, 7.2);
   assert.equal(data.kpi.scoreDelta, 1.2);
+  assert.equal(data.weeks[0].score, 6);
+  assert.equal(data.weeks[20].score, 6);
+  assert.equal(last.score, 7.2);
   assert.equal(data.kpi.weight, 83);
   assert.equal(data.kpi.weightDelta, 3);
   assert.equal(data.kpi.muscleFrom, 32);

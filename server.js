@@ -504,9 +504,9 @@ const routes = {
   },
   'GET /api/stats/year.pdf': async () => {
     const ctx = await context();
-    const view = await scores.present(400);
+    const [view, activities] = await Promise.all([scores.present(400), store.getActivities()]);
     const who = store.currentUser()?.name || '';
-    const data = year.yearSeries({ workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, scores: view.history || [] });
+    const data = year.yearSeries({ workouts: ctx.workouts, history: ctx.history, activities, bodyLog: ctx.bodyLog, scores: view.history || [] });
     return { __binary: { type: 'application/pdf', data: year.yearPdf(data, { userName: who }), filename: 'GymCoach-jaaroverzicht.pdf' } };
   },
   'GET /api/analysis': async (req, url) => {

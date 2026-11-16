@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.3 — 16 november 2026
+- Het jaaroverzicht telt alle trainingen. Per week een staaf, en de trainingen gestapeld per soort sport.
+
 ## 2.35.2 — 16 november 2026
 - Wandelen en andere activiteiten buiten de Gym Monster horen bij de hele week, niet bij één dag en uur. GymCoach Sync 1.13.10 toont hetzelfde.
 

@@ -59,8 +59,27 @@ test('weekly weight average, gym exercises and minutes, score over the year', ()
   assert.equal(data.kpi.muscleTo, 33);
   assert.equal(data.kpi.heavy.weight, 60);
   assert.equal(data.kpi.heavy.name, 'Squat');
+  assert.equal(last.trainings.gym, 1);
+  assert.equal(prev.trainings.gym, 1);
   const weeksBefore = data.weeks.filter((w) => w.week < '2026-11-09');
   assert.ok(weeksBefore.every((w) => w.minutes === 0 && w.exercises === 0 && w.kg == null));
+});
+
+test('a walk in the same week counts as its own training and adds its minutes', () => {
+  const data = yearSeries({
+    now,
+    workouts: [{ date: '2026-11-16', duration_secs: 43 * 60 }],
+    activities: [{ date: '2026-11-16', type: 'wandelen', minutes: 70 }, { date: '2026-11-12', type: 'fietsen', minutes: 40 }],
+    history: {}, bodyLog: [], scores: [],
+  });
+  const last = data.weeks.at(-1);
+  assert.equal(last.minutes, 43 + 70);
+  assert.equal(last.trainings.gym, 1);
+  assert.equal(last.trainings.wandelen, 1);
+  assert.equal(data.weeks.at(-2).minutes, 40);
+  assert.equal(data.weeks.at(-2).trainings.fietsen, 1);
+  assert.equal(data.kpi.sessions, 3);
+  assert.equal(data.kpi.minutes, 153);
 });
 
 test('the year PDF is a single page', () => {

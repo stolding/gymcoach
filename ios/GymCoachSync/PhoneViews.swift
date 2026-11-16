@@ -790,39 +790,102 @@ struct ChipFlow: Layout {
 
 struct WeekBalanceStrip: View {
     var grid: PhoneBalance
+    private let tired = Color(red: 1, green: 0.48, blue: 0.18)
+    private let fresh = Color(red: 0.30, green: 0.76, blue: 0.42)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Herstel aan het begin van elke training")
+            Text(usesBlocks ? "Herstel door de week" : "Herstel aan het begin van elke training")
                 .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-            ScrollView(.horizontal, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Color.clear.frame(width: 88, height: 1)
-                        ForEach(Array(grid.days.enumerated()), id: \.offset) { _, name in
-                            Text(name).font(.caption2).lineLimit(2).minimumScaleFactor(0.7)
-                                .frame(width: 52, alignment: .center)
-                        }
-                    }
-                    ForEach(grid.rows) { row in
-                        HStack(spacing: 6) {
-                            Text(row.name).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
-                                .frame(width: 88, alignment: .leading)
-                            ForEach(Array(row.cells.enumerated()), id: \.offset) { _, cell in
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                        .fill(BodyShapes.recoveryFill(Double(cell.pct)).opacity(0.45))
-                                    VStack(spacing: 1) {
-                                        if cell.role == "prime" {
-                                            Circle().fill(Color.primary).frame(width: 5, height: 5)
-                                        } else if cell.role == "secondary" {
-                                            Circle().stroke(Color.primary, lineWidth: 1.2).frame(width: 5, height: 5)
-                                        }
-                                        Text("\(cell.pct)").font(.caption2.monospacedDigit())
-                                    }
-                                }
-                                .frame(width: 52, height: 32)
+            if usesBlocks {
+                blockGrid
+                Text("Oranje onder is vermoeid, groen erboven is hersteld. Een stip is een training.")
+                    .font(.caption2).foregroundStyle(.secondary)
+            } else {
+                legacyGrid
+            }
+        }
+    }
+
+    private var usesBlocks: Bool {
+        guard let blocks = grid.rows.first?.blocks else { return false }
+        return !blocks.isEmpty
+    }
+
+    private var blockGrid: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 4) {
+                Color.clear.frame(width: 78, height: 1)
+                ForEach(Array(grid.days.enumerated()), id: \.offset) { _, name in
+                    Text(name).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            ForEach(grid.rows) { row in
+                HStack(spacing: 4) {
+                    Text(row.name).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
+                        .frame(width: 78, alignment: .leading)
+                    let blocks = row.blocks ?? []
+                    let per = max(1, blocks.count / max(grid.days.count, 1))
+                    ForEach(0..<grid.days.count, id: \.self) { day in
+                        HStack(spacing: 1) {
+                            ForEach(0..<per, id: \.self) { j in
+                                let index = day * per + j
+                                stack(pct: index < blocks.count ? blocks[index] : 0, role: (row.hits ?? []).first { $0.block == index }?.role ?? "")
                             }
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+        }
+    }
+
+    private func stack(pct: Int, role: String) -> some View {
+        let freshPct = min(100, max(0, pct))
+        return ZStack {
+            VStack(spacing: 0) {
+                Rectangle().fill(fresh).frame(height: 20 * CGFloat(freshPct) / 100)
+                Rectangle().fill(tired).frame(height: 20 * CGFloat(100 - freshPct) / 100)
+            }
+            if role == "prime" {
+                Circle().fill(Color.primary).frame(width: 4, height: 4)
+            } else if role == "secondary" {
+                Circle().stroke(Color.primary, lineWidth: 1).frame(width: 4, height: 4)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 20, maxHeight: 20)
+        .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
+    }
+
+    private var legacyGrid: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Color.clear.frame(width: 88, height: 1)
+                    ForEach(Array(grid.days.enumerated()), id: \.offset) { _, name in
+                        Text(name).font(.caption2).lineLimit(2).minimumScaleFactor(0.7)
+                            .frame(width: 52, alignment: .center)
+                    }
+                }
+                ForEach(grid.rows) { row in
+                    HStack(spacing: 6) {
+                        Text(row.name).font(.caption2).lineLimit(1).minimumScaleFactor(0.7)
+                            .frame(width: 88, alignment: .leading)
+                        ForEach(Array(row.cells.enumerated()), id: \.offset) { _, cell in
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(BodyShapes.recoveryFill(Double(cell.pct)).opacity(0.45))
+                                VStack(spacing: 1) {
+                                    if cell.role == "prime" {
+                                        Circle().fill(Color.primary).frame(width: 5, height: 5)
+                                    } else if cell.role == "secondary" {
+                                        Circle().stroke(Color.primary, lineWidth: 1.2).frame(width: 5, height: 5)
+                                    }
+                                    Text("\(cell.pct)").font(.caption2.monospacedDigit())
+                                }
+                            }
+                            .frame(width: 52, height: 32)
                         }
                     }
                 }

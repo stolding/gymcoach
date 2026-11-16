@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.34.2 — 16 november 2026
+- Elk blok van het weekherstel is een stapel: oranje onder is de vermoeidheid, groen erboven het herstel. GymCoach Sync 1.13.7 toont dezelfde blokken.
+
 ## 2.34.1 — 16 november 2026
 - Een vastgezet wandelen vult de cardio-buiten-dag. Dezelfde dag en hetzelfde uur geven geen tweede kaart meer.
 

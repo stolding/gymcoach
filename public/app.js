@@ -701,10 +701,12 @@ function balanceHtml(plan) {
         const hit = (row.hits || []).find((h) => h.block === block);
         const jump = hit ? ` data-jump="${esc(hit.key)}|${hit.i}"` : '';
         const dot = hit ? `<i class="wb-dot ${hit.role === 'prime' ? 'prime' : ''}"></i>` : '';
+        const fresh = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
+        const stack = `<span class="wb-stack"><i class="wb-fresh" style="height:${fresh}%"></i><i class="wb-tired" style="height:${100 - fresh}%"></i></span>`;
         const tip = hit ? `${hit.name} · ${pct}%` : `${pct}%`;
         return hit
-          ? `<button type="button" class="wb-seg" style="background:${recoveryFill(pct)}" title="${esc(tip)}"${jump}>${dot}</button>`
-          : `<span class="wb-seg" style="background:${recoveryFill(pct)}" title="${esc(tip)}"></span>`;
+          ? `<button type="button" class="wb-seg" title="${esc(tip)}"${jump}>${stack}${dot}</button>`
+          : `<span class="wb-seg" title="${esc(tip)}">${stack}</span>`;
       }).join('');
       days.push(`<span class="wb-day">${segs}</span>`);
     }

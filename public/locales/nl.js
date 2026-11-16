@@ -465,7 +465,7 @@ export default {
   'ui.setTraining.weekBalance': 'Week als één plan',
   'ui.setTraining.weekBalanceHint': 'Oefeningen schuiven naar een latere dag als die spiergroep nog niet uitgerust is. Uit houdt de vaste dagen. Maak daarna een nieuw weekplan.',
   'plan.balanceTitle': 'Herstel door de week',
-  'plan.balanceHint': 'Elke dag is vier blokken van 6 uur. De kleur is het herstel aan het eind van dat blok.',
+  'plan.balanceHint': 'Elke dag is vier blokken van 6 uur. Onderaan oranje is de vermoeidheid, daarboven groen het herstel, aan het eind van dat blok.',
   'plan.balanceDays': 'Een gevulde stip is de hoofdspier van een training, een open stip werkt mee. Het dagdeel kies je bij het weekplan.',
   'plan.shift': '{title} staat hier. Op {from} waren de {muscle} nog niet uitgerust ({pct}%).',
   'ui.setTraining.mobiliteitEnStretchesOok': 'Mobiliteit en stretches ook op het toestel zetten',

@@ -482,7 +482,7 @@ export default {
   "ui.setTraining.weekBalance": "Uke som én plan",
   "ui.setTraining.weekBalanceHint": "Øvelser flyttes til en senere dag når den muskelgruppen ikke er uthvilt. Av beholder de faste dagene. Lag deretter en ny ukeplan.",
   "plan.balanceTitle": "Restitusjon gjennom uken",
-  "plan.balanceHint": "Hver dag er fire blokker på 6 timer. Fargen er restitusjonen ved slutten av blokken.",
+  "plan.balanceHint": "Hver dag er fire blokker på 6 timer. Oransje nederst er tretthet, grønt over er restitusjon, ved slutten av blokken.",
   "plan.balanceDays": "En fylt prikk er hovedmuskelen i en økt, en åpen prikk hjelper til. Tidspunktet velger du i ukeplanen.",
   "plan.shift": "{title} ligger på denne dagen. På {from} var {muscle} ikke uthvilt ennå ({pct}%).",
   "ui.setTraining.mobiliteitEnStretchesOok": "Legg også mobilitet og tøyninger på maskinen",

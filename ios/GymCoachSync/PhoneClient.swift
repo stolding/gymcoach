@@ -312,9 +312,16 @@ struct PhoneBalanceCell: Codable {
     var role: String
 }
 
+struct PhoneBalanceHit: Codable {
+    var block: Int
+    var role: String
+}
+
 struct PhoneBalanceRow: Codable, Identifiable {
     var name: String
     var cells: [PhoneBalanceCell]
+    var blocks: [Int]?
+    var hits: [PhoneBalanceHit]?
     var id: String { name }
 }
 

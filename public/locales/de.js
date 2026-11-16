@@ -482,7 +482,7 @@ export default {
   "ui.setTraining.weekBalance": "Woche als ein Plan",
   "ui.setTraining.weekBalanceHint": "Übungen rücken auf einen späteren Tag, wenn die Muskelgruppe noch nicht erholt ist. Aus behält die festen Tage. Erstelle danach einen neuen Wochenplan.",
   "plan.balanceTitle": "Erholung durch die Woche",
-  "plan.balanceHint": "Jeder Tag hat vier Blöcke von 6 Stunden. Die Farbe ist die Erholung am Ende des Blocks.",
+  "plan.balanceHint": "Jeder Tag hat vier Blöcke von 6 Stunden. Unten ist Orange die Ermüdung, darüber Grün die Erholung, am Ende des Blocks.",
   "plan.balanceDays": "Ein gefüllter Punkt ist der Hauptmuskel eines Trainings, ein offener Punkt arbeitet mit. Die Tageszeit wählst du beim Wochenplan.",
   "plan.shift": "{title} steht an diesem Tag. Am {from} war {muscle} noch nicht erholt ({pct}%).",
   "ui.setTraining.mobiliteitEnStretchesOok": "Mobilität und Dehnübungen auch auf das Gerät übertragen",

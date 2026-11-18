@@ -510,6 +510,8 @@ export default {
   "plan.balanceStack": "Unten ist Orange die Ermüdung, darüber Grün die Erholung.",
   "plan.balanceHint": "Jeder Tag hat vier Blöcke von 6 Stunden. Der Stand ist am Ende des Blocks.",
   "plan.balanceDays": "Ein gefüllter Punkt ist der Hauptmuskel eines Trainings, ein offener Punkt arbeitet mit. Die Tageszeit wählst du beim Wochenplan.",
+  "plan.balanceNow": "Jetzt",
+  "plan.balanceNowLine": "Die weiße Linie ist der aktuelle Moment, an der richtigen Stelle im Block.",
   "plan.shift": "{title} steht an diesem Tag. Am {from} war {muscle} noch nicht erholt ({pct}%).",
   "ui.setTraining.mobiliteitEnStretchesOok": "Mobilität und Dehnübungen auch auf das Gerät übertragen",
   "ui.setTraining.ja": "Ja",

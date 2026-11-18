@@ -510,6 +510,8 @@ export default {
   "plan.balanceStack": "Orange at the bottom is fatigue, green above it is recovery.",
   "plan.balanceHint": "Each day is four blocks of 6 hours. The reading is at the end of that block.",
   "plan.balanceDays": "A filled dot is the prime muscle of a workout, an open dot assists. You choose the time of day with the weekly plan.",
+  "plan.balanceNow": "Now",
+  "plan.balanceNowLine": "The white line is the current moment, in the right place inside the block.",
   "plan.shift": "{title} is on this day. On {from} the {muscle} had not recovered yet ({pct}%).",
   "ui.setTraining.mobiliteitEnStretchesOok": "Also put mobility and stretches on the machine",
   "ui.setTraining.ja": "Yes",

@@ -493,6 +493,8 @@ export default {
   'plan.balanceStack': 'Onderaan oranje is de vermoeidheid, daarboven groen het herstel.',
   'plan.balanceHint': 'Elke dag is vier blokken van 6 uur. De stand is aan het eind van dat blok.',
   'plan.balanceDays': 'Een gevulde stip is de hoofdspier van een training, een open stip werkt mee. Het dagdeel kies je bij het weekplan.',
+  'plan.balanceNow': 'Nu',
+  'plan.balanceNowLine': 'De witte lijn is het huidige moment, op de juiste plek in het blok.',
   'plan.shift': '{title} staat hier. Op {from} waren de {muscle} nog niet uitgerust ({pct}%).',
   'ui.setTraining.mobiliteitEnStretchesOok': 'Mobiliteit en stretches ook op het toestel zetten',
   'ui.setTraining.ja': 'Ja',

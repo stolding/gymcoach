@@ -678,6 +678,7 @@ function renderWeekMap() {
   highlightSessions();
   bindWhenDrop();
   bindWhenDrag();
+  watchNowLine();
 }
 
 // Herstel als balk door de week. Alleen aanwezig als de week als één plan is gemaakt.
@@ -737,7 +738,43 @@ function balanceHtml(plan) {
     return `<div class="wb-line"><span class="wb-name">${esc(t('bm.' + row.key))}</span><span class="wb-track">${days.join('')}</span></div>`;
   }).join('');
   const modeBtn = (id, icon) => `<button type="button" class="wb-mode-btn${mix === id ? ' on' : ''}" data-wb-mode="${id}" title="${esc(t(id === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient'))}" aria-pressed="${mix === id}" aria-label="${esc(t(id === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient'))}">${icon}</button>`;
-  return `<div class="wb"><div class="wb-top"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-mode" role="group" aria-label="${esc(t('plan.balanceMode'))}">${modeBtn('gradient', WB_GRAD)}${modeBtn('stack', WB_STACK)}</div></div><div class="wb-bar"><div class="wb-line wb-head"><span></span>${head}</div>${body}</div><p class="muted small">${t(mix === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient')} ${t('plan.balanceHint')} ${t('plan.balanceDays')}</p></div>`;
+  return `<div class="wb"><div class="wb-top"><div class="eyebrow">${t('plan.balanceTitle')}</div><div class="wb-mode" role="group" aria-label="${esc(t('plan.balanceMode'))}">${modeBtn('gradient', WB_GRAD)}${modeBtn('stack', WB_STACK)}</div></div><div class="wb-bar"><div class="wb-line wb-head"><span></span>${head}</div>${body}<i class="wb-now" hidden title="${esc(t('plan.balanceNow'))}"></i></div><p class="muted small">${t(mix === 'stack' ? 'plan.balanceStack' : 'plan.balanceGradient')} ${t('plan.balanceHint')} ${t('plan.balanceNowLine')} ${t('plan.balanceDays')}</p></div>`;
+}
+// Waar de klok nu staat: juiste dag, juist blok van 6 uur, en de plek binnen dat blok.
+function placeNowLine() {
+  const bar = document.querySelector('#planOverview .wb-bar');
+  const line = bar?.querySelector('.wb-now');
+  const days = bar?.querySelector('.wb-track')?.querySelectorAll(':scope > .wb-day');
+  if (!bar || !line || !days?.length) return;
+  const now = new Date();
+  const day = (now.getDay() + 6) % 7;
+  const blockHours = Number(state.plan?.balance?.blockHours) || 6;
+  const per = Math.max(1, Math.round(24 / blockHours));
+  const hours = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+  const block = Math.min(per - 1, Math.floor(hours / blockHours));
+  const into = Math.min(1, Math.max(0, (hours - block * blockHours) / blockHours));
+  const seg = days[day]?.children[block];
+  const head = bar.querySelector('.wb-days');
+  const tracks = bar.querySelectorAll('.wb-track');
+  const last = tracks[tracks.length - 1];
+  if (!seg || !head || !last) { line.hidden = true; return; }
+  const barBox = bar.getBoundingClientRect();
+  const segBox = seg.getBoundingClientRect();
+  const top = head.getBoundingClientRect().top - barBox.top;
+  const bottom = last.getBoundingClientRect().bottom - barBox.top;
+  line.hidden = false;
+  line.style.left = `${segBox.left - barBox.left + segBox.width * into}px`;
+  line.style.top = `${top}px`;
+  line.style.height = `${Math.max(0, bottom - top)}px`;
+}
+let nowLineObs = null;
+function watchNowLine() {
+  const bar = document.querySelector('#planOverview .wb-bar');
+  if (!bar) return;
+  placeNowLine();
+  nowLineObs?.disconnect();
+  nowLineObs = new ResizeObserver(() => placeNowLine());
+  nowLineObs.observe(bar);
 }
 function bindWhenDrag() {
   document.querySelectorAll('[data-drag]').forEach((el) => {

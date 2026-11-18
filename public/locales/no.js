@@ -510,6 +510,8 @@ export default {
   "plan.balanceStack": "Oransje nederst er tretthet, grønt over er restitusjon.",
   "plan.balanceHint": "Hver dag er fire blokker på 6 timer. Stillingen er ved slutten av blokken.",
   "plan.balanceDays": "En fylt prikk er hovedmuskelen i en økt, en åpen prikk hjelper til. Tidspunktet velger du i ukeplanen.",
+  "plan.balanceNow": "Nå",
+  "plan.balanceNowLine": "Den hvite linjen er øyeblikket nå, på riktig sted i blokken.",
   "plan.shift": "{title} ligger på denne dagen. På {from} var {muscle} ikke uthvilt ennå ({pct}%).",
   "ui.setTraining.mobiliteitEnStretchesOok": "Legg også mobilitet og tøyninger på maskinen",
   "ui.setTraining.ja": "Ja",

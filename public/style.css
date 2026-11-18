@@ -295,7 +295,8 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
 .wb-mode-btn.on { background: color-mix(in srgb, var(--ink) 12%, transparent); color: var(--ink); }
 .wb-days span[data-drop-day] { border-radius: 4px; }
 .wb-seg.wb-over, .wb-days span.wb-over { box-shadow: inset 0 0 0 2px var(--accent); }
-.wb-bar { display: flex; flex-direction: column; gap: 2px; }
+.wb-bar { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.wb-now { position: absolute; z-index: 3; display: block; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, .55); pointer-events: none; border-radius: 1px; }
 .wb-line { display: grid; grid-template-columns: 8.4rem minmax(0, 1fr); gap: .45rem; align-items: center; }
 .wb-head { margin-bottom: .1rem; }
 .wb-name { font-size: .75rem; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

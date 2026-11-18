@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.6 — 18 november 2026
+- De gezondheidsstatus wordt opnieuw opgebouwd als het model midden in een zin stopt, en een afgekapte staart wordt niet bewaard.
+
 ## 2.35.5 — 17 november 2026
 - In het weekherstel staat een witte lijn op het huidige moment: de juiste dag en de juiste plek binnen het blok van 6 uur.
 

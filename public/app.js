@@ -2240,8 +2240,37 @@ $('#muscleMetric').addEventListener('click', (ev) => {
   renderMuscleBars();
 });
 
+// Gewicht als lijn, trainingsminuten als balk, over alle jaren met data.
+function renderYears() {
+  const card = $('#yearsCard');
+  const months = stats.years?.months || [];
+  if (!card || months.length < 2) { card?.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const weighed = months.filter((m) => m.kg != null);
+  const delta = $('#yearsDelta');
+  if (weighed.length >= 2) {
+    const a = weighed[0], b = weighed[weighed.length - 1];
+    const d = Math.round((b.kg - a.kg) * 10) / 10;
+    delta.textContent = t('years.delta', { from: a.kg, start: a.key, to: b.kg, end: b.key, delta: (d > 0 ? '+' : '') + d });
+  } else delta.textContent = '';
+  const x = months.map((m) => m.key + '-01');
+  const maxM = Math.max(1, ...months.map((m) => m.minutes));
+  comboChart($('#chartYears'), {
+    x,
+    stacks: [{ label: t('years.minutes'), color: 'var(--accent)', values: months.map((m) => m.minutes) }],
+    barUnit: 'min',
+    colorOf: (v) => `color-mix(in oklab, var(--accent) ${Math.max(12, Math.round((v / maxM) * 100))}%, #2a2c31)`,
+    line: weighed.length ? { label: t('years.weight'), unit: 'kg', color: 'var(--ink)', points: weighed.map((m) => ({ x: m.key + '-01', y: m.kg })) } : null,
+    label: t('years.title'),
+    xLabel: (xx) => (xx.slice(5, 7) === '01' || xx === x[0] ? xx.slice(0, 4) : ''),
+    yearMarks: true,
+  });
+  $('#yearsLegend').innerHTML = legendHtml([['var(--accent)', t('years.minutes')], ['var(--ink)', t('years.weight'), true]]);
+}
+
 // Tabblad Statistieken.
 function renderStats() {
+  renderYears();
   const t = stats.totals;
   const tile = (label, val, sub = '') => `<div class="card tile"><div class="eyebrow">${label}</div><div class="big">${val}</div><div class="muted small">${sub}</div></div>`;
   const x = stats.extra || {};
@@ -4104,7 +4133,7 @@ function insightsHtml(d) {
 }
 
 // staafjes (eventueel gestapeld) met optioneel een lijn op een tweede as en een doellijn
-function comboChart(el, { x, stacks = [], barUnit = '', line = null, goal = null, colorOf = null, label = '', xLabel = null }) {
+function comboChart(el, { x, stacks = [], barUnit = '', line = null, goal = null, colorOf = null, label = '', xLabel = null, yearMarks = false }) {
   if (!x.length || (!stacks.some((s) => s.values.some((v) => v > 0)) && !line?.points.length)) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   const W = el.clientWidth || 600, H = el.clientHeight || 200, T = 10, B = 24;
   const tot = x.map((_, i) => stacks.reduce((t, s) => t + (s.values[i] || 0), 0));
@@ -4131,12 +4160,17 @@ function comboChart(el, { x, stacks = [], barUnit = '', line = null, goal = null
     g += `<rect x="${L + i * bw}" y="${T}" width="${bw}" height="${H - T - B}" fill="transparent"><title>${esc(tip.join('\n'))}</title></rect>`;
   });
   const lblEvery = Math.ceil(x.length / 7);
-  x.forEach((xx, i) => { if (i % lblEvery === 0) g += `<text x="${L + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle">${esc(xLabel ? xLabel(xx) : xx.slice(8, 10) + '-' + xx.slice(5, 7))}</text>`; });
+  x.forEach((xx, i) => {
+    const lab = xLabel ? xLabel(xx) : (xx.slice(8, 10) + '-' + xx.slice(5, 7));
+    if (yearMarks ? !lab : i % lblEvery !== 0) return;
+    g += `<text x="${L + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle">${esc(lab)}</text>`;
+  });
   if (goal) g += `<line x1="${L}" x2="${W - R}" y1="${Y(goal.value)}" y2="${Y(goal.value)}" stroke="var(--ok)" stroke-dasharray="5 4" stroke-width="1.5"/><text x="${W - R - 4}" y="${Y(goal.value) - 5}" text-anchor="end" style="fill:var(--ok);paint-order:stroke;stroke:var(--surface);stroke-width:4px;font-weight:600">${esc(goal.label)}</text>`;
   if (lp) {
     const Yl = (v) => T + (1 - (v - lp.lo) / (lp.hi - lp.lo)) * (H - T - B);
     const pts = line.points.filter((p) => x.includes(p.x)).map((p) => `${L + x.indexOf(p.x) * bw + bw / 2},${Yl(p.y)}`);
-    g += `<polyline points="${pts.join(' ')}" fill="none" stroke="${line.color}" stroke-width="2.2"/>` + pts.map((p) => `<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="2.6" fill="${line.color}"/>`).join('');
+    g += `<polyline points="${pts.join(' ')}" fill="none" stroke="${line.color}" stroke-width="2.2"/>`;
+    if (!yearMarks || pts.length <= 18) g += pts.map((p) => `<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="2.6" fill="${line.color}"/>`).join('');
   }
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}</svg>`;
 }

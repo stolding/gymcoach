@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.8 — 21 november 2026
+- Terugkijken toont over alle jaren het gewicht als lijn en de trainingsminuten per maand als balk.
+
 ## 2.35.7 — 21 november 2026
 - Progressie per oefening vergelijkt de laatste twee weken, met per week de mediaan van het geschatte 1RM.
 - GymCoach Sync 1.13.11 heeft op Overzicht een knop Sync nu.

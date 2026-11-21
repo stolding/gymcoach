@@ -150,6 +150,7 @@ export default [
     <img class="guide-shot" src="/guide/terugkijken.png" alt="Tab Rückblick von Sam Demo">
     <ol>
       <li><b>Kopf.</b> Der Zeitraum, plus Drucken und PDF.</li>
+      <li><b>Über die Jahre.</b> Alle Jahre mit Daten, unabhängig vom gewählten Zeitraum. Die Balken sind Trainingsminuten je Monat, dunkler wenn der Monat ruhiger war als dein stärkster Monat. Die Linie ist das Durchschnittsgewicht.</li>
       <li><b>Zahlen.</b> Kacheln für den Zeitraum: Trainings, je Woche, Zeit, kcal, Wochenserie, Lieblingstag, Volumen, Sätze, Wiederholungen je Satz, schwerstes Gewicht, Rekorde und Muskelgruppen.</li>
       <li><b>Cardio.</b> Aktivitäten aus Apple Health in diesem Zeitraum.</li>
       <li><b>Balance und Masse.</b> Links die Verteilung des Volumens, rechts Muskelmasse gegen das Trainingsvolumen.</li>

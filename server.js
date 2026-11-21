@@ -486,8 +486,9 @@ const routes = {
       : Math.max(0, Number(url.searchParams.get('days') ?? 84));
     const [activities, daily] = await Promise.all([store.getActivities(), store.getHealthDaily()]);
     const st = engine.stats({ history: ctx.history, workouts: ctx.workouts, sessions: ctx.sessions, activities, daily }, days, from);
+    const years = year.yearsSpan({ workouts: ctx.workouts, activities, bodyLog: ctx.bodyLog });
     const since = from || (days > 0 ? new Date(Date.now() - days * 864e5).toISOString().slice(0, 10) : '0000');
-    return { ...st, ...insights.statsExtra({ history: ctx.history, workouts: ctx.workouts, activities, daily, bodyLog: ctx.bodyLog, settings: ctx.settings }, since) };
+    return { ...st, years, ...insights.statsExtra({ history: ctx.history, workouts: ctx.workouts, activities, daily, bodyLog: ctx.bodyLog, settings: ctx.settings }, since) };
   },
   'GET /api/stats/review.pdf': async (req, url) => {
     const ctx = await context();

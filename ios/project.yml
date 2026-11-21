@@ -7,8 +7,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "1.13.10"
-    CURRENT_PROJECT_VERSION: "26"
+    MARKETING_VERSION: "1.13.11"
+    CURRENT_PROJECT_VERSION: "27"
 targets:
   GymCoachSync:
     type: application

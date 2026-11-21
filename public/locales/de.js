@@ -444,6 +444,7 @@ export default {
   "ui.stats.richtlijnVoorBeginnersCa": "Richtwert für Einsteiger: etwa 6–12 Arbeitssätze pro Muskelgruppe pro Woche. Grün = innerhalb des Richtwerts.",
   "ui.stats.spiergroepenInDetail": "Muskelgruppen im Detail",
   "ui.stats.perOefening": "Pro Übung",
+  "ui.stats.progressHint": "Die Progression vergleicht die letzten zwei Wochen, in denen du die Übung gemacht hast. Pro Woche zählt der Median des geschätzten 1RM, nicht ein einzelnes Training.",
   "ui.analysis.laatsteHalfJaar": "Letztes halbes Jahr",
   "ui.analysis.wanneerTrainJe": "Wann trainierst du?",
   "ui.analysis.wandelenEnFietsenMeetellen": "Gehen und Radfahren mitzählen",

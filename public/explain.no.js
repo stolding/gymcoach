@@ -158,7 +158,7 @@ export default [
       <li><b>Per muskelgruppe.</b> Volum, sett og det beste beregnede 1RM.</li>
       <li><b>Sett per uke.</b> En stolpe per muskelgruppe. Grønt ligger i retningslinjen for nybegynnere, omtrent 6 til 12 arbeidssett.</li>
       <li><b>Detalj.</b> De samme muskelgruppene i en tabell, per uke.</li>
-      <li><b>Per øvelse.</b> Volum og den tyngste vekten per øvelse.</li>
+      <li><b>Per øvelse.</b> Volum og den tyngste vekten per øvelse. Progresjon er endringen i beregnet 1RM mellom de to siste ukene du gjorde øvelsen. Hver uke bruker medianen av øktene.</li>
       <li><b>Mønstre.</b> Hvilke bevegelsesmønstre (press, trekk, knebøy) du gjorde.</li>
       <li><b>Kalender.</b> De samme åtte ukene som på Oversikt, for den valgte perioden.</li>
       <li><b>Når.</b> Hvilke dager og timer du trener. Avkrysningen teller med gange og sykling.</li>

@@ -158,7 +158,7 @@ export default [
       <li><b>Je Muskelgruppe.</b> Volumen, Sätze und das beste geschätzte 1RM.</li>
       <li><b>Sätze je Woche.</b> Ein Balken je Muskelgruppe. Grün liegt in der Richtlinie für Anfänger, etwa 6 bis 12 Arbeitssätze.</li>
       <li><b>Detail.</b> Dieselben Muskelgruppen in einer Tabelle, je Woche.</li>
-      <li><b>Je Übung.</b> Volumen und das schwerste Gewicht je Übung.</li>
+      <li><b>Je Übung.</b> Volumen und das schwerste Gewicht je Übung. Die Progression ist der Unterschied im geschätzten 1RM zwischen den letzten zwei Wochen, in denen du die Übung gemacht hast. Pro Woche zählt der Median der Einheiten.</li>
       <li><b>Muster.</b> Welche Bewegungsmuster (Drücken, Ziehen, Kniebeuge) du gemacht hast.</li>
       <li><b>Kalender.</b> Dieselben acht Wochen wie in der Übersicht, für den gewählten Zeitraum.</li>
       <li><b>Wann.</b> An welchen Tagen und Stunden du trainierst. Das Häkchen zählt Gehen und Radfahren mit.</li>

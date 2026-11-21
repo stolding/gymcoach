@@ -427,6 +427,7 @@ export default {
   'ui.stats.richtlijnVoorBeginnersCa': 'Richtlijn voor beginners: ca. 6–12 werksets per spiergroep per week. Groen = binnen de richtlijn.',
   'ui.stats.spiergroepenInDetail': 'Spiergroepen in detail',
   'ui.stats.perOefening': 'Per oefening',
+  'ui.stats.progressHint': 'Progressie vergelijkt de laatste twee weken waarin je de oefening deed. Per week telt de mediaan van het geschatte 1RM, niet één training.',
   'ui.analysis.laatsteHalfJaar': 'Laatste half jaar',
   'ui.analysis.wanneerTrainJe': 'Wanneer train je?',
   'ui.analysis.wandelenEnFietsenMeetellen': 'wandelen en fietsen meetellen',

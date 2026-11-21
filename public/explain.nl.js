@@ -158,7 +158,7 @@ export default [
       <li><b>Per spiergroep.</b> Volume, sets en het beste geschatte 1RM.</li>
       <li><b>Sets per week.</b> Een balk per spiergroep. Groen valt in de richtlijn voor beginners, ongeveer 6 tot 12 werksets.</li>
       <li><b>Detail.</b> Dezelfde spiergroepen in een tabel, per week.</li>
-      <li><b>Per oefening.</b> Volume en het zwaarste gewicht per oefening.</li>
+      <li><b>Per oefening.</b> Volume en het zwaarste gewicht per oefening. Progressie is het verschil in geschat 1RM tussen de laatste twee weken waarin je de oefening deed. Per week telt de mediaan van de trainingen.</li>
       <li><b>Patronen.</b> Welke bewegingspatronen (duwen, trekken, squat) je deed.</li>
       <li><b>Kalender.</b> Dezelfde acht weken als op Overzicht, voor de gekozen periode.</li>
       <li><b>Wanneer.</b> Op welke dagen en uren je traint. Het vinkje telt wandelen en fietsen mee.</li>

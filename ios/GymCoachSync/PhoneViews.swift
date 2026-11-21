@@ -172,6 +172,7 @@ struct SessionCard: View {
 
 struct DashboardView: View {
     @EnvironmentObject var phone: PhoneModel
+    @EnvironmentObject var sync: SyncModel
     var openPlan: () -> Void
 
     private let orange = Color(red: 1, green: 0.48, blue: 0.18)
@@ -184,10 +185,24 @@ struct DashboardView: View {
                 if let snap = phone.snapshot {
                     VStack(alignment: .leading, spacing: 12) {
                         StaleBanner()
-                        HStack(alignment: .firstTextBaseline) {
+                        HStack(alignment: .center, spacing: 10) {
                             Text(snap.name.isEmpty ? "Overzicht" : snap.name).font(.title2.weight(.semibold))
-                            Spacer()
+                            Spacer(minLength: 8)
                             Text(snap.today).font(.subheadline).foregroundStyle(.secondary)
+                            Button {
+                                Task {
+                                    await sync.sync(full: false)
+                                    await phone.refresh()
+                                }
+                            } label: {
+                                if sync.busy { ProgressView() } else { Text("Sync nu") }
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                            .disabled(sync.busy || !sync.isConfigured)
+                        }
+                        if !sync.message.isEmpty {
+                            Text(sync.message).font(.caption).foregroundStyle(.secondary)
                         }
                         recoveryCard(snap)
                         muscleRecoveryCard(snap)

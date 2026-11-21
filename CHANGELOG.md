@@ -5,6 +5,10 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.7 — 21 november 2026
+- Progressie per oefening vergelijkt de laatste twee weken, met per week de mediaan van het geschatte 1RM.
+- GymCoach Sync 1.13.11 heeft op Overzicht een knop Sync nu.
+
 ## 2.35.6 — 18 november 2026
 - De gezondheidsstatus wordt opnieuw opgebouwd als het model midden in een zin stopt, en een afgekapte staart wordt niet bewaard.
 

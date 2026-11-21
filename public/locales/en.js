@@ -444,6 +444,7 @@ export default {
   "ui.stats.richtlijnVoorBeginnersCa": "Guideline for beginners: about 6–12 working sets per muscle group per week. Green = within the guideline.",
   "ui.stats.spiergroepenInDetail": "Muscle groups in detail",
   "ui.stats.perOefening": "Per exercise",
+  "ui.stats.progressHint": "Progress compares the last two weeks you did the exercise. Each week uses the median estimated 1RM, not a single workout.",
   "ui.analysis.laatsteHalfJaar": "Last six months",
   "ui.analysis.wanneerTrainJe": "When do you train?",
   "ui.analysis.wandelenEnFietsenMeetellen": "include walking and cycling",

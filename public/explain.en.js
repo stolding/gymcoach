@@ -158,7 +158,7 @@ export default [
       <li><b>Per muscle group.</b> Volume, sets and the best estimated 1RM.</li>
       <li><b>Sets per week.</b> A bar per muscle group. Green is inside the beginner guideline, about 6 to 12 working sets.</li>
       <li><b>Detail.</b> The same muscle groups in a table, per week.</li>
-      <li><b>Per exercise.</b> Volume and the heaviest weight per exercise.</li>
+      <li><b>Per exercise.</b> Volume and the heaviest weight per exercise. Progress is the change in estimated 1RM between the last two weeks you did the exercise. Each week uses the median of the workouts.</li>
       <li><b>Patterns.</b> Which movement patterns (push, pull, squat) you did.</li>
       <li><b>Calendar.</b> The same eight weeks as on Overview, for the chosen period.</li>
       <li><b>When.</b> On which days and hours you train. The tick includes walking and cycling.</li>

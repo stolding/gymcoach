@@ -444,6 +444,7 @@ export default {
   "ui.stats.richtlijnVoorBeginnersCa": "Rettesnor for nybegynnere: omtrent 6–12 arbeidssett per muskelgruppe per uke. Grønt = innenfor rettesnoren.",
   "ui.stats.spiergroepenInDetail": "Muskelgrupper i detalj",
   "ui.stats.perOefening": "Per øvelse",
+  "ui.stats.progressHint": "Progresjon sammenligner de to siste ukene du gjorde øvelsen. Hver uke bruker medianen av beregnet 1RM, ikke én økt.",
   "ui.analysis.laatsteHalfJaar": "Siste halvår",
   "ui.analysis.wanneerTrainJe": "Når trener du?",
   "ui.analysis.wandelenEnFietsenMeetellen": "ta med gange og sykling",

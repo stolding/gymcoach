@@ -150,7 +150,7 @@ export default [
     <img class="guide-shot" src="/guide/terugkijken.png" alt="Tabblad Terugkijken van Sam Demo">
     <ol>
       <li><b>Kop.</b> De periode, plus Afdrukken en PDF.</li>
-      <li><b>Over de jaren.</b> Alle jaren met data, los van de gekozen periode. De balken zijn trainingsminuten per maand, donkerder naarmate de maand rustiger was dan je drukste maand. De lijn is het gemiddelde gewicht.</li>
+      <li><b>Over de jaren.</b> Alle jaren met data, los van de gekozen periode. Een balk is een maand, zonder dag. Je kiest de balken (trainingsminuten, aantal trainingen of volume) en de lijn (gewicht, spiermassa of vet%). Donkerder naarmate de maand lager lag dan je hoogste maand. Volume is alleen de Gym Monster.</li>
       <li><b>Cijfers.</b> Tegels over de periode: trainingen, per week, tijd, kcal, weekreeks, favoriete dag, volume, sets, herhalingen per set, zwaarste gewicht, records en spiergroepen.</li>
       <li><b>Cardio.</b> Activiteiten uit Apple Health in deze periode.</li>
       <li><b>Balans en massa.</b> Links de verdeling van het volume, rechts spiermassa tegen het trainingsvolume.</li>

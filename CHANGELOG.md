@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.9 — 21 november 2026
+- In Over de jaren toont een maand alleen de maandnaam, en je kiest de balken (minuten, trainingen of volume) en de lijn (gewicht, spiermassa of vet%).
+
 ## 2.35.8 — 21 november 2026
 - Terugkijken toont over alle jaren het gewicht als lijn en de trainingsminuten per maand als balk.
 

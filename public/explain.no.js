@@ -150,7 +150,7 @@ export default [
     <img class="guide-shot" src="/guide/terugkijken.png" alt="Fanen Tilbakeblikk for Sam Demo">
     <ol>
       <li><b>Topp.</b> Perioden, pluss Skriv ut og PDF.</li>
-      <li><b>Over årene.</b> Alle år med data, uavhengig av den valgte perioden. Stolpene er treningsminutter per måned, mørkere når måneden var roligere enn din travleste måned. Linjen er snittvekten.</li>
+      <li><b>Over årene.</b> Alle år med data, uavhengig av den valgte perioden. En stolpe er en måned, uten dag. Du velger stolpene (treningsminutter, antall treninger eller volum) og linjen (vekt, muskelmasse eller fett %). Mørkere når måneden lå lavere enn din høyeste måned. Volum er bare Gym Monster.</li>
       <li><b>Tall.</b> Fliser for perioden: treninger, per uke, tid, kcal, ukerekke, favorittdag, volum, sett, repetisjoner per sett, tyngste vekt, rekorder og muskelgrupper.</li>
       <li><b>Kardio.</b> Aktiviteter fra Apple Health i denne perioden.</li>
       <li><b>Balanse og masse.</b> Fordelingen av volumet til venstre, muskelmasse mot treningsvolumet til høyre.</li>

@@ -2240,33 +2240,75 @@ $('#muscleMetric').addEventListener('click', (ev) => {
   renderMuscleBars();
 });
 
-// Gewicht als lijn, trainingsminuten als balk, over alle jaren met data.
+// Maand en jaar, zonder dag. "1 augustus" hoort hier niet: de balk is de hele maand.
+function monthName(x) {
+  const d = new Date(String(x).slice(0, 7) + '-01T12:00:00');
+  if (isNaN(d)) return String(x);
+  const s = d.toLocaleDateString(localeOf(), { month: 'long', year: 'numeric' });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+const YEAR_BAR = { minutes: ['years.minutes', 'min'], sessions: ['years.sessions', ''], volume: ['years.volume', 'kg'] };
+const YEAR_LINE = { kg: ['years.weight', 'kg'], muscle: ['years.muscle', 'kg'], fat: ['years.fat', '%'] };
+let yearsBar = 'minutes';
+let yearsLine = 'kg';
+try {
+  const b = localStorage.getItem('gc-years-bar'), l = localStorage.getItem('gc-years-line');
+  if (b in YEAR_BAR) yearsBar = b;
+  if (l in YEAR_LINE) yearsLine = l;
+} catch {}
+// Gewicht of een andere lichaamslijn, en minuten, trainingen of volume als balk, over alle jaren.
 function renderYears() {
   const card = $('#yearsCard');
   const months = stats.years?.months || [];
   if (!card || months.length < 2) { card?.classList.add('hidden'); return; }
   card.classList.remove('hidden');
-  const weighed = months.filter((m) => m.kg != null);
+  const bars = $('#yearsBars'), line = $('#yearsLine');
+  bars?.querySelector('[data-y="volume"]')?.classList.toggle('hidden', !months.some((m) => m.volume > 0));
+  for (const key of Object.keys(YEAR_LINE)) {
+    const n = months.filter((m) => m[key] != null).length;
+    line?.querySelector(`[data-y="${key}"]`)?.classList.toggle('hidden', n < 2);
+  }
+  if (bars?.querySelector(`[data-y="${yearsBar}"]`)?.classList.contains('hidden')) yearsBar = 'minutes';
+  if (line?.querySelector(`[data-y="${yearsLine}"]`)?.classList.contains('hidden')) {
+    yearsLine = [...(line?.querySelectorAll('button') || [])].find((b) => !b.classList.contains('hidden'))?.dataset.y || 'kg';
+  }
+  bars?.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.y === yearsBar));
+  line?.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.y === yearsLine));
+  const [barKey, barUnit] = YEAR_BAR[yearsBar] || YEAR_BAR.minutes;
+  const [lineKey, lineUnit] = YEAR_LINE[yearsLine] || YEAR_LINE.kg;
+  const series = months.filter((m) => m[yearsLine] != null);
   const delta = $('#yearsDelta');
-  if (weighed.length >= 2) {
-    const a = weighed[0], b = weighed[weighed.length - 1];
-    const d = Math.round((b.kg - a.kg) * 10) / 10;
-    delta.textContent = t('years.delta', { from: a.kg, start: a.key, to: b.kg, end: b.key, delta: (d > 0 ? '+' : '') + d });
+  if (series.length >= 2) {
+    const a = series[0], b = series[series.length - 1];
+    const d = Math.round((b[yearsLine] - a[yearsLine]) * 10) / 10;
+    delta.textContent = t('years.delta', { from: a[yearsLine], start: monthName(a.key), to: b[yearsLine], end: monthName(b.key), delta: (d > 0 ? '+' : '') + d, unit: lineUnit });
   } else delta.textContent = '';
   const x = months.map((m) => m.key + '-01');
-  const maxM = Math.max(1, ...months.map((m) => m.minutes));
+  const maxM = Math.max(1, ...months.map((m) => Number(m[yearsBar]) || 0));
   comboChart($('#chartYears'), {
     x,
-    stacks: [{ label: t('years.minutes'), color: 'var(--accent)', values: months.map((m) => m.minutes) }],
-    barUnit: 'min',
+    stacks: [{ label: t(barKey), color: 'var(--accent)', values: months.map((m) => Number(m[yearsBar]) || 0) }],
+    barUnit,
     colorOf: (v) => `color-mix(in oklab, var(--accent) ${Math.max(12, Math.round((v / maxM) * 100))}%, #2a2c31)`,
-    line: weighed.length ? { label: t('years.weight'), unit: 'kg', color: 'var(--ink)', points: weighed.map((m) => ({ x: m.key + '-01', y: m.kg })) } : null,
+    line: series.length ? { label: t(lineKey), unit: lineUnit, color: 'var(--ink)', points: series.map((m) => ({ x: m.key + '-01', y: m[yearsLine] })) } : null,
     label: t('years.title'),
     xLabel: (xx) => (xx.slice(5, 7) === '01' || xx === x[0] ? xx.slice(0, 4) : ''),
     yearMarks: true,
+    tipLabel: monthName,
   });
-  $('#yearsLegend').innerHTML = legendHtml([['var(--accent)', t('years.minutes')], ['var(--ink)', t('years.weight'), true]]);
+  $('#yearsLegend').innerHTML = legendHtml([['var(--accent)', t(barKey)], ['var(--ink)', t(lineKey), true]]);
 }
+function bindYearsPick(id, set) {
+  $('#' + id)?.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (!b || b.classList.contains('hidden')) return;
+    set(b.dataset.y);
+    try { localStorage.setItem(id === 'yearsBars' ? 'gc-years-bar' : 'gc-years-line', b.dataset.y); } catch {}
+    renderYears();
+  });
+}
+bindYearsPick('yearsBars', (v) => { yearsBar = v; });
+bindYearsPick('yearsLine', (v) => { yearsLine = v; });
 
 // Tabblad Statistieken.
 function renderStats() {
@@ -4133,7 +4175,7 @@ function insightsHtml(d) {
 }
 
 // staafjes (eventueel gestapeld) met optioneel een lijn op een tweede as en een doellijn
-function comboChart(el, { x, stacks = [], barUnit = '', line = null, goal = null, colorOf = null, label = '', xLabel = null, yearMarks = false }) {
+function comboChart(el, { x, stacks = [], barUnit = '', line = null, goal = null, colorOf = null, label = '', xLabel = null, yearMarks = false, tipLabel = null }) {
   if (!x.length || (!stacks.some((s) => s.values.some((v) => v > 0)) && !line?.points.length)) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   const W = el.clientWidth || 600, H = el.clientHeight || 200, T = 10, B = 24;
   const tot = x.map((_, i) => stacks.reduce((t, s) => t + (s.values[i] || 0), 0));
@@ -4149,7 +4191,7 @@ function comboChart(el, { x, stacks = [], barUnit = '', line = null, goal = null
   for (let i = 0; i <= ticks; i++) { const v = i * st; g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${esc(fmtTick(v, 0, barUnit))}</text>`; }
   if (lp) for (let i = 0; i <= 3; i++) { const v = lp.lo + ((lp.hi - lp.lo) * i) / 3, y = T + (1 - i / 3) * (H - T - B); g += `<text x="${W - R + 6}" y="${y + 4}" style="fill:${line.color}">${esc(fmtTick(v, lp.hi - lp.lo < 10 ? 1 : 0, line.unit))}</text>`; }
   x.forEach((xx, i) => {
-    let base = 0; const tip = [`${fmtDate(xx)}`];
+    let base = 0; const tip = [`${tipLabel ? tipLabel(xx) : fmtDate(xx)}`];
     stacks.forEach((s) => {
       const v = s.values[i] || 0; if (!v) return;
       const c = colorOf ? colorOf(v, i) : s.color;

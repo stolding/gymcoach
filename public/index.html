@@ -120,7 +120,19 @@
     </div>
     <div class="card hidden" id="yearsCard">
       <h2 data-i18n="years.title">Over de jaren</h2>
-      <p class="muted small" data-i18n="years.hint">Elke balk is een maand. De hoogte is het aantal trainingsminuten, de kleur hoe zwaar die maand was tegen je eigen drukste maand. De lijn is het gemiddelde gewicht. Dit overzicht volgt niet de periode hierboven.</p>
+      <p class="muted small" data-i18n="years.hint">Elke balk is een maand, zonder dag. Kies de balken en de lijn. De kleur is die maand tegen je eigen hoogste maand. Volume is alleen de Gym Monster. Dit overzicht volgt niet de periode hierboven.</p>
+      <div class="row between wrap gap">
+        <div class="chips small" id="yearsBars">
+          <button type="button" data-y="minutes" class="on" data-i18n="years.minutes">Trainingsminuten</button>
+          <button type="button" data-y="sessions" data-i18n="years.sessions">Trainingen</button>
+          <button type="button" data-y="volume" data-i18n="years.volume">Volume</button>
+        </div>
+        <div class="chips small" id="yearsLine">
+          <button type="button" data-y="kg" class="on" data-i18n="years.weight">Gewicht</button>
+          <button type="button" data-y="muscle" data-i18n="years.muscle">Spiermassa</button>
+          <button type="button" data-y="fat" data-i18n="years.fat">Vet%</button>
+        </div>
+      </div>
       <p class="muted small" id="yearsDelta"></p>
       <div id="chartYears" class="chart tall"></div>
       <div class="legend" id="yearsLegend"></div>

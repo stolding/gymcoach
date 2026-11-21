@@ -150,7 +150,7 @@ export default [
     <img class="guide-shot" src="/guide/terugkijken.png" alt="Sam Demo's Review tab">
     <ol>
       <li><b>Header.</b> The period, plus Print and PDF.</li>
-      <li><b>Across the years.</b> Every year with data, apart from the chosen period. The bars are training minutes per month, darker when the month was quieter than your busiest month. The line is the average weight.</li>
+      <li><b>Across the years.</b> Every year with data, apart from the chosen period. A bar is a month, with no day. You choose the bars (training minutes, number of workouts or volume) and the line (weight, muscle mass or fat %). Darker when the month was lower than your highest month. Volume is the Gym Monster only.</li>
       <li><b>Numbers.</b> Tiles for the period: workouts, per week, time, kcal, streak, favourite day, volume, sets, reps per set, heaviest weight, records and muscle groups.</li>
       <li><b>Cardio.</b> Apple Health activities in this period.</li>
       <li><b>Balance and mass.</b> The volume split on the left, muscle mass against training volume on the right.</li>

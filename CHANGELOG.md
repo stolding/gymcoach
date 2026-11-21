@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.10 — 21 november 2026
+- GymCoach Sync wordt gebouwd met de iOS 27 SDK (Xcode 27).
+
 ## 2.35.9 — 21 november 2026
 - In Over de jaren toont een maand alleen de maandnaam, en je kiest de balken (minuten, trainingen of volume) en de lijn (gewicht, spiermassa of vet%).
 

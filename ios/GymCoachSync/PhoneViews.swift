@@ -823,8 +823,8 @@ struct WeekBalanceStrip: View {
             if usesBlocks {
                 blockGrid
                 Text(stacked
-                     ? "Oranje onder is vermoeid, groen erboven is hersteld. Een stip is een training."
-                     : "De kleur loopt geleidelijk van oranje naar groen. Een stip is een training.")
+                     ? "Oranje onder is vermoeid, groen erboven is hersteld. Een stip is een training. De witte lijn is nu."
+                     : "De kleur loopt geleidelijk van oranje naar groen. Een stip is een training. De witte lijn is nu.")
                     .font(.caption2).foregroundStyle(.secondary)
             } else {
                 legacyGrid
@@ -845,6 +845,13 @@ struct WeekBalanceStrip: View {
     }
 
     private var blockGrid: some View {
+        TimelineView(.periodic(from: .now, by: 60)) { context in
+            gridRows
+                .overlay { nowLine(at: context.date) }
+        }
+    }
+
+    private var gridRows: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 4) {
                 Color.clear.frame(width: 78, height: 1)
@@ -870,6 +877,39 @@ struct WeekBalanceStrip: View {
                     }
                 }
             }
+        }
+    }
+
+    /// Dag 0 is maandag. De lijn staat in het juiste blok van 6 uur, op de plek van de klok in dat blok.
+    private func nowLine(at date: Date) -> some View {
+        GeometryReader { geo in
+            let days = max(grid.days.count, 1)
+            let per = max(1, (grid.rows.first?.blocks?.count ?? 0) / days)
+            let cal = Calendar.current
+            let weekday = cal.component(.weekday, from: date)
+            let day = (weekday + 5) % 7
+            let hours = Double(cal.component(.hour, from: date))
+                + Double(cal.component(.minute, from: date)) / 60
+                + Double(cal.component(.second, from: date)) / 3600
+            let blockHours = 24.0 / Double(per)
+            let block = min(per - 1, Int(hours / blockHours))
+            let into = min(1, max(0, (hours - Double(block) * blockHours) / blockHours))
+            let name: CGFloat = 78
+            let gap: CGFloat = 4
+            let segGap: CGFloat = 1
+            let dayW = (geo.size.width - name - gap - gap * CGFloat(days - 1)) / CGFloat(days)
+            let segW = (dayW - segGap * CGFloat(per - 1)) / CGFloat(per)
+            let x = name + gap
+                + CGFloat(day) * (dayW + gap)
+                + CGFloat(block) * (segW + segGap)
+                + segW * into
+            ZStack {
+                Rectangle().fill(Color.black.opacity(0.55)).frame(width: 4)
+                Rectangle().fill(Color.white).frame(width: 2)
+            }
+            .frame(height: geo.size.height)
+            .position(x: x, y: geo.size.height / 2)
+            .allowsHitTesting(false)
         }
     }
 

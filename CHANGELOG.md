@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.11 — 21 november 2026
+- GymCoach Sync 1.13.12 toont de witte lijn op het herstelraster, op de juiste dag en de juiste plek in het blok.
+
 ## 2.35.10 — 21 november 2026
 - GymCoach Sync wordt gebouwd met de iOS 27 SDK (Xcode 27).
 

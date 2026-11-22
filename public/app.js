@@ -105,7 +105,7 @@ const axisUnit = (u) => ({ '%-punt': '%-pt' }[u] ?? u ?? '');
 const fmtTick = (v, dec, unit) => `${v.toLocaleString(localeOf(), { minimumFractionDigits: dec, maximumFractionDigits: dec })}${unit ? (/^[%×]/.test(unit) ? '' : ' ') + unit : ''}`;
 
 // Lijngrafiek (SVG) met een of meer reeksen, as-labels en tooltip.
-function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, zoneColor = null, spanDates = false, ySpan = null } = {}) {
+function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, zoneColor = null, spanDates = false, ySpan = null, onZoom = null } = {}) {
   const pts = series.flatMap((s) => s.points);
   if (pts.length < 1) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   // eenheid op de y-as: expliciet, of de gemeenschappelijke eenheid van alle reeksen
@@ -209,7 +209,9 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
   // hover/tap: dichtstbijzijnde meetpunt tonen
   const hoverXs = [...new Set([...xs, ...markDays.map((m) => m.x)])];
   const svg = el.querySelector('svg'), tip = el.querySelector('.ctip'), guide = el.querySelector('.guide'), hls = el.querySelectorAll('.hl');
+  let zooming = false;
   const show = (ev) => {
+    if (zooming) return;
     const r = svg.getBoundingClientRect();
     const mx = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left) * (W / r.width);
     let best = xs[0], bd = Infinity;
@@ -255,6 +257,72 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
     svg.addEventListener('click', (ev) => { show(ev); const d = tip.dataset.x; if (d && markDays.some((m) => m.x === d)) onPick(d); });
   }
   svg.addEventListener('touchstart', show, { passive: true }); svg.addEventListener('touchmove', show, { passive: true });
+  if (onZoom && isDate && xs.length > 1 && t1 > t0) {
+    svg.style.cursor = 'crosshair';
+    svg.style.touchAction = 'none';
+    const sel = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    sel.style.pointerEvents = 'none';
+    sel.setAttribute('class', 'zoom-sel');
+    sel.setAttribute('visibility', 'hidden');
+    svg.appendChild(sel);
+    let drag = null;
+    let suppressClick = false;
+    const at = (ev) => {
+      const r = svg.getBoundingClientRect();
+      const p = ev.touches ? ev.touches[0] : ev;
+      return { x: (p.clientX - r.left) * (W / r.width), y: (p.clientY - r.top) * (H / r.height) };
+    };
+    const dateAt = (sx) => {
+      const f = Math.min(1, Math.max(0, (sx - L) / (W - L - R)));
+      const d = new Date(t0 + f * (t1 - t0));
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    svg.addEventListener('click', (ev) => {
+      if (!suppressClick) return;
+      suppressClick = false;
+      ev.stopImmediatePropagation();
+      ev.preventDefault();
+    }, true);
+    svg.addEventListener('dblclick', (ev) => { ev.preventDefault(); onZoom(null, null); });
+    svg.addEventListener('pointerdown', (ev) => {
+      if (ev.button != null && ev.button !== 0) return;
+      const p = at(ev);
+      if (p.x < L || p.x > W - R || p.y < T || p.y > H - B) return;
+      drag = { ...p, moved: false };
+      try { svg.setPointerCapture(ev.pointerId); } catch { /* de sleep volgt de muis ook zonder capture */ }
+    });
+    svg.addEventListener('pointermove', (ev) => {
+      if (!drag) return;
+      const p = at(ev);
+      if (Math.hypot(p.x - drag.x, p.y - drag.y) > 5) drag.moved = true;
+      if (!drag.moved) return;
+      ev.preventDefault();
+      zooming = true;
+      hide();
+      const x = Math.max(L, Math.min(drag.x, p.x, W - R));
+      const x2 = Math.min(W - R, Math.max(drag.x, p.x, L));
+      const y = Math.max(T, Math.min(drag.y, p.y, H - B));
+      const y2 = Math.min(H - B, Math.max(drag.y, p.y, T));
+      sel.setAttribute('x', x); sel.setAttribute('y', y);
+      sel.setAttribute('width', Math.max(0, x2 - x)); sel.setAttribute('height', Math.max(0, y2 - y));
+      sel.setAttribute('visibility', 'visible');
+    });
+    const endDrag = (ev) => {
+      if (!drag) return;
+      const moved = drag.moved;
+      const startX = drag.x;
+      drag = null;
+      zooming = false;
+      sel.setAttribute('visibility', 'hidden');
+      if (!moved) return;
+      suppressClick = true;
+      const a = dateAt(startX), b = dateAt(at(ev).x);
+      const from = a < b ? a : b, to = a < b ? b : a;
+      if (from !== to) onZoom(from, to);
+    };
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointercancel', () => { drag = null; zooming = false; sel.setAttribute('visibility', 'hidden'); });
+  }
 }
 
 // Staafgrafiek (SVG) voor een reeks waarden.
@@ -2908,6 +2976,7 @@ function withBmi(log) {
 let compMetric = 'fat';
 let compTrend = true;
 let compTrain = true;
+let compZoom = null;
 try { compTrain = localStorage.getItem('gc-comp-train') !== 'off'; } catch {}
 // tijdsperiode voor de grafieken op de lichaamspagina (gerekend vanaf de laatste meting)
 // kalenderperiodes (vanaf maandag / de 1e / 1 januari) en terugkijkperiodes (t/m de laatste meting)
@@ -2926,7 +2995,7 @@ const rangeChips = (id) => `<select id="${id}" class="period-sel" aria-label="${
 // Koppelt de periodekeuze van een kaart in Lichaam (en onthoudt de keuze).
 function bindRange(card, id) {
   card.querySelector('#' + id).addEventListener('change', (ev) => {
-    bodyRange = ev.target.value; try { localStorage.setItem('gc-body-range', bodyRange); } catch {}
+    bodyRange = ev.target.value; compZoom = null; try { localStorage.setItem('gc-body-range', bodyRange); } catch {}
     renderComposition();
   });
 }
@@ -2983,6 +3052,8 @@ function slopeOf(points) {
   return { slope, pct: my ? (slope / my) * 100 : 0, to: points[points.length - 1].x };
 }
 
+const zoomWhen = (iso) => new Date(iso + 'T12:00:00').toLocaleDateString(localeOf(), { day: 'numeric', month: 'short', year: '2-digit' });
+
 // Lichaamssamenstelling: gewicht, vet, spiermassa met richtwaarden.
 function renderComposition() {
   const log = withBmi(withWatch(state.bodyLog));
@@ -3014,7 +3085,12 @@ function renderComposition() {
   const [, mLabel, mUnit, mGood] = COMP.find(([k]) => k === compMetric);
   const ptsAll = log.filter((b) => b[compMetric] != null).map((b) => ({ x: b.date, y: b[compMetric] }));
   const from = rangeStart(ptsAll[ptsAll.length - 1]?.x);
-  const shown = from ? ptsAll.filter((q) => q.x >= from) : ptsAll;
+  let shown = from ? ptsAll.filter((q) => q.x >= from) : ptsAll;
+  if (compZoom) {
+    const zoomed = shown.filter((q) => q.x >= compZoom.from && q.x <= compZoom.to);
+    if (zoomed.length) shown = zoomed;
+    else compZoom = null;
+  }
   const tr = slopeOf(shown);
   let trendTxt = '';
   if (tr) {
@@ -3026,8 +3102,8 @@ function renderComposition() {
   }
   card.innerHTML = `<div class="row between wrap gap"><h2>${t('app.lichaamssamenstelling')}</h2><span class="muted">${t('app.laatsteMeting', { a: esc(lastWith(log, 'kg')?.date || '') })}</span></div>
     <div class="ctiles">${tiles}</div>
-    <div class="row between wrap gap" style="margin-top:1rem"><div class="eyebrow" style="margin:0">${t('app.overTijd', { mLabel, a: mUnit ? ` (${mUnit})` : '' })}</div><div class="row gap wrap"><span class="small">${trendTxt}</span>${rangeChips('compRange')}<button class="chip ${compTrain ? 'on' : ''}" id="trainToggle" aria-pressed="${compTrain}" title="${t('app.toonDeDagenWaarop')}"><span class="dot tm"></span> ${t('app.activiteiten')}</button><button class="chip ${compTrend ? 'on' : ''}" id="trendToggle" aria-pressed="${compTrend}" title="${t('app.trendWhole')}"><span class="dot b"></span> ${t('app.trendlijn')}</button></div></div>
-    <div id="chartComp" class="chart tall"></div>`;
+    <div class="row between wrap gap" style="margin-top:1rem"><div class="eyebrow" style="margin:0">${t('app.overTijd', { mLabel, a: mUnit ? ` (${mUnit})` : '' })}</div><div class="row gap wrap"><span class="small">${trendTxt}</span>${rangeChips('compRange')}${compZoom ? `<button type="button" class="chip on" id="zoomReset" title="${t('app.zoomReset')}">${esc(zoomWhen(compZoom.from))} – ${esc(zoomWhen(compZoom.to))}</button>` : ''}<button class="chip ${compTrain ? 'on' : ''}" id="trainToggle" aria-pressed="${compTrain}" title="${t('app.toonDeDagenWaarop')}"><span class="dot tm"></span> ${t('app.activiteiten')}</button><button class="chip ${compTrend ? 'on' : ''}" id="trendToggle" aria-pressed="${compTrend}" title="${t('app.trendWhole')}"><span class="dot b"></span> ${t('app.trendlijn')}</button></div></div>
+    <div id="chartComp" class="chart tall" title="${esc(t('app.zoomHint'))}"></div>`;
   const series = [{ cls: 'la', label: mLabel, unit: mUnit, points: shown }];
   if (compTrend && shown.length > 2) series.push({ cls: 'lb', label: t('app.trendlijn'), unit: mUnit, points: smoothTrend(shown) });
   const marks = compTrain ? [
@@ -3050,8 +3126,18 @@ function renderComposition() {
     $('#chartComp').insertAdjacentHTML('afterend', `<div class="band-note small muted">${lead}${lead && (legend || note) ? ' · ' : ''}${legend}${legend && note ? ' ' : ''}${note}</div>`);
   }
   if (!series[0].points.length) $('#chartComp').innerHTML = '<div class="empty">' + t('app.geenMetingenInDeze') + '</div>';
-  else lineChart($('#chartComp'), series, { bands: hb?.bands, marks, onPick: (d) => openDay(d) });
+  else lineChart($('#chartComp'), series, {
+    bands: hb?.bands, marks, onPick: (d) => openDay(d),
+    onZoom: (a, b) => {
+      if (!a || !b || a === b) { compZoom = null; renderComposition(); return; }
+      const hit = ptsAll.filter((q) => q.x >= a && q.x <= b && (!from || q.x >= from));
+      if (!hit.length) return;
+      compZoom = { from: a, to: b };
+      renderComposition();
+    },
+  });
   $('#trainToggle').addEventListener('click', () => { compTrain = !compTrain; try { localStorage.setItem('gc-comp-train', compTrain ? 'on' : 'off'); } catch {} renderComposition(); });
+  $('#zoomReset')?.addEventListener('click', () => { compZoom = null; renderComposition(); });
   bindRange(card, 'compRange');
   $('#trendToggle').addEventListener('click', () => { compTrend = !compTrend; try { localStorage.setItem('gc-comp-trend', compTrend ? 'on' : 'off'); } catch {} renderComposition(); });
   card.querySelectorAll('.ctile').forEach((el) => {

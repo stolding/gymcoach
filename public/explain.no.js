@@ -133,7 +133,7 @@ export default [
       <li><b>Tittel.</b> Kroppsvekt.</li>
       <li><b>Vekt.</b> Om Withings er koblet til, og en knapp for å legge inn en måling selv.</li>
       <li><b>Helsepoeng.</b> Samme poengsum som på Oversikt, her med kategoriene kropp, hjerte, kondisjon og annet.</li>
-      <li><b>Sammensetning.</b> Fliser for vekt, fett, muskelmasse og de andre verdiene fra vekten, med en graf. Grønt eller rødt følger om poengsummen blir bedre eller dårligere, ikke om tallet steg.</li>
+      <li><b>Sammensetning.</b> Fliser for vekt, fett, muskelmasse og de andre verdiene fra vekten, med en graf. Grønt eller rødt følger om poengsummen blir bedre eller dårligere, ikke om tallet steg. Dra et rektangel over grafen for å zoome inn på den perioden; dobbeltklikk eller datoknappen viser den valgte perioden igjen.</li>
       <li><b>Målinger.</b> Listen, sammenfoldet. Åpne den for hver veiedag.</li>
     </ol>
     <h4>Trening</h4>

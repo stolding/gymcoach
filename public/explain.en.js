@@ -133,7 +133,7 @@ export default [
       <li><b>Title.</b> Body weight.</li>
       <li><b>Scale.</b> Whether Withings is connected, and a button to add a measurement yourself.</li>
       <li><b>Health score.</b> The same score as on Overview, here with the categories body, heart, fitness and other.</li>
-      <li><b>Composition.</b> Tiles for weight, fat, muscle mass and the scale's other values, with a chart. Green or red follows whether the score gets better or worse, not whether the number went up.</li>
+      <li><b>Composition.</b> Tiles for weight, fat, muscle mass and the scale's other values, with a chart. Green or red follows whether the score gets better or worse, not whether the number went up. Drag a rectangle across the chart to zoom into that period; double-click or the date button shows the chosen period again.</li>
       <li><b>Measurements.</b> The list, collapsed. Opening it shows every weigh-in.</li>
     </ol>
     <h4>Training</h4>

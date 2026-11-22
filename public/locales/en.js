@@ -913,6 +913,8 @@ export default {
   "app.activiteiten": "Activities",
   "app.gemiddeldeOver14Dagen": "14-day average",
   "app.trendlijn": "Trend line",
+  "app.zoomHint": "Drag a rectangle across the chart to zoom into that period. Double-click shows the chosen period again.",
+  "app.zoomReset": "Whole period",
   "app.trendWhole": "Straight line through every point in this chart",
   "app.gymMonster": "Gym Monster",
   "app.streepjesOnderDeGrafiek": "Marks below the chart: {a}{b}",

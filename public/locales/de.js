@@ -913,6 +913,8 @@ export default {
   "app.activiteiten": "Aktivitäten",
   "app.gemiddeldeOver14Dagen": "14-Tage-Durchschnitt",
   "app.trendlijn": "Trendlinie",
+  "app.zoomHint": "Zieh ein Rechteck über die Grafik, um diesen Zeitraum zu vergrößern. Ein Doppelklick zeigt wieder den gewählten Zeitraum.",
+  "app.zoomReset": "Ganzer Zeitraum",
   "app.trendWhole": "Gerade durch alle Punkte in dieser Grafik",
   "app.gymMonster": "Gym Monster",
   "app.streepjesOnderDeGrafiek": "Striche unter dem Diagramm: {a}{b}",

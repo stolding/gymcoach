@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.35.12 — 22 november 2026
+- Op Lichaam zoom je een periode in door een rechthoek over de samenstellingsgrafiek te slepen.
+
 ## 2.35.11 — 21 november 2026
 - GymCoach Sync 1.13.12 toont de witte lijn op het herstelraster, op de juiste dag en de juiste plek in het blok.
 

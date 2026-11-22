@@ -133,7 +133,7 @@ export default [
       <li><b>Titel.</b> Lichaamsgewicht.</li>
       <li><b>Weegschaal.</b> Of Withings gekoppeld is, en een knop om zelf een meting toe te voegen.</li>
       <li><b>Gezondheidsscore.</b> Dezelfde score als op Overzicht, hier met de categorieën lichaam, hart, conditie en overig.</li>
-      <li><b>Samenstelling.</b> Tegels voor gewicht, vet, spiermassa en de andere waarden van de weegschaal, met een grafiek. Groen of rood volgt of de score er beter of slechter van wordt, niet of het getal steeg.</li>
+      <li><b>Samenstelling.</b> Tegels voor gewicht, vet, spiermassa en de andere waarden van de weegschaal, met een grafiek. Groen of rood volgt of de score er beter of slechter van wordt, niet of het getal steeg. Sleep een rechthoek over de grafiek om die periode uit te zoomen; dubbelklik of de datumknop toont weer de gekozen periode.</li>
       <li><b>Metingen.</b> De lijst, ingeklapt. Openen toont elke weegdag.</li>
     </ol>
     <h4>Training</h4>

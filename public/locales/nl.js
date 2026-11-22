@@ -898,6 +898,8 @@ export default {
   'app.activiteiten': 'Activiteiten',
   'app.gemiddeldeOver14Dagen': 'Gemiddelde over 14 dagen',
   'app.trendlijn': 'Trendlijn',
+  'app.zoomHint': 'Sleep een rechthoek over de grafiek om die periode uit te zoomen. Dubbelklik toont weer de gekozen periode.',
+  'app.zoomReset': 'Hele periode',
   'app.trendWhole': 'Rechte lijn door alle punten in deze grafiek',
   'app.gymMonster': 'Gym Monster',
   'app.streepjesOnderDeGrafiek': 'Streepjes onder de grafiek: {a}{b}',

@@ -133,7 +133,7 @@ export default [
       <li><b>Titel.</b> Körpergewicht.</li>
       <li><b>Waage.</b> Ob Withings verbunden ist, und ein Knopf, um selbst eine Messung einzutragen.</li>
       <li><b>Gesundheitsscore.</b> Derselbe Score wie in der Übersicht, hier mit den Kategorien Körper, Herz, Fitness und Sonstiges.</li>
-      <li><b>Zusammensetzung.</b> Kacheln für Gewicht, Fett, Muskelmasse und die anderen Werte der Waage, mit einer Grafik. Grün oder rot folgt, ob der Score besser oder schlechter wird, nicht ob die Zahl stieg.</li>
+      <li><b>Zusammensetzung.</b> Kacheln für Gewicht, Fett, Muskelmasse und die anderen Werte der Waage, mit einer Grafik. Grün oder rot folgt, ob der Score besser oder schlechter wird, nicht ob die Zahl stieg. Ziehe ein Rechteck über die Grafik, um diesen Zeitraum zu vergrößern; ein Doppelklick oder die Datumsschaltfläche zeigt wieder den gewählten Zeitraum.</li>
       <li><b>Messungen.</b> Die Liste, eingeklappt. Öffnen zeigt jeden Wiegetag.</li>
     </ol>
     <h4>Training</h4>

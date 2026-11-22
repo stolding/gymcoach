@@ -913,6 +913,8 @@ export default {
   "app.activiteiten": "Aktiviteter",
   "app.gemiddeldeOver14Dagen": "14-dagerssnitt",
   "app.trendlijn": "Trendlinje",
+  "app.zoomHint": "Dra et rektangel over grafen for å zoome inn på den perioden. Dobbeltklikk viser den valgte perioden igjen.",
+  "app.zoomReset": "Hele perioden",
   "app.trendWhole": "Rett linje gjennom alle punktene i dette diagrammet",
   "app.gymMonster": "Gym Monster",
   "app.streepjesOnderDeGrafiek": "Merker under grafen: {a}{b}",

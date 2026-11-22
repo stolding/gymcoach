@@ -1461,6 +1461,7 @@ export default {
   "app.energySrcGym": "Kilde: kalorier fra treningsøkter og aktiviteter.",
   "app.notYet": "Ikke ennå",
   "app.restDay": "Hviledag",
+  "app.weekEmpty": "Ingen trening denne uken",
   "app.acceptTermsFirst": "Godta vilkårene først",
   "app.setsN": { one: "{n} sett", other: "{n} sett" },
   "app.repsTotal": "{reps} reps/s",

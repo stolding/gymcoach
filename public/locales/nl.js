@@ -1446,6 +1446,7 @@ export default {
   'app.energySrcGym': 'Bron: calorieën van je trainingen en activiteiten.',
   'app.notYet': 'Nog niet geweest',
   'app.restDay': 'Rustdag',
+  'app.weekEmpty': 'Geen training deze week',
   'app.acceptTermsFirst': 'Accepteer eerst de voorwaarden',
   'app.setsN': { one: '{n} set', other: '{n} sets' },
   'app.repsTotal': '{reps} herh./s',

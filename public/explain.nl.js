@@ -84,7 +84,7 @@ export default [
       <li><b>Doel.</b> Of je op schema ligt, met de streep voor kcal en eiwit van vandaag. De knop gaat naar het tabblad Doel.</li>
       <li><b>Kracht.</b> Geschat 1RM van je zwaarste oefeningen in de laatste vier weken, met een kleine lijn.</li>
       <li><b>Records.</b> Nieuwe records van de laatste veertien dagen.</li>
-      <li><b>Kalender.</b> Acht weken. Een vak is een trainingsdag; de kleur is de minuten van die dag. Klik een dag voor de oefeningen.</li>
+      <li><b>Kalender.</b> Acht weken. Een vak is een trainingsdag; de kleur is de minuten van die dag. Wijs een week aan voor het weektotaal, klik een dag voor de oefeningen.</li>
       <li><b>Plan deze week.</b> Het lichaamsschema van de geplande belasting, het aantal trainingen, de werksets en de zwaarste spiergroepen.</li>
     </ol>
     <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Herstel links en de gezondheidsscore rechts">

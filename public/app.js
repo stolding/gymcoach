@@ -2177,7 +2177,7 @@ function renderHome() {
       cells += `<div class="cd ${lvl} ${future ? 'fut' : ''} ${isToday ? 'today' : ''}${info || dayActs.length ? ' click" data-date="' + keyOf(dt) + '" tabindex="0" role="button' : ''}" data-day="${keyOf(dt)}" title="${esc(tip)}"><span class="dn">${dt.getDate()}</span>${min ? `<span class="dm">${min}′</span>` : ''}${actDots}</div>`;
     }
     const hit = count >= o.week.target;
-    rows += `<div class="cw">${wk === 0 ? t('ui.stats.dezeWeek') : `${short(ws)} – ${short(we)}`}</div>${cells}<div class="cs ${hit ? 'hit' : ''}">${count}/${o.week.target}</div>`;
+    rows += `<div class="cw" data-from="${keyOf(ws)}" data-to="${keyOf(we)}" data-n="${count}" data-goal="${o.week.target}">${wk === 0 ? t('ui.stats.dezeWeek') : `${short(ws)} – ${short(we)}`}</div>${cells}<div class="cs ${hit ? 'hit' : ''}">${count}/${o.week.target}</div>`;
   }
   $('#heat').innerHTML = `<div class="row between wrap gap"><div class="eyebrow">${t('app.trainingskalenderLaatste8Weken')}</div><div class="muted">${t('app.trainingsdagen2', { trainedDays })}</div></div>
     <div class="cal">
@@ -4569,6 +4569,39 @@ function dayTipHtml(date) {
   const empty = d > today ? t('app.notYet') : t('app.restDay');
   return `<div class="dt-head">${esc(head.charAt(0).toUpperCase() + head.slice(1))}</div>${totalHtml}${gymHtml + actHtml || `<div class="dt-meta">${empty}</div>`}${gym.length || acts.length ? '<div class="dt-foot">' + t('app.klikVoorDetails') + '</div>' : ''}`;
 }
+const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+// Samenvatting van een kalenderweek: totalen en een regel per dag met training of activiteit.
+function weekTipHtml(from, to, n, goal) {
+  const start = new Date(from + 'T12:00:00');
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(start); dt.setDate(start.getDate() + i);
+    const k = isoDay(dt);
+    const gym = (state.trainingDays || []).filter((w) => w.date === k);
+    const acts = (state.activities || []).filter((a) => a.date === k);
+    if (gym.length || acts.length) days.push({ dt, gym, acts });
+  }
+  const allGym = days.flatMap((d) => d.gym), allActs = days.flatMap((d) => d.acts);
+  const totalMin = Math.round(allGym.reduce((s, w) => s + (Number(w.min) > 0 ? Number(w.min) : 0), 0) + allActs.reduce((s, a) => s + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0));
+  const totalKcal = Math.round(allGym.reduce((s, w) => s + (Number(w.kcal) > 0 ? Number(w.kcal) : 0), 0) + allActs.reduce((s, a) => s + (Number(a.kcal) > 0 ? Number(a.kcal) : 0), 0));
+  const head = start.toLocaleDateString(localeOf(), { day: 'numeric', month: 'short' }).replace('.', '') + ' – ' + new Date(to + 'T12:00:00').toLocaleDateString(localeOf(), { day: 'numeric', month: 'short', year: 'numeric' }).replace('.', '');
+  const bits = [];
+  if (Number(goal) > 0) bits.push(`${n}/${goal}`);
+  if (allGym.length) bits.push(`${allGym.length} ${allGym.length === 1 ? t('app.training') : t('app.trainingen2')}`);
+  if (allActs.length) bits.push(`${allActs.length} ${t('app.activiteiten').toLocaleLowerCase(localeOf())}`);
+  if (totalMin) bits.push(t('fmt.minutes', { m: totalMin }));
+  if (totalKcal) bits.push(`${totalKcal.toLocaleString(localeOf())} kcal`);
+  const rows = days.map(({ dt, gym, acts }) => {
+    const min = Math.round(gym.reduce((s, w) => s + (Number(w.min) > 0 ? Number(w.min) : 0), 0) + acts.reduce((s, a) => s + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0));
+    const kcal = Math.round(gym.reduce((s, w) => s + (Number(w.kcal) > 0 ? Number(w.kcal) : 0), 0) + acts.reduce((s, a) => s + (Number(a.kcal) > 0 ? Number(a.kcal) : 0), 0));
+    const who = [...gym.map((w) => w.title), ...acts.map((a) => actName(a))].filter(Boolean).join(', ');
+    const meta = [min ? t('fmt.minutes', { m: min }) : null, kcal ? `${kcal.toLocaleString(localeOf())} kcal` : null].filter(Boolean).join(' · ');
+    const when = dt.toLocaleDateString(localeOf(), { weekday: 'short', day: 'numeric' });
+    const color = gym.length ? 'var(--accent)' : actColor(acts[0]?.type);
+    return `<div class="dt-row"><span class="dt-dot" style="background:${color}"></span><div><b>${esc(when)}</b> ${esc(who)}${meta ? `<div class="dt-meta">${esc(meta)}</div>` : ''}</div></div>`;
+  }).join('');
+  return `<div class="dt-head">${esc(head)}</div>${bits.length ? `<div class="dt-total">${esc(bits.join(' · '))}</div>` : ''}${rows || `<div class="dt-meta">${t('app.weekEmpty')}</div>`}`;
+}
 // Plaatst de popup naast de dag, binnen het scherm.
 function placeDayTip(target) {
   const r = target.getBoundingClientRect(), w = dayTipEl.offsetWidth, h = dayTipEl.offsetHeight;
@@ -4579,14 +4612,14 @@ function placeDayTip(target) {
 }
 let dayTipFor = null;
 document.addEventListener('mouseover', (ev) => {
-  const c = ev.target.closest('#heat .cd[data-day], #bigCal .bc-d[data-day], #bigCal .ym-d[data-day]');
+  const c = ev.target.closest('#heat .cw[data-from], #heat .cd[data-day], #bigCal .bc-d[data-day], #bigCal .ym-d[data-day]');
   if (!c) { if (dayTipFor) { dayTipEl.classList.add('hidden'); dayTipFor = null; } return; }
   const date = c.dataset.day;
-  if (!date) return;
+  if (!date && !c.dataset.from) return;
   if (c.title) { c.dataset.t = c.title; c.removeAttribute('title'); }
   if (dayTipFor === c) return;
   dayTipFor = c;
-  dayTipEl.innerHTML = dayTipHtml(date);
+  dayTipEl.innerHTML = c.dataset.from ? weekTipHtml(c.dataset.from, c.dataset.to, c.dataset.n, c.dataset.goal) : dayTipHtml(date);
   dayTipEl.classList.remove('hidden');
   placeDayTip(c);
 });

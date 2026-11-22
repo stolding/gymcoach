@@ -176,6 +176,7 @@ dialog select { width: 100%; margin: .5rem 0 1rem; }
 .cal { display: grid; grid-template-columns: minmax(84px, auto) repeat(7, minmax(30px, 46px)) minmax(40px, auto); gap: 5px; margin-top: .6rem; align-items: center; max-width: 560px; }
 .ch { font-size: .7rem; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: .05em; }
 .cw { font-size: .78rem; color: var(--muted); white-space: nowrap; padding-right: .4rem; }
+.cw[data-from]:hover { color: var(--ink); }
 .cd { height: 38px; border-radius: 7px; background: var(--bg); border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; cursor: default; }
 .cd .dn { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .cd .dm { font-size: .64rem; font-weight: 650; }

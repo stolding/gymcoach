@@ -84,7 +84,7 @@ export default [
       <li><b>Ziel.</b> Ob du im Plan liegst, mit dem Balken für kcal und Eiweiß von heute. Der Knopf öffnet den Tab Ziel.</li>
       <li><b>Kraft.</b> Geschätztes 1RM deiner schwersten Übungen der letzten vier Wochen, mit einer kleinen Linie.</li>
       <li><b>Rekorde.</b> Neue Rekorde der letzten vierzehn Tage.</li>
-      <li><b>Kalender.</b> Acht Wochen. Ein Feld ist ein Trainingstag; die Farbe sind die Minuten des Tages. Ein Klick zeigt die Übungen.</li>
+      <li><b>Kalender.</b> Acht Wochen. Ein Feld ist ein Trainingstag; die Farbe sind die Minuten des Tages. Eine Woche zeigt die Wochensumme, ein Klick auf einen Tag die Übungen.</li>
       <li><b>Plan dieser Woche.</b> Die Figur der geplanten Belastung, die Zahl der Trainings, die Arbeitssätze und die schwersten Muskelgruppen.</li>
     </ol>
     <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Erholung links und der Gesundheitsscore rechts">

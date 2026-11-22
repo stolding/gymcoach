@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.36.2 — 22 november 2026
+- Op de trainingskalender toont de weeknaam een samenvatting: doel, trainingen, activiteiten, minuten, kcal en de dagen.
+
 ## 2.36.1 — 22 november 2026
 - De dagpopup in de kalender ligt duidelijker boven de pagina en noemt bij het dagtotaal ook de kcal.
 

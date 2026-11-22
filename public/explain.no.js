@@ -84,7 +84,7 @@ export default [
       <li><b>Mål.</b> Om du ligger på skjema, med streken for dagens kcal og protein. Knappen åpner fanen Mål.</li>
       <li><b>Styrke.</b> Beregnet 1RM for de tyngste øvelsene de siste fire ukene, med en liten linje.</li>
       <li><b>Rekorder.</b> Nye rekorder de siste fjorten dagene.</li>
-      <li><b>Kalender.</b> Åtte uker. En rute er en treningsdag; fargen er minuttene den dagen. Klikk en dag for øvelsene.</li>
+      <li><b>Kalender.</b> Åtte uker. En rute er en treningsdag; fargen er minuttene den dagen. Pek på en uke for ukessummen, klikk en dag for øvelsene.</li>
       <li><b>Planen denne uken.</b> Figuren for den planlagte belastningen, antall treninger, arbeidssettene og de tyngste muskelgruppene.</li>
     </ol>
     <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Restitusjon til venstre og helsepoengene til høyre">

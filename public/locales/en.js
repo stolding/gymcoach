@@ -1461,6 +1461,7 @@ export default {
   "app.energySrcGym": "Source: calories from your workouts and activities.",
   "app.notYet": "Not yet",
   "app.restDay": "Rest day",
+  "app.weekEmpty": "No training this week",
   "app.acceptTermsFirst": "Accept the terms first",
   "app.setsN": { one: "{n} set", other: "{n} sets" },
   "app.repsTotal": "{reps} reps/s",

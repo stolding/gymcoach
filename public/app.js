@@ -4557,7 +4557,11 @@ function dayTipHtml(date) {
   const d = new Date(date + 'T12:00:00'), today = new Date(); today.setHours(23, 59, 59);
   const head = d.toLocaleDateString(localeOf(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const totalMin = Math.round(gym.reduce((s, w) => s + (Number(w.min) > 0 ? Number(w.min) : 0), 0) + acts.reduce((s, a) => s + (Number(a.minutes) > 0 ? Number(a.minutes) : 0), 0));
-  const totalHtml = gym.length && acts.length && totalMin ? `<div class="dt-meta">${esc(t('app.dayTotal'))} · ${esc(t('fmt.minutes', { m: totalMin }))}</div>` : '';
+  const totalKcal = Math.round(gym.reduce((s, w) => s + (Number(w.kcal) > 0 ? Number(w.kcal) : 0), 0) + acts.reduce((s, a) => s + (Number(a.kcal) > 0 ? Number(a.kcal) : 0), 0));
+  const totalBits = [t('app.dayTotal')];
+  if (totalMin) totalBits.push(t('fmt.minutes', { m: totalMin }));
+  if (totalKcal) totalBits.push(`${totalKcal.toLocaleString(localeOf())} kcal`);
+  const totalHtml = gym.length && acts.length && totalBits.length > 1 ? `<div class="dt-total">${esc(totalBits.join(' · '))}</div>` : '';
   const gymHtml = gym.map((w) => `<div class="dt-row"><span class="dt-dot" style="background:var(--accent)"></span><div><b>${esc(w.title)}</b>
     <div class="dt-meta">${[w.min ? `${w.min} min` : null, w.ex ? t('app.oefeningen', { count: w.ex }) : null, w.vol ? `${w.vol.toLocaleString(localeOf())} kg` : null, w.kcal ? `${w.kcal} kcal` : null, w.hr ? `♥ ${w.hr} bpm` : null].filter(Boolean).join(' · ')}</div></div></div>`).join('');
   const actHtml = acts.map((a) => `<div class="dt-row"><span class="dt-dot" style="background:${actColor(a.type)}"></span><div><b>${esc(actName(a))}</b>

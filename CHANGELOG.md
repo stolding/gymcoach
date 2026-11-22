@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.36.1 — 22 november 2026
+- De dagpopup in de kalender ligt duidelijker boven de pagina en noemt bij het dagtotaal ook de kcal.
+
 ## 2.36.0 — 22 november 2026
 - Bij een nieuw plan kun je optioneel korte trainingen op de dagen tussen de gewone trainingen zetten, voor één spiergroep die daar niet de hoofdspier is.
 

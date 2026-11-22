@@ -381,9 +381,10 @@ async function generatePlan(prefs) {
   const dayTypes = prefs?.dayTypes ?? prev?.dayTypes ?? null;
   const weekdays = prefs?.weekdays ?? prev?.weekdays ?? null;
   const slots = prefs?.slots ?? prev?.slots ?? null;
+  const shorts = prefs ? !!prefs.shorts : !!prev?.shorts;
   const snapshot = JSON.parse(await readFile(path.join(ROOT, 'lib', 'library.snapshot.json'), 'utf8'));
   // alleen oefeningen met accessoires die je gebruikt (Instellingen → Training)
-  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes, weekdays, slots, earlyDeload });
+  const plan = engine.buildPlan({ settings: ctx.settings, library: engine.usableLibrary(ctx.library, ctx.settings), history: ctx.history, week, focus, wish, snapshot, dayTypes, weekdays, slots, earlyDeload, shorts });
   // vastgezette trainingen blijven staan, met progressie op basis van de historie (behalve bij vast gewicht)
   const filled = new Set();
   for (const ls of (prev?.sessions || []).filter((x) => x.locked)) {
@@ -570,7 +571,7 @@ const routes = {
   },
   'POST /api/plan/generate': async (req) => {
     const b = await body(req);
-    const prefs = b && (b.focus || b.wish !== undefined || b.dayTypes) ? { focus: Array.isArray(b.focus) ? b.focus.map(String) : [], wish: String(b.wish || '') } : null;
+    const prefs = b && (b.focus || b.wish !== undefined || b.dayTypes) ? { focus: Array.isArray(b.focus) ? b.focus.map(String) : [], wish: String(b.wish || ''), shorts: b.shorts === true } : null;
     if (prefs && Array.isArray(b.dayTypes)) {
       const t = b.dayTypes.map(String).filter((x) => engine.DAY_TYPES[x]).slice(0, 6);
       if (!t.length) throw Object.assign(new Error(tr('srv.kiesMinstensEenTrainingsdag')), { status: 400 });
@@ -1056,7 +1057,7 @@ const routes = {
     const i = plan?.sessions.findIndex((x) => x.key === url.searchParams.get('key')) ?? -1;
     if (!plan || i < 0) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
     plan.sessions.splice(i, 1);
-    plan.daysPerWeek = plan.sessions.length;
+    plan.daysPerWeek = plan.sessions.filter((s) => !s.short).length;
     await touchPlan(plan);
     return { plan };
   },

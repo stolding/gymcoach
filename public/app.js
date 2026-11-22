@@ -531,7 +531,7 @@ function renderPlan() {
       <footer>${slotBtns}</footer>
     </article>` : `
     <article class="card session${doneOf(s) ? ' done' : ''}${exOpen.has(s.key) ? '' : ' ex-shut'}" data-key="${esc(s.key)}">
-      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${weekdayBadge(s)}${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
+      <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${weekdayBadge(s)}${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.short ? ` <span class="badge">${t('app.shortBadge')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div>${exerciseRows(s) ? `<div class="ex-pop">${exerciseRows(s)}</div>` : ''}</header>
       ${(s.shifts || []).map((sh) => `<p class="small shift">${esc(t('plan.shift', { title: sh.title, from: sh.from, muscle: t('bm.' + sh.muscle), pct: sh.pct }))}</p>`).join('')}
       ${exerciseRows(s) ? `<button type="button" class="ex-fold-btn" data-act="fold" aria-expanded="${exOpen.has(s.key) ? 'true' : 'false'}">${t('app.exList')}<span class="ri-chev" aria-hidden="true">›</span></button><div class="ex-fold">${exerciseRows(s)}</div>` : ''}
@@ -1402,6 +1402,8 @@ function openGenerate() {
       <span class="muted small">${t('app.herkendeSpiergroepenWordenHierboven')}</span>
     </label>
     ${aiOn ? '<label class="chip-check wide"><input type="checkbox" name="coach" checked><span>' + t('app.laatDeAiCoach2') + '</span></label>' : ''}
+    <label class="chip-check wide"><input type="checkbox" name="shorts" ${state.plan?.shorts ? 'checked' : ''}><span>${t('app.shortsOpt')}</span></label>
+    <p class="muted small" style="margin:.2rem 0 0">${t('app.shortsHint')}</p>
     <p class="muted small">${t('app.focusgebiedenKrijgenVoorrangEen')}</p>
     <div class="row gap end">
       <button type="button" class="btn ghost" data-x="clear">${t('app.geenFocus')}</button>
@@ -1503,7 +1505,7 @@ function openGenerate() {
     const focus = [...f.querySelectorAll('input[name=focus]:checked')].map((c) => c.value);
     const btn = $('#genBtn'); btn.disabled = true;
     try {
-      state.plan = (await api('POST', '/api/plan/generate', { focus, wish: f.wish.value.trim(), dayTypes: days, weekdays, slots })).plan;
+      state.plan = (await api('POST', '/api/plan/generate', { focus, wish: f.wish.value.trim(), dayTypes: days, weekdays, slots, shorts: !!f.shorts?.checked })).plan;
       if (state.meta) state.meta.coach = null; renderCoach(null);
       renderPlan(); toast(focus.length ? t('app.planGemaaktMetFocus', { a: focus.map((x) => FOCUS_LABELS[x]).join(', ') }) : t('app.nieuwEvenwichtigPlanGemaakt'));
       if (f.coach?.checked) $('#coachBtn').click();

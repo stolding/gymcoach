@@ -533,6 +533,7 @@ function renderPlan() {
     <article class="card session${doneOf(s) ? ' done' : ''}${exOpen.has(s.key) ? '' : ' ex-shut'}" data-key="${esc(s.key)}">
       <header data-open="plan" tabindex="0" role="button" title="${esc(t('ui.plan.openSession'))}" aria-label="${esc(t('ui.plan.openSession'))}"><div><h3>${weekdayBadge(s)}${esc(s.name)}${s.locked ? ` <span class="badge lock-on" title="${t('ed.locked')}">🔒 ${t('ed.badgeLocked')}</span>` : ''}${s.edited ? ` <span class="badge">${t('ed.badgeEdited')}</span>` : ''}${s.custom ? ` <span class="badge custom">${t('ed.badgeCustom')}</span>` : ''}${s.short ? ` <span class="badge">${t('app.shortBadge')}</span>` : ''}${s.lightened ? ` <span class="badge" title="${t('sig.lightenedHint')}">${t('sig.lightened')}</span>` : ''}</h3><div class="muted small">${t('app.minOefeningen', { estMinutes: s.estMinutes, n: s.exercises.length, a: s.type && s.type !== 'eigen' && plan.goal === 'gemengd' ? ` · <span class="badge">${esc(DAY_SHORT[s.type] || s.type)}</span>` : s.type === 'circuit' ? ' · <span class="badge">' + t('app.cardioCircuit') + '</span>' : '', b: doneOf(s) ? '' : s.pushedAt ? '· <span class="badge ok">' + t('app.opToestel') + '</span>' : s.changedAfterPush ? '· <span class="badge warn">' + t('app.gewijzigdOpnieuwOpToestel') + '</span>' : '' })}</div></div>
         <div class="mini-map">${bodyMap(s.muscles || {}, { height: 92, labels: false, title: s.name })}</div>${exerciseRows(s) ? `<div class="ex-pop">${exerciseRows(s)}</div>` : ''}</header>
+      ${whenPick(s)}
       ${(s.shifts || []).map((sh) => `<p class="small shift">${esc(t('plan.shift', { title: sh.title, from: sh.from, muscle: t('bm.' + sh.muscle), pct: sh.pct }))}</p>`).join('')}
       ${exerciseRows(s) ? `<button type="button" class="ex-fold-btn" data-act="fold" aria-expanded="${exOpen.has(s.key) ? 'true' : 'false'}">${t('app.exList')}<span class="ri-chev" aria-hidden="true">›</span></button><div class="ex-fold">${exerciseRows(s)}</div>` : ''}
       ${doneBanner(s)}
@@ -757,6 +758,15 @@ function weekdayName(n) {
 }
 const DAY_SLOTS = [[6, 9], [9, 12], [12, 15], [15, 18], [18, 21], [21, 24]];
 const slotText = (n) => { const s = DAY_SLOTS[Number(n)]; return s ? `${s[0]}\u2013${s[1]}` : ''; };
+function whenPick(s) {
+  if (s?.outdoor || s?.type === 'buiten' || s?.weekday != null && s.weekday !== '') return '';
+  const names = weekdaysShort();
+  return `<div class="when-pick">
+    <select data-when="day" aria-label="${t('app.placeDay')}"><option value="">${t('app.placeDay')}</option>${names.map((name, d) => `<option value="${d}">${esc(name)}</option>`).join('')}</select>
+    <select data-when="slot" aria-label="${t('app.placeTime')}">${DAY_SLOTS.map((sl, n) => `<option value="${n}"${n === 4 ? ' selected' : ''}>${sl[0]}\u2013${sl[1]}</option>`).join('')}</select>
+    <span class="muted small">${t('app.placeHint')}</span>
+  </div>`;
+}
 function weekdayBadge(s) {
   if (s?.outdoor || s?.type === 'buiten') return `<span class="badge">${esc(t('ui.stats.dezeWeek'))}</span> `;
   const name = weekdayName(s?.weekday);
@@ -1167,6 +1177,19 @@ $('#sessions').addEventListener('keydown', (ev) => {
   if (!head || ev.target !== head) return;
   ev.preventDefault();
   head.click();
+});
+$('#sessions').addEventListener('change', async (ev) => {
+  const sel = ev.target.closest('[data-when]');
+  if (!sel) return;
+  const card = sel.closest('.session');
+  const session = state.plan?.sessions?.find((s) => s.key === card?.dataset.key);
+  const day = card?.querySelector('[data-when="day"]')?.value;
+  const slot = card?.querySelector('[data-when="slot"]')?.value;
+  if (!session || day === '' || day == null) return;
+  try {
+    state.plan = (await api('POST', '/api/plan/when', { key: session.key, weekday: +day, slot: +slot })).plan;
+    renderPlan();
+  } catch (e) { toast(e.message, true); }
 });
 $('#sessions').addEventListener('click', async (ev) => {
   const card = ev.target.closest('.session'); if (!card) return;

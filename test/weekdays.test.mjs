@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { refreshGrid } from '../lib/weekbalance.js';
-import { alignPlanDays, defaultWeekdays, moveTrainingDay, orderTrainingDays, preferNamedOutdoor, sessionAtHours, sessionOffsetHours } from '../lib/weekdays.js';
+import { alignPlanDays, assignFreeWeekday, defaultWeekdays, moveTrainingDay, orderTrainingDays, preferNamedOutdoor, sessionAtHours, sessionOffsetHours } from '../lib/weekdays.js';
 
 function plan(items) {
   return {
@@ -107,6 +107,26 @@ test('a walk is a week activity and stays put when that day is dragged', () => {
   assert.equal(moveTrainingDay(plan.sessions, 'A', 2, 2), true);
   assert.equal(plan.sessions.find((s) => s.key === 'W').weekday, undefined);
   assert.equal(plan.sessions.find((s) => s.key === 'A').weekday, 2);
+});
+
+test('a workout without a day can be placed without moving the others', () => {
+  const sessions = [
+    { key: 'a', weekday: 0, slot: 4 },
+    { key: 'w', outdoor: true, type: 'buiten', activity: 'wandelen' },
+    { key: 'x' },
+  ];
+  assert.equal(moveTrainingDay(sessions, 'x', 1, 4), true);
+  assert.deepEqual(sessions.find((s) => s.key === 'x'), { key: 'x', weekday: 1, slot: 4 });
+  assert.equal(sessions.find((s) => s.key === 'a').weekday, 0);
+  assert.equal(sessions.find((s) => s.key === 'w').weekday, undefined);
+});
+
+test('a new workout gets a free day even when a walk has no day', () => {
+  const plan = { sessions: [{ key: 'a', weekday: 0, slot: 4 }, { key: 'w', outdoor: true, type: 'buiten' }] };
+  const sess = { key: 'x' };
+  assignFreeWeekday(plan, sess);
+  assert.equal(sess.weekday, 1);
+  assert.equal(sess.slot, 4);
 });
 
 test('dragging one workout moves every workout of that day by the same day and time', () => {

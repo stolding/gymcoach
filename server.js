@@ -617,7 +617,7 @@ const routes = {
     if (day == null || slot == null) throw Object.assign(new Error(tr('srv.ongeldigPlan')), { status: 400 });
     const session = plan.sessions.find((s) => s.key === b.key);
     if (!session) throw Object.assign(new Error(tr('srv.sessieNietGevonden')), { status: 404 });
-    if (!moveTrainingDay(plan.sessions, session.key, day, slot)) return { plan };
+    if (!moveTrainingDay(plan.sessions, session.key, day, slot)) throw Object.assign(new Error(tr('srv.whenTaken')), { status: 409 });
     alignPlanDays(plan);
     if (plan.weekBalance || plan.balance) {
       const ctx = await context();

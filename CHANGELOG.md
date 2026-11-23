@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.36.3 — 23 november 2026
+- Een eigen training zonder dag krijgt op de kaart een dag en een tijdstip. Daarna verplaats je hem via het bolletje in het herstel.
+
 ## 2.36.2 — 22 november 2026
 - Op de trainingskalender toont de weeknaam een samenvatting: doel, trainingen, activiteiten, minuten, kcal en de dagen.
 

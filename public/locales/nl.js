@@ -1544,6 +1544,7 @@ export default {
   'srv.verzoekTeGroot': 'Verzoek te groot',
   'srv.kiesMinstensEenTrainingsdag': 'Kies minstens één trainingsdag',
   'srv.ongeldigPlan': 'Ongeldig plan',
+  'srv.whenTaken': 'Die dag en dat tijdstip zijn al bezet.',
   'srv.sessieNietGevonden': 'Sessie niet gevonden',
   'srv.dezeDagIsCardio': 'Deze dag is cardio buiten; daar is geen programma voor de Gym Monster bij',
   'srv.deVoorwaardenZijnIntussen': 'De voorwaarden zijn intussen gewijzigd; ververs de pagina',
@@ -1688,6 +1689,9 @@ export default {
   'app.slotOf': 'Tijdstip van dag {n}',
   'app.weekdayHint': 'Het herstel telt de dagen tussen deze weekdagen.',
   'app.dragWhen': 'Sleep dit bolletje naar een ander moment. De andere trainingen van die dag gaan mee.',
+  'app.placeDay': 'Kies een dag',
+  'app.placeTime': 'Tijdstip',
+  'app.placeHint': 'Deze training staat nog op geen dag. Kies de dag en het tijdstip. Daarna verplaats je hem door het bolletje in het herstel te slepen.',
 
   // summary.js
   'sum.nieuwRecordBij': '🏆 Nieuw record bij {a}',

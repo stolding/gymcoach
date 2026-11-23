@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.37.0 — 23 november 2026
+- In de oefeningkiezer filter je op materiaal: stang, bank, handgrepen, touw, heupgordel, roei- en skihandvat of mat. Geen keuze toont alles; meerdere keuzes tonen oefeningen die minstens één ervan gebruiken.
+
 ## 2.36.3 — 23 november 2026
 - Een eigen training zonder dag krijgt op de kaart een dag en een tijdstip. Daarna verplaats je hem via het bolletje in het herstel.
 

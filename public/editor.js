@@ -413,6 +413,7 @@ const GROUPS = [
   ['pk.trunk', ['Abs', 'Back Extensors', 'Full Body']],
 ];
 const TABS = ['Training', 'Bodyweight', 'Warmup', 'Stretch', 'Recovery', 'HIIT', 'Pilates-Mat', 'Row & Ski'];
+const GEAR = ['barbell', 'bench', 'handles', 'rope', 'belt', 'rowski', 'mat'];
 // sleutel van het figuur → spiergroep in de catalogus
 const KEY2LIB = { pecs: 'Pecs', lats: 'Lats', traps: 'Traps', frontDelts: 'Front Delts', sideDelts: 'Side Delts', rearDelts: 'Rear Delts', biceps: 'Biceps', triceps: 'Triceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings', glutes: 'Glutes', adductors: 'Adductors', calves: 'Calves', abs: 'Abs', lowerBack: 'Back Extensors' };
 const musName = (m) => { const k = 'mus.' + m; const v = t(k); return v === k ? m : v; };
@@ -441,17 +442,19 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
     block,
     muscle: block === 'ex' && muscleKey ? KEY2LIB[muscleKey] || null : null,
     tab: defTab(block),
-    q: '', onlyDone: false, hideAvoid: true, hideAcc: true, sel: new Set(), detail: null, busy: false,
+    q: '', onlyDone: false, hideAvoid: true, hideAcc: true, gear: new Set(), sel: new Set(), detail: null, busy: false,
   };
-  const counts = (filterTab) => {
+  const gearOn = (e) => !st.gear.size || (e.acc || []).some((k) => st.gear.has(k));
+  const gearKeys = GEAR.filter((k) => lib.items.some((e) => (e.acc || []).includes(k)));
+  const counts = () => {
     const c = {};
-    for (const e of lib.items) if (!st.muscle || e.muscle === st.muscle) c[e.tab] = (c[e.tab] || 0) + 1;
+    for (const e of lib.items) if ((!st.muscle || e.muscle === st.muscle) && gearOn(e)) c[e.tab] = (c[e.tab] || 0) + 1;
     return c;
   };
   const filtered = () => {
     const q = st.q.trim().toLowerCase();
     return lib.items.filter((e) => (st.tab === 'all' || e.tab === st.tab) && (!st.muscle || e.muscle === st.muscle) && (!q || e.name.toLowerCase().includes(q))
-      && (!st.onlyDone || lib.history[e.id]) && (!st.hideAvoid || !avoid.has(Number(e.id))) && (!st.hideAcc || !accBlocked(e)))
+      && gearOn(e) && (!st.onlyDone || lib.history[e.id]) && (!st.hideAvoid || !avoid.has(Number(e.id))) && (!st.hideAcc || !accBlocked(e)))
       .sort((a, b) => (lib.history[b.id]?.times || 0) - (lib.history[a.id]?.times || 0) || a.name.localeCompare(b.name));
   };
   // soort zonder oefeningen in deze catalogus: dan alles tonen
@@ -516,6 +519,9 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
           <label class="inline-check small"><input type="checkbox" data-pk="onlyDone" ${st.onlyDone ? 'checked' : ''}> ${t('pk.onlyDone')}</label>
           <label class="inline-check small"><input type="checkbox" data-pk="hideAvoid" ${st.hideAvoid ? 'checked' : ''}> ${t('pk.hideAvoid')}</label>
           ${noAcc.size ? `<label class="inline-check small"><input type="checkbox" data-pk="hideAcc" ${st.hideAcc ? 'checked' : ''}> ${t('pk.hideAcc')}</label>` : ''}
+          ${gearKeys.length ? `<div class="eyebrow" style="margin-top:.6rem">${t('pk.gear')}</div>
+          <button type="button" class="chip ${st.gear.size ? '' : 'on'}" data-pk="gear" data-g="">${t('pk.anyGear')}</button>
+          <div class="pk-chips">${gearKeys.map((k) => `<button type="button" class="chip ${st.gear.has(k) ? 'on' : ''}" data-pk="gear" data-g="${esc(k)}">${esc(t('acc.' + k))}</button>`).join('')}</div>` : ''}
         </aside>
         <section class="pk-main">${st.detail ? '<div class="pk-dwrap"></div>' : `
           <input type="search" class="pk-search" placeholder="${esc(t('pk.search'))}" aria-label="${esc(t('pk.search'))}" value="${esc(st.q)}" data-pk="q">
@@ -546,6 +552,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
     const a = b.dataset.pk;
     if (a === 'close') { pdlg.close(); return; }
     if (a === 'muscle') { st.muscle = b.dataset.m || null; st.detail = null; }
+    else if (a === 'gear') { const g = b.dataset.g; if (!g) st.gear.clear(); else if (st.gear.has(g)) st.gear.delete(g); else st.gear.add(g); st.detail = null; }
     else if (a === 'tab') st.tab = b.dataset.t;
     else if (a === 'detail') st.detail = isNaN(+b.dataset.id) ? b.dataset.id : +b.dataset.id;
     else if (a === 'back') st.detail = null;

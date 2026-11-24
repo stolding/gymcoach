@@ -43,6 +43,7 @@ export default {
   "ed.advice": "Råd:",
   "ed.last": "Forrige gang: {basis}",
   "ed.noHistory": "Ingen historikk for denne øvelsen ennå.",
+  "ed.recent": "Siste ganger",
   "ed.progression": "Automatisk progresjon",
   "ed.fixed": "fast vekt",
   "ed.set": "Sett",

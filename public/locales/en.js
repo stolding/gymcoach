@@ -43,6 +43,7 @@ export default {
   "ed.advice": "Advice:",
   "ed.last": "Last time: {basis}",
   "ed.noHistory": "No history for this exercise yet.",
+  "ed.recent": "Last times",
   "ed.progression": "Automatic progression",
   "ed.fixed": "fixed weight",
   "ed.set": "Set",

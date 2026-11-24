@@ -462,6 +462,7 @@ const routes = {
       })(),
       bodyLog: ctx.bodyLog,
       progress: engine.exerciseProgress(ctx.history).slice(0, 30),
+      exerciseRecent: engine.exerciseRecent(ctx.history),
       volFactors: engine.volumeFactors(ctx.history), // geplande sets → echt volume (twee handgrepen = 2×)
       patterns: Object.fromEntries(Object.entries(engine.PATTERNS).map(([k, p]) => [k, { label: p.label, type: p.type }])),
       libraryCount: ctx.library.length,

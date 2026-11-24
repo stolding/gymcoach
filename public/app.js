@@ -1248,10 +1248,23 @@ $('#sessions').addEventListener('click', async (ev) => {
   });
 });
 
+// Laatste vijf keer van deze oefening, compact naast de rest van het venster.
+function exerciseRecentHtml(id) {
+  const rows = state?.exerciseRecent?.[String(id)] || [];
+  const showRest = rows.some((r) => r.rest > 0);
+  const body = rows.length
+    ? `<table class="settable exd-hist-table"><thead><tr><th>${t('app.datum')}</th><th>${t('ed.sets')}</th><th class="num">kg</th>${showRest ? `<th class="num">${t('app.rust')}</th>` : ''}</tr></thead><tbody>
+        ${rows.map((r) => `<tr><td>${esc(r.date)}</td><td>${esc(String(r.reps))}</td><td class="num">${esc(String(r.kg))}</td>${showRest ? `<td class="num">${r.rest > 0 ? esc(String(r.rest)) + ' s' : ''}</td>` : ''}</tr>`).join('')}
+      </tbody></table>`
+    : `<p class="muted small exd-hist-empty">${t('ed.noHistory')}</p>`;
+  return `<aside class="exd-hist"><div class="eyebrow">${esc(t('ed.recent'))}</div>${body}</aside>`;
+}
+
 // ---------- detailpopup per oefening ----------
 function openExercise(session, i) {
   const e = session.exercises[i];
   const dlg = $('#exDlg');
+  dlg.classList.add('ex-wide');
   const muscles = Object.entries(e.muscles || {}).length ? e.muscles : null;
   const sc = {};
   // spiergroepen van deze oefening (zelfde logica als de server)
@@ -1264,28 +1277,33 @@ function openExercise(session, i) {
         <div class="muted small">${t('app.doelHerhalingen', { a: esc(e.muscle || ''), b: e.type === 'compound' ? t('app.samengesteldeOefening') : 'isolatieoefening', c: e.repRange[0], d: e.repRange[1] })}</div></div>
       <button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button>
     </div>
-    <div class="exd-body">
-      <div class="exd-map">${bodyMap(sc, { height: 170, title: t('app.spierenInDezeOefening') })}<div class="muted small" style="text-align:center">${Object.keys(sc).map((k) => esc(MUSCLE_LABELS[k] || k)).join(' · ')}</div></div>
-      <div class="exd-main">
-        <div class="note ${noteClass(e.note)}"><b>${t('ed.advice')}</b> ${esc(e.note || '—')}</div>
-        ${e.basis ? `<div class="muted small">${t('app.vorigeKeer', { a: esc(e.basis) })}</div>` : '<div class="muted small">' + t('ed.noHistory') + '</div>'}
-        ${ramp ? `<div class="small">${t('app.begintMetEenOpwarmset', { ramp })}</div>` : ''}
-        ${e.restNote ? `<div class="muted small">${esc(e.restNote)}</div>` : ''}${e.volumeNote ? `<div class="muted small">${esc(e.volumeNote)}</div>` : ''}
-        <div class="rx" style="margin-top:.6rem">
-          <label>${t('ed.sets')}<input type="number" min="1" max="6" data-f="sets" value="${e.sets.length}"></label>
-          <label>${t('ed.reps')}<input type="number" min="1" max="30" data-f="reps" value="${e.sets[0]?.reps}"></label>
-          <label>kg<input type="number" min="0.5" step="0.5" data-f="weight" value="${e.sets[0]?.weight}"></label>
-          <label>${t('app.rustS')}<input type="number" min="10" step="5" data-f="rest" value="${e.sets[0]?.rest}"></label>
+    <div class="exd-split">
+      <div class="exd-current">
+        <div class="exd-body">
+          <div class="exd-map">${bodyMap(sc, { height: 170, title: t('app.spierenInDezeOefening') })}<div class="muted small" style="text-align:center">${Object.keys(sc).map((k) => esc(MUSCLE_LABELS[k] || k)).join(' · ')}</div></div>
+          <div class="exd-main">
+            <div class="note ${noteClass(e.note)}"><b>${t('ed.advice')}</b> ${esc(e.note || '—')}</div>
+            ${e.basis ? `<div class="muted small">${t('app.vorigeKeer', { a: esc(e.basis) })}</div>` : '<div class="muted small">' + t('ed.noHistory') + '</div>'}
+            ${ramp ? `<div class="small">${t('app.begintMetEenOpwarmset', { ramp })}</div>` : ''}
+            ${e.restNote ? `<div class="muted small">${esc(e.restNote)}</div>` : ''}${e.volumeNote ? `<div class="muted small">${esc(e.volumeNote)}</div>` : ''}
+            <div class="rx" style="margin-top:.6rem">
+              <label>${t('ed.sets')}<input type="number" min="1" max="6" data-f="sets" value="${e.sets.length}"></label>
+              <label>${t('ed.reps')}<input type="number" min="1" max="30" data-f="reps" value="${e.sets[0]?.reps}"></label>
+              <label>kg<input type="number" min="0.5" step="0.5" data-f="weight" value="${e.sets[0]?.weight}"></label>
+              <label>${t('app.rustS')}<input type="number" min="10" step="5" data-f="rest" value="${e.sets[0]?.rest}"></label>
+            </div>
+            <table class="settable"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ed.reps')}</th><th class="num">kg</th><th class="num">${t('app.rust')}</th></tr></thead><tbody>
+              ${ramp ? `<tr class="muted"><td>${t('ed.warmSet')}</td><td class="num">8</td><td class="num">${ramp}</td><td class="num">45 s</td></tr>` : ''}
+              ${e.sets.map((x, n) => `<tr><td>${n + 1}</td><td class="num">${x.reps}</td><td class="num">${x.weight}</td><td class="num">${x.rest} s</td></tr>`).join('')}
+            </tbody></table>
+          </div>
         </div>
-        <table class="settable"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ed.reps')}</th><th class="num">kg</th><th class="num">${t('app.rust')}</th></tr></thead><tbody>
-          ${ramp ? `<tr class="muted"><td>${t('ed.warmSet')}</td><td class="num">8</td><td class="num">${ramp}</td><td class="num">45 s</td></tr>` : ''}
-          ${e.sets.map((x, n) => `<tr><td>${n + 1}</td><td class="num">${x.reps}</td><td class="num">${x.weight}</td><td class="num">${x.rest} s</td></tr>`).join('')}
-        </tbody></table>
+        <div>
+          <div class="eyebrow">${esc(t('app.instructies'))}</div>
+          <div class="info-body" data-info></div>
+        </div>
       </div>
-    </div>
-    <div>
-      <div class="eyebrow">${esc(t('app.instructies'))}</div>
-      <div class="info-body" data-info></div>
+      ${exerciseRecentHtml(e.id)}
     </div>
     <div class="row gap wrap end">
       <button type="button" class="btn ghost" data-x="avoid">${t('pk.avoid')}</button>
@@ -1366,6 +1384,7 @@ const coolMin = (list) => Math.max(1, Math.round((list || []).reduce((t, c) => {
 // Venster met de warming-up of cooldown van een training.
 function openWarmCool(session, which) {
   const dlg = $('#exDlg');
+  dlg.classList.remove('ex-wide');
   dlg.onclose = null;
   const bothSides = (dose) => /per (kant|been|arm)/i.test(dose || '');
   const items = which === 'warm'

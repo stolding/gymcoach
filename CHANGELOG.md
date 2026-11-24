@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.40.0 — 24 november 2026
+- Bij het wisselen toont een klik op de naam de foto's en de uitvoering. Wisselen blijft een aparte knop. Die foto's blijven op de server staan in data/media.
+
 ## 2.39.1 — 24 november 2026
 - In het oefeningvenster staat de lijst met de laatste vijf keer op de plaats van "vorige keer" en de rustzin. De uitvoering staat naast de video, en het venster is weer smaller en duidelijker een popup.
 

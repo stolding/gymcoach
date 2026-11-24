@@ -665,10 +665,14 @@
     </div>
   </form>
 </dialog>
-<dialog id="swapDlg">
+<dialog id="swapDlg" class="swap-dlg">
   <form method="dialog">
     <h2 id="swapTitle" data-i18n="ui.swap.oefeningWisselen">Oefening wisselen</h2>
-    <select id="swapSelect" size="10"></select>
+    <p class="muted small swap-hint" data-i18n="ui.swap.hint">Een naam toont de oefening. Wisselen doe je met de knop.</p>
+    <div class="swap-body">
+      <div id="swapList" class="swap-list" role="listbox" aria-labelledby="swapTitle"></div>
+      <div id="swapDetail" class="swap-detail"></div>
+    </div>
     <div class="row gap end">
       <button value="reset" class="btn ghost" data-i18n="ed.mode1">Standaard</button>
       <button value="cancel" class="btn ghost" data-i18n="ed.cancel">Annuleren</button>

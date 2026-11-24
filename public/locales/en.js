@@ -599,6 +599,7 @@ export default {
   "ui.setSync.oefeningencatalogusVerversen": "Refresh exercise catalogue",
   "ui.setSync.volledigeTrainingshistorieOpnieuwOphalen": "Fetch full training history again",
   "ui.swap.oefeningWisselen": "Swap exercise",
+  "ui.swap.hint": "A name shows the exercise. Use the button to replace it.",
   "ui.top.themaWisselen": "Switch theme",
   "ui.plan.vorigeWeek": "Previous week",
   "ui.plan.volgendeWeek": "Next week",

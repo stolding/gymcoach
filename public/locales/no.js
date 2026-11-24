@@ -599,6 +599,7 @@ export default {
   "ui.setSync.oefeningencatalogusVerversen": "Oppdater øvelseskatalogen",
   "ui.setSync.volledigeTrainingshistorieOpnieuwOphalen": "Hent hele treningshistorikken på nytt",
   "ui.swap.oefeningWisselen": "Bytt øvelse",
+  "ui.swap.hint": "Et navn viser øvelsen. Bytt med knappen.",
   "ui.top.themaWisselen": "Bytt tema",
   "ui.plan.vorigeWeek": "Forrige uke",
   "ui.plan.volgendeWeek": "Neste uke",

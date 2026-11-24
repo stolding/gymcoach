@@ -582,6 +582,7 @@ export default {
   'ui.setSync.oefeningencatalogusVerversen': 'Oefeningencatalogus verversen',
   'ui.setSync.volledigeTrainingshistorieOpnieuwOphalen': 'Volledige trainingshistorie opnieuw ophalen',
   'ui.swap.oefeningWisselen': 'Oefening wisselen',
+  'ui.swap.hint': 'Een naam toont de oefening. Wisselen doe je met de knop.',
   'ui.top.themaWisselen': 'Thema wisselen',
   'ui.plan.vorigeWeek': 'Vorige week',
   'ui.plan.volgendeWeek': 'Volgende week',

@@ -1408,18 +1408,85 @@ function openWarmCool(session, which) {
   dlg.showModal();
 }
 
+// Foto's en de uitvoering van een oefening, uit de catalogus. Een klik toont dit; de knop Wisselen bevestigt.
+function swapDetailHtml(info, name) {
+  if (!info) return `<p class="muted">${t('app.geenInstructies')}</p>`;
+  const shots = [...new Set([info.img, ...(info.images || [])].filter(Boolean))].slice(0, 4);
+  const imgs = shots.map((u) => `<img src="${esc(u)}" alt="${esc(name || info.title || '')}" loading="lazy">`).join('');
+  const steps = info.steps ? `<div><div class="eyebrow">${t('pk.steps')}</div><p class="pk-text">${esc(info.steps)}</p></div>` : '';
+  if (!imgs && !steps) return `<p class="muted">${t('app.geenInstructies')}</p>`;
+  return `${imgs ? `<div class="swap-shots">${imgs}</div>` : ''}${steps}`;
+}
+async function loadSwapDetail(id, name, token) {
+  const box = $('#swapDetail');
+  const key = String(id);
+  if (!box) return;
+  if (instructionCache.has(key)) {
+    if (token !== loadSwapDetail.token) return;
+    box.innerHTML = swapDetailHtml(instructionCache.get(key), name);
+    return;
+  }
+  box.innerHTML = `<p class="muted">${t('pk.loading')}</p>`;
+  try {
+    const info = (await api('GET', '/api/exercise/info?id=' + encodeURIComponent(id))).info;
+    if (info) instructionCache.set(key, info);
+    if (token !== loadSwapDetail.token) return;
+    box.innerHTML = swapDetailHtml(info, name);
+  } catch (e) {
+    if (token !== loadSwapDetail.token) return;
+    box.innerHTML = `<p class="muted">${esc(e.message || t('app.geenInstructies'))}</p>`;
+  }
+}
 // Venster om een oefening te wisselen voor een andere voor dezelfde spiergroep.
 async function openSwap(ex) {
   const dlg = $('#swapDlg');
   $('#swapTitle').textContent = `${ex.patternLabel}: ${ex.title}`;
   const { items } = await api('GET', '/api/alternatives?muscle=' + encodeURIComponent(ex.muscle || ''));
-  $('#swapSelect').innerHTML = items.map((i) => `<option value="${i.id}" ${+i.id === +ex.id ? 'selected' : ''}>${esc(i.name)}</option>`).join('');
+  const names = new Map(items.map((i) => [String(i.id), i.name]));
+  const initial = names.has(String(ex.id)) ? String(ex.id) : (items[0] ? String(items[0].id) : '');
+  dlg.dataset.pick = initial;
+  const list = $('#swapList');
+  list.innerHTML = items.map((i) => `<button type="button" role="option" data-id="${esc(String(i.id))}" aria-selected="${String(i.id) === initial ? 'true' : 'false'}" class="${String(i.id) === initial ? 'on' : ''}">${esc(i.name)}</button>`).join('');
+  const mark = (id) => {
+    dlg.dataset.pick = id;
+    for (const btn of list.querySelectorAll('button')) {
+      const on = btn.dataset.id === id;
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+  };
+  const show = (id) => {
+    const token = (loadSwapDetail.token = (loadSwapDetail.token || 0) + 1);
+    if (!id) { $('#swapDetail').innerHTML = ''; return; }
+    loadSwapDetail(id, names.get(String(id)) || '', token);
+  };
+  list.onclick = (ev) => {
+    const btn = ev.target.closest('button[data-id]');
+    if (!btn) return;
+    mark(btn.dataset.id);
+    show(btn.dataset.id);
+  };
+  list.onpointerover = (ev) => {
+    if (ev.pointerType === 'touch') return;
+    const btn = ev.target.closest('button[data-id]');
+    if (!btn || btn.dataset.id === list.dataset.preview) return;
+    list.dataset.preview = btn.dataset.id;
+    show(btn.dataset.id);
+  };
+  list.onpointerleave = () => {
+    if (list.dataset.preview && list.dataset.preview !== dlg.dataset.pick) show(dlg.dataset.pick);
+    list.dataset.preview = dlg.dataset.pick || '';
+  };
+  list.dataset.preview = initial;
+  show(initial);
   dlg.returnValue = '';
   dlg.showModal();
+  list.querySelector('button.on')?.scrollIntoView({ block: 'nearest' });
   dlg.onclose = async () => {
+    loadSwapDetail.token = (loadSwapDetail.token || 0) + 1;
     if (dlg.returnValue === 'ok' || dlg.returnValue === 'reset') {
       try {
-        const id = dlg.returnValue === 'reset' ? null : $('#swapSelect').value;
+        const id = dlg.returnValue === 'reset' ? null : dlg.dataset.pick;
         state.plan = (await api('POST', '/api/swap', { pattern: ex.pattern, variant: ex.variant, id })).plan;
         renderPlan(); toast(t('app.planBijgewerkt'));
       } catch (e) { toast(e.message, true); }

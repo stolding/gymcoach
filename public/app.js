@@ -1270,13 +1270,14 @@ function exerciseRecentHtml(id) {
 function openExercise(session, i) {
   const e = session.exercises[i];
   const dlg = $('#exDlg');
-  dlg.classList.add('ex-wide');
+  dlg.classList.remove('ex-wide');
   const muscles = Object.entries(e.muscles || {}).length ? e.muscles : null;
   const sc = {};
   // spiergroepen van deze oefening (zelfde logica als de server)
   const PM = { squat: { quads: 1, glutes: .5, adductors: .5 }, hinge: { hamstrings: 1, glutes: 1, lowerBack: .5 }, hpush: { pecs: 1, frontDelts: .5, triceps: .5 }, hpull: { lats: 1, traps: .5, rearDelts: .5, biceps: .5 }, vpull: { lats: 1, biceps: .5 }, vpush: { frontDelts: 1, sideDelts: .5, triceps: .5 }, lunge: { quads: 1, glutes: 1, adductors: .5 }, glute: { glutes: 1, hamstrings: .5 }, lat: { sideDelts: 1 }, rear: { rearDelts: 1, traps: .5 }, curl: { biceps: 1, forearms: .5 }, tri: { triceps: 1 }, core: { abs: 1 }, calf: { calves: 1 } };
   Object.assign(sc, muscles || PM[e.pattern] || {});
   const ramp = e.rampUp ? Math.max(0.5, Math.round(e.sets[0]?.weight || 0) / 2) : null;
+  const recent = exerciseRecentHtml(e.id);
   const planned = [...(ramp ? [{ reps: 8, weight: ramp }] : []), ...(e.sets || []).map((x) => ({ reps: x.reps, weight: x.weight }))];
   const plannedTotal = repsTimesKg(planned);
   dlg.innerHTML = `<form method="dialog" class="exd">
@@ -1289,13 +1290,10 @@ function openExercise(session, i) {
       <div class="exd-map">${bodyMap(sc, { height: 170, title: t('app.spierenInDezeOefening') })}<div class="muted small" style="text-align:center">${Object.keys(sc).map((k) => esc(MUSCLE_LABELS[k] || k)).join(' · ')}</div></div>
       <div class="exd-main">
         <div class="exd-lead">
-          <div>
-            <div class="note ${noteClass(e.note)}"><b>${t('ed.advice')}</b> ${esc(e.note || '—')}</div>
-            ${e.basis ? `<div class="muted small">${t('app.vorigeKeer', { a: esc(e.basis) })}</div>` : '<div class="muted small">' + t('ed.noHistory') + '</div>'}
-            ${ramp ? `<div class="small">${t('app.begintMetEenOpwarmset', { ramp })}</div>` : ''}
-            ${e.restNote ? `<div class="muted small">${esc(e.restNote)}</div>` : ''}${e.volumeNote ? `<div class="muted small">${esc(e.volumeNote)}</div>` : ''}
-          </div>
-          ${exerciseRecentHtml(e.id)}
+          <div class="note ${noteClass(e.note)}"><b>${t('ed.advice')}</b> ${esc(e.note || '—')}</div>
+          ${recent || (e.basis ? `<div class="muted small">${t('app.vorigeKeer', { a: esc(e.basis) })}</div>` : `<div class="muted small">${t('ed.noHistory')}</div>`)}
+          ${ramp ? `<div class="small">${t('app.begintMetEenOpwarmset', { ramp })}</div>` : ''}
+          ${recent ? '' : (e.restNote ? `<div class="muted small">${esc(e.restNote)}</div>` : '')}${e.volumeNote ? `<div class="muted small">${esc(e.volumeNote)}</div>` : ''}
         </div>
         <div class="rx">
           <label>${t('ed.sets')}<input type="number" min="1" max="6" data-f="sets" value="${e.sets.length}"></label>
@@ -1375,11 +1373,12 @@ function instructionHtml(info) {
     info.feeling ? `<div><b>${t('pk.feeling')}:</b> ${esc(info.feeling)}</div>` : '',
     info.mistake ? `<div><b class="warn-text">${t('pk.mistake')}:</b> ${esc(info.mistake)}</div>` : '',
   ].filter(Boolean).join('');
-  if (!media && !info.steps && !kps.length && !extra.length && !facts) return `<p class="muted">${t('app.geenInstructies')}</p>`;
+  const steps = info.steps ? `<div class="pk-steps"><div class="eyebrow">${t('pk.steps')}</div><p class="pk-text">${esc(info.steps)}</p></div>` : '';
+  const aside = `${facts ? `<div class="pk-facts">${facts}</div>` : ''}${steps}`;
+  if (!media && !aside && !kps.length && !extra.length) return `<p class="muted">${t('app.geenInstructies')}</p>`;
   let lang = info.lang || 'en';
   try { lang = new Intl.DisplayNames([localeOf()], { type: 'language' }).of(lang) || lang; } catch { /* code blijft staan */ }
-  return `${media || facts ? `<div class="pk-media">${media || '<div></div>'}${facts ? `<div class="pk-facts">${facts}</div>` : '<div></div>'}</div>` : ''}
-    ${info.steps ? `<div><div class="eyebrow">${t('pk.steps')}</div><p class="pk-text">${esc(info.steps)}</p></div>` : ''}
+  return `${media || aside ? `<div class="pk-media">${media || '<div></div>'}${aside ? `<div class="pk-aside">${aside}</div>` : '<div></div>'}</div>` : ''}
     ${kps.length ? `<div><div class="eyebrow">${t('pk.keyPoints')}</div><div class="pk-kps">${kps.map((k) => `<figure>${k.img ? `<img src="${esc(k.img)}" alt="" loading="lazy">` : ''}<figcaption class="pk-text">${esc(k.text)}</figcaption></figure>`).join('')}</div></div>` : ''}
     ${extra.length ? `<div class="info-shots">${extra.map((u) => `<img src="${esc(u)}" alt="" loading="lazy">`).join('')}</div>` : ''}
     <div class="muted small">${t('pk.source', { lang })}</div>`;

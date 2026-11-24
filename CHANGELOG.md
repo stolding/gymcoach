@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.40.2 — 24 november 2026
+- Het wisselvenster blijft dicht tot je een oefening wisselt. Het stond onderaan elke tab.
+
 ## 2.40.1 — 24 november 2026
 - Het wisselvenster houdt één vaste maat. Foto's en uitvoering scrollen daarbinnen, ook als je over een andere oefening gaat.
 

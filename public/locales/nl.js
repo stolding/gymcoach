@@ -46,6 +46,7 @@ export default {
   'ed.last': 'Vorige keer: {basis}',
   'ed.noHistory': 'Nog geen historie voor deze oefening.',
   'ed.recent': 'Laatste keren',
+  'ed.total': 'Totaal',
   'ed.progression': 'Automatische progressie',
   'ed.fixed': 'vast gewicht',
   'ed.set': 'Set',

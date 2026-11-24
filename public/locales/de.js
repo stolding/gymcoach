@@ -44,6 +44,7 @@ export default {
   "ed.last": "Letztes Mal: {basis}",
   "ed.noHistory": "Für diese Übung gibt es noch keinen Verlauf.",
   "ed.recent": "Letzte Male",
+  "ed.total": "Gesamt",
   "ed.progression": "Automatische Progression",
   "ed.fixed": "festes Gewicht",
   "ed.set": "Satz",

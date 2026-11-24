@@ -1248,16 +1248,22 @@ $('#sessions').addEventListener('click', async (ev) => {
   });
 });
 
-// Laatste vijf keer van deze oefening, compact naast de rest van het venster.
+// Herhalingen × kilo, afgerond op 0,1. Zelfde rekening als repsTimesKg in lib/engine.js.
+function repsTimesKg(sets) {
+  const n = (sets || []).reduce((t, s) => t + (Number(s?.reps) || 0) * (Number(s?.weight) || 0), 0);
+  return Math.round(n * 10) / 10;
+}
+const fmtLoad = (n) => String(Math.round(Number(n) * 10) / 10);
+
+// Laatste vijf keer, compact naast het advies en "vorige keer". Zonder logs: niets extra's.
 function exerciseRecentHtml(id) {
   const rows = state?.exerciseRecent?.[String(id)] || [];
+  if (!rows.length) return '';
   const showRest = rows.some((r) => r.rest > 0);
-  const body = rows.length
-    ? `<table class="settable exd-hist-table"><thead><tr><th>${t('app.datum')}</th><th>${t('ed.sets')}</th><th class="num">kg</th>${showRest ? `<th class="num">${t('app.rust')}</th>` : ''}</tr></thead><tbody>
-        ${rows.map((r) => `<tr><td>${esc(r.date)}</td><td>${esc(String(r.reps))}</td><td class="num">${esc(String(r.kg))}</td>${showRest ? `<td class="num">${r.rest > 0 ? esc(String(r.rest)) + ' s' : ''}</td>` : ''}</tr>`).join('')}
-      </tbody></table>`
-    : `<p class="muted small exd-hist-empty">${t('ed.noHistory')}</p>`;
-  return `<aside class="exd-hist"><div class="eyebrow">${esc(t('ed.recent'))}</div>${body}</aside>`;
+  return `<aside class="exd-hist"><div class="eyebrow">${esc(t('ed.recent'))}</div>
+    <table class="settable exd-hist-table"><thead><tr><th>${t('app.datum')}</th><th>${t('ed.sets')}</th><th class="num">kg</th><th class="num">${t('ed.total')}</th>${showRest ? `<th class="num">${t('app.rust')}</th>` : ''}</tr></thead><tbody>
+      ${rows.map((r) => `<tr><td>${esc(r.date)}</td><td>${esc(String(r.reps))}</td><td class="num">${esc(String(r.kg))}</td><td class="num">${esc(fmtLoad(r.total))}</td>${showRest ? `<td class="num">${r.rest > 0 ? esc(String(r.rest)) + ' s' : ''}</td>` : ''}</tr>`).join('')}
+    </tbody></table></aside>`;
 }
 
 // ---------- detailpopup per oefening ----------
@@ -1271,39 +1277,42 @@ function openExercise(session, i) {
   const PM = { squat: { quads: 1, glutes: .5, adductors: .5 }, hinge: { hamstrings: 1, glutes: 1, lowerBack: .5 }, hpush: { pecs: 1, frontDelts: .5, triceps: .5 }, hpull: { lats: 1, traps: .5, rearDelts: .5, biceps: .5 }, vpull: { lats: 1, biceps: .5 }, vpush: { frontDelts: 1, sideDelts: .5, triceps: .5 }, lunge: { quads: 1, glutes: 1, adductors: .5 }, glute: { glutes: 1, hamstrings: .5 }, lat: { sideDelts: 1 }, rear: { rearDelts: 1, traps: .5 }, curl: { biceps: 1, forearms: .5 }, tri: { triceps: 1 }, core: { abs: 1 }, calf: { calves: 1 } };
   Object.assign(sc, muscles || PM[e.pattern] || {});
   const ramp = e.rampUp ? Math.max(0.5, Math.round(e.sets[0]?.weight || 0) / 2) : null;
+  const planned = [...(ramp ? [{ reps: 8, weight: ramp }] : []), ...(e.sets || []).map((x) => ({ reps: x.reps, weight: x.weight }))];
+  const plannedTotal = repsTimesKg(planned);
   dlg.innerHTML = `<form method="dialog" class="exd">
     <div class="exd-head">
       <div><div class="eyebrow">${esc(session.name)} · ${esc(e.patternLabel)}${e.focus ? ' · <span class="accent-text">' + t('app.focus') + '</span>' : ''}</div><h2>${esc(e.title)}</h2>
         <div class="muted small">${t('app.doelHerhalingen', { a: esc(e.muscle || ''), b: e.type === 'compound' ? t('app.samengesteldeOefening') : 'isolatieoefening', c: e.repRange[0], d: e.repRange[1] })}</div></div>
       <button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button>
     </div>
-    <div class="exd-split">
-      <div class="exd-current">
-        <div class="exd-body">
-          <div class="exd-map">${bodyMap(sc, { height: 170, title: t('app.spierenInDezeOefening') })}<div class="muted small" style="text-align:center">${Object.keys(sc).map((k) => esc(MUSCLE_LABELS[k] || k)).join(' · ')}</div></div>
-          <div class="exd-main">
+    <div class="exd-body">
+      <div class="exd-map">${bodyMap(sc, { height: 170, title: t('app.spierenInDezeOefening') })}<div class="muted small" style="text-align:center">${Object.keys(sc).map((k) => esc(MUSCLE_LABELS[k] || k)).join(' · ')}</div></div>
+      <div class="exd-main">
+        <div class="exd-lead">
+          <div>
             <div class="note ${noteClass(e.note)}"><b>${t('ed.advice')}</b> ${esc(e.note || '—')}</div>
             ${e.basis ? `<div class="muted small">${t('app.vorigeKeer', { a: esc(e.basis) })}</div>` : '<div class="muted small">' + t('ed.noHistory') + '</div>'}
             ${ramp ? `<div class="small">${t('app.begintMetEenOpwarmset', { ramp })}</div>` : ''}
             ${e.restNote ? `<div class="muted small">${esc(e.restNote)}</div>` : ''}${e.volumeNote ? `<div class="muted small">${esc(e.volumeNote)}</div>` : ''}
-            <div class="rx" style="margin-top:.6rem">
-              <label>${t('ed.sets')}<input type="number" min="1" max="6" data-f="sets" value="${e.sets.length}"></label>
-              <label>${t('ed.reps')}<input type="number" min="1" max="30" data-f="reps" value="${e.sets[0]?.reps}"></label>
-              <label>kg<input type="number" min="0.5" step="0.5" data-f="weight" value="${e.sets[0]?.weight}"></label>
-              <label>${t('app.rustS')}<input type="number" min="10" step="5" data-f="rest" value="${e.sets[0]?.rest}"></label>
-            </div>
-            <table class="settable"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ed.reps')}</th><th class="num">kg</th><th class="num">${t('app.rust')}</th></tr></thead><tbody>
-              ${ramp ? `<tr class="muted"><td>${t('ed.warmSet')}</td><td class="num">8</td><td class="num">${ramp}</td><td class="num">45 s</td></tr>` : ''}
-              ${e.sets.map((x, n) => `<tr><td>${n + 1}</td><td class="num">${x.reps}</td><td class="num">${x.weight}</td><td class="num">${x.rest} s</td></tr>`).join('')}
-            </tbody></table>
           </div>
+          ${exerciseRecentHtml(e.id)}
         </div>
-        <div>
-          <div class="eyebrow">${esc(t('app.instructies'))}</div>
-          <div class="info-body" data-info></div>
+        <div class="rx">
+          <label>${t('ed.sets')}<input type="number" min="1" max="6" data-f="sets" value="${e.sets.length}"></label>
+          <label>${t('ed.reps')}<input type="number" min="1" max="30" data-f="reps" value="${e.sets[0]?.reps}"></label>
+          <label>kg<input type="number" min="0.5" step="0.5" data-f="weight" value="${e.sets[0]?.weight}"></label>
+          <label>${t('app.rustS')}<input type="number" min="10" step="5" data-f="rest" value="${e.sets[0]?.rest}"></label>
+          <div class="exd-sum"><span>${t('ed.total')}</span><b>${esc(fmtLoad(plannedTotal))} kg</b></div>
         </div>
+        <table class="settable"><thead><tr><th>${t('ed.set')}</th><th class="num">${t('ed.reps')}</th><th class="num">kg</th><th class="num">${t('ed.total')}</th><th class="num">${t('app.rust')}</th></tr></thead><tbody>
+          ${ramp ? `<tr class="muted"><td>${t('ed.warmSet')}</td><td class="num">8</td><td class="num">${ramp}</td><td class="num">${esc(fmtLoad(repsTimesKg([{ reps: 8, weight: ramp }])))}</td><td class="num">45 s</td></tr>` : ''}
+          ${e.sets.map((x, n) => `<tr><td>${n + 1}</td><td class="num">${x.reps}</td><td class="num">${x.weight}</td><td class="num">${esc(fmtLoad(repsTimesKg([x])))}</td><td class="num">${x.rest} s</td></tr>`).join('')}
+        </tbody></table>
       </div>
-      ${exerciseRecentHtml(e.id)}
+    </div>
+    <div>
+      <div class="eyebrow">${esc(t('app.instructies'))}</div>
+      <div class="info-body" data-info></div>
     </div>
     <div class="row gap wrap end">
       <button type="button" class="btn ghost" data-x="avoid">${t('pk.avoid')}</button>

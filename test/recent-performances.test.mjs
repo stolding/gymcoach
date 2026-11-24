@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildHistory, exerciseRecent, recentPerformances } from '../lib/engine.js';
+import { buildHistory, exerciseRecent, recentPerformances, repsTimesKg } from '../lib/engine.js';
 
 const row = (date, sets) => ({ date, trainingId: date, sets });
 const set = (reps, weight, rest) => ({ reps, weight, ...(rest != null ? { rest } : {}) });
@@ -43,9 +43,12 @@ test('last 5 are the newest of this exercise only', () => {
   assert.equal(out[0].reps, '15/15/15');
   assert.equal(out[0].kg, 9);
   assert.equal(out[0].rest, 80);
+  assert.equal(out[0].total, 405);
   assert.equal(out[1].reps, '15/15');
   assert.equal(out[1].kg, 9);
   assert.equal(out[1].rest, undefined);
+  assert.equal(out[1].total, 270);
+  assert.equal(out[3].total, 360);
   assert.equal(out[2].rest, undefined);
   assert.equal(out[3].reps, '15/15/15');
   assert.equal(out[3].kg, 8);
@@ -61,6 +64,21 @@ test('fewer than 5 logs returns only what exists', () => {
   assert.equal(out[0].reps, '5');
   assert.equal(out[0].kg, 110);
   assert.equal(out[0].rest, 120);
+  assert.equal(out[0].total, 550);
+});
+
+test('reps times kg is the set total, and a session total only counts the shown sets', () => {
+  assert.equal(repsTimesKg([{ reps: 12, weight: 15 }]), 180);
+  assert.equal(repsTimesKg([{ reps: 12, weight: 15 }, { reps: 12, weight: 15 }, { reps: 12, weight: 15 }]), 540);
+  assert.equal(repsTimesKg([{ reps: 15, weight: 8.5 }, { reps: 15, weight: 8.5 }]), 255);
+  assert.equal(repsTimesKg([]), 0);
+  assert.equal(repsTimesKg([{ reps: 0, weight: 20 }, { reps: 10 }]), 0);
+  const mixed = recentPerformances({
+    1: { id: 1, log: [row('2026-11-18', [set(8, 4.5, 45), set(15, 9, 80), set(15, 9, 80), set(15, 9, 80)])] },
+  }, 1);
+  assert.equal(mixed[0].reps, '15/15/15');
+  assert.equal(mixed[0].kg, 9);
+  assert.equal(mixed[0].total, 405);
 });
 
 test('empty, unknown and a limit of zero stay empty', () => {
@@ -98,7 +116,7 @@ test('buildHistory does not mix exercises, and rest comes from the set', () => {
   assert.equal(rowLog.length, 5);
   assert.equal(bench.length, 5);
   assert.deepEqual(rowLog.map((r) => r.date), ['2026-10-06', '2026-10-05', '2026-10-04', '2026-10-03', '2026-10-02']);
-  assert.ok(rowLog.every((r) => r.reps === '15/15/15' && r.kg === 9 && r.rest === 80));
-  assert.ok(bench.every((r) => r.reps === '8' && r.kg === 40 && r.rest === 90));
+  assert.ok(rowLog.every((r) => r.reps === '15/15/15' && r.kg === 9 && r.rest === 80 && r.total === 405));
+  assert.ok(bench.every((r) => r.reps === '8' && r.kg === 40 && r.rest === 90 && r.total === 320));
   assert.equal(built['42'].log.length, 6);
 });

@@ -379,13 +379,16 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
 .exd-body { display: grid; grid-template-columns: 200px 1fr; gap: 1.2rem; align-items: start; }
 .exd-main { min-width: 0; display: flex; flex-direction: column; gap: .35rem; }
 #exDlg.ex-wide { width: min(1080px, 96vw); }
-.exd-split { display: grid; grid-template-columns: minmax(0, 680px) minmax(200px, 1fr); gap: .85rem 1.15rem; align-items: start; }
-.exd-current { min-width: 0; display: flex; flex-direction: column; gap: .9rem; }
+#exDlg.ex-wide .pk-media video { max-width: min(100%, 440px); }
+.exd-lead { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(240px, 440px); gap: .35rem 1rem; align-items: start; }
+.exd-lead:not(:has(.exd-hist)) { grid-template-columns: minmax(0, 1fr); }
+.exd-main .rx { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: .6rem; }
+.exd-sum { font-size: .7rem; color: var(--muted); display: flex; flex-direction: column; gap: .15rem; justify-content: flex-end; }
+.exd-sum b { font: 600 .95rem var(--mono); color: var(--ink); padding: .3rem .1rem; }
 .exd-hist { min-width: 0; }
 .exd-hist .eyebrow { margin-bottom: .25rem; }
 .exd-hist-table { margin-top: 0; }
-.exd-hist-table th, .exd-hist-table td { padding: .16rem .28rem; font-size: .78rem; line-height: 1.25; white-space: nowrap; }
-.exd-hist-empty { margin: 0; }
+.exd-hist-table th, .exd-hist-table td { padding: .12rem .28rem; font-size: .75rem; line-height: 1.2; white-space: nowrap; }
 .accent-text { color: var(--accent); }
 .settable { margin-top: .6rem; }
 .focus-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
@@ -414,9 +417,8 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
   .exd-body { grid-template-columns: 1fr; }
   .mbar { grid-template-columns: 110px 1fr 30px; }
 }
-@media (max-width: 640px) {
-  #exDlg.ex-wide { width: min(720px, 96vw); }
-  .exd-split { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 720px) {
+  .exd-lead { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* spiergroep selecteren */

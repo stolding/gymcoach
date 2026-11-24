@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.39.1 — 24 november 2026
+- In het oefeningvenster staat de lijst met de laatste vijf keer op de plaats van "vorige keer" en de rustzin. De uitvoering staat naast de video, en het venster is weer smaller en duidelijker een popup.
+
 ## 2.39.0 — 24 november 2026
 - De laatste vijf keer staan naast het advies, bij "vorige keer". Elke set toont herhalingen × kilo, en die vijf keer het totaal van de getoonde sets.
 

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.38.0 — 24 november 2026
+- In het oefeningvenster staan rechts de laatste vijf keer dat je die oefening deed: datum, sets, kilo en de rust als die bekend is.
+
 ## 2.37.0 — 23 november 2026
 - In de oefeningkiezer filter je op materiaal: stang, bank, handgrepen, touw, heupgordel, roei- en skihandvat of mat. Geen keuze toont alles; meerdere keuzes tonen oefeningen die minstens één ervan gebruiken.
 

@@ -378,6 +378,14 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
 .exd-head h2 { font-size: 1.3rem; margin: .1rem 0 .2rem; }
 .exd-body { display: grid; grid-template-columns: 200px 1fr; gap: 1.2rem; align-items: start; }
 .exd-main { min-width: 0; display: flex; flex-direction: column; gap: .35rem; }
+#exDlg.ex-wide { width: min(1080px, 96vw); }
+.exd-split { display: grid; grid-template-columns: minmax(0, 680px) minmax(200px, 1fr); gap: .85rem 1.15rem; align-items: start; }
+.exd-current { min-width: 0; display: flex; flex-direction: column; gap: .9rem; }
+.exd-hist { min-width: 0; }
+.exd-hist .eyebrow { margin-bottom: .25rem; }
+.exd-hist-table { margin-top: 0; }
+.exd-hist-table th, .exd-hist-table td { padding: .16rem .28rem; font-size: .78rem; line-height: 1.25; white-space: nowrap; }
+.exd-hist-empty { margin: 0; }
 .accent-text { color: var(--accent); }
 .settable { margin-top: .6rem; }
 .focus-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
@@ -405,6 +413,10 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
   .wm-fig { position: static; }
   .exd-body { grid-template-columns: 1fr; }
   .mbar { grid-template-columns: 110px 1fr 30px; }
+}
+@media (max-width: 640px) {
+  #exDlg.ex-wide { width: min(720px, 96vw); }
+  .exd-split { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* spiergroep selecteren */

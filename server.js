@@ -1081,6 +1081,7 @@ const routes = {
     if (!hasSpeediance()) throw Object.assign(new Error(tr('srv.koppelEerstJeSpeediance')), { status: 400 });
     // uitleg in de taal van de gebruiker als Speediance die heeft (exinfo.INFO_LANGS), anders Engels
     const info = await exinfo.getInfo(id, url.searchParams.get('lang') || infoLang());
+    exinfo.warmImages(info);
     // verloop van het geschatte 1RM uit je eigen historie
     const ctx = await context();
     const h = Object.values(ctx.history).find((x) => Number(x.id) === id);

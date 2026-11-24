@@ -373,6 +373,26 @@ dialog:has(.act-goal) { width: min(760px, 96vw); }
 .info-dlg .info-shots img, .exd .info-shots img { width: 100%; border-radius: 10px; aspect-ratio: 4 / 3; object-fit: cover; background: #000; }
 .exd .info-body { display: flex; flex-direction: column; gap: .85rem; }
 .wide-dlg::backdrop, #swapDlg::backdrop { background: rgba(0,0,0,.55); }
+.swap-dlg { width: min(760px, 96vw); padding: 1.15rem 1.25rem 1.2rem; max-height: 92vh; overflow: auto; }
+.swap-dlg h2 { margin: 0 0 .35rem; font-size: 1.15rem; }
+.swap-hint { margin: 0 0 .7rem; }
+.swap-body { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: .8rem; align-items: start; }
+.swap-list { max-height: 22rem; overflow: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.swap-list button { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0; border-radius: 0; border-bottom: 1px solid var(--line); padding: .45rem .6rem; cursor: pointer; }
+.swap-list button:last-child { border-bottom: 0; }
+.swap-list button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.swap-list button.on { background: color-mix(in srgb, var(--b) 32%, var(--bg)); }
+.swap-list button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.swap-detail { min-width: 0; min-height: 8rem; display: flex; flex-direction: column; gap: .45rem; }
+.swap-shots { display: grid; grid-template-columns: 1.6fr 1fr; gap: .35rem; }
+.swap-shots img:first-child { grid-row: span 2; }
+.swap-shots img { width: 100%; height: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #000; }
+.swap-detail .pk-text { max-height: 9rem; overflow: auto; margin: 0; }
+.swap-dlg .row.end { margin-top: .85rem; }
+@media (max-width: 640px) {
+  .swap-body { grid-template-columns: minmax(0, 1fr); }
+  .swap-list { max-height: 12rem; }
+}
 #exDlg { border-color: color-mix(in srgb, var(--ink) 34%, var(--line)); box-shadow: 0 28px 70px rgba(0,0,0,.62), 0 0 0 1px color-mix(in srgb, var(--ink) 16%, transparent); }
 #exDlg::backdrop { background: rgba(0,0,0,.78); }
 .exd { display: flex; flex-direction: column; gap: .9rem; }

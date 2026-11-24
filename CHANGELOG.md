@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.40.1 — 24 november 2026
+- Het wisselvenster houdt één vaste maat. Foto's en uitvoering scrollen daarbinnen, ook als je over een andere oefening gaat.
+
 ## 2.40.0 — 24 november 2026
 - Bij het wisselen toont een klik op de naam de foto's en de uitvoering. Wisselen blijft een aparte knop. Die foto's blijven op de server staan in data/media.
 

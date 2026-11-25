@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.41.7 — 25 november 2026
+- Het oefeningenvenster heeft één schuifbalk. Rechtsboven staat een sluitknop die blijft staan tijdens het scrollen; dezelfde knop staat op elk venster.
+
 ## 2.41.6 — 25 november 2026
 - In het oefeningenvenster toont het paneel naast de video de spierkaart. Dat vlak was leeg: alleen de donkere achtergrond, met de namen en hoofdspier/meewerkend langs de rand.
 

@@ -120,3 +120,46 @@ test('buildHistory does not mix exercises, and rest comes from the set', () => {
   assert.ok(bench.every((r) => r.reps === '8' && r.kg === 40 && r.rest === 90 && r.total === 320));
   assert.equal(built['42'].log.length, 6);
 });
+
+// Het losse veld weight bevatte hier het aantal herhalingen (22) en finishedCount de kilo (14).
+// De lijst trainingInfoDetail.weights is de sessie: 22 keer 14 kg.
+test('2 sets of 22 reps at 14 kg are not shown as 14/14 and 22 kg', () => {
+  const crossed = (reps, kg) => ({
+    finishedCount: kg,
+    weight: reps,
+    targetCount: 15,
+    breakTime: 45,
+    capacity: reps * kg,
+    trainingInfoDetail: { weights: Array(reps).fill(kg) },
+  });
+  const sessions = {
+    a: {
+      date: '2026-11-13', training_id: 'a',
+      detail: [{ actionLibraryName: 'Standing Tricep Rope Pushdown', maxWeight: 22, finishedReps: [crossed(22, 14), crossed(22, 14)] }],
+    },
+    b: {
+      date: '2026-11-04', training_id: 'b',
+      detail: [{ actionLibraryName: 'Standing Tricep Rope Pushdown', maxWeight: 26, finishedReps: [crossed(26, 12)] }],
+    },
+    c: {
+      date: '2026-11-01', training_id: 'c',
+      detail: [{
+        actionLibraryName: 'Standing Tricep Rope Pushdown', maxWeight: 22,
+        finishedReps: [{ finishedCount: 14, weight: 22, breakTime: 45, capacity: 14 * 22, trainingInfoDetail: { weights: Array(14).fill(22) } }],
+      }],
+    },
+  };
+  const built = buildHistory(sessions, [{ id: 319, name: 'Standing Tricep Rope Pushdown' }]);
+  const rows = recentPerformances(built, 319);
+  assert.equal(rows[0].date, '2026-11-13');
+  assert.equal(rows[0].reps, '22/22');
+  assert.equal(rows[0].kg, 14);
+  assert.equal(rows[0].total, 616);
+  assert.notEqual(`${rows[0].reps}|${rows[0].kg}`, '14/14|22');
+  assert.equal(rows[1].reps, '26');
+  assert.equal(rows[1].kg, 12);
+  assert.equal(rows[1].total, 312);
+  assert.equal(rows[2].reps, '14');
+  assert.equal(rows[2].kg, 22);
+  assert.equal(rows[2].total, 308);
+});

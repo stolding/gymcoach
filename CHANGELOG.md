@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.41.4 — 25 november 2026
+- Laatste keren haalt de kilo niet meer uit het losse veld weight van de set. Daar stond bij de rope pushdown het aantal herhalingen (22), en 14 kg stond in de lijst per herhaling. De rij toont nu 22/22 op 14 kg; het totaal blijft 616.
+
 ## 2.41.3 — 25 november 2026
 - Voor de cijfers staat het woord inspanning: Inspanning: 1 eenvoudig, 3 gemiddeld, 5 zwaar.
 

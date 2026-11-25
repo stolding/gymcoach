@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.41.1 — 25 november 2026
+- Eén beoordeling stuurt het plan van de week erna: eenvoudig (1 of 2) een stap omhoog, zwaar (4 of 5) 10% lichter, gemiddeld hetzelfde. Staat dat plan er al, dan passen de sets zich aan zodra je het cijfer opslaat.
+
 ## 2.41.0 — 25 november 2026
 - Na een training beoordeel je elke oefening van 1 (eenvoudig) tot 5 (zwaar). Twee keer eenvoudig na elkaar zet de volgende keer een stap omhoog, twee keer zwaar maakt hem 10% lichter, gemiddeld houdt het plan.
 

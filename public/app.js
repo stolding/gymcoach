@@ -2889,7 +2889,8 @@ async function openWorkouts(ids, acts = [], date = null) {
     });
     dlg.querySelectorAll('[data-rate]').forEach((b) => b.addEventListener('click', () => busy(b, async () => {
       const rating = Number(b.dataset.rate);
-      await api('POST', '/api/workout/rating', { id: b.dataset.wo, exercise: b.dataset.ex, rating });
+      const r = await api('POST', '/api/workout/rating', { id: b.dataset.wo, exercise: b.dataset.ex, rating });
+      if (r.plan) { state.plan = r.plan; if (!pastWeek) renderPlan(); if ($('#tab-home')?.classList.contains('active')) renderHome(); }
       const group = b.parentElement;
       group.querySelectorAll('[data-rate]').forEach((x) => {
         const on = Number(x.dataset.rate) === rating;

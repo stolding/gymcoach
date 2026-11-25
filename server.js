@@ -545,7 +545,12 @@ const routes = {
     const detail = await workoutDetailFor(id, ctx);
     if (!detail.exercises.some((e) => e.key === String(exercise))) throw Object.assign(new Error(tr('srv.trainingNietGevonden')), { status: 404 });
     await store.setRating(id, exercise, n);
-    return { ok: true, rating: n };
+    const ratings = await store.getRatings();
+    const history = engine.attachRatings(engine.buildHistory(ctx.sessions, ctx.library), ratings);
+    const plan = await store.getPlan();
+    const changed = plan && engine.applyRatingToPlan(plan, history, exercise);
+    if (changed) await store.savePlan(plan);
+    return { ok: true, rating: n, ...(changed ? { plan: engine.localizePlan(plan) } : {}) };
   },
   'POST /api/workout/mail': async (req) => {
     const { id } = await body(req);

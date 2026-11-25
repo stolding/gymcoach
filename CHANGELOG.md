@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.41.5 — 25 november 2026
+- In Oefening toevoegen sluit het oefeningenvenster alleen zichzelf. Escape en de achtergrond van dat venster laten de lijst, de filters en de scrollpositie staan.
+
 ## 2.41.4 — 25 november 2026
 - Laatste keren haalt de kilo niet meer uit het losse veld weight van de set. Daar stond bij de rope pushdown het aantal herhalingen (22), en 14 kg stond in de lijst per herhaling. De rij toont nu 22/22 op 14 kg; het totaal blijft 616.
 

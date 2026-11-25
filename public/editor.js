@@ -419,7 +419,9 @@ const KEY2LIB = { pecs: 'Pecs', lats: 'Lats', traps: 'Traps', frontDelts: 'Front
 const musName = (m) => { const k = 'mus.' + m; const v = t(k); return v === k ? m : v; };
 const tabName = (x) => { const k = 'tab.' + x; const v = t(k); return v === k ? x : v; };
 
-let libCache = null, pdlg = null;
+let libCache = null, pdlg = null, detailDlg = null;
+// Sluiten van het oefeningenvenster mag het klik- of Escape-event niet doorgeven aan de kiezer eronder.
+let blockPickerDismiss = false;
 const infoCache = new Map();
 
 // Opent de kiezer. block: waar de oefeningen standaard heen gaan ('ex', 'warm' of 'cool'; te wijzigen in de kiezer).
@@ -427,9 +429,27 @@ const infoCache = new Map();
 // onAdd(lijst, blok) krijgt de klaargezette oefeningen.
 export async function openPicker(block, ctx, { muscleKey = null, inSession = [], replace = null } = {}, onAdd) {
   const { esc } = ctx;
-  if (!pdlg) { pdlg = document.createElement('dialog'); pdlg.className = 'picker-dlg'; document.body.appendChild(pdlg); }
+  if (!pdlg) {
+    pdlg = document.createElement('dialog');
+    pdlg.className = 'picker-dlg';
+    try { if ('closedBy' in pdlg) pdlg.closedBy = 'closerequest'; } catch { /* oudere browser */ }
+    document.body.appendChild(pdlg);
+    // Een klik die na het sluiten van het oefeningenvenster op de kiezer valt, sluit de kiezer niet.
+    pdlg.addEventListener('click', (ev) => {
+      if (!blockPickerDismiss) return;
+      ev.stopPropagation();
+      ev.preventDefault();
+    }, true);
+  }
+  if (!detailDlg) {
+    detailDlg = document.createElement('dialog');
+    detailDlg.className = 'picker-detail-dlg';
+    try { if ('closedBy' in detailDlg) detailDlg.closedBy = 'closerequest'; } catch { /* oudere browser */ }
+    document.body.appendChild(detailDlg);
+  }
+  if (detailDlg.open) detailDlg.close();
   pdlg.innerHTML = `<div class="pk-loading muted">${t('pk.loading')}</div>`;
-  pdlg.showModal();
+  if (!pdlg.open) pdlg.showModal();
   try { libCache = libCache || await ctx.api('GET', '/api/library'); } catch (e) { ctx.toast(e.message, true); pdlg.close(); return; }
   const lib = libCache;
   const avoid = new Set((lib.avoid || []).map(Number));
@@ -469,7 +489,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
       <button type="button" class="pk-name" data-pk="detail" data-id="${e.id}"><b>${esc(e.name)}</b>
         <span class="muted small">${esc(musName(e.muscle))} · ${esc(tabName(e.tab))}${inS.has(Number(e.id)) ? ` · <span class="badge">${t('pk.inSession')}</span>` : ''}${avoid.has(Number(e.id)) ? ` · <span class="badge warn">${t('pk.avoided')}</span>` : ''}${accBlocked(e) ? ` · <span class="badge warn">${t('pk.accBlocked')}</span>` : ''}</span>
         <span class="small ${h ? 'up' : 'muted'}">${h ? esc(t('pk.done', { date: h.last, sets: h.sets, times: h.times })) : t('pk.new')}</span></button>
-      <span class="pk-chev" aria-hidden="true">›</span></div>`;
+      <button type="button" class="pk-chev" data-pk="detail" data-id="${e.id}" aria-label="${esc(e.name)}">›</button></div>`;
   }
 
   function detailHtml(e, info, trend, err) {
@@ -506,6 +526,9 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
   }
 
   function render() {
+    const main = pdlg.querySelector('.pk-main');
+    const side = pdlg.querySelector('.pk-side');
+    const scroll = { main: main?.scrollTop || 0, side: side?.scrollTop || 0 };
     const c = counts();
     const list = filtered();
     pdlg.innerHTML = `<div class="pk">
@@ -523,45 +546,79 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
           <button type="button" class="chip ${st.gear.size ? '' : 'on'}" data-pk="gear" data-g="">${t('pk.anyGear')}</button>
           <div class="pk-chips">${gearKeys.map((k) => `<button type="button" class="chip ${st.gear.has(k) ? 'on' : ''}" data-pk="gear" data-g="${esc(k)}">${esc(t('acc.' + k))}</button>`).join('')}</div>` : ''}
         </aside>
-        <section class="pk-main">${st.detail ? '<div class="pk-dwrap"></div>' : `
+        <section class="pk-main">
           <input type="search" class="pk-search" placeholder="${esc(t('pk.search'))}" aria-label="${esc(t('pk.search'))}" value="${esc(st.q)}" data-pk="q">
           <div class="pk-tabs"><button type="button" class="chip ${st.tab === 'all' ? 'on' : ''}" data-pk="tab" data-t="all">${t('pk.all')}</button>${TABS.filter((x) => c[x]).map((x) => `<button type="button" class="chip ${st.tab === x ? 'on' : ''}" data-pk="tab" data-t="${esc(x)}">${esc(tabName(x))} · ${c[x]}</button>`).join('')}</div>
-          <div class="pk-list">${list.length ? list.slice(0, 150).map(row).join('') + (list.length > 150 ? `<div class="muted small">${t('pk.more', { n: list.length - 150 })}</div>` : '') : `<div class="muted">${t('pk.none')}</div>`}</div>`}
+          <div class="pk-list">${list.length ? list.slice(0, 150).map(row).join('') + (list.length > 150 ? `<div class="muted small">${t('pk.more', { n: list.length - 150 })}</div>` : '') : `<div class="muted">${t('pk.none')}</div>`}</div>
         </section>
       </div>
       <div class="pk-foot"><span class="small">${t('pk.selected', { n: st.sel.size })}</span>
         <div class="row gap wrap">${replace ? '' : `<span class="small muted">${t('pk.target')}</span><div class="pk-target">${['warm', 'ex', 'cool'].map((x) => `<button type="button" class="chip ${st.block === x ? 'on' : ''}" data-pk="target" data-b="${x}">${t(x === 'warm' ? 'ed.warmup' : x === 'cool' ? 'ed.cooldown' : 'ed.exercises')}</button>`).join('')}</div>`}
         <button type="button" class="btn accent" data-pk="add" ${st.sel.size && !st.busy ? '' : 'disabled'}>${st.busy ? t('pk.adding') : replace ? t('pk.swap') : t('pk.add')}</button></div></div>
     </div>`;
-    if (st.detail) showDetail(st.detail);
+    const main2 = pdlg.querySelector('.pk-main');
+    const side2 = pdlg.querySelector('.pk-side');
+    if (main2) main2.scrollTop = scroll.main;
+    if (side2) side2.scrollTop = scroll.side;
+  }
+
+  // In Chrome sluit één Escape elke open dialoog, en het cancel-event is niet te stoppen.
+  // Zolang het oefeningenvenster open is, negeren de dialogen eronder Escape.
+  function shieldDialogs(on) {
+    for (const d of document.querySelectorAll('dialog')) {
+      if (!('closedBy' in d) || d === detailDlg) continue;
+      if (on) {
+        if (!d.open || d.dataset.closedByShield != null) continue;
+        d.dataset.closedByShield = d.closedBy || 'closerequest';
+        try { d.closedBy = 'none'; } catch { /* oudere browser */ }
+      } else if (d.dataset.closedByShield != null) {
+        try { d.closedBy = d.dataset.closedByShield; } catch { /* oudere browser */ }
+        delete d.dataset.closedByShield;
+      }
+    }
+  }
+
+  function closeDetail() {
+    const wasOpen = !!detailDlg?.open;
+    st.detail = null;
+    if (!wasOpen) { shieldDialogs(false); return; }
+    blockPickerDismiss = true;
+    detailDlg.querySelectorAll('video').forEach((v) => v.pause());
+    detailDlg.close();
+    shieldDialogs(false);
+    setTimeout(() => { blockPickerDismiss = false; }, 0);
   }
 
   async function showDetail(id) {
     const e = lib.items.find((x) => x.id === id); if (!e) return;
-    const wrap = pdlg.querySelector('.pk-dwrap'); if (!wrap) return;
+    st.detail = id;
     const c = infoCache.get(id);
-    wrap.innerHTML = detailHtml(e, c?.info, c?.trend, c?.err);
+    detailDlg.innerHTML = `<div class="pk-dwrap">${detailHtml(e, c?.info, c?.trend, c?.err)}</div>`;
+    shieldDialogs(true);
+    if (!detailDlg.open) detailDlg.showModal();
     if (c) return;
     try { const r = await ctx.api('GET', `/api/exercise/info?id=${encodeURIComponent(id)}`); infoCache.set(id, { info: r.info, trend: r.trend }); }
     catch (err) { infoCache.set(id, { err: err.message }); }
-    if (st.detail === id) { const w = pdlg.querySelector('.pk-dwrap'); const x = infoCache.get(id); if (w) w.innerHTML = detailHtml(e, x.info, x.trend, x.err); }
+    if (st.detail === id && detailDlg.open) { const x = infoCache.get(id); detailDlg.innerHTML = `<div class="pk-dwrap">${detailHtml(e, x.info, x.trend, x.err)}</div>`; }
   }
 
-  pdlg.onclick = async (ev) => {
-    const b = ev.target.closest('[data-pk]'); if (!b || b.tagName === 'INPUT') return;
-    const a = b.dataset.pk;
-    if (a === 'close') { pdlg.close(); return; }
-    if (a === 'muscle') { st.muscle = b.dataset.m || null; st.detail = null; }
-    else if (a === 'gear') { const g = b.dataset.g; if (!g) st.gear.clear(); else if (st.gear.has(g)) st.gear.delete(g); else st.gear.add(g); st.detail = null; }
+  async function act(a, b) {
+    if (a === 'close') { closeDetail(); pdlg.close(); return; }
+    if (a === 'muscle') { st.muscle = b.dataset.m || null; closeDetail(); }
+    else if (a === 'gear') { const g = b.dataset.g; if (!g) st.gear.clear(); else if (st.gear.has(g)) st.gear.delete(g); else st.gear.add(g); closeDetail(); }
     else if (a === 'tab') st.tab = b.dataset.t;
-    else if (a === 'detail') st.detail = isNaN(+b.dataset.id) ? b.dataset.id : +b.dataset.id;
-    else if (a === 'back') st.detail = null;
-    else if (a === 'nav') { const list = filtered(); const i = list.findIndex((x) => x.id === st.detail) + Number(b.dataset.d); if (list[i]) st.detail = list[i].id; }
-    else if (a === 'toggle') { const id = Number(b.dataset.id); if (st.sel.has(id)) st.sel.delete(id); else { if (replace) st.sel.clear(); st.sel.add(id); } }
+    else if (a === 'detail') { showDetail(isNaN(+b.dataset.id) ? b.dataset.id : +b.dataset.id); return; }
+    else if (a === 'back') { closeDetail(); return; }
+    else if (a === 'nav') { const list = filtered(); const i = list.findIndex((x) => x.id === st.detail) + Number(b.dataset.d); if (list[i]) showDetail(list[i].id); return; }
+    else if (a === 'toggle') {
+      const id = Number(b.dataset.id); if (st.sel.has(id)) st.sel.delete(id); else { if (replace) st.sel.clear(); st.sel.add(id); }
+      render(); if (st.detail != null) showDetail(st.detail); return;
+    }
     else if (a === 'target') { st.block = b.dataset.b; st.tab = lib.items.some((e) => e.tab === defTab(st.block)) ? defTab(st.block) : 'all'; if (st.block !== 'ex') st.muscle = null; }
     else if (a === 'avoid') {
       const id = Number(b.dataset.id);
       try { await ctx.api('POST', '/api/avoid', { id, regenerate: false }); avoid.add(id); (lib.avoid ||= []).push(id); st.sel.delete(id); ctx.toast(t('pk.avoidedToast')); } catch (err) { ctx.toast(err.message, true); }
+      render(); if (detailDlg.open && st.detail != null) showDetail(st.detail); return;
     }
     else if (a === 'add') {
       st.busy = true; render();
@@ -571,12 +628,35 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
           const r = await ctx.api('POST', '/api/exercise/template', { id, block: replace ? 'ex' : st.block });
           out.push(r.exercise || r.item);
         }
-        pdlg.close(); onAdd(out, replace ? 'ex' : st.block);
+        closeDetail(); pdlg.close(); onAdd(out, replace ? 'ex' : st.block);
       } catch (err) { ctx.toast(err.message, true); st.busy = false; render(); }
       return;
     } else return;
     render();
+  }
+  pdlg.onclick = (ev) => {
+    if (blockPickerDismiss) return;
+    const b = ev.target.closest('[data-pk]'); if (!b || b.tagName === 'INPUT') return;
+    act(b.dataset.pk, b);
   };
+  // Het oefeningenvenster is een eigen dialoog. Escape en de achtergrond sluiten alleen dát venster.
+  detailDlg.onclick = (ev) => {
+    if (ev.target === detailDlg) { ev.stopPropagation(); closeDetail(); return; }
+    const b = ev.target.closest('[data-pk]'); if (!b || b.tagName === 'INPUT') return;
+    act(b.dataset.pk, b);
+  };
+  detailDlg.oncancel = () => { st.detail = null; };
+  detailDlg.onclose = () => {
+    detailDlg.querySelectorAll('video').forEach((v) => v.pause());
+    st.detail = null;
+    shieldDialogs(false);
+    blockPickerDismiss = true;
+    setTimeout(() => { blockPickerDismiss = false; }, 0);
+  };
+  pdlg.oncancel = (ev) => {
+    if (detailDlg.open || blockPickerDismiss) { ev.preventDefault(); if (detailDlg.open) closeDetail(); }
+  };
+  pdlg.onclose = () => { if (detailDlg.open) closeDetail(); else shieldDialogs(false); };
   pdlg.onchange = (ev) => {
     const el = ev.target; const a = el.dataset?.pk;
     if (a === 'sel') { const id = Number(el.dataset.id); if (el.checked) { if (replace) st.sel.clear(); st.sel.add(id); } else st.sel.delete(id); render(); }

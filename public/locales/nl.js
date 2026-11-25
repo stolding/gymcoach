@@ -1468,6 +1468,7 @@ export default {
   'rate.mid': 'gemiddeld',
   'rate.hard': 'zwaar',
   'rate.group': 'Beoordeling van {name}',
+  'rate.scale': '1 eenvoudig · 3 gemiddeld · 5 zwaar',
   'eng.zelfdeGewichtNogEen': 'Zelfde gewicht nog een keer',
   'eng.rustSBasisS': 'Rust {rest} s (basis {base} s): {a}',
   'eng.wandelenOfFietsenIn': 'Wandelen of fietsen in een rustig tempo (je kunt nog praten). Duur zoals je dagen toelaten; 30–60 minuten is ideaal.',

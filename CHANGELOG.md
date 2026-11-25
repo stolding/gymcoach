@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.42.0 — 25 november 2026
+- Warming-up en cooldown bewerk je hetzelfde als de oefeningen: sets, rust, modus, superset, wisselen en verwijderen. Een oefening op tijd (Bird Dog, wandelen) houdt seconden; kilo geldt daar niet.
+
 ## 2.41.7 — 25 november 2026
 - Het oefeningenvenster heeft één schuifbalk. Rechtsboven staat een sluitknop die blijft staan tijdens het scrollen; dezelfde knop staat op elk venster.
 

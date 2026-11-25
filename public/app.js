@@ -6,6 +6,7 @@ import { TERMS_VERSION, termsHtml } from './terms.js';
 import { explain } from './explain.js';
 import { openEditor } from './editor.js';
 import { t, t as tx, tmap, localeOf, has, setLang, resolveLang, applyI18n, LANGS, fmtNum, doseText, getLang } from './i18n.js';
+import { isTimedItem, warmRows } from './warmedit.js';
 import { askConfirm, askText } from './dialogs.js';
 import { langPicker, storedLang, storeLang } from './langpick.js';
 
@@ -1386,9 +1387,20 @@ function instructionHtml(info) {
 
 // cooldown-duur: seconden per stretch (× 2 bij "per kant") plus wisseltijd
 const coolMin = (list) => Math.max(1, Math.round((list || []).reduce((t, c) => {
+  if (c.sets?.length) return t + c.sets.reduce((a, s) => a + (+s.reps || 0) + (+s.rest || 0), 0);
   const sec = +(/(\d+)\s*s\b/i.exec(c.dose || '') || [0, 30])[1];
   return t + sec * (/per (kant|been|arm)/i.test(c.dose || '') ? 2 : 1) + 10;
 }, 0) / 60));
+const wcDose = (item, kind) => {
+  if (item.sets?.length) {
+    const timed = isTimedItem(item, kind);
+    const s0 = item.sets[0];
+    const same = item.sets.every((s) => s.reps === s0.reps && (timed || s.weight === s0.weight));
+    if (timed) return same ? `${item.sets.length} × ${s0.reps} s` : item.sets.map((s) => `${s.reps} s`).join(' · ');
+    return same ? `${item.sets.length} × ${s0.reps} @ ${s0.weight} kg` : item.sets.map((s) => `${s.reps} × ${s.weight} kg`).join(' · ');
+  }
+  return kind === 'cable' || item.weighted ? `2 × ${item.reps} @ ${item.weight} kg` : doseText(item.dose);
+};
 // Venster met de warming-up of cooldown van een training.
 function openWarmCool(session, which) {
   const dlg = $('#exDlg');
@@ -1396,8 +1408,8 @@ function openWarmCool(session, which) {
   dlg.onclose = null;
   const bothSides = (dose) => /per (kant|been|arm)/i.test(dose || '');
   const items = which === 'warm'
-    ? [...session.warmup.mobility.map((m) => ({ t: m.title, d: doseText(m.dose), dev: pushMob(), both: bothSides(m.dose) })), ...session.warmup.cable.map((c) => ({ t: c.title, d: `2 × ${c.reps} @ ${c.weight} kg`, dev: true }))]
-    : session.cooldown.map((c) => ({ t: c.title, d: doseText(c.dose), dev: pushMob(), both: bothSides(c.dose) }));
+    ? warmRows(session.warmup).map((r) => ({ t: r.x.title, d: wcDose(r.x, r.kind), dev: r.kind === 'cable' || pushMob(), both: !r.x.sets?.length && bothSides(r.x.dose) }))
+    : (session.cooldown || []).map((c) => ({ t: c.title, d: wcDose(c, c.weighted ? 'cable' : 'cool'), dev: pushMob(), both: !c.sets?.length && bothSides(c.dose) }));
   dlg.innerHTML = `<form method="dialog" class="exd">
     <div class="exd-head"><div><div class="eyebrow">${esc(session.name)}</div><h2>${which === 'warm' ? t('app.warmingUp6Min') : t('app.cooldownMin', { a: coolMin(session.cooldown) })}</h2></div><button value="close" class="btn ghost small" aria-label="${t('pk.close')}">✕</button></div>
     <table class="settable"><thead><tr><th>${t('app.oefening')}</th><th>${t('app.dosering')}</th><th>${t('app.opToestel2')}</th></tr></thead><tbody>

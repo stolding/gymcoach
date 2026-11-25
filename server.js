@@ -30,6 +30,7 @@ import * as scores from './lib/scores.js';
 import * as mail from './lib/mail.js';
 import { workoutPdf, workoutMail } from './lib/summary.js';
 import { figureFor } from './public/bodymap.js';
+import { sanitizeWarmItem } from './public/warmedit.js';
 import * as exinfo from './lib/exinfo.js';
 import * as acttypes from './lib/acttypes.js';
 import * as actgoal from './lib/actgoal.js';
@@ -660,12 +661,20 @@ const routes = {
           set.mode = int(set.mode, 1, 5, 1); // 1 standaard, 2 excentrisch, 3 isokinetisch, 4 constant, 5 spotter
         }
       }
-      for (const c of s.warmup?.cable || []) { c.reps = int(c.reps, 1, 30, 10); c.weight = Math.max(0, Math.round(+c.weight * 2) / 2 || 0); }
+      for (const c of s.warmup?.cable || []) sanitizeWarmItem(c, 'cable');
       for (const m of s.warmup?.mobility || []) {
+        sanitizeWarmItem(m, 'mobility');
         m.dose = engine.mobilityDose(m);
         m.reps = int((/(\d+)\s*s\b/i.exec(m.dose) || [])[1], 5, 180, 30);
       }
-      for (const c of s.cooldown || []) c.dose = engine.cooldownDose(c);
+      for (const c of s.cooldown || []) {
+        if (!c.weighted) {
+          const before = c.dose;
+          c.dose = engine.cooldownDose(c);
+          if (c.dose !== before && c.sets?.length === 1 && /per (kant|been|arm)/i.test(c.dose)) c.sets.push({ ...c.sets[0] });
+        }
+        sanitizeWarmItem(c, c.weighted ? 'cable' : 'cool');
+      }
     }
     refreshMuscles(plan);
     if (plan.weekBalance) {
@@ -1116,7 +1125,13 @@ const routes = {
       const dose = cable ? '' : (info?.unilateral ? '30 s per kant' : '30 s');
       return { item: { kind: cable ? 'cable' : 'mobility', id: lib.id, title: lib.name, reps: cable ? 12 : 30, weight: cable ? Math.max(1, Math.round((info?.recommendedWeight || 6) * 0.3 * 2) / 2) : 0, dose } };
     }
-    if (block === 'cool') return { item: { id: lib.id, title: lib.name, dose: engine.cooldownDose({ id: lib.id, dose: info?.unilateral ? '30 s per kant' : '30 s' }) } };
+    if (block === 'cool') {
+      if (lib.tab === 'Training') {
+        const weight = Math.max(1, Math.round((info?.recommendedWeight || 6) * 0.3 * 2) / 2);
+        return { item: { weighted: true, id: lib.id, title: lib.name, reps: 12, weight, dose: '' } };
+      }
+      return { item: { id: lib.id, title: lib.name, dose: engine.cooldownDose({ id: lib.id, dose: info?.unilateral ? '30 s per kant' : '30 s' }) } };
+    }
     return { exercise: engine.exerciseFromLibrary(lib, { settings: ctx.settings, history: ctx.history, info }) };
   },
   // foto's en video's van Speediance via de eigen server (gedeelde cache in data/media)

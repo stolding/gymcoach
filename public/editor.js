@@ -416,6 +416,15 @@ const TABS = ['Training', 'Bodyweight', 'Warmup', 'Stretch', 'Recovery', 'HIIT',
 const GEAR = ['barbell', 'bench', 'handles', 'rope', 'belt', 'rowski', 'mat'];
 // sleutel van het figuur → spiergroep in de catalogus
 const KEY2LIB = { pecs: 'Pecs', lats: 'Lats', traps: 'Traps', frontDelts: 'Front Delts', sideDelts: 'Side Delts', rearDelts: 'Rear Delts', biceps: 'Biceps', triceps: 'Triceps', forearms: 'Forearms', quads: 'Quads', hamstrings: 'Hamstrings', glutes: 'Glutes', adductors: 'Adductors', calves: 'Calves', abs: 'Abs', lowerBack: 'Back Extensors' };
+const LIB2KEY = Object.fromEntries(Object.entries(KEY2LIB).map(([k, v]) => [v, k]));
+// Hoofdspier 1, meewerkend 0,5, op de sleutels van de spierkaart. Onbekende namen tellen niet mee.
+export function pickerMuscleScores(main, aux, fallback) {
+  const scores = {};
+  const mains = main?.length ? main : (fallback ? [fallback] : []);
+  for (const name of aux || []) { const k = LIB2KEY[name]; if (k) scores[k] = scores[k] || 0.5; }
+  for (const name of mains) { const k = LIB2KEY[name]; if (k) scores[k] = 1; }
+  return scores;
+}
 const musName = (m) => { const k = 'mus.' + m; const v = t(k); return v === k ? m : v; };
 const tabName = (x) => { const k = 'tab.' + x; const v = t(k); return v === k ? x : v; };
 
@@ -497,6 +506,8 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
     const on = st.sel.has(Number(e.id));
     const h = lib.history[e.id];
     const spark = trend?.length > 1 ? (() => { const ys = trend.map((p) => p.y), lo = Math.min(...ys), hi = Math.max(...ys) || 1; const pts = trend.map((p, j) => `${(j / (trend.length - 1)) * 600},${50 - ((p.y - lo) / (hi - lo || 1)) * 42}`).join(' '); return `<svg viewBox="0 0 600 54" preserveAspectRatio="none" class="pk-spark" role="img" aria-label="${t('pk.history')}"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5"/></svg><div class="muted small">${esc(trend[0].x)}: ${nlNum(trend[0].y)} kg → ${esc(trend[trend.length - 1].x)}: ${nlNum(trend[trend.length - 1].y)} kg</div>`; })() : `<div class="muted small">${h ? '' : t('pk.noHistory')}</div>`;
+    const scores = info ? pickerMuscleScores(info.main, info.aux, e.muscle) : {};
+    const map = Object.keys(scores).length ? `<div class="pk-map">${bodyMap(scores, { height: 320, title: t('pk.muscles'), caption: (k, v) => `${MUSCLE_LABELS[k] || k}: ${v >= 1 ? t('pk.main') : t('pk.aux')}` })}</div>` : '';
     return `<div class="pk-dhead"><button type="button" class="btn ghost small" data-pk="back">${t('pk.back')}</button>
         <div class="row gap"><button type="button" class="btn ghost small" data-pk="nav" data-d="-1" aria-label="${t('pk.prev')}" ${i <= 0 ? 'disabled' : ''}>‹</button><button type="button" class="btn ghost small" data-pk="nav" data-d="1" aria-label="${t('pk.next')}" ${i < 0 || i >= list.length - 1 ? 'disabled' : ''}>›</button></div></div>
       <div class="pk-detail">
@@ -506,6 +517,7 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
         <div class="pk-media">
           ${info.video ? `<video controls preload="metadata" playsinline ${info.poster || info.img ? `poster="${esc(info.poster || info.img)}"` : ''} src="${esc(info.video)}"></video>` : info.img ? `<img src="${esc(info.img)}" alt="">` : ''}
           <div class="pk-mus"><div class="eyebrow">${t('pk.muscles')}</div>
+            ${map}
             ${info.main.map((m) => `<div class="row between"><span>${esc(musName(m))}</span><span class="accent-text small">${t('pk.main')}</span></div>`).join('')}
             ${info.aux.map((m) => `<div class="row between"><span>${esc(musName(m))}</span><span class="muted small">${t('pk.aux')}</span></div>`).join('')}
             ${info.coach ? `<div class="muted small" style="margin-top:auto">${esc(t('pk.coach', { name: info.coach }))}</div>` : ''}</div>

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.41.6 — 25 november 2026
+- In het oefeningenvenster toont het paneel naast de video de spierkaart. Dat vlak was leeg: alleen de donkere achtergrond, met de namen en hoofdspier/meewerkend langs de rand.
+
 ## 2.41.5 — 25 november 2026
 - In Oefening toevoegen sluit het oefeningenvenster alleen zichzelf. Escape en de achtergrond van dat venster laten de lijst, de filters en de scrollpositie staan.
 

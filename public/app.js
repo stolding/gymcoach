@@ -2748,6 +2748,12 @@ function woTiles(d) {
   if (d.completion != null) tiles.push(['Voltooid', `${d.completion}%`]);
   return `<div class="wo-tiles">${tiles.map(([l, v, zc]) => `<div class="zoned"${zoneStyle(zc)}><div class="eyebrow">${l}</div><div class="mid">${esc(String(v))}</div></div>`).join('')}</div>`;
 }
+// 1 eenvoudig, 3 gemiddeld, 5 zwaar. 2 en 4 horen bij de dichtstbijzijnde kant.
+function rateWord(n) { return n <= 2 ? t('rate.easy') : n === 3 ? t('rate.mid') : n >= 4 ? t('rate.hard') : ''; }
+function rateHtml(d, e) {
+  if (!d?.id || !e?.key) return '';
+  return `<div class="rate" role="group" aria-label="${esc(t('rate.group', { name: e.name }))}">${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="rate-btn${e.rating === n ? ' on' : ''}" data-rate="${n}" data-wo="${esc(d.id)}" data-ex="${esc(e.key)}" aria-pressed="${e.rating === n ? 'true' : 'false'}" title="${esc(n <= 2 ? t('rate.easy') : n === 3 ? t('rate.mid') : t('rate.hard'))}">${n}</button>`).join('')}<span class="muted small" data-rate-word>${e.rating ? esc(rateWord(e.rating)) : ''}</span></div>`;
+}
 // Trainingsrapport in de app: oefeningen, vergelijking, hartslag, tijd en spierkaart.
 function workoutHtml(d) {
   const exs = d.exercises.map((e, i) => {
@@ -2755,7 +2761,7 @@ function workoutHtml(d) {
     if (!e.top) {
       // zonder gewicht (warming-up, mobiliteit, stretches): één compacte regel
       const reps = e.sets.reduce((t, x) => t + (x.reps || 0), 0);
-      return `<div class="wo-ex light"><div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small muted">${t('app.zonderGewicht', { a: e.sets.length ? ` · ${t('app.setsN', { n: e.sets.length })}${reps ? ` · ${t('app.repsTotal', { reps })}` : ''}` : '' })}</div></div></div>`;
+      return `<div class="wo-ex light"><div class="row between wrap gap"><div><b>${i + 1}. ${esc(e.name)}</b>${e.muscle ? ` <span class="muted small">${esc(e.muscle)}</span>` : ''}</div><div class="small muted">${t('app.zonderGewicht', { a: e.sets.length ? ` · ${t('app.setsN', { n: e.sets.length })}${reps ? ` · ${t('app.repsTotal', { reps })}` : ''}` : '' })}</div></div>${rateHtml(d, e)}</div>`;
     }
     // verval: vermogen als Speediance dat per herhaling stuurt, anders de uitslag, anders de tijd
     const fadeKind = e.sets.some((x) => x.wattFade != null) ? 'watt' : e.sets.some((x) => x.ampFade != null) ? 'amp' : e.sets.some((x) => x.slow != null) ? 'time' : null;
@@ -2789,6 +2795,7 @@ function workoutHtml(d) {
         }).join('')}
       </tbody></table>
       <div class="small muted">${t('app.volumeKgGeschat1rm', { a: e.volume.toLocaleString(localeOf()), b: nl1(e.e1rm), c: e.prev ? t('app.vorigeKeer2', { a: esc(fmtDate(e.prev.date)), b: esc(doneSetsSummary(e.prev.sets)) }) : '' })}</div>
+      ${rateHtml(d, e)}
     </div>`;
   }).join('');
   return `${d.hrSource ? `<p class="muted small" style="margin:0">${t('app.hartslagGemiddeldMaximaalUit', { a: esc(d.hrSource) })}</p>` : ''}
@@ -2880,6 +2887,18 @@ async function openWorkouts(ids, acts = [], date = null) {
       tr.addEventListener('click', toggle);
       tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(); } });
     });
+    dlg.querySelectorAll('[data-rate]').forEach((b) => b.addEventListener('click', () => busy(b, async () => {
+      const rating = Number(b.dataset.rate);
+      await api('POST', '/api/workout/rating', { id: b.dataset.wo, exercise: b.dataset.ex, rating });
+      const group = b.parentElement;
+      group.querySelectorAll('[data-rate]').forEach((x) => {
+        const on = Number(x.dataset.rate) === rating;
+        x.classList.toggle('on', on);
+        x.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      const word = group.querySelector('[data-rate-word]');
+      if (word) word.textContent = rateWord(rating);
+    })));
     dlg.querySelectorAll('[data-mail]').forEach((b) => b.addEventListener('click', () => busy(b, async () => {
       if (!state.settings.email) { toast(t('app.vulEerstJeE'), true); return; }
       try { const r = await api('POST', '/api/workout/mail', { id: b.dataset.mail }); toast(t('app.samenvattingGemaildNaar', { to: r.to })); } catch (er) { toast(er.message, true); }

@@ -117,11 +117,11 @@ const requireAdmin = () => { if (!isAdmin()) throw Object.assign(new Error(tr('s
 
 // Alles wat de engine nodig heeft voor de huidige gebruiker: instellingen, catalogus, historie, trainingen, metingen.
 async function context() {
-  const [settings, sessions, workouts, bodyLog, library] = await Promise.all([
-    store.getSettings(), store.getSessions(), store.getWorkouts(), store.getBodyLog(), getLibrary(),
+  const [settings, sessions, workouts, bodyLog, library, ratings] = await Promise.all([
+    store.getSettings(), store.getSessions(), store.getWorkouts(), store.getBodyLog(), getLibrary(), store.getRatings(),
   ]);
-  const history = engine.buildHistory(sessions, library);
-  return { settings, sessions, workouts, bodyLog, library, history };
+  const history = engine.attachRatings(engine.buildHistory(sessions, library), ratings);
+  return { settings, sessions, workouts, bodyLog, library, history, ratings };
 }
 
 // Oefeningen die de AI mag voorstellen: uit de catalogus, zonder vermeden oefeningen.
@@ -142,7 +142,7 @@ async function workoutDetailFor(id, ctx) {
   if (!w && !s) throw Object.assign(new Error(tr('srv.trainingNietGevonden')), { status: 404 });
   const wh = await store.getWorkoutHealth();
   const activities = await store.getActivities();
-  const d = engine.workoutDetail(w, s, ctx.library, ctx.history, wh[String(id)]);
+  const d = engine.workoutDetail(w, s, ctx.library, ctx.history, wh[String(id)], ctx.ratings);
   d.compare = insights.compare(d, { workouts: ctx.workouts, sessions: ctx.sessions, health: wh, activities });
   d.heart = insights.heart(d, wh[String(id)], ctx.settings);
   // dagtotaal apart: de tegels van deze gymsessie blijven de sessie zelf.
@@ -536,6 +536,16 @@ const routes = {
     const settings = await store.getSettings();
     const d = await withDayActs(await workoutDetailFor(url.searchParams.get('id') || ''), settings);
     return { __binary: { type: 'application/pdf', data: workoutPdf(d, { userName: store.currentUser().name, figure: figureFor(settings) }), filename: `GymCoach ${d.date} ${d.title.replace(/[^\w .-]+/g, '')}.pdf` } };
+  },
+  'POST /api/workout/rating': async (req) => {
+    const { id, exercise, rating } = await body(req);
+    const n = Number(rating);
+    if (!id || !exercise || !(n >= 1 && n <= 5) || n !== Math.round(n)) throw Object.assign(new Error(tr('srv.ongeldigeInvoer')), { status: 400 });
+    const ctx = await context();
+    const detail = await workoutDetailFor(id, ctx);
+    if (!detail.exercises.some((e) => e.key === String(exercise))) throw Object.assign(new Error(tr('srv.trainingNietGevonden')), { status: 404 });
+    await store.setRating(id, exercise, n);
+    return { ok: true, rating: n };
   },
   'POST /api/workout/mail': async (req) => {
     const { id } = await body(req);

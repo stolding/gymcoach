@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.41.0 — 25 november 2026
+- Na een training beoordeel je elke oefening van 1 (eenvoudig) tot 5 (zwaar). Twee keer eenvoudig na elkaar zet de volgende keer een stap omhoog, twee keer zwaar maakt hem 10% lichter, gemiddeld houdt het plan.
+
 ## 2.40.2 — 24 november 2026
 - Het wisselvenster blijft dicht tot je een oefening wisselt. Het stond onderaan elke tab.
 

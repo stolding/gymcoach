@@ -4,6 +4,7 @@
 import { bodyMap, MUSCLE_LABELS } from './bodymap.js';
 import { t, localeOf, doseText } from './i18n.js';
 import { askConfirm, askText } from './dialogs.js';
+import { ensureWarmItem, isTimedItem, sideOf, syncWarmItem, warmRows } from './warmedit.js';
 
 const MODES = [1, 2, 3, 4, 5];
 const PUSH = new Set(['hpush', 'vpush', 'tri']), PULL = new Set(['hpull', 'vpull', 'rear', 'curl']);
@@ -43,7 +44,7 @@ function estMinutes(s) {
     sec += (e.group && i > 0 && s.exercises[i - 1].group === e.group ? 15 : 60) + e.sets.reduce((tt, x) => tt + x.reps * 4 + (last ? x.rest : 5), 0);
     if (e.rampUp) sec += 8 * 4 + 45;
   }
-  const warm = (s.warmup?.mobility?.length || 0) + (s.warmup?.cable?.length || 0) ? 6 : 0;
+  const warm = warmRows(s.warmup).length ? 6 : 0;
   const cool = s.cooldown?.length ? 4 : 0;
   return Math.round(sec / 60) + warm + cool;
 }
@@ -59,10 +60,6 @@ function estKcal(minutes, kg) {
   if (!(kg > 0) || !(minutes > 0)) return null;
   return Math.round(8 * kg * (minutes / 60));
 }
-// Seconden uit een dosering als "30 s per kant". Zonder seconden (oude "10 herh.") is het 30 s.
-const secsOf = (dose) => { const m = /(\d+)\s*s\b/i.exec(dose || ''); return m ? Number(m[1]) : 30; };
-const sideOf = (dose) => { const m = String(dose || '').match(/per (kant|been|arm)/i); return m ? `per ${m[1].toLowerCase()}` : ''; };
-
 let dlg = null;
 
 // Opent de editor voor de training met deze sleutel.
@@ -79,13 +76,23 @@ export function openEditor(key, ctx) {
   let draft = clone(saved); delete draft.original;
   let warmTry = 1;
   if (draft.locked == null && !tpl) draft.locked = true; // bewerken = standaard vastzetten
+  const prepareWarm = (s) => {
+    s.warmup = s.warmup || { mobility: [], cable: [] };
+    s.warmup.mobility = s.warmup.mobility || [];
+    s.warmup.cable = s.warmup.cable || [];
+    s.cooldown = s.cooldown || [];
+    for (const x of s.warmup.mobility) ensureWarmItem(x, 'mobility');
+    for (const x of s.warmup.cable) ensureWarmItem(x, 'cable');
+    for (const x of s.cooldown) ensureWarmItem(x, x.weighted ? 'cable' : 'cool');
+  };
+  prepareWarm(draft); prepareWarm(original);
   const undo = [];
-  let changes = 0, open = 0, selMuscle = null;
+  let changes = 0, selMuscle = null;
+  let openRef = { list: 'ex', kind: '', i: 0 };
 
   if (!dlg) { dlg = document.createElement('dialog'); dlg.className = 'editor-dlg'; document.body.appendChild(dlg); }
 
   const snapshot = () => { undo.push(JSON.stringify(draft)); if (undo.length > 50) undo.shift(); changes++; };
-  const exAt = (i) => draft.exercises[i];
 
   // ---------- rechterkolom: figuur, kerncijfers, week ----------
   function sidePanel() {
@@ -134,81 +141,110 @@ export function openEditor(key, ctx) {
       ${warns.length ? `<div class="ed-warns">${warns.map((w) => `<div>• ${esc(w)}</div>`).join('')}</div>` : ''}`;
   }
 
-  // ---------- warming-up en cooldown ----------
+  // ---------- warming-up, oefeningen en cooldown: dezelfde kaart ----------
+  const isOpen = (spec, i) => openRef.list === spec.list && (openRef.kind || '') === (spec.kind || '') && openRef.i === i;
+  const attr = (spec, i, extra = '') => `data-list="${spec.list}" data-kind="${spec.kind || ''}" data-i="${i}"${extra}`;
+  function warmView() {
+    const rows = warmRows(draft.warmup);
+    return { rows, items: rows.map((r) => r.x) };
+  }
+  function commitWarm(rows) {
+    const mobility = [], cable = [];
+    rows.forEach((r, n) => { r.x.seq = n; (r.kind === 'cable' ? cable : mobility).push(r.x); });
+    draft.warmup.mobility = mobility;
+    draft.warmup.cable = cable;
+  }
+  function moveRows(rows, i, d) {
+    const j = i + d;
+    if (j < 0 || j >= rows.length) return i;
+    const e = rows[i].x, other = rows[j].x;
+    if (other.group && other.group !== e.group) {
+      let k = j;
+      while (rows[k + d]?.x.group === other.group) k += d;
+      const [row] = rows.splice(i, 1);
+      rows.splice(k, 0, row);
+      return k;
+    }
+    [rows[i], rows[j]] = [rows[j], rows[i]];
+    return j;
+  }
   function warmBlock() {
-    const items = [...(draft.warmup?.mobility || []).map((x, i) => ['mobility', i, x]), ...(draft.warmup?.cable || []).map((x, i) => ['cable', i, x])];
+    const { rows, items } = warmView();
     const min = items.length ? 6 : 0;
+    const specAt = (i) => ({ list: 'warm', kind: rows[i].kind, items, timed: isTimedItem(items[i], rows[i].kind) });
     return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.warmup')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min })}</span></div>
       <div class="row gap">${draft.outdoor ? '' : `<button type="button" class="btn ghost small" data-ed="regen-warm" title="${esc(t('ed.regenHint'))}">${t('ed.regen')}</button>`}${!items.length && (original.warmup?.mobility?.length || original.warmup?.cable?.length) ? `<button type="button" class="btn ghost small" data-ed="restore-warm">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-warm">${t('ed.add')}</button></div></div>
-      ${items.length ? `<div class="ed-wc">${items.map(([kind, i, x]) => `<div class="ed-wci"><span>${esc(x.title)}${kind === 'mobility' && sideOf(x.dose) ? ` <span class="muted small">${esc(doseText(sideOf(x.dose)))}</span>` : ''}</span>
-        ${kind === 'cable' ? `<label>${t('ed.reps')}<input type="number" min="1" max="30" value="${x.reps}" data-ed="wc" data-kind="cable" data-i="${i}" data-f="reps"></label><label>${t('ed.kg')}<input type="number" min="0" step="0.5" value="${x.weight}" data-ed="wc" data-kind="cable" data-i="${i}" data-f="weight"></label>`
-        : `<label>${t('ed.secs')}<input type="number" min="5" max="180" step="5" value="${secsOf(x.dose)}" data-ed="wc" data-kind="mobility" data-i="${i}" data-f="secs"></label>`}
-        <button type="button" class="ed-x" aria-label="${t('ed.remove')}" data-ed="wc-del" data-kind="${kind}" data-i="${i}">×</button></div>`).join('')}</div>` : `<div class="muted small">${t('ed.empty')}</div>`}
+      ${items.length ? groupedCards(items, specAt) : `<div class="muted small">${t('ed.empty')}</div>`}
     </section>`;
   }
   function coolBlock() {
     const items = draft.cooldown || [];
-    return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.cooldown')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min: items.length ? 4 : 0 })}</span></div>
+    const min = items.length ? 4 : 0;
+    const specAt = (i) => ({ list: 'cool', kind: items[i].weighted ? 'cable' : 'cool', items, timed: isTimedItem(items[i], items[i].weighted ? 'cable' : 'cool') });
+    return `<section class="card ed-block"><div class="row between wrap gap"><div><b>${t('ed.cooldown')}</b> <span class="muted small">${t('ed.blockSum', { n: items.length, min })}</span></div>
       <div class="row gap">${draft.outdoor ? '' : `<button type="button" class="btn ghost small" data-ed="regen-cool" title="${esc(t('ed.regenHint'))}">${t('ed.regen')}</button>`}${!items.length && original.cooldown?.length ? `<button type="button" class="btn ghost small" data-ed="restore-cool">${t('ed.restoreBlock')}</button>` : ''}<button type="button" class="btn ghost small" data-ed="add-cool">${t('ed.add')}</button></div></div>
-      ${items.length ? `<div class="ed-wc">${items.map((x, i) => `<div class="ed-wci"><span>${esc(x.title)} <span class="muted small">${esc(doseText(x.dose || '').replace(/^\d+\s*s\s*/, ''))}</span></span>
-        <label>${t('ed.secs')}<input type="number" min="5" max="180" step="5" value="${secsOf(x.dose)}" data-ed="cool" data-i="${i}"></label>
-        <button type="button" class="ed-x" aria-label="${t('ed.remove')}" data-ed="cool-del" data-i="${i}">×</button></div>`).join('')}</div>` : `<div class="muted small">${t('ed.empty')}</div>`}
+      ${items.length ? groupedCards(items, specAt) : `<div class="muted small">${t('ed.empty')}</div>`}
     </section>`;
   }
 
-  // ---------- oefeningen ----------
-  function exCard(e, i) {
-    const n = draft.exercises.length;
+  function exCard(e, i, spec) {
+    const items = spec.items, n = items.length, timed = !!spec.timed, opened = isOpen(spec, i);
     const sec = Object.entries(e.muscles || {}).filter(([, w]) => w < 1).map(([k]) => MUSCLE_LABELS[k] || k);
     const prim = Object.entries(e.muscles || {}).filter(([, w]) => w >= 1).map(([k]) => MUSCLE_LABELS[k] || k).join(', ') || e.muscle || '';
+    const side = timed ? doseText(sideOf(e.dose)) : '';
     const hl = selMuscle && e.muscles?.[selMuscle] ? ' hl' : '';
+    const mark = attr(spec, i);
     const head = `<div class="ed-exh">
-        <button type="button" class="ed-title" data-ed="open" data-i="${i}" aria-expanded="${open === i}"><b>${e.group ? `${e.group}${draft.exercises.slice(0, i + 1).filter((x) => x.group === e.group).length} · ` : `${i + 1} · `}${esc(e.title)}</b>
-          <span class="muted small">${esc(prim)}${sec.length ? ' · ' + esc(t('ed.secondary', { list: sec.join(', ') })) : ''}${e.type ? ' · ' + t(e.type === 'compound' ? 'ed.compound' : 'ed.isolation') : ''}${e.fixed ? ` · <span class="badge">${t('ed.fixed')}</span>` : ''}</span></button>
+        <button type="button" class="ed-title" data-ed="open" ${mark} aria-expanded="${opened}"><b>${e.group ? `${e.group}${items.slice(0, i + 1).filter((x) => x.group === e.group).length} · ` : `${i + 1} · `}${esc(e.title)}</b>
+          <span class="muted small">${esc(prim || side)}${sec.length ? ' · ' + esc(t('ed.secondary', { list: sec.join(', ') })) : ''}${e.type ? ' · ' + t(e.type === 'compound' ? 'ed.compound' : 'ed.isolation') : ''}${e.fixed ? ` · <span class="badge">${t('ed.fixed')}</span>` : ''}</span></button>
         <div class="ed-acts">
-          <button type="button" class="btn ghost small" data-ed="move" data-i="${i}" data-d="-1" aria-label="${t('ed.up')}" ${i === 0 ? 'disabled' : ''}>↑</button>
-          <button type="button" class="btn ghost small" data-ed="move" data-i="${i}" data-d="1" aria-label="${t('ed.down')}" ${i === n - 1 ? 'disabled' : ''}>↓</button>
-          ${i < n - 1 && !(e.group && draft.exercises[i + 1].group === e.group) ? `<button type="button" class="btn ghost small" data-ed="ss-link" data-i="${i}" title="${t('ss.linkHint')}">${t('ss.link')}</button>` : ''}
-          <button type="button" class="btn ghost small" data-ed="swap" data-i="${i}">${t('ed.swap')}</button>
-          <button type="button" class="btn ghost small danger-text" data-ed="ex-del" data-i="${i}">${t('ed.remove')}</button>
+          <button type="button" class="btn ghost small" data-ed="move" ${mark} data-d="-1" aria-label="${t('ed.up')}" ${i === 0 ? 'disabled' : ''}>↑</button>
+          <button type="button" class="btn ghost small" data-ed="move" ${mark} data-d="1" aria-label="${t('ed.down')}" ${i === n - 1 ? 'disabled' : ''}>↓</button>
+          ${i < n - 1 && !(e.group && items[i + 1].group === e.group) ? `<button type="button" class="btn ghost small" data-ed="ss-link" ${mark} title="${t('ss.linkHint')}">${t('ss.link')}</button>` : ''}
+          <button type="button" class="btn ghost small" data-ed="swap" ${mark}>${t('ed.swap')}</button>
+          <button type="button" class="btn ghost small danger-text" data-ed="ex-del" ${mark}>${t('ed.remove')}</button>
         </div></div>`;
-    if (open !== i) return `<div class="card ed-ex${hl}" data-i="${i}">${head}<div class="ed-sum muted">${e.sets.length} × ${e.sets[0]?.reps} · ${nlNum(e.sets[0]?.weight)} kg · ${e.sets[0]?.rest} s${e.sets.some((x) => (x.mode || 1) !== 1) ? ` · ${t('ed.mode')}: ${[...new Set(e.sets.map((x) => t('ed.mode' + (x.mode || 1))))].join('/')}` : ''}</div></div>`;
-    const ramp = e.rampUp ? half((e.sets[0]?.weight || 0) / 2) : null;
-    return `<div class="card ed-ex open${hl}" data-i="${i}">${head}
+    const s0 = e.sets[0] || { reps: timed ? 30 : 10, weight: 0, rest: 60, mode: 1 };
+    const sum = timed
+      ? `${e.sets.length} × ${s0.reps} s · ${s0.rest} s`
+      : `${e.sets.length} × ${s0.reps} · ${nlNum(s0.weight)} kg · ${s0.rest} s${e.sets.some((x) => (x.mode || 1) !== 1) ? ` · ${t('ed.mode')}: ${[...new Set(e.sets.map((x) => t('ed.mode' + (x.mode || 1))))].join('/')}` : ''}`;
+    if (!opened) return `<div class="card ed-ex${hl}">${head}<div class="ed-sum muted">${sum}</div></div>`;
+    const ramp = !timed && e.rampUp ? half((s0.weight || 0) / 2) : null;
+    return `<div class="card ed-ex open${hl}">${head}
       <div class="ed-advice small"><span><b class="up">${t('ed.advice')}</b> ${esc(e.note || '—')}</span><span class="muted">${e.basis ? esc(t('ed.last', { basis: e.basis })) : t('ed.noHistory')}</span>
-        <label class="inline-check ed-prog"><input type="checkbox" data-ed="prog" data-i="${i}" ${e.fixed ? '' : 'checked'}> ${t('ed.progression')}</label></div>
-      <div class="ed-sets" role="table">
-        <div class="ed-sr head" role="row"><span>${t('ed.set')}</span><span>${t('ed.reps')}</span><span>${t('ed.kg')}</span><span>${t('ed.rest')}</span><span>${t('ed.mode')}</span><span></span></div>
+        ${timed ? '' : `<label class="inline-check ed-prog"><input type="checkbox" data-ed="prog" ${mark} ${e.fixed ? '' : 'checked'}> ${t('ed.progression')}</label>`}</div>
+      <div class="ed-sets${timed ? ' timed' : ''}" role="table">
+        <div class="ed-sr head" role="row"><span>${t('ed.set')}</span><span>${timed ? t('ed.secs') : t('ed.reps')}</span>${timed ? '' : `<span>${t('ed.kg')}</span>`}<span>${t('ed.rest')}</span><span>${t('ed.mode')}</span><span></span></div>
         ${ramp != null ? `<div class="ed-sr ramp" role="row"><span>${t('ed.warmSet')}</span><span>8</span><span>${nlNum(ramp)}</span><span>45</span><span>${t('ed.mode1')}</span><span></span></div>` : ''}
         ${e.sets.map((x, j) => `<div class="ed-sr" role="row"><span>${j + 1}</span>
-          <input type="number" min="1" max="30" value="${x.reps}" aria-label="${t('ed.reps')} ${j + 1}" data-ed="set" data-i="${i}" data-j="${j}" data-f="reps">
-          <input type="number" min="0.5" step="0.5" value="${x.weight}" aria-label="${t('ed.kg')} ${j + 1}" data-ed="set" data-i="${i}" data-j="${j}" data-f="weight">
-          <input type="number" min="10" max="300" step="5" value="${x.rest}" aria-label="${t('ed.rest')} ${j + 1}" data-ed="set" data-i="${i}" data-j="${j}" data-f="rest">
-          <select aria-label="${t('ed.mode')} ${j + 1}" data-ed="set" data-i="${i}" data-j="${j}" data-f="mode" class="${(x.mode || 1) !== 1 ? 'alt' : ''}">${MODES.map((m) => `<option value="${m}" ${(x.mode || 1) === m ? 'selected' : ''}>${t('ed.mode' + m)}</option>`).join('')}</select>
-          <button type="button" class="ed-x" aria-label="${t('ed.removeSet')} ${j + 1}" data-ed="set-del" data-i="${i}" data-j="${j}">×</button></div>`).join('')}
+          <input type="number" min="${timed ? 5 : 1}" max="${timed ? 180 : 30}" step="${timed ? 5 : 1}" value="${x.reps}" aria-label="${timed ? t('ed.secs') : t('ed.reps')} ${j + 1}" data-ed="set" ${mark} data-j="${j}" data-f="reps">
+          ${timed ? '' : `<input type="number" min="${spec.list === 'ex' ? 0.5 : 0}" step="0.5" value="${x.weight}" aria-label="${t('ed.kg')} ${j + 1}" data-ed="set" ${mark} data-j="${j}" data-f="weight">`}
+          <input type="number" min="${spec.list === 'ex' ? 10 : 5}" max="300" step="5" value="${x.rest}" aria-label="${t('ed.rest')} ${j + 1}" data-ed="set" ${mark} data-j="${j}" data-f="rest">
+          <select aria-label="${t('ed.mode')} ${j + 1}" data-ed="set" ${mark} data-j="${j}" data-f="mode" class="${(x.mode || 1) !== 1 ? 'alt' : ''}">${MODES.map((m) => `<option value="${m}" ${(x.mode || 1) === m ? 'selected' : ''}>${t('ed.mode' + m)}</option>`).join('')}</select>
+          <button type="button" class="ed-x" aria-label="${t('ed.removeSet')} ${j + 1}" data-ed="set-del" ${mark} data-j="${j}">×</button></div>`).join('')}
       </div>
       <div class="ed-quick">
-        <button type="button" class="chip" data-ed="set-add" data-i="${i}">${t('ed.addSet')}</button>
-        <button type="button" class="chip" data-ed="equal" data-i="${i}">${t('ed.allEqual')}</button>
-        <button type="button" class="chip" data-ed="ramp" data-i="${i}">${e.rampUp ? t('ed.rampOff') : t('ed.rampOn')}</button>
-        <button type="button" class="chip" data-ed="pyramid" data-i="${i}">${t('ed.pyramid')}</button>
+        <button type="button" class="chip" data-ed="set-add" ${mark}>${t('ed.addSet')}</button>
+        <button type="button" class="chip" data-ed="equal" ${mark}>${t('ed.allEqual')}</button>
+        ${timed ? '' : `<button type="button" class="chip" data-ed="ramp" ${mark}>${e.rampUp ? t('ed.rampOff') : t('ed.rampOn')}</button>
+        <button type="button" class="chip" data-ed="pyramid" ${mark}>${t('ed.pyramid')}</button>`}
       </div></div>`;
   }
 
   // oefeningen tekenen, supersets in een eigen kader
-  function groupedCards() {
-    const exs = draft.exercises; let html = '';
-    for (let i = 0; i < exs.length; i++) {
-      const e = exs[i];
-      if (!e.group) { html += exCard(e, i); continue; }
-      const start = i; let end = i; while (exs[end + 1]?.group === e.group) end++;
-      const grp = exs.slice(start, end + 1);
+  function groupedCards(items, specAt) {
+    let html = '';
+    for (let i = 0; i < items.length; i++) {
+      const e = items[i], spec = specAt(i);
+      if (!e.group) { html += exCard(e, i, spec); continue; }
+      const start = i; let end = i; while (items[end + 1]?.group === e.group) end++;
+      const grp = items.slice(start, end + 1);
       const rounds = Math.max(...grp.map((g) => g.sets.length));
-      const rest = exs[end].sets[0]?.rest ?? 60;
+      const rest = items[end].sets[0]?.rest ?? 60;
       html += `<div class="ed-ss"><div class="row between wrap gap"><b class="ed-ss-h">${esc(t('ss.head', { g: e.group, n: rounds, rest }))}</b>
-        <button type="button" class="btn ghost small" data-ed="ss-off" data-g="${e.group}">${t('ss.off')}</button></div>
+        <button type="button" class="btn ghost small" data-ed="ss-off" ${attr(spec, i)} data-g="${e.group}">${t('ss.off')}</button></div>
         <div class="muted small">${t('ss.hint')}</div>
-        ${grp.map((g, j) => exCard(g, start + j)).join('')}</div>`;
+        ${grp.map((g, j) => exCard(g, start + j, specAt(start + j))).join('')}</div>`;
       i = end;
     }
     return html;
@@ -237,7 +273,7 @@ export function openEditor(key, ctx) {
           ${warmBlock()}
           <div class="row between wrap gap ed-exhead"><div><b>${t('ed.exercises')}</b> <span class="muted small">${t('ed.exSum', { n: draft.exercises.length, sets })}</span></div>
             <button type="button" class="btn accent small" data-ed="add">${t('ed.addExercise')}</button></div>
-          ${groupedCards()}
+          ${groupedCards(draft.exercises, () => ({ list: 'ex', kind: '', items: draft.exercises, timed: false }))}
           ${coolBlock()}
         </div>
         <aside class="ed-side">${sidePanel()}</aside>
@@ -250,39 +286,81 @@ export function openEditor(key, ctx) {
   }
 
   const close = () => { dlg.close(); };
+  const targetOf = (b) => {
+    const list = b.dataset.list || 'ex';
+    const i = Number(b.dataset.i);
+    if (list === 'cool') {
+      const item = draft.cooldown?.[i];
+      return { list, i, kind: item?.weighted ? 'cable' : 'cool', item, timed: isTimedItem(item, item?.weighted ? 'cable' : 'cool') };
+    }
+    if (list === 'warm') {
+      const row = warmRows(draft.warmup)[i];
+      return { list, i, kind: row?.kind || '', item: row?.x, timed: isTimedItem(row?.x, row?.kind) };
+    }
+    return { list: 'ex', i, kind: '', item: draft.exercises?.[i], timed: false };
+  };
+  const touch = (item, kind, list) => { if (list !== 'ex' && item) syncWarmItem(item, kind); };
+  const listOf = (t) => (t.list === 'warm' ? warmRows(draft.warmup).map((r) => r.x) : t.list === 'cool' ? draft.cooldown : draft.exercises);
 
   // ---------- klikken ----------
   dlg.onclick = async (ev) => {
     const path = ev.target.closest('path[data-m]');
     if (path && dlg.contains(path)) { selMuscle = selMuscle === path.dataset.m ? null : path.dataset.m; render(); return; }
     const b = ev.target.closest('[data-ed]'); if (!b || b.tagName === 'INPUT' || b.tagName === 'SELECT') return;
-    const a = b.dataset.ed, i = Number(b.dataset.i), e = exAt(i);
+    const a = b.dataset.ed, t = targetOf(b), e = t.item, i = t.i;
     switch (a) {
-      case 'open': open = open === i ? -1 : i; break;
+      case 'open': openRef = isOpen({ list: t.list, kind: t.kind }, i) ? { list: '', kind: '', i: -1 } : { list: t.list, kind: t.kind || '', i }; break;
       case 'muscle': selMuscle = selMuscle === b.dataset.m ? null : b.dataset.m; break;
       case 'lock': snapshot(); draft.locked = !draft.locked; break;
       case 'move': {
-        const d = Number(b.dataset.d), j = i + d; if (j < 0 || j >= draft.exercises.length) return; snapshot();
-        // binnen een superset verplaatsen blijft binnen de groep; een losse oefening springt over een hele superset heen
-        const other = draft.exercises[j];
-        if (other.group && other.group !== e.group) { let k = j; while (draft.exercises[k + d]?.group === other.group) k += d; draft.exercises.splice(i, 1); draft.exercises.splice(k, 0, e); open = k; }
-        else { [draft.exercises[i], draft.exercises[j]] = [draft.exercises[j], draft.exercises[i]]; if (open === i) open = j; else if (open === j) open = i; }
-        normalizeGroups(draft.exercises);
+        const d = Number(b.dataset.d);
+        if (t.list === 'warm') {
+          const rows = warmRows(draft.warmup);
+          const dest = i + d;
+          if (dest < 0 || dest >= rows.length) return;
+          snapshot();
+          const landed = moveRows(rows, i, d);
+          normalizeGroups(rows.map((r) => r.x));
+          commitWarm(rows);
+          if (openRef.list === 'warm') { if (openRef.i === i) openRef.i = landed; else if (openRef.i === dest) openRef.i = i; }
+          break;
+        }
+        const arr = t.list === 'cool' ? draft.cooldown : draft.exercises;
+        const j = i + d; if (j < 0 || j >= arr.length) return; snapshot();
+        const other = arr[j];
+        let next = j;
+        if (other.group && other.group !== e.group) { let k = j; while (arr[k + d]?.group === other.group) k += d; arr.splice(i, 1); arr.splice(k, 0, e); next = k; }
+        else { [arr[i], arr[j]] = [arr[j], arr[i]]; if (openRef.list === t.list && openRef.i === i) openRef.i = j; else if (openRef.list === t.list && openRef.i === j) openRef.i = i; }
+        if (next !== j && openRef.list === t.list && openRef.i === i) openRef.i = next;
+        normalizeGroups(arr);
         break;
       }
-      case 'ex-del': snapshot(); draft.exercises.splice(i, 1); normalizeGroups(draft.exercises); if (open >= draft.exercises.length) open = draft.exercises.length - 1; break;
-      case 'set-add': snapshot(); e.sets.push({ ...e.sets[e.sets.length - 1] }); break;
-      case 'set-del': if (e.sets.length <= 1) { ctx.toast(t('ed.lastRemoved'), true); return; } snapshot(); e.sets.splice(Number(b.dataset.j), 1); break;
-      case 'equal': snapshot(); e.sets = e.sets.map(() => ({ ...e.sets[0] })); break;
-      case 'ramp': snapshot(); e.rampUp = !e.rampUp; break;
+      case 'ex-del': {
+        snapshot();
+        if (t.list === 'warm') {
+          const rows = warmRows(draft.warmup);
+          rows.splice(i, 1);
+          normalizeGroups(rows.map((r) => r.x));
+          commitWarm(rows);
+        } else {
+          const arr = t.list === 'cool' ? draft.cooldown : draft.exercises;
+          arr.splice(i, 1);
+          normalizeGroups(arr);
+          if (openRef.list === t.list && openRef.i >= arr.length) openRef.i = arr.length - 1;
+        }
+        break;
+      }
+      case 'set-add': if (!e?.sets?.length) return; snapshot(); e.sets.push({ ...e.sets[e.sets.length - 1] }); touch(e, t.kind, t.list); break;
+      case 'set-del': if (!e?.sets || e.sets.length <= 1) { ctx.toast(t('ed.lastRemoved'), true); return; } snapshot(); e.sets.splice(Number(b.dataset.j), 1); touch(e, t.kind, t.list); break;
+      case 'equal': snapshot(); e.sets = e.sets.map(() => ({ ...e.sets[0] })); touch(e, t.kind, t.list); break;
+      case 'ramp': if (t.timed) return; snapshot(); e.rampUp = !e.rampUp; break;
       case 'pyramid': {
-        // gewicht per set omhoog (ca. 7,5%), herhalingen omlaag (−2), vanaf de eerste set
+        if (t.timed) return;
         snapshot(); const s0 = e.sets[0];
         e.sets = e.sets.map((x, j) => ({ ...x, reps: Math.max(1, s0.reps - 2 * j), weight: half(s0.weight * (1 + 0.075 * j)) }));
+        touch(e, t.kind, t.list);
         break;
       }
-      case 'wc-del': snapshot(); draft.warmup[b.dataset.kind].splice(i, 1); break;
-      case 'cool-del': snapshot(); draft.cooldown.splice(i, 1); break;
       case 'restore-warm': snapshot(); draft.warmup = clone(original.warmup); break;
       case 'restore-cool': snapshot(); draft.cooldown = clone(original.cooldown); break;
       case 'regen-warm': case 'regen-cool': {
@@ -293,6 +371,7 @@ export function openEditor(key, ctx) {
           snapshot();
           if (cool) draft.cooldown = r.cooldown || [];
           else draft.warmup = r.warmup || { mobility: [], cable: [] };
+          prepareWarm(draft);
         } catch (err) { ctx.toast(err.message, true); }
         break;
       }
@@ -302,29 +381,74 @@ export function openEditor(key, ctx) {
         openPicker(start, ctx, { muscleKey: selMuscle, inSession: ids }, (items, block) => {
           if (!items.length) return;
           snapshot();
-          if (block === 'ex') { draft.exercises.push(...items); open = draft.exercises.length - items.length; }
-          else if (block === 'warm') { draft.warmup = draft.warmup || { mobility: [], cable: [] }; for (const it of items) { const k = it.kind === 'cable' ? 'cable' : 'mobility'; delete it.kind; draft.warmup[k].push(it); } }
-          else { draft.cooldown = draft.cooldown || []; draft.cooldown.push(...items); }
+          if (block === 'ex') { draft.exercises.push(...items); openRef = { list: 'ex', kind: '', i: draft.exercises.length - items.length }; }
+          else if (block === 'warm') {
+            draft.warmup = draft.warmup || { mobility: [], cable: [] };
+            let seq = warmRows(draft.warmup).reduce((m, r) => Math.max(m, +r.x.seq || 0), -1);
+            for (const it of items) {
+              const kind = it.kind === 'cable' ? 'cable' : 'mobility';
+              delete it.kind;
+              ensureWarmItem(it, kind);
+              it.seq = ++seq;
+              draft.warmup[kind].push(it);
+            }
+            const added = warmRows(draft.warmup);
+            openRef = { list: 'warm', kind: added[added.length - 1].kind, i: added.length - 1 };
+          } else {
+            draft.cooldown = draft.cooldown || [];
+            for (const it of items) ensureWarmItem(it, it.weighted ? 'cable' : 'cool');
+            draft.cooldown.push(...items);
+            const at = draft.cooldown.length - items.length;
+            openRef = { list: 'cool', kind: draft.cooldown[at].weighted ? 'cable' : 'cool', i: at };
+          }
           render();
         });
         return;
       }
       case 'ss-link': {
-        // superset met de volgende oefening (sluit aan bij een bestaande superset)
+        const arr = listOf(t);
+        const next = arr[i + 1]; if (!next) return;
         snapshot();
-        const next = draft.exercises[i + 1];
         const g = e.group || next.group || 'Z' + Date.now();
-        if (next.group && next.group !== g) { const old = next.group; for (const x of draft.exercises) if (x.group === old) x.group = g; }
+        if (next.group && next.group !== g) { const old = next.group; for (const x of arr) if (x.group === old) x.group = g; }
         e.group = g; next.group = g;
-        normalizeGroups(draft.exercises);
+        normalizeGroups(arr);
+        if (t.list === 'warm') commitWarm(warmRows(draft.warmup));
         break;
       }
-      case 'ss-off': snapshot(); for (const x of draft.exercises) if (x.group === b.dataset.g) delete x.group; normalizeGroups(draft.exercises); break;
+      case 'ss-off': {
+        snapshot();
+        const which = b.dataset.list || 'ex';
+        const arr = which === 'warm' ? warmRows(draft.warmup).map((r) => r.x) : which === 'cool' ? draft.cooldown : draft.exercises;
+        for (const x of arr) if (x.group === b.dataset.g) delete x.group;
+        normalizeGroups(arr);
+        break;
+      }
       case 'swap': {
+        const block = t.list === 'warm' ? 'warm' : t.list === 'cool' ? 'cool' : 'ex';
         const k = Object.entries(e.muscles || {}).find(([, w]) => w >= 1)?.[0] || null;
-        openPicker('ex', ctx, { muscleKey: k, inSession: draft.exercises.map((x) => x.id), replace: e.title }, (items) => {
+        const ids = block === 'ex' ? draft.exercises.map((x) => x.id) : [...draft.exercises, ...(draft.warmup?.mobility || []), ...(draft.warmup?.cable || []), ...(draft.cooldown || [])].map((x) => x.id);
+        openPicker(block, ctx, { muscleKey: k, inSession: ids, replace: e.title }, (items) => {
           if (!items.length) return;
-          snapshot(); draft.exercises[i] = e.group ? { ...items[0], group: e.group } : items[0]; open = i; render();
+          snapshot();
+          const neu = items[0];
+          if (block === 'ex') draft.exercises[i] = e.group ? { ...neu, group: e.group } : neu;
+          else if (block === 'cool') {
+            ensureWarmItem(neu, neu.weighted ? 'cable' : 'cool');
+            if (e.group) neu.group = e.group;
+            draft.cooldown[i] = neu;
+          } else {
+            const rows = warmRows(draft.warmup);
+            const kind = neu.kind === 'cable' ? 'cable' : 'mobility';
+            delete neu.kind;
+            ensureWarmItem(neu, kind);
+            neu.seq = rows[i].x.seq;
+            if (rows[i].x.group) neu.group = rows[i].x.group;
+            rows[i] = { kind, x: neu };
+            commitWarm(rows);
+          }
+          openRef = { list: t.list, kind: t.kind || '', i };
+          render();
         });
         return;
       }
@@ -348,32 +472,19 @@ export function openEditor(key, ctx) {
   // ---------- typen ----------
   dlg.onchange = (ev) => {
     const el = ev.target; const a = el.dataset?.ed; if (!a) return;
-    const i = Number(el.dataset.i), e = exAt(i);
+    const t = targetOf(el);
     snapshot();
     if (a === 'name') draft.name = el.value.trim().slice(0, 40) || draft.name;
-    else if (a === 'prog') e.fixed = !el.checked;
-    else if (a === 'set') {
-      const x = e.sets[Number(el.dataset.j)], f = el.dataset.f;
-      if (f === 'reps') x.reps = Math.min(30, Math.max(1, Math.round(num(el.value, x.reps))));
-      if (f === 'weight') x.weight = Math.max(0.5, half(num(el.value, x.weight)));
-      if (f === 'rest') x.rest = Math.min(300, Math.max(10, Math.round(num(el.value, x.rest))));
+    else if (a === 'prog' && t.item && !t.timed) t.item.fixed = !el.checked;
+    else if (a === 'set' && t.item) {
+      const x = t.item.sets[Number(el.dataset.j)], f = el.dataset.f;
+      if (f === 'reps') x.reps = t.timed ? Math.min(180, Math.max(5, Math.round(num(el.value, x.reps)))) : Math.min(30, Math.max(1, Math.round(num(el.value, x.reps))));
+      if (f === 'weight' && !t.timed) x.weight = t.list === 'ex' ? Math.max(0.5, half(num(el.value, x.weight))) : Math.max(0, half(num(el.value, x.weight)));
+      if (f === 'rest') x.rest = Math.min(300, Math.max(t.list === 'ex' ? 10 : 5, Math.round(num(el.value, x.rest))));
       if (f === 'mode') x.mode = Number(el.value) || 1;
-    } else if (a === 'wc') {
-      const x = draft.warmup[el.dataset.kind][i];
-      if (el.dataset.kind === 'mobility') {
-        const s = Math.min(180, Math.max(5, Math.round(num(el.value, 30))));
-        const side = sideOf(x.dose);
-        x.dose = side ? `${s} s ${side}` : `${s} s`;
-        x.reps = s;
-      } else {
-        if (el.dataset.f === 'reps') x.reps = Math.min(60, Math.max(1, Math.round(num(el.value, x.reps))));
-        if (el.dataset.f === 'weight') x.weight = half(num(el.value, x.weight));
-      }
-    } else if (a === 'cool') {
-      const x = draft.cooldown[i], s = Math.min(180, Math.max(5, Math.round(num(el.value, 30))));
-      x.dose = /\d+\s*s\b/i.test(x.dose || '') ? x.dose.replace(/\d+\s*s\b/i, `${s} s`) : `${s} s`;
+      if (t.timed) x.weight = 0;
+      touch(t.item, t.kind, t.list);
     }
-    // wijziging in een veld: alleen kop en rechterkolom bijwerken
     if (a === 'set' && el.dataset.f === 'mode') render(); else { refreshSide(); const c = dlg.querySelector('.ed-name .muted'); if (c) c.textContent = changes === 1 ? t('ed.changes1') : t('ed.changes', { n: changes }); dlg.querySelector('[data-ed=undo]')?.removeAttribute('disabled'); }
   };
 
@@ -637,10 +748,10 @@ export async function openPicker(block, ctx, { muscleKey = null, inSession = [],
       const out = [];
       try {
         for (const id of st.sel) {
-          const r = await ctx.api('POST', '/api/exercise/template', { id, block: replace ? 'ex' : st.block });
+          const r = await ctx.api('POST', '/api/exercise/template', { id, block: st.block });
           out.push(r.exercise || r.item);
         }
-        closeDetail(); pdlg.close(); onAdd(out, replace ? 'ex' : st.block);
+        closeDetail(); pdlg.close(); onAdd(out, st.block);
       } catch (err) { ctx.toast(err.message, true); st.busy = false; render(); }
       return;
     } else return;

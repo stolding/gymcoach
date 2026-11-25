@@ -967,6 +967,7 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .ed-prog { margin-left: auto; }
 .ed-sets { display: flex; flex-direction: column; gap: .35rem; }
 .ed-sr { display: grid; grid-template-columns: 3.4rem repeat(3, minmax(0, 1fr)) minmax(0, 1.4fr) 2rem; gap: .4rem; align-items: center; font-size: .88rem; }
+.ed-sets.timed .ed-sr { grid-template-columns: 3.4rem repeat(2, minmax(0, 1fr)) minmax(0, 1.4fr) 2rem; }
 .ed-sr.head { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .ed-sr.ramp { color: var(--muted); }
 .ed-sr input, .ed-sr select { width: 100%; min-width: 0; margin: 0; }
@@ -998,6 +999,9 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
   .ed-sr { grid-template-columns: 2.4rem repeat(3, minmax(0, 1fr)) 2rem; }
   .ed-sr > select, .ed-sr.head > span:nth-child(5) { grid-column: 2 / span 3; }
   .ed-sr.head > span:nth-child(5) { display: none; }
+  .ed-sets.timed .ed-sr { grid-template-columns: 2.4rem repeat(2, minmax(0, 1fr)) 2rem; }
+  .ed-sets.timed .ed-sr > select, .ed-sets.timed .ed-sr.head > span:nth-child(4) { grid-column: 2 / span 2; }
+  .ed-sets.timed .ed-sr.head > span:nth-child(4) { display: none; }
   .ed-acts .btn { padding: .35rem .5rem; }
 }
 

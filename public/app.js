@@ -2752,7 +2752,7 @@ function woTiles(d) {
 function rateWord(n) { return n <= 2 ? t('rate.easy') : n === 3 ? t('rate.mid') : n >= 4 ? t('rate.hard') : ''; }
 function rateHtml(d, e) {
   if (!d?.id || !e?.key) return '';
-  return `<div class="rate" role="group" aria-label="${esc(t('rate.group', { name: e.name }))}">${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="rate-btn${e.rating === n ? ' on' : ''}" data-rate="${n}" data-wo="${esc(d.id)}" data-ex="${esc(e.key)}" aria-pressed="${e.rating === n ? 'true' : 'false'}" title="${esc(n <= 2 ? t('rate.easy') : n === 3 ? t('rate.mid') : t('rate.hard'))}">${n}</button>`).join('')}<span class="muted small" data-rate-word>${e.rating ? esc(rateWord(e.rating)) : ''}</span></div>`;
+  return `<div class="rate" role="group" aria-label="${esc(t('rate.group', { name: e.name }))}"><span class="rate-btns">${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="rate-btn${e.rating === n ? ' on' : ''}" data-rate="${n}" data-wo="${esc(d.id)}" data-ex="${esc(e.key)}" aria-pressed="${e.rating === n ? 'true' : 'false'}" title="${esc(n <= 2 ? t('rate.easy') : n === 3 ? t('rate.mid') : t('rate.hard'))}">${n}</button>`).join('')}</span><span class="rate-scale">${esc(t('rate.scale'))}</span></div>`;
 }
 // Trainingsrapport in de app: oefeningen, vergelijking, hartslag, tijd en spierkaart.
 function workoutHtml(d) {
@@ -2889,8 +2889,9 @@ async function openWorkouts(ids, acts = [], date = null) {
     });
     dlg.querySelectorAll('[data-rate]').forEach((b) => b.addEventListener('click', () => busy(b, async () => {
       const rating = Number(b.dataset.rate);
-      await api('POST', '/api/workout/rating', { id: b.dataset.wo, exercise: b.dataset.ex, rating });
-      const group = b.parentElement;
+      const r = await api('POST', '/api/workout/rating', { id: b.dataset.wo, exercise: b.dataset.ex, rating });
+      if (r.plan) { state.plan = r.plan; if (!pastWeek) renderPlan(); if ($('#tab-home')?.classList.contains('active')) renderHome(); }
+      const group = b.closest('.rate');
       group.querySelectorAll('[data-rate]').forEach((x) => {
         const on = Number(x.dataset.rate) === rating;
         x.classList.toggle('on', on);

@@ -1481,7 +1481,7 @@ export default {
   "rate.mid": "middels",
   "rate.hard": "tungt",
   "rate.group": "Vurdering av {name}",
-  "rate.scale": "1 lett · 3 middels · 5 tungt",
+  "rate.scale": "Innsats: 1 lett · 3 middels · 5 tungt",
   "eng.zelfdeGewichtNogEen": "Samme vekt én gang til",
   "eng.rustSBasisS": "Pause {rest} s (grunnlag {base} s): {a}",
   "eng.wandelenOfFietsenIn": "Gå eller sykle i rolig tempo (du skal fortsatt kunne snakke). Varighet etter hva dagene tillater; 30–60 minutter er ideelt.",

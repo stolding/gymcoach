@@ -1481,7 +1481,7 @@ export default {
   "rate.mid": "average",
   "rate.hard": "hard",
   "rate.group": "Rating for {name}",
-  "rate.scale": "1 easy · 3 average · 5 hard",
+  "rate.scale": "Effort: 1 easy · 3 average · 5 hard",
   "eng.zelfdeGewichtNogEen": "Same weight once more",
   "eng.rustSBasisS": "Rest {rest} s (base {base} s): {a}",
   "eng.wandelenOfFietsenIn": "Walk or cycle at an easy pace (you can still talk). Duration as your days allow; 30–60 minutes is ideal.",

@@ -1481,7 +1481,7 @@ export default {
   "rate.mid": "mittel",
   "rate.hard": "schwer",
   "rate.group": "Bewertung von {name}",
-  "rate.scale": "1 leicht · 3 mittel · 5 schwer",
+  "rate.scale": "Anstrengung: 1 leicht · 3 mittel · 5 schwer",
   "eng.zelfdeGewichtNogEen": "Gleiches Gewicht noch einmal",
   "eng.rustSBasisS": "Pause {rest} s (Basis {base} s): {a}",
   "eng.wandelenOfFietsenIn": "Gehe oder fahre Rad in ruhigem Tempo (du kannst dich noch unterhalten). Dauer, wie es deine Tage erlauben; 30–60 Minuten sind ideal.",

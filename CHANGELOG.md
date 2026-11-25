@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.41.3 — 25 november 2026
+- Voor de cijfers staat het woord inspanning: Inspanning: 1 eenvoudig, 3 gemiddeld, 5 zwaar.
+
 ## 2.41.2 — 25 november 2026
 - Bij de cijfers na een training staat op één regel wat ze betekenen: 1 eenvoudig, 3 gemiddeld, 5 zwaar.
 

@@ -157,7 +157,7 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
     if (top <= bot) continue;
     g += `<rect class="band ${b.cls}" x="${L}" width="${W - R - L}" y="${Y(top)}" height="${Y(bot) - Y(top)}"/>`;
   }
-  g += shadeRects(shades, X, Y);
+  g += shadeRects(shades, X, T, H - B);
   for (let i = 0; i <= 4; i++) {
     const v = lo + ((hi - lo) * i) / 4;
     g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${esc(fmtTick(v, dec, unit))}</text>`;
@@ -238,7 +238,7 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
     const zc = q0 ? (zoneColor ? zoneColor(q0.y) : BAND_COLORS[bandOf(bands, q0.y)]) : null;
     tip.classList.toggle('zoned', !!zc); if (zc) tip.style.setProperty('--zc', zc); else tip.style.removeProperty('--zc');
     const note = tipNote ? tipNote(best) : '';
-    tip.classList.toggle('wide', !!note);
+    tip.classList.toggle('kcal', !!note);
     tip.innerHTML = `<div class="tdate">${esc(fmtDate(best))}</div>${rows}${note}${tr.length && onPick ? '<div class="small muted">' + t('app.klikVoorDetails') + '</div>' : ''}`;
     tip.classList.remove('hidden');
     const px = (cx / W) * r.width, py = (topY / H) * r.height;
@@ -1814,15 +1814,9 @@ function spark(values, { w = 120, h = 32, cls = 'sp' } = {}) {
   const last = pts.split(' ').pop().split(',');
   return `<svg class="${cls}" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}"/><circle cx="${last[0]}" cy="${last[1]}" r="2.6"/></svg>`;
 }
-// Achtergrond van het tekort: het vlak tussen inname en onderhoud. Een klein verschil dat
-// toch ver van het doel af zit krijgt een strook van 6 px, anders zie je de kleur niet.
-function gapBox(yA, yB, cls) {
-  let top = Math.min(yA, yB), bot = Math.max(yA, yB), h = bot - top;
-  if (h < 6 && cls && cls !== 'ok') { const mid = (top + bot) / 2; top = mid - 3; h = 6; }
-  return { y: top, h: Math.max(h, 0.6) };
-}
-function shadeRects(shades, X, Y) {
-  const rows = (shades || []).filter((s) => s.x && Number.isFinite(s.y0) && Number.isFinite(s.y1));
+// Achtergrond van het tekort: de hele kolom van die dag, niet alleen het vlak tussen twee lijnen.
+function shadeRects(shades, X, top, bottom) {
+  const rows = (shades || []).filter((s) => s.x);
   rows.sort((a, b) => String(a.x).localeCompare(String(b.x)));
   let out = '';
   for (let i = 0; i < rows.length; i++) {
@@ -1833,8 +1827,7 @@ function shadeRects(shades, X, Y) {
     const next = i < rows.length - 1 ? X(rows[i + 1].x) : null;
     const halfL = prev == null ? (next == null ? 6 : (next - x) / 2) : (x - prev) / 2;
     const halfR = next == null ? (prev == null ? 6 : (x - prev) / 2) : (next - x) / 2;
-    const box = gapBox(Y(s.y0), Y(s.y1), s.cls);
-    out += `<rect class="kcal-gap ${s.cls}" x="${x - halfL}" y="${box.y}" width="${Math.max(1, halfL + halfR)}" height="${box.h}"/>`;
+    out += `<rect class="kcal-gap ${s.cls}" x="${x - halfL}" y="${top}" width="${Math.max(1, halfL + halfR)}" height="${Math.max(1, bottom - top)}"/>`;
   }
   return out;
 }
@@ -1883,8 +1876,7 @@ function goalSpark(rows) {
     const next = i < pts.length - 1 ? xAt(i + 1) : null;
     const halfL = prev == null ? (next == null ? 4 : (next - x) / 2) : (x - prev) / 2;
     const halfR = next == null ? (prev == null ? 4 : (x - prev) / 2) : (next - x) / 2;
-    const box = gapBox(yAt(row.intake), yAt(row.maintenance), row.tone);
-    shades += `<rect class="kcal-gap ${row.tone}" x="${x - halfL}" y="${box.y}" width="${Math.max(1, halfL + halfR)}" height="${box.h}"/>`;
+    shades += `<rect class="kcal-gap ${row.tone}" x="${x - halfL}" y="0" width="${Math.max(1, halfL + halfR)}" height="${h}"/>`;
   });
   const line = (key, cls) => {
     const p = pts.map((row, i) => (row[key] > 0 ? xy(row[key], i) : null)).filter(Boolean);
@@ -1901,7 +1893,7 @@ function bindIntakeSpark(host, rows) {
   if (!tip) {
     tip = document.createElement('div');
     tip.id = 'goalSparkTip';
-    tip.className = 'ctip gtip wide hidden';
+    tip.className = 'ctip gtip kcal hidden';
     document.body.appendChild(tip);
   }
   const hide = () => tip.classList.add('hidden');

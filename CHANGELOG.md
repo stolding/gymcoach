@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.6 — 26 november 2026
+- Bij Sets per spiergroep staan het aantal sets en het procent op één regel, direct achter de balk.
+
 ## 2.46.5 — 26 november 2026
 - De widgets lezen een korte samenvatting uit de App Group, dezelfde cijfers als het scherm. Weekdoel, score, spieren, vandaag en calorieën blijven niet op 0 staan. De kaart toont een groot getal, de regels ernaast en een strook onderaan.
 

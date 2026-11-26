@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.43.2 — 26 november 2026
+- Een groot tekort wordt geel vanaf het midden tussen de streeflijn en de ruststofwisseling. De kleur vult de hele kolom. De hover is donker, zodat het witte onderhoudsstip en de som leesbaar blijven; elke berekening staat op een eigen regel.
+
 ## 2.43.1 — 26 november 2026
 - De innamegrafiek kleurt ruimer. Onder de streeflijn blijft groen, ook bij een groter tekort. Geel pas als de inname minstens 10% van het onderhoud boven de streeflijn zit. Rood alleen boven onderhoud. Onder de ruststofwisseling blijft de dag leeg. De hover, ook op het kleine lijntje, toont hoe de streeflijn is opgebouwd, het doeltekort en het tekort van die dag.
 

@@ -19,12 +19,14 @@ test('de streeflijn is onderhoud min het tekort van het doel, en zakt niet onder
   assert.equal(floored.floored, true);
 });
 
-test('onder de streeflijn blijft groen, geel vanaf 10% van onderhoud, rood alleen boven onderhoud', () => {
+test('geel vanaf het midden tussen streef en BMR, en vanaf 10% boven de streeflijn', () => {
   const tone = (intake) => deficitTone({ ...nov13, intake });
+  const mid = (nov13.target + nov13.rmr) / 2;
   assert.equal(tone(994.51), null);
-  assert.equal(tone(1742), 'ok');
-  assert.equal(tone(1800), 'ok');
-  assert.equal(tone(2328), 'ok');
+  assert.equal(tone(nov13.rmr), 'warn');
+  assert.equal(tone(mid), 'warn');
+  assert.equal(tone(mid + 1), 'ok');
+  assert.equal(tone(nov13.target), 'ok');
   const edge = nov13.target + nov13.maintenance * 0.1;
   assert.equal(tone(edge - 1), 'ok');
   assert.equal(tone(edge), 'warn');
@@ -41,7 +43,7 @@ test('elke gesloten dag houdt de som van de streeflijn en de kleur', () => {
     settings: { sex: 'm', heightCm: 180, birthYear: 1986 },
     bodyLog: [{ date: '2026-11-01', kg: 80 }],
     daily: [
-      { date: '2026-11-20', intakeKcal: calc.target - 400, activeKcal: 400 },
+      { date: '2026-11-20', intakeKcal: Math.round((calc.target + calc.rmr) / 2) + 40, activeKcal: 400 },
       { date: '2026-11-21', intakeKcal: yellow, activeKcal: 400 },
       { date: '2026-11-22', intakeKcal: calc.maintenance + 40, activeKcal: 400 },
       { date: '2026-11-23', intakeKcal: 900, activeKcal: 400 },
@@ -56,6 +58,7 @@ test('elke gesloten dag houdt de som van de streeflijn en de kleur', () => {
   assert.equal(under.floored, false);
   assert.equal(under.maintenance - under.target, 300);
   assert.equal(under.tone, 'ok');
+  assert.ok(under.intake > (under.target + under.rmr) / 2);
   assert.ok(under.intake < under.target);
   assert.equal(days.find((d) => d.date === '2026-11-21').tone, 'warn');
   assert.equal(days.find((d) => d.date === '2026-11-22').tone, 'bad');

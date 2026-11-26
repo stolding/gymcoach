@@ -106,7 +106,7 @@ const axisUnit = (u) => ({ '%-punt': '%-pt' }[u] ?? u ?? '');
 const fmtTick = (v, dec, unit) => `${v.toLocaleString(localeOf(), { minimumFractionDigits: dec, maximumFractionDigits: dec })}${unit ? (/^[%×]/.test(unit) ? '' : ' ') + unit : ''}`;
 
 // Lijngrafiek (SVG) met een of meer reeksen, as-labels en tooltip.
-function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, shades = null, zoneColor = null, spanDates = false, ySpan = null, onZoom = null } = {}) {
+function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, shades = null, tipNote = null, zoneColor = null, spanDates = false, ySpan = null, onZoom = null } = {}) {
   const pts = series.flatMap((s) => s.points);
   if (pts.length < 1) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   // eenheid op de y-as: expliciet, of de gemeenschappelijke eenheid van alle reeksen
@@ -237,7 +237,9 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
     const q0 = series[0]?.points.find((p) => p.x === best);
     const zc = q0 ? (zoneColor ? zoneColor(q0.y) : BAND_COLORS[bandOf(bands, q0.y)]) : null;
     tip.classList.toggle('zoned', !!zc); if (zc) tip.style.setProperty('--zc', zc); else tip.style.removeProperty('--zc');
-    tip.innerHTML = `<div class="tdate">${esc(fmtDate(best))}</div>${rows}${tr.length && onPick ? '<div class="small muted">' + t('app.klikVoorDetails') + '</div>' : ''}`;
+    const note = tipNote ? tipNote(best) : '';
+    tip.classList.toggle('wide', !!note);
+    tip.innerHTML = `<div class="tdate">${esc(fmtDate(best))}</div>${rows}${note}${tr.length && onPick ? '<div class="small muted">' + t('app.klikVoorDetails') + '</div>' : ''}`;
     tip.classList.remove('hidden');
     const px = (cx / W) * r.width, py = (topY / H) * r.height;
     const tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -1820,11 +1822,12 @@ function gapBox(yA, yB, cls) {
   return { y: top, h: Math.max(h, 0.6) };
 }
 function shadeRects(shades, X, Y) {
-  const rows = (shades || []).filter((s) => s.x && Number.isFinite(s.y0) && Number.isFinite(s.y1) && s.cls);
+  const rows = (shades || []).filter((s) => s.x && Number.isFinite(s.y0) && Number.isFinite(s.y1));
   rows.sort((a, b) => String(a.x).localeCompare(String(b.x)));
   let out = '';
   for (let i = 0; i < rows.length; i++) {
     const s = rows[i];
+    if (!s.cls) continue;
     const x = X(s.x);
     const prev = i > 0 ? X(rows[i - 1].x) : null;
     const next = i < rows.length - 1 ? X(rows[i + 1].x) : null;
@@ -1835,8 +1838,36 @@ function shadeRects(shades, X, Y) {
   }
   return out;
 }
+function sparkPoints(rows) {
+  return (rows || []).filter((row) => row.intake > 0 || row.target > 0 || row.maintenance > 0 || row.rmr > 0);
+}
+function intakeTip(day) {
+  if (!day || !(day.maintenance > 0) || !(day.target > 0)) return '';
+  const maintenance = Math.round(day.maintenance);
+  const intake = day.intake > 0 ? Math.round(day.intake) : null;
+  const lines = [
+    t('goal.tip.how'),
+    t('goal.tip.parts', { maintenance: goalInt(maintenance), rmr: goalInt(day.rmr), sedentary: goalInt(day.sedentary), active: goalInt(day.activeMean) }),
+    t('goal.tip.want', { kcal: goalInt(day.planned) }),
+  ];
+  if (day.floored) lines.push(t('goal.tip.floor'));
+  if (intake != null) {
+    lines.push(t('goal.tip.real', { kcal: goalInt(maintenance - intake), maintenance: goalInt(maintenance), intake: goalInt(intake) }));
+    if (day.rmr > 0 && day.intake < day.rmr) lines.push(t('goal.tip.low'));
+  }
+  return lines.map((s) => `<div class="trow sub">${esc(s)}</div>`).join('');
+}
+function intakeValueRows(day) {
+  const rows = [
+    ['a', 'goal.legend.intake', day.intake],
+    ['b', 'goal.legend.target', day.target],
+    ['c', 'goal.legend.maintenance', day.maintenance],
+    ['d', 'goal.legend.bmr', day.rmr],
+  ];
+  return rows.filter(([, , v]) => v > 0).map(([dot, key, v]) => `<div class="trow"><span class="dot ${dot}"></span>${esc(t(key))}: <b>${goalInt(v)} kcal</b></div>`).join('') + intakeTip(day);
+}
 function goalSpark(rows) {
-  const pts = (rows || []).filter((row) => row.intake > 0 || row.target > 0 || row.maintenance > 0 || row.rmr > 0);
+  const pts = sparkPoints(rows);
   if (pts.length < 2) return '';
   const vals = pts.flatMap((row) => [row.intake, row.target, row.maintenance, row.rmr].filter((v) => v > 0));
   if (vals.length < 2) return '';
@@ -1860,7 +1891,40 @@ function goalSpark(rows) {
     return p.length > 1 ? `<polyline class="${cls}" points="${p.join(' ')}"/>` : '';
   };
   const drawn = shades + line('rmr', 'base') + line('maintenance', 'need') + line('target', 'b') + line('intake', '');
-  return drawn ? `<svg class="goal-sp" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">${drawn}</svg>` : '';
+  return drawn ? `<svg class="goal-sp" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">${drawn}</svg>` : '';
+}
+function bindIntakeSpark(host, rows) {
+  const svg = host?.querySelector('svg.goal-sp');
+  const pts = sparkPoints(rows);
+  if (!svg || pts.length < 2) return;
+  let tip = document.querySelector('#goalSparkTip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'goalSparkTip';
+    tip.className = 'ctip gtip wide hidden';
+    document.body.appendChild(tip);
+  }
+  const hide = () => tip.classList.add('hidden');
+  const show = (ev) => {
+    const r = svg.getBoundingClientRect();
+    const p = ev.touches ? ev.touches[0] : ev;
+    const mx = (p.clientX - r.left) * (168 / r.width);
+    let best = 0, bd = Infinity;
+    pts.forEach((row, i) => {
+      const x = pts.length === 1 ? 84 : (i / (pts.length - 1)) * 168;
+      const d = Math.abs(x - mx);
+      if (d < bd) { bd = d; best = i; }
+    });
+    const day = pts[best];
+    tip.innerHTML = `<div class="tdate">${esc(fmtDate(day.date))}</div>${intakeValueRows(day)}`;
+    tip.classList.remove('hidden');
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = Math.min(Math.max(8, p.clientX - tw / 2), innerWidth - tw - 8) + 'px';
+    tip.style.top = Math.max(8, p.clientY - th - 14) + 'px';
+  };
+  svg.addEventListener('mousemove', show);
+  svg.addEventListener('mouseleave', hide);
+  svg.addEventListener('touchstart', show, { passive: true });
 }
 // Voortgangsring (SVG), bijv. trainingen deze week.
 function ring(done, target, planned) {
@@ -2430,7 +2494,7 @@ function renderGoalTile() {
         <p class="small" style="margin:.45rem 0 0">${esc(note)}</p>
       </div>
       <div>
-        ${svg ? `<div class="goal-spark">${svg}<div class="legend small">${legend}</div></div>` : ''}
+        ${svg ? `<div class="goal-spark" id="goalSparkHost">${svg}<div class="legend small">${legend}</div></div>` : ''}
         <div class="goal-bars">
           <div class="gbar"><span>${esc(t('goal.tile.kcal', { have: goalInt(food.intake), target: goalInt(food.target) }))}</span>${bar(food.intake, food.target, food.state === 'over')}</div>
           <div class="gbar"><span>${esc(t('goal.tile.prot', { have: goalInt(food.protein), target: goalInt(food.proteinTarget) }))}</span>${bar(food.protein, food.proteinTarget, food.state === 'protein')}</div>
@@ -2438,6 +2502,7 @@ function renderGoalTile() {
       </div>
     </div>`;
   $('#goalTileOpen')?.addEventListener('click', () => document.querySelector('.tab[data-tab=goal]').click());
+  if (intakeSvg) bindIntakeSpark($('#goalSparkHost'), board?.spark);
 }
 
 
@@ -3842,14 +3907,15 @@ function drawGoalCharts() {
     const tp = days.filter((d) => d.target != null).map((d) => ({ x: d.date, y: d.target }));
     const mp = days.filter((d) => d.maintenance != null).map((d) => ({ x: d.date, y: d.maintenance }));
     const rp = days.filter((d) => d.rmr != null).map((d) => ({ x: d.date, y: d.rmr }));
-    const shades = days.filter((d) => d.tone && d.intake != null && d.maintenance != null)
-      .map((d) => ({ x: d.date, y0: d.intake, y1: d.maintenance, cls: d.tone }));
+    const shades = days.filter((d) => d.intake != null && d.maintenance != null)
+      .map((d) => ({ x: d.date, y0: d.intake, y1: d.maintenance, cls: d.tone || null }));
+    const byDate = new Map(days.map((d) => [d.date, d]));
     const is = [];
     if (rp.length) is.push({ cls: 'ld', label: t('goal.legend.bmr'), unit: 'kcal', noDots: true, points: rp });
     if (mp.length) is.push({ cls: 'lc', label: t('goal.legend.maintenance'), unit: 'kcal', noDots: true, points: mp });
     if (tp.length) is.push({ cls: 'lb', label: t('goal.legend.target'), unit: 'kcal', points: tp });
     if (ip.length) is.push({ cls: 'la', label: t('goal.legend.intake'), unit: 'kcal', points: ip });
-    if (is.length) lineChart($('#goalIntake'), is, { yLabel: t('goal.chart.intake'), shades });
+    if (is.length) lineChart($('#goalIntake'), is, { yLabel: t('goal.chart.intake'), shades, tipNote: (x) => intakeTip(byDate.get(x)) });
     else $('#goalIntake').innerHTML = '<div class="empty">' + t('goal.noIntake') + '</div>';
   }
   const charts = $('#goalStrengthCharts');

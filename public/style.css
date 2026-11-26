@@ -1196,6 +1196,8 @@ button.badge { cursor: pointer; font: inherit; font-size: .75rem; background: tr
 .score-move.flat { color: var(--muted); font-weight: 500; }
 .score-moves { margin: .15rem 0 .35rem; }
 .ctip .trow.sub { padding-left: .85rem; color: var(--muted); font-size: .82rem; }
+.ctip.wide { white-space: normal; max-width: 26rem; }
+.ctip.wide .trow:not(.sub) { white-space: nowrap; }
 .score-note { margin: .45rem 0 0; }
 .score-window { margin: .55rem 0 0; }
 .score-cats { display: grid; gap: .7rem; margin-top: .7rem; }

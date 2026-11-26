@@ -1962,7 +1962,7 @@ export default {
   "sig.cardioDone": "Gehaalde herhalingen op die dagen: {a}%, op andere dagen {b}%.",
   "rec.title": "Spierherstel",
   "rec.note": "Een spier is na een paar dagen weer uitgerust: de vermoeidheid halveert elke twee dagen.",
-  "rec.legend": "Onder 20% vermoeidheid is groen. Tot 75% loopt de kleur naar oranje, tot 100% naar rood. Daarboven blijft rood en het getal loopt door. Het lichaamsschema bij het weekplan blijft de geplande belasting.",
+  "rec.legend": "Onder 20% vermoeidheid is groen. Tot 75% loopt de kleur naar oranje, tot 100% naar rood. Daarboven blijft rood en het getal loopt door.",
   "rec.empty": "Nog geen afgeronde training met sets, dus nog geen spierherstel.",
   "rec.tired": "Nog vermoeid",
   "rec.rested": "Uitgerust",

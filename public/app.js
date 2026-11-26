@@ -809,7 +809,18 @@ function slotInColumn(dayBlock, fromSlot) {
 // Herstelpercentage zoals het binnenkomt. Alleen de balkhoogte blijft binnen 0–100; het getal niet.
 function recoveryReading(pct) {
   const n = Number(pct);
-  return Number.isFinite(n) ? Math.round(n) : 0;
+  return Number.isFinite(n) ? Math.round(n * 10) / 10 : 0;
+}
+// Onder 20 punten blijft groen, maar niet één vlakke kleur: de halfwaardetijd van 48 uur
+// is daar nog maar een paar punten per dag, en die daling moet in het blok zichtbaar blijven.
+function weekGridFill(pct) {
+  const n = Number(pct);
+  const f = Number.isFinite(n) ? Math.max(0, 100 - n) : 0;
+  if (f < 20) {
+    const t = Math.round(40 + (f / 20) * 60);
+    return `color-mix(in oklab, var(--ok) ${t}%, var(--bg))`;
+  }
+  return recoveryFill(n);
 }
 const WB_GRAD = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><defs><linearGradient id="wbGrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--ok)"/></linearGradient></defs><rect x="1.5" y="1.5" width="13" height="13" rx="2" fill="url(#wbGrad)"/></svg>';
 const WB_STACK = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="9" width="13" height="5.5" rx="1.2" fill="var(--accent)"/><rect x="1.5" y="1.5" width="13" height="6.5" rx="1.2" fill="var(--ok)"/></svg>';
@@ -828,11 +839,11 @@ function balanceHtml(plan) {
         const jump = hit ? ` data-jump="${esc(hit.key)}|${hit.i}"` : '';
         const dot = hit ? `<i class="wb-dot ${hit.role === 'prime' ? 'prime' : ''}"${pastWeek ? '' : ` draggable="true" data-drag="${esc(hit.key)}" title="${esc(t('app.dragWhen'))}"`}></i>` : '';
         const fresh = recoveryReading(pct);
-        const fatigue = fatiguePoints(fresh);
+        const fatigue = 100 - fresh;
         const barFresh = Math.max(0, Math.min(100, fresh));
-        const inner = mix === 'stack' ? `<span class="wb-stack"><i class="wb-fresh" style="height:${barFresh}%"></i><i class="wb-tired" style="height:${100 - barFresh}%;background:${recoveryFill(fresh)}"></i></span>` : '';
-        const paint = mix === 'stack' ? '' : ` style="background:${recoveryFill(fresh)}"`;
-        const label = fatigue > 100 ? t('rec.fatiguePct', { n: fatigue }) : `${fresh}%`;
+        const inner = mix === 'stack' ? `<span class="wb-stack"><i class="wb-fresh" style="height:${barFresh}%"></i><i class="wb-tired" style="height:${100 - barFresh}%;background:${weekGridFill(fresh)}"></i></span>` : '';
+        const paint = mix === 'stack' ? '' : ` style="background:${weekGridFill(fresh)}"`;
+        const label = fatigue > 100 ? t('rec.fatiguePct', { n: Math.round(fatigue) }) : `${fmtNum(fresh, { maximumFractionDigits: 1 })}%`;
         const tip = hit ? `${hit.name} · ${label}` : label;
         const drop = ` data-drop-block="${block}"`;
         return `<span class="wb-seg ${mix}${hit ? ' has-hit' : ''}" title="${esc(tip)}"${paint}${jump}${drop}>${inner}${dot}</span>`;

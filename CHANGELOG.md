@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.4 — 26 november 2026
+- De widgets tonen de gegevens van het scherm: gezondheidsscore, weekdoel met ringen, het spierfiguur (groen tot rood), de training van vandaag, en calorieën met streef, onderhoud, BMR en inname. Ze staan op het thuisscherm en het vergrendelscherm, in de kleuren van de app.
+
 ## 2.46.3 — 26 november 2026
 - De vier widgets heten in de kiezer GymCoach Sync, dezelfde naam als de app. Ze staan op het thuisscherm (klein, middel en groot) en op het vergrendelscherm (cirkel, rechthoek en één regel).
 

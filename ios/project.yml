@@ -61,6 +61,7 @@ targets:
     platform: iOS
     sources:
       - GymCoachWidgets
+      - path: GymCoachSync/BodyFigure.swift
     entitlements:
       path: GymCoachWidgets/GymCoachWidgets.entitlements
       properties:

@@ -120,7 +120,7 @@ export default [
       <li><b>Streef en stand.</b> De berekende kcal en het eiwit, en of vandaag daar al op zit.</li>
       <li><b>Doel stellen.</b> Lichaam (kilogram en weken), kracht per spiergroep, stappen per dag en activiteiten per week. Bewaren laat het doel opnieuw beginnen.</li>
       <li><b>Gewicht.</b> Je metingen en de rechte lijn naar het streefgewicht.</li>
-      <li><b>Inname.</b> Wat je at, tegen de streep van de streefkcal.</li>
+      <li><b>Inname.</b> Wat je at, tegen de streefkcal van die dag. Voorbije dagen gebruiken de echte beweging uit Apple Health. Vandaag blijft het gemiddelde van 7 dagen, en dat gaat omhoog als er een training gepland is.</li>
       <li><b>Kracht.</b> De index van de gekozen spiergroep, hier de rug, tegen de lijn van het krachtdoel.</li>
       <li><b>Dagen.</b> Een tabel per dag: training, stappen, inname en of het binnen het doel viel.</li>
     </ol>

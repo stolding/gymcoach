@@ -382,9 +382,11 @@ async function goalView(ctx, daily = null) {
   const w = await store.getWithings();
   const heightCm = ctx.settings.heightCm || (w.height ? Math.round(w.height * 100) : null);
   const today = goal.todayISO();
+  const plan = await store.getPlan();
   const view = goal.assemble({
     settings: { ...ctx.settings, heightCm },
     bodyLog: ctx.bodyLog, daily: daily || await store.getHealthDaily(), history: ctx.history, today,
+    plan, workouts: ctx.workouts,
   });
   const activities = await store.getActivities();
   view.activityGoals = actgoal.normalize(ctx.settings.activityGoals);

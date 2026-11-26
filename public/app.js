@@ -106,7 +106,7 @@ const axisUnit = (u) => ({ '%-punt': '%-pt' }[u] ?? u ?? '');
 const fmtTick = (v, dec, unit) => `${v.toLocaleString(localeOf(), { minimumFractionDigits: dec, maximumFractionDigits: dec })}${unit ? (/^[%×]/.test(unit) ? '' : ' ') + unit : ''}`;
 
 // Lijngrafiek (SVG) met een of meer reeksen, as-labels en tooltip.
-function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, zoneColor = null, spanDates = false, ySpan = null, onZoom = null } = {}) {
+function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [], onPick, bands = null, shades = null, zoneColor = null, spanDates = false, ySpan = null, onZoom = null } = {}) {
   const pts = series.flatMap((s) => s.points);
   if (pts.length < 1) { el.innerHTML = '<div class="empty">' + t('app.nogGeenData') + '</div>'; return; }
   // eenheid op de y-as: expliciet, of de gemeenschappelijke eenheid van alle reeksen
@@ -120,7 +120,7 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
   const STRIP = stackMax ? 6 + stackMax * 6 : 0;
   const W = el.clientWidth || 600, H = el.clientHeight || 220, R = 12, T = 10, B = 26 + STRIP;
   let L = 40;
-  const ys = pts.map((p) => p.y);
+  const ys = pts.map((p) => p.y).concat((shades || []).flatMap((s) => [s.y0, s.y1]).filter((n) => Number.isFinite(n)));
   let lo = Math.min(...ys), hi = Math.max(...ys);
   if (lo === hi) { lo -= 1; hi += 1; }
   // krachtdoel: de as dekt het hele doel, zodat een kleine dip klein blijft
@@ -157,6 +157,7 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
     if (top <= bot) continue;
     g += `<rect class="band ${b.cls}" x="${L}" width="${W - R - L}" y="${Y(top)}" height="${Y(bot) - Y(top)}"/>`;
   }
+  g += shadeRects(shades, X, Y);
   for (let i = 0; i <= 4; i++) {
     const v = lo + ((hi - lo) * i) / 4;
     g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${esc(fmtTick(v, dec, unit))}</text>`;
@@ -225,7 +226,8 @@ function lineChart(el, series, { yLabel = '', fromZero = false, yUnit, marks = [
       const c = hls[i];
       if (!q) { c.setAttribute('visibility', 'hidden'); return; }
       c.setAttribute('cx', cx); c.setAttribute('cy', Y(q.y)); c.setAttribute('visibility', 'visible'); topY = Math.min(topY, Y(q.y));
-      rows += `<div class="trow"><span class="dot ${s.cls === 'lb' ? 'b' : 'a'}"${s.color ? ` style="background:${s.color}"` : ''}></span>${esc(s.label || yLabel || 'Waarde')}: <b>${q.y}${s.unit ? ' ' + esc(s.unit) : ''}</b>${q.note ? ` <span class="muted">${esc(q.note)}</span>` : ''}</div>`;
+      const dot = s.cls === 'lb' ? 'b' : s.cls === 'lc' ? 'c' : s.cls === 'ld' ? 'd' : 'a';
+      rows += `<div class="trow"><span class="dot ${dot}"${s.color ? ` style="background:${s.color}"` : ''}></span>${esc(s.label || yLabel || 'Waarde')}: <b>${q.y}${s.unit ? ' ' + esc(s.unit) : ''}</b>${q.note ? ` <span class="muted">${esc(q.note)}</span>` : ''}</div>`;
       if (Array.isArray(q.detail)) rows += q.detail.map((line) => `<div class="trow sub">${esc(line)}</div>`).join('');
     });
     const tr = markDays.filter((m) => m.x === best);
@@ -1810,18 +1812,54 @@ function spark(values, { w = 120, h = 32, cls = 'sp' } = {}) {
   const last = pts.split(' ').pop().split(',');
   return `<svg class="${cls}" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true"><polyline points="${pts}"/><circle cx="${last[0]}" cy="${last[1]}" r="2.6"/></svg>`;
 }
+// Achtergrond van het tekort: het vlak tussen inname en onderhoud. Een klein verschil dat
+// toch ver van het doel af zit krijgt een strook van 6 px, anders zie je de kleur niet.
+function gapBox(yA, yB, cls) {
+  let top = Math.min(yA, yB), bot = Math.max(yA, yB), h = bot - top;
+  if (h < 6 && cls && cls !== 'ok') { const mid = (top + bot) / 2; top = mid - 3; h = 6; }
+  return { y: top, h: Math.max(h, 0.6) };
+}
+function shadeRects(shades, X, Y) {
+  const rows = (shades || []).filter((s) => s.x && Number.isFinite(s.y0) && Number.isFinite(s.y1) && s.cls);
+  rows.sort((a, b) => String(a.x).localeCompare(String(b.x)));
+  let out = '';
+  for (let i = 0; i < rows.length; i++) {
+    const s = rows[i];
+    const x = X(s.x);
+    const prev = i > 0 ? X(rows[i - 1].x) : null;
+    const next = i < rows.length - 1 ? X(rows[i + 1].x) : null;
+    const halfL = prev == null ? (next == null ? 6 : (next - x) / 2) : (x - prev) / 2;
+    const halfR = next == null ? (prev == null ? 6 : (x - prev) / 2) : (next - x) / 2;
+    const box = gapBox(Y(s.y0), Y(s.y1), s.cls);
+    out += `<rect class="kcal-gap ${s.cls}" x="${x - halfL}" y="${box.y}" width="${Math.max(1, halfL + halfR)}" height="${box.h}"/>`;
+  }
+  return out;
+}
 function goalSpark(rows) {
-  const pts = (rows || []).filter((row) => row.intake > 0 || row.target > 0);
+  const pts = (rows || []).filter((row) => row.intake > 0 || row.target > 0 || row.maintenance > 0 || row.rmr > 0);
   if (pts.length < 2) return '';
-  const vals = pts.flatMap((row) => [row.intake, row.target].filter((v) => v > 0));
+  const vals = pts.flatMap((row) => [row.intake, row.target, row.maintenance, row.rmr].filter((v) => v > 0));
   if (vals.length < 2) return '';
   const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1, w = 168, h = 48;
-  const xy = (v, i) => `${(i / (pts.length - 1)) * w},${h - 4 - ((v - lo) / span) * (h - 8)}`;
+  const xAt = (i) => (i / (pts.length - 1)) * w;
+  const yAt = (v) => h - 4 - ((v - lo) / span) * (h - 8);
+  const xy = (v, i) => `${xAt(i)},${yAt(v)}`;
+  let shades = '';
+  pts.forEach((row, i) => {
+    if (!(row.intake > 0) || !(row.maintenance > 0) || !row.tone) return;
+    const x = xAt(i);
+    const prev = i > 0 ? xAt(i - 1) : null;
+    const next = i < pts.length - 1 ? xAt(i + 1) : null;
+    const halfL = prev == null ? (next == null ? 4 : (next - x) / 2) : (x - prev) / 2;
+    const halfR = next == null ? (prev == null ? 4 : (x - prev) / 2) : (next - x) / 2;
+    const box = gapBox(yAt(row.intake), yAt(row.maintenance), row.tone);
+    shades += `<rect class="kcal-gap ${row.tone}" x="${x - halfL}" y="${box.y}" width="${Math.max(1, halfL + halfR)}" height="${box.h}"/>`;
+  });
   const line = (key, cls) => {
     const p = pts.map((row, i) => (row[key] > 0 ? xy(row[key], i) : null)).filter(Boolean);
     return p.length > 1 ? `<polyline class="${cls}" points="${p.join(' ')}"/>` : '';
   };
-  const drawn = line('target', 'b') + line('intake', '');
+  const drawn = shades + line('rmr', 'base') + line('maintenance', 'need') + line('target', 'b') + line('intake', '');
   return drawn ? `<svg class="goal-sp" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">${drawn}</svg>` : '';
 }
 // Voortgangsring (SVG), bijv. trainingen deze week.
@@ -2381,7 +2419,7 @@ function renderGoalTile() {
   const intakeSvg = goalSpark(board?.spark);
   const svg = intakeSvg || (board?.weightSpark?.length > 1 ? spark(board.weightSpark, { w: 168, h: 48 }) : '');
   const legend = intakeSvg
-    ? `<span class="lg"><i style="background:var(--a)"></i>${esc(t('goal.legend.intake'))}</span> <span class="lg"><i style="background:var(--b)"></i>${esc(t('goal.legend.target'))}</span>`
+    ? `<span class="lg"><i style="background:var(--a)"></i>${esc(t('goal.legend.intake'))}</span> <span class="lg"><i style="background:var(--b)"></i>${esc(t('goal.legend.target'))}</span> <span class="lg"><i style="background:var(--need)"></i>${esc(t('goal.legend.maintenance'))}</span> <span class="lg"><i style="background:var(--base)"></i>${esc(t('goal.legend.bmr'))}</span>`
     : (svg ? `<span class="lg"><i style="background:var(--a)"></i>${esc(t('goal.legend.weight'))}</span>` : '');
   el.innerHTML = `<div class="goal-home">
       <div>
@@ -3802,10 +3840,16 @@ function drawGoalCharts() {
     }
     const ip = days.filter((d) => d.intake != null).map((d) => ({ x: d.date, y: d.intake }));
     const tp = days.filter((d) => d.target != null).map((d) => ({ x: d.date, y: d.target }));
+    const mp = days.filter((d) => d.maintenance != null).map((d) => ({ x: d.date, y: d.maintenance }));
+    const rp = days.filter((d) => d.rmr != null).map((d) => ({ x: d.date, y: d.rmr }));
+    const shades = days.filter((d) => d.tone && d.intake != null && d.maintenance != null)
+      .map((d) => ({ x: d.date, y0: d.intake, y1: d.maintenance, cls: d.tone }));
     const is = [];
-    if (ip.length) is.push({ cls: 'la', label: t('goal.legend.intake'), unit: 'kcal', points: ip });
+    if (rp.length) is.push({ cls: 'ld', label: t('goal.legend.bmr'), unit: 'kcal', noDots: true, points: rp });
+    if (mp.length) is.push({ cls: 'lc', label: t('goal.legend.maintenance'), unit: 'kcal', noDots: true, points: mp });
     if (tp.length) is.push({ cls: 'lb', label: t('goal.legend.target'), unit: 'kcal', points: tp });
-    if (is.length) lineChart($('#goalIntake'), is, { yLabel: t('goal.chart.intake') });
+    if (ip.length) is.push({ cls: 'la', label: t('goal.legend.intake'), unit: 'kcal', points: ip });
+    if (is.length) lineChart($('#goalIntake'), is, { yLabel: t('goal.chart.intake'), shades });
     else $('#goalIntake').innerHTML = '<div class="empty">' + t('goal.noIntake') + '</div>';
   }
   const charts = $('#goalStrengthCharts');

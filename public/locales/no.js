@@ -375,6 +375,8 @@ export default {
   "goal.legend.goal": "Mållinje",
   "goal.legend.intake": "Inntak",
   "goal.legend.target": "Mål",
+  "goal.legend.maintenance": "Vedlikehold",
+  "goal.legend.bmr": "BMR",
   "goal.legend.e1rm": "Estimert 1RM",
   "goal.table": "Per dag",
   "goal.col.date": "Dato",

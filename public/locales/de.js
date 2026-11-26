@@ -375,6 +375,8 @@ export default {
   "goal.legend.goal": "Ziellinie",
   "goal.legend.intake": "Aufnahme",
   "goal.legend.target": "Ziel",
+  "goal.legend.maintenance": "Erhaltung",
+  "goal.legend.bmr": "BMR",
   "goal.legend.e1rm": "Geschätztes 1RM",
   "goal.table": "Pro Tag",
   "goal.col.date": "Datum",

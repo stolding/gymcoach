@@ -375,6 +375,8 @@ export default {
   "goal.legend.goal": "Goal line",
   "goal.legend.intake": "Intake",
   "goal.legend.target": "Target",
+  "goal.legend.maintenance": "Maintenance",
+  "goal.legend.bmr": "BMR",
   "goal.legend.e1rm": "Estimated 1RM",
   "goal.table": "Per day",
   "goal.col.date": "Date",

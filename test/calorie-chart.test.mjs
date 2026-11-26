@@ -19,13 +19,17 @@ test('de streeflijn is onderhoud min het tekort van het doel, en zakt niet onder
   assert.equal(floored.floored, true);
 });
 
-test('geel vanaf het midden tussen streef en BMR, en vanaf 10% boven de streeflijn', () => {
+test('tussen streef en BMR: bovenste helft groen, dan geel, het kwart bij de BMR rood', () => {
   const tone = (intake) => deficitTone({ ...nov13, intake });
-  const mid = (nov13.target + nov13.rmr) / 2;
+  const span = nov13.target - nov13.rmr;
+  const quarter = nov13.rmr + span * 0.25;
+  const mid = nov13.rmr + span * 0.5;
   assert.equal(tone(994.51), null);
-  assert.equal(tone(nov13.rmr), 'warn');
-  assert.equal(tone(mid), 'warn');
-  assert.equal(tone(mid + 1), 'ok');
+  assert.equal(tone(nov13.rmr), 'bad');
+  assert.equal(tone(quarter - 1), 'bad');
+  assert.equal(tone(quarter), 'warn');
+  assert.equal(tone(mid - 1), 'warn');
+  assert.equal(tone(mid), 'ok');
   assert.equal(tone(nov13.target), 'ok');
   const edge = nov13.target + nov13.maintenance * 0.1;
   assert.equal(tone(edge - 1), 'ok');

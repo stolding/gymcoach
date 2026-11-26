@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.43.3 — 26 november 2026
+- Tussen de streeflijn en de ruststofwisseling kleurt de bovenste helft groen, het kwart daaronder geel en het kwart het dichtst bij de BMR rood. De kleur vult de hele kolom. Onder de BMR blijft de dag leeg. Een overschot is rood alleen boven onderhoud.
+
 ## 2.43.2 — 26 november 2026
 - Een groot tekort wordt geel vanaf het midden tussen de streeflijn en de ruststofwisseling. De kleur vult de hele kolom. De hover is donker, zodat het witte onderhoudsstip en de som leesbaar blijven; elke berekening staat op een eigen regel.
 

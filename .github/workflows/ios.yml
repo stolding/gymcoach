@@ -72,6 +72,11 @@ jobs:
         env:
           ASC_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
         run: python3 .github/scripts/revoke-ci-certs.py
+      - name: App Group op de App ID's
+        working-directory: ${{ github.workspace }}
+        env:
+          ASC_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+        run: python3 .github/scripts/enable-app-group.py
       - name: Archief maken (ondertekend)
         run: |
           set +e

@@ -1962,7 +1962,7 @@ export default {
   "sig.cardioDone": "Geschaffte Wdh. an diesen Tagen: {a} %, an anderen Tagen {b} %.",
   "rec.title": "Muskelerholung",
   "rec.note": "Ein Muskel ist nach ein paar Tagen wieder erholt: die Ermüdung halbiert sich alle zwei Tage.",
-  "rec.legend": "Unter 20 % Ermüdung ist grün. Bis 75 % läuft die Farbe nach Orange, bis 100 % nach Rot. Darüber bleibt rot und die Zahl läuft weiter. Die Figur beim Wochenplan bleibt die geplante Belastung.",
+  "rec.legend": "Unter 20 % Ermüdung ist grün. Bis 75 % läuft die Farbe nach Orange, bis 100 % nach Rot. Darüber bleibt rot und die Zahl läuft weiter.",
   "rec.empty": "Noch kein abgeschlossenes Training mit Sätzen, also noch keine Muskelerholung.",
   "rec.tired": "Noch ermüdet",
   "rec.rested": "Erholt",

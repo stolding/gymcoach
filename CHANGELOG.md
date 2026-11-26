@@ -5,8 +5,11 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
-## 2.44.1 — 26 november 2026
+## 2.44.2 — 26 november 2026
 - Op Inname en de streeflijn telt een voorbije dag de echte beweging uit Apple Health, niet het gemiddelde. De kleur vergelijkt de inname met dat onderhoud en die streeflijn. Vandaag blijft het gemiddelde van 7 dagen, en dat gaat omhoog als er die dag een training gepland is.
+
+## 2.44.1 — 26 november 2026
+- Het lichaamsschema op het weekplan toont de vermoeidheid: onder 20% groen, tot 75% van groen naar oranje, tot 100% van oranje naar rood. Boven 100 punten blijft rood en het getal loopt door. De set-aantallen blijven ernaast staan.
 
 ## 2.44.0 — 26 november 2026
 - Als de AI-coach aan staat, loopt die het plan van de komende week na. Hij vergelijkt het met de laatste weken, wat je haalde, de trend en het herstel. Hij mag alleen een oefening ruilen uit de catalogus, of de pasvorm van de training voorstellen: balans, een dubbele oefening, de lengte, de warming-up en de cooldown. Gewicht en herhalingen blijven van de app. Je ziet het verschil en kiest zelf. Staat de coach uit, of het vinkje uit, dan wordt hij niet gevraagd.

@@ -1962,7 +1962,7 @@ export default {
   "sig.cardioDone": "Reps achieved on those days: {a}%, on other days {b}%.",
   "rec.title": "Muscle recovery",
   "rec.note": "A muscle is rested again after a few days: the fatigue halves every two days.",
-  "rec.legend": "Below 20% fatigue is green. Up to 75% the colour runs toward orange, up to 100% toward red. Above that it stays red and the number keeps going. The figure on the weekly plan stays the planned load.",
+  "rec.legend": "Below 20% fatigue is green. Up to 75% the colour runs toward orange, up to 100% toward red. Above that it stays red and the number keeps going.",
   "rec.empty": "No completed workout with sets yet, so no muscle recovery yet.",
   "rec.tired": "Still tired",
   "rec.rested": "Rested",

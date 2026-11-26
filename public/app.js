@@ -811,8 +811,7 @@ function recoveryReading(pct) {
   const n = Number(pct);
   return Number.isFinite(n) ? Math.round(n * 10) / 10 : 0;
 }
-// Onder 20 punten blijft groen, maar niet één vlakke kleur: de halfwaardetijd van 48 uur
-// is daar nog maar een paar punten per dag, en die daling moet in het blok zichtbaar blijven.
+// Onder 20 punten blijft groen, maar niet één vlakke kleur: ook een kleine restlast moet per dag zichtbaar dalen.
 function weekGridFill(pct) {
   const n = Number(pct);
   const f = Number.isFinite(n) ? Math.max(0, 100 - n) : 0;

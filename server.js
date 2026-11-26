@@ -382,9 +382,11 @@ async function goalView(ctx, daily = null) {
   const w = await store.getWithings();
   const heightCm = ctx.settings.heightCm || (w.height ? Math.round(w.height * 100) : null);
   const today = goal.todayISO();
+  const plan = await store.getPlan();
   const view = goal.assemble({
     settings: { ...ctx.settings, heightCm },
     bodyLog: ctx.bodyLog, daily: daily || await store.getHealthDaily(), history: ctx.history, today,
+    plan, workouts: ctx.workouts,
   });
   const activities = await store.getActivities();
   view.activityGoals = actgoal.normalize(ctx.settings.activityGoals);
@@ -510,7 +512,10 @@ const routes = {
       accessories: engine.ACCESSORIES.map((a) => ({ key: a.key, label: a.label, count: ctx.library.filter(a.test).length })),
       library: await libraryStatus(),
       withings: await withings.status(),
-      overview: engine.overview({ workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, plan, settings: ctx.settings }),
+      overview: engine.overview({
+        workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, plan, settings: ctx.settings, sessions: ctx.sessions,
+        prevPlan: engine.localizePlan(store.getArchivedPlan(engine.isoWeek(new Date(Date.now() - 7 * 864e5)))),
+      }),
       muscleRecovery: muscleRec.report(ctx.history, goal.todayISO()),
       week: engine.weekNumber(ctx.sessions),
       signals: await userSignals(ctx),
@@ -933,6 +938,7 @@ const routes = {
       version: VERSION, name: auth.publicUser(store.currentUser())?.name || '', today: goal.todayISO(),
       plan: rawPlan, settings: ctx.settings, workouts: ctx.workouts, sessions: ctx.sessions,
       history: ctx.history, bodyLog: ctx.bodyLog, daily, goalView: gv, activities,
+      prevPlan: engine.localizePlan(store.getArchivedPlan(engine.isoWeek(new Date(Date.now() - 7 * 864e5)))),
       recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }),
       health: hs,
       score: scoreView,

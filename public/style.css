@@ -854,6 +854,26 @@ body.is-admin .fgrid .form-sub.admin-only { display: grid !important; }
 .su-step.done b { color: var(--muted); }
 @media (max-width: 620px) { .su-step { grid-template-columns: 2rem 1fr; } .su-step .btn { grid-column: 2; justify-self: start; } }
 .dash.setup-mode > :not(#nextCard) { display: none; }
+
+/* kaart: waar je deze week staat */
+.ws { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(220px, .8fr); gap: 1rem 1.4rem; align-items: center; }
+.ws-status { font-size: 1.55rem; font-weight: 750; letter-spacing: -.02em; line-height: 1.15; }
+.ws-ahead .ws-status, .ws-done .ws-status { color: var(--ok); }
+.ws-on .ws-status { color: var(--accent); }
+.ws-behind .ws-status { color: var(--warn); }
+.ws-wait .ws-status, .ws-empty .ws-status { color: var(--muted); }
+.ws-track { position: relative; height: 10px; margin: .7rem 0 .35rem; background: var(--line); border-radius: 99px; }
+.ws-fill { height: 100%; border-radius: 99px; background: var(--accent); }
+.ws-ahead .ws-fill, .ws-done .ws-fill { background: var(--ok); }
+.ws-behind .ws-fill { background: var(--warn); }
+.ws-mark { position: absolute; top: -4px; width: 2px; height: 18px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+.ws-scale { display: flex; justify-content: space-between; gap: .6rem; color: var(--muted); font-size: .75rem; }
+.ws-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .45rem; }
+.ws-num { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: .45rem .55rem; }
+.ws-num .mid { font-size: 1.05rem; }
+.ws-cmp { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .35rem .9rem; padding-top: .15rem; border-top: 1px solid var(--line); }
+.ws-cmp b { font-weight: 650; }
+@media (max-width: 720px) { .ws { grid-template-columns: 1fr; } }
 .tip:empty { display: none; }
 
 /* voorwaarden */

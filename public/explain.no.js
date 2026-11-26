@@ -120,7 +120,7 @@ export default [
       <li><b>Mål og stand.</b> De beregnede kcal og proteinet, og om dagen allerede er der.</li>
       <li><b>Sett et mål.</b> Kropp (kilo og uker), styrke per muskelgruppe, skritt per dag og aktiviteter per uke. Lagring lar målet begynne på nytt.</li>
       <li><b>Vekt.</b> Målingene dine og den rette linjen til målvekten.</li>
-      <li><b>Inntak.</b> Det du spiste, mot streken for målkcal.</li>
+      <li><b>Inntak.</b> Det du spiste, mot målkcal den dagen. Tidligere dager bruker den ekte aktiviteten fra Apple Health. I dag blir snittet av 7 dager, og det går opp når en trening er planlagt.</li>
       <li><b>Styrke.</b> Indeksen for den valgte muskelgruppen, her ryggen, mot linjen for styrkemålet.</li>
       <li><b>Dager.</b> En tabell per dag: trening, skritt, inntak og om det holdt seg innenfor målet.</li>
     </ol>

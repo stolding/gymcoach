@@ -120,7 +120,7 @@ export default [
       <li><b>Target and today.</b> The calculated kcal and protein, and whether today is already there.</li>
       <li><b>Set a goal.</b> Body (kilograms and weeks), strength per muscle group, steps per day and activities per week. Saving starts the goal again.</li>
       <li><b>Weight.</b> Your measurements and the straight line to the target weight.</li>
-      <li><b>Intake.</b> What you ate, against the target-kcal line.</li>
+      <li><b>Intake.</b> What you ate, against that day's target kcal. Past days use the real activity from Apple Health. Today keeps the 7-day average, raised when a workout is planned.</li>
       <li><b>Strength.</b> The index of the chosen muscle group, here the back, against the strength-goal line.</li>
       <li><b>Days.</b> A table per day: workout, steps, intake and whether it stayed inside the goal.</li>
     </ol>

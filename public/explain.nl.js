@@ -85,7 +85,7 @@ export default [
       <li><b>Kracht.</b> Geschat 1RM van je zwaarste oefeningen in de laatste vier weken, met een kleine lijn.</li>
       <li><b>Records.</b> Nieuwe records van de laatste veertien dagen.</li>
       <li><b>Kalender.</b> Acht weken. Een vak is een trainingsdag; de kleur is de minuten van die dag. Wijs een week aan voor het weektotaal, klik een dag voor de oefeningen.</li>
-      <li><b>Plan deze week.</b> Het lichaamsschema van de geplande belasting, het aantal trainingen, de werksets en de zwaarste spiergroepen.</li>
+      <li><b>Plan deze week.</b> Het lichaamsschema toont de vermoeidheid: onder 20% groen, daarna via oranje naar rood, boven 100% rood. Daarnaast het aantal trainingen, de werksets en de zwaarste spiergroepen.</li>
     </ol>
     <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Herstel links en de gezondheidsscore rechts">
     <p class="guide-cap muted small">Herstel en score naast elkaar. Groen betekent dat er niets tegenzit. De score noemt wat meewoog, hier vetpercentage en BMI.</p>

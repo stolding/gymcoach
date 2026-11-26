@@ -1961,7 +1961,7 @@ export default {
   "sig.cardioDone": "Repetisjoner klart de dagene: {a} %, andre dager {b} %.",
   "rec.title": "Muskelrestitusjon",
   "rec.note": "En muskel er uthvilt igjen etter noen dager: trettheten halveres hver andre dag.",
-  "rec.legend": "Under 20 % utmattelse er grønt. Til 75 % går fargen mot oransje, til 100 % mot rødt. Over det forblir rødt og tallet fortsetter. Figuren ved ukeplanen forblir den planlagte belastningen.",
+  "rec.legend": "Under 20 % utmattelse er grønt. Til 75 % går fargen mot oransje, til 100 % mot rødt. Over det forblir rødt og tallet fortsetter.",
   "rec.empty": "Ingen fullført økt med sett ennå, så ingen muskelrestitusjon ennå.",
   "rec.tired": "Fortsatt sliten",
   "rec.rested": "Uthvilt",

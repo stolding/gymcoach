@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fatiguePoints, recoveryFill } from '../public/bodymap.js';
+import { fatiguePoints, recoveryFill, bodyMap } from '../public/bodymap.js';
 import { recoveryAt } from '../lib/muscleRecovery.js';
 
 test('fatigue points are 100 minus recovery and stay above 100', () => {
@@ -17,6 +17,18 @@ test('fatigue colour is green, then orange, then red, and solid red past 100', (
   assert.equal(recoveryFill(24), 'color-mix(in oklab, var(--warn) 4%, var(--accent))');
   assert.equal(recoveryFill(0), 'color-mix(in oklab, var(--warn) 100%, var(--accent))');
   assert.equal(recoveryFill(-1), 'var(--warn)');
+});
+
+test('the week figure paints fatigue on the muscle path and keeps the number above 100', () => {
+  const svg = bodyMap({ quads: -40, pecs: 80 }, {
+    scale: 'recovery',
+    labels: false,
+    caption: (k, pct) => `${k}:${fatiguePoints(pct)}`,
+  });
+  assert.match(svg, /data-m="quads"[^>]*style="fill:var\(--warn\)"/);
+  assert.match(svg, /<title>quads:140<\/title>/);
+  assert.match(svg, /data-m="pecs"[^>]*style="fill:color-mix\(in oklab, var\(--accent\) 0%, var\(--ok\)\)"/);
+  assert.doesNotMatch(svg, /class="bm m3/);
 });
 
 test('recovery from sets is not floored at 0 when fatigue passes 100', () => {

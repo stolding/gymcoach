@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.9 — 26 november 2026
+- Vermoeidheid halveert elke 24 uur, in het herstelraster, het spierfiguur en de widgets. Een last van 90 punten is na één rustdag 45 en na twee rustdagen 22,5.
+
 ## 2.46.8 — 26 november 2026
 - Het herstelraster toont vermoeidheid, niet het herstelpercentage. Op een rustdag daalt dat getal met de halfwaardetijd van 48 uur. Er komt geen last bij van een geplande of meewerkende set buiten de stip.
 

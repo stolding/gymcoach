@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.1 — 26 november 2026
+- De TestFlight-build zet de App Group op beide App ID's voordat het archief wordt gemaakt. Het eerste archief weigerde omdat het profiel die groep nog niet kende.
+
 ## 2.46.0 — 26 november 2026
 - GymCoach Sync 1.14.0 heeft vier widgets voor het vergrendelscherm: weekvoortgang (voor op schema, op schema of achter), de training van vandaag, de meest vermoeide spiergroep en het calorietekort. Ze lezen het scherm dat de app al heeft. Het scherm stuurt nu ook weekStand mee, dezelfde stand als de kaart op Overzicht.
 

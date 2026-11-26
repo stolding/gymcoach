@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.5 — 26 november 2026
+- De widgets lezen een korte samenvatting uit de App Group, dezelfde cijfers als het scherm. Weekdoel, score, spieren, vandaag en calorieën blijven niet op 0 staan. De kaart toont een groot getal, de regels ernaast en een strook onderaan.
+
 ## 2.46.4 — 26 november 2026
 - De widgets tonen de gegevens van het scherm: gezondheidsscore, weekdoel met ringen, het spierfiguur (groen tot rood), de training van vandaag, en calorieën met streef, onderhoud, BMR en inname. Ze staan op het thuisscherm en het vergrendelscherm, in de kleuren van de app.
 

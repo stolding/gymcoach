@@ -171,6 +171,9 @@ struct PhoneFood: Codable {
     var carbs: Int?
     var fat: Int?
     var line: String
+    var maintenance: Int?
+    var rmr: Int?
+    var tone: String?
 }
 
 struct PhoneSession: Codable, Identifiable {
@@ -530,6 +533,7 @@ final class PhoneModel: ObservableObject {
     func loadCache() {
         if let data = try? Data(contentsOf: cacheURL), let snap = try? JSONDecoder().decode(PhoneSnapshot.self, from: data) {
             snapshot = snap
+            WidgetBridge.publish(snap)
         }
     }
 
@@ -542,6 +546,7 @@ final class PhoneModel: ObservableObject {
         do {
             let snap = try await PhoneClient.fetchPhone()
             snapshot = snap
+            WidgetBridge.publish(snap)
             stale = false
             phase = .ready
             error = ""
@@ -590,20 +595,62 @@ final class PhoneModel: ObservableObject {
     }
 }
 
-/// Het ruwe schermantwoord, voor de vergrendelscherm-widgets. Zelfde JSON als de app net ophaalde, inclusief weekStand als de server dat meestuurt.
+/// Korte samenvatting van het scherm, in de App Group. Het ruwe antwoord is te groot en een enkel verkeerd getal maakte de hele widget leeg.
 enum WidgetBridge {
     static let group = "group.com.stolding.gymcoachsync"
-    static let filename = "phone-snapshot.json"
+    static let filename = "widget.json"
+    static let defaultsKey = "widget"
 
-    static func save(_ data: Data) {
-        guard let url = fileURL() else { return }
-        try? data.write(to: url, options: .atomic)
+    static func publish(_ snap: PhoneSnapshot) {
+        let sessions: [[String: Any]] = snap.sessions.map { s in
+            var row: [String: Any] = ["key": s.key, "name": s.name, "done": s.done]
+            if let minutes = s.minutes { row["minutes"] = minutes }
+            let titles = s.exercises.map(\.title).filter { !$0.isEmpty }
+            if !titles.isEmpty { row["titles"] = titles }
+            return row
+        }
+        let muscles: [[String: Any]] = (snap.muscleRecovery?.muscles ?? []).map {
+            ["key": $0.key, "name": $0.name, "pct": $0.pct]
+        }
+        var payload: [String: Any] = [
+            "done": snap.week.done,
+            "target": snap.week.target,
+            "planned": snap.week.planned,
+            "sessions": sessions,
+            "figure": snap.muscleRecovery?.figure ?? "man",
+            "muscles": muscles,
+        ]
+        if let key = snap.nextKey { payload["nextKey"] = key }
+        if let score = snap.score {
+            payload["score"] = score.total
+            if let delta = score.delta { payload["delta"] = delta }
+        }
+        if let food = snap.food {
+            if let kcal = food.kcal { payload["kcal"] = kcal }
+            if let target = food.target { payload["kcalTarget"] = target }
+            if let maintenance = food.maintenance { payload["maintenance"] = maintenance }
+            if let rmr = food.rmr { payload["rmr"] = rmr }
+            if let tone = food.tone { payload["tone"] = tone }
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: payload) else { return }
+        if let url = fileURL() {
+            try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? data.write(to: url, options: .atomic)
+        }
+        UserDefaults(suiteName: group)?.set(data, forKey: defaultsKey)
         WidgetCenter.shared.reloadAllTimelines()
     }
 
+    static func save(_ data: Data) {
+        // Het ruwe scherm blijft als reserve. publish(_:) schrijft de samenvatting die de widget leest.
+        guard let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)?
+            .appendingPathComponent("phone-snapshot.json") else { return }
+        try? data.write(to: url, options: .atomic)
+    }
+
     static func clear() {
-        guard let url = fileURL() else { return }
-        try? FileManager.default.removeItem(at: url)
+        if let url = fileURL() { try? FileManager.default.removeItem(at: url) }
+        UserDefaults(suiteName: group)?.removeObject(forKey: defaultsKey)
         WidgetCenter.shared.reloadAllTimelines()
     }
 

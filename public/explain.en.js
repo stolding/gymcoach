@@ -85,7 +85,7 @@ export default [
       <li><b>Strength.</b> Estimated 1RM of your heaviest exercises in the last four weeks, with a small line.</li>
       <li><b>Records.</b> New records from the last fourteen days.</li>
       <li><b>Calendar.</b> Eight weeks. A cell is a training day; the colour is that day's minutes. Point at a week for the week total, click a day for the exercises.</li>
-      <li><b>This week's plan.</b> The body figure of the planned load, the number of workouts, the working sets and the heaviest muscle groups.</li>
+      <li><b>This week's plan.</b> The body figure shows fatigue: below 20% green, then through orange to red, above 100% red. Next to it, the number of workouts, the working sets and the heaviest muscle groups.</li>
     </ol>
     <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Recovery on the left and the health score on the right">
     <p class="guide-cap muted small">Recovery and score side by side. Green means nothing is in the way. The score names what counted, here fat percentage and BMI.</p>
@@ -120,7 +120,7 @@ export default [
       <li><b>Target and today.</b> The calculated kcal and protein, and whether today is already there.</li>
       <li><b>Set a goal.</b> Body (kilograms and weeks), strength per muscle group, steps per day and activities per week. Saving starts the goal again.</li>
       <li><b>Weight.</b> Your measurements and the straight line to the target weight.</li>
-      <li><b>Intake.</b> What you ate, against the target-kcal line.</li>
+      <li><b>Intake.</b> What you ate, against that day's target kcal. Past days use the real activity from Apple Health. Today keeps the 7-day average, raised when a workout is planned.</li>
       <li><b>Strength.</b> The index of the chosen muscle group, here the back, against the strength-goal line.</li>
       <li><b>Days.</b> A table per day: workout, steps, intake and whether it stayed inside the goal.</li>
     </ol>

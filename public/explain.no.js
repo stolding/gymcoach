@@ -85,7 +85,7 @@ export default [
       <li><b>Styrke.</b> Beregnet 1RM for de tyngste øvelsene de siste fire ukene, med en liten linje.</li>
       <li><b>Rekorder.</b> Nye rekorder de siste fjorten dagene.</li>
       <li><b>Kalender.</b> Åtte uker. En rute er en treningsdag; fargen er minuttene den dagen. Pek på en uke for ukessummen, klikk en dag for øvelsene.</li>
-      <li><b>Planen denne uken.</b> Figuren for den planlagte belastningen, antall treninger, arbeidssettene og de tyngste muskelgruppene.</li>
+      <li><b>Planen denne uken.</b> Figuren viser utmattelse: under 20 % grønt, deretter via oransje mot rødt, over 100 % rødt. Ved siden av antall treninger, arbeidssettene og de tyngste muskelgruppene.</li>
     </ol>
     <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Restitusjon til venstre og helsepoengene til høyre">
     <p class="guide-cap muted small">Restitusjon og poeng ved siden av hverandre. Grønt betyr at ingenting står imot. Poengene nevner hva som telte, her fettprosent og BMI.</p>
@@ -120,7 +120,7 @@ export default [
       <li><b>Mål og stand.</b> De beregnede kcal og proteinet, og om dagen allerede er der.</li>
       <li><b>Sett et mål.</b> Kropp (kilo og uker), styrke per muskelgruppe, skritt per dag og aktiviteter per uke. Lagring lar målet begynne på nytt.</li>
       <li><b>Vekt.</b> Målingene dine og den rette linjen til målvekten.</li>
-      <li><b>Inntak.</b> Det du spiste, mot streken for målkcal.</li>
+      <li><b>Inntak.</b> Det du spiste, mot målkcal den dagen. Tidligere dager bruker den ekte aktiviteten fra Apple Health. I dag blir snittet av 7 dager, og det går opp når en trening er planlagt.</li>
       <li><b>Styrke.</b> Indeksen for den valgte muskelgruppen, her ryggen, mot linjen for styrkemålet.</li>
       <li><b>Dager.</b> En tabell per dag: trening, skritt, inntak og om det holdt seg innenfor målet.</li>
     </ol>

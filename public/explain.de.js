@@ -85,7 +85,7 @@ export default [
       <li><b>Kraft.</b> Geschätztes 1RM deiner schwersten Übungen der letzten vier Wochen, mit einer kleinen Linie.</li>
       <li><b>Rekorde.</b> Neue Rekorde der letzten vierzehn Tage.</li>
       <li><b>Kalender.</b> Acht Wochen. Ein Feld ist ein Trainingstag; die Farbe sind die Minuten des Tages. Eine Woche zeigt die Wochensumme, ein Klick auf einen Tag die Übungen.</li>
-      <li><b>Plan dieser Woche.</b> Die Figur der geplanten Belastung, die Zahl der Trainings, die Arbeitssätze und die schwersten Muskelgruppen.</li>
+      <li><b>Plan dieser Woche.</b> Die Figur zeigt die Ermüdung: unter 20 % grün, danach über Orange nach Rot, über 100 % rot. Daneben die Zahl der Trainings, die Arbeitssätze und die schwersten Muskelgruppen.</li>
     </ol>
     <img class="guide-shot" src="/guide/overzicht-herstel.png" alt="Erholung links und der Gesundheitsscore rechts">
     <p class="guide-cap muted small">Erholung und Score nebeneinander. Grün heißt, dass nichts dagegen spricht. Der Score nennt, was mitzählte, hier Fettanteil und BMI.</p>
@@ -120,7 +120,7 @@ export default [
       <li><b>Soll und Stand.</b> Die berechneten kcal und das Eiweiß, und ob der heutige Tag schon dort ist.</li>
       <li><b>Ziel setzen.</b> Körper (Kilogramm und Wochen), Kraft je Muskelgruppe, Schritte je Tag und Aktivitäten je Woche. Speichern lässt das Ziel neu beginnen.</li>
       <li><b>Gewicht.</b> Deine Messungen und die gerade Linie zum Sollgewicht.</li>
-      <li><b>Aufnahme.</b> Was du gegessen hast, gegen die Linie der Soll-kcal.</li>
+      <li><b>Aufnahme.</b> Was du gegessen hast, gegen die Soll-kcal dieses Tages. Vergangene Tage nutzen die echte Bewegung aus Apple Health. Heute bleibt der 7-Tage-Schnitt, und der steigt, wenn ein Training geplant ist.</li>
       <li><b>Kraft.</b> Der Index der gewählten Muskelgruppe, hier der Rücken, gegen die Linie des Kraftziels.</li>
       <li><b>Tage.</b> Eine Tabelle je Tag: Training, Schritte, Aufnahme und ob es im Ziel blieb.</li>
     </ol>

@@ -723,12 +723,28 @@ function outdoorActBanners(s) {
 }
 
 let selMuscle = null;
+// Herstelpercentages voor het weekfiguur. Onbekend is uitgerust (100). Vermoeidheid mag boven 100.
+function weekRecoveryScores(plan) {
+  const known = new Map((state.muscleRecovery?.muscles || []).map((m) => [m.key, Number(m.pct)]));
+  const scores = {};
+  for (const k of new Set([...Object.keys(plan.muscles || {}), ...known.keys()])) {
+    const n = known.get(k);
+    scores[k] = Number.isFinite(n) ? n : 100;
+  }
+  return scores;
+}
+function fatigueLabel(pct) {
+  const f = fatiguePoints(pct);
+  return f > 100 ? t('rec.fatiguePct', { n: f }) : t('rec.pct', { n: f });
+}
 // Spierkaart en sets per spiergroep van het weekplan (klikbaar per spiergroep).
 function renderWeekMap() {
   const plan = state.plan;
   if (!plan) return;
   const top = Object.entries(plan.muscles || {}).sort((a, b) => b[1] - a[1]);
   if (selMuscle && !plan.muscles?.[selMuscle]) selMuscle = null;
+  const fatigue = weekRecoveryScores(plan);
+  const fatOf = (k) => (k in fatigue ? ` · ${esc(fatigueLabel(fatigue[k]))}` : '');
   let detail = '';
   if (selMuscle) {
     const rows = [];
@@ -736,20 +752,20 @@ function renderWeekMap() {
       const w = e.muscles?.[selMuscle];
       if (w) rows.push(`<li><button class="linklike" data-jump="${esc(s.key)}|${i}"><b>${esc(s.name)}</b> · ${esc(e.title)}</button> <span class="muted">${t('app.sets', { n: e.sets.length, a: w < 1 ? t('app.secundair') : '' })}</span></li>`);
     });
-    detail = `<div class="msel"><div class="row between"><b>${t('app.setsDezeWeek', { a: esc(MUSCLE_LABELS[selMuscle]), b: Math.round(plan.muscles[selMuscle] * 10) / 10 })}</b><button class="btn small ghost" data-clear>${t('app.allesTonen')}</button></div><ul>${rows.join('')}</ul></div>`;
+    detail = `<div class="msel"><div class="row between"><b>${t('app.setsDezeWeek', { a: esc(MUSCLE_LABELS[selMuscle]), b: Math.round(plan.muscles[selMuscle] * 10) / 10 })}${fatOf(selMuscle)}</b><button class="btn small ghost" data-clear>${t('app.allesTonen')}</button></div><ul>${rows.join('')}</ul></div>`;
   }
   $('#planOverview').innerHTML = `<div class="card week-map">
-    <div class="wm-fig">${bodyMap(plan.muscles || {}, { height: 340, title: t('app.spiergroepenDezeWeek'), selected: selMuscle })}
+    <div class="wm-fig">${bodyMap(fatigue, { height: 340, title: t('app.spiergroepenDezeWeek'), selected: selMuscle, figure: figureFor(state.settings || {}), scale: 'recovery', caption: (k, pct) => `${MUSCLE_LABELS[k]}: ${fatigueLabel(pct)}` })}
       <div class="muted small" style="text-align:center">${t('app.klikOpEenSpiergroep')}</div></div>
     <div class="wm-info">
       <div class="eyebrow">${t('ui.stats.dezeWeek')}</div>
       ${plan.focus?.length ? `<div class="chips-inline">${plan.focus.map((f) => `<span class="chip on">${esc(FOCUS_LABELS[f] || f)}</span>`).join('')}</div>` : '<div class="muted small">' + t('app.geenFocusGekozenEvenwichtig') + '</div>'}
       ${plan.wish ? `<div class="wish">“${esc(plan.wish)}”</div>` : ''}
       <div class="eyebrow" style="margin-top:.8rem">${t('app.setsPerSpiergroepIncl')}</div>
-      <div class="mbars">${top.map(([k, v]) => `<button class="mbar ${selMuscle === k ? 'on' : selMuscle ? 'off' : ''}" data-m="${k}" aria-pressed="${selMuscle === k}"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / top[0][1]) * 100}%"></div></div><b>${Math.round(v * 10) / 10}</b></button>`).join('')}</div>
+      <div class="mbars">${top.map(([k, v]) => `<button class="mbar ${selMuscle === k ? 'on' : selMuscle ? 'off' : ''}" data-m="${k}" aria-pressed="${selMuscle === k}"><span>${esc(MUSCLE_LABELS[k] || k)}</span><div class="ht"><div class="hf" style="width:${(v / top[0][1]) * 100}%"></div></div><b>${Math.round(v * 10) / 10}${fatOf(k)}</b></button>`).join('')}</div>
       ${detail}
       ${balanceHtml(plan)}
-      <div class="legend"><span class="sq m1"></span>${t('app.licht')} <span class="sq m2"></span>${t('app.gemiddeld')} <span class="sq m3"></span>${t('app.veel')}</div>
+      <p class="muted small">${t('rec.legend')}</p>
     </div></div>`;
   highlightSessions();
   bindWhenDrop();

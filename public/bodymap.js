@@ -152,7 +152,8 @@ export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Get
       if (!Object.prototype.hasOwnProperty.call(scores, k)) return `<path d="${d}" class="bm m0${sel}" data-m="${k}"/>`;
       const raw = Number(scores[k]);
       const pct = Number.isFinite(raw) ? raw : 0;
-      return `<path d="${d}" class="bm rec${sel}" data-m="${k}" style="fill:${recoveryFill(pct)}"/>`;
+      const title = caption ? `<title>${caption(k, pct)}</title>` : '';
+      return `<path d="${d}" class="bm rec${sel}" data-m="${k}" style="fill:${recoveryFill(pct)}">${title}</path>`;
     }
     const value = scores[k] || 0;
     const lv = level(value, max);
@@ -162,7 +163,7 @@ export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Get
   };
   const base = (arr) => arr.map((d) => `<path d="${d}" class="bm-base"/>`).join('');
   const view = (dx, parts, baseParts, label) => `<g transform="translate(${dx} 0)">${base(baseParts)}${parts.map(shape).join('')}${labels ? `<text x="100" y="416" text-anchor="middle" class="bm-lbl">${label}</text>` : ''}</g>`;
-  const trained = Object.entries(scores).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([k]) => MUSCLE_LABELS[k]).join(', ');
+  const trained = Object.entries(scores).filter(([, v]) => scale === 'recovery' || v > 0).sort((a, b) => b[1] - a[1]).map(([k]) => MUSCLE_LABELS[k]).join(', ');
   return `<svg class="bodymap${selected ? ' has-sel' : ''}" viewBox="0 0 400 ${labels ? 424 : 404}" style="height:${height}px" role="img" aria-label="${title}: ${trained || 'geen'}">
     ${view(0, FRONT, FRONT_BASE, T('sum.voor'))}${view(200, BACK, BACK_BASE, T('sum.achter'))}</svg>`;
 }

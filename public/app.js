@@ -843,7 +843,7 @@ function balanceHtml(plan) {
         const barFresh = Math.max(0, Math.min(100, fresh));
         const inner = mix === 'stack' ? `<span class="wb-stack"><i class="wb-fresh" style="height:${barFresh}%"></i><i class="wb-tired" style="height:${100 - barFresh}%;background:${weekGridFill(fresh)}"></i></span>` : '';
         const paint = mix === 'stack' ? '' : ` style="background:${weekGridFill(fresh)}"`;
-        const label = fatigue > 100 ? t('rec.fatiguePct', { n: Math.round(fatigue) }) : `${fmtNum(fresh, { maximumFractionDigits: 1 })}%`;
+        const label = t('rec.fatiguePct', { n: fmtNum(fatigue, { maximumFractionDigits: 1 }) });
         const tip = hit ? `${hit.name} · ${label}` : label;
         const drop = ` data-drop-block="${block}"`;
         return `<span class="wb-seg ${mix}${hit ? ' has-hit' : ''}" title="${esc(tip)}"${paint}${jump}${drop}>${inner}${dot}</span>`;

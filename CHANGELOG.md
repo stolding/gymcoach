@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.8 — 26 november 2026
+- Het herstelraster toont vermoeidheid, niet het herstelpercentage. Op een rustdag daalt dat getal met de halfwaardetijd van 48 uur. Er komt geen last bij van een geplande of meewerkende set buiten de stip.
+
 ## 2.46.7 — 26 november 2026
 - Het herstelraster toont de echte daling op een rustdag. De halfwaardetijd blijft 48 uur; die is aan het eind maar een paar punten, en die punten waren weg door afronden en één groene kleur onder 20.
 

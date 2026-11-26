@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.44.2 — 26 november 2026
+- Op Inname en de streeflijn telt een voorbije dag de echte beweging uit Apple Health, niet het gemiddelde. De kleur vergelijkt de inname met dat onderhoud en die streeflijn. Vandaag blijft het gemiddelde van 7 dagen, en dat gaat omhoog als er die dag een training gepland is.
+
 ## 2.44.1 — 26 november 2026
 - Het lichaamsschema op het weekplan toont de vermoeidheid: onder 20% groen, tot 75% van groen naar oranje, tot 100% van oranje naar rood. Boven 100 punten blijft rood en het getal loopt door. De set-aantallen blijven ernaast staan.
 

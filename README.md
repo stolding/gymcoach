@@ -54,6 +54,7 @@ With a demo account and sample data; dark theme.
 - **Done this week**: workouts you've already done are marked in the plan.
 - **Recovery and signals**: GymCoach combines your data. A recovery score (good / take care / take it easy) from resting heart rate, HRV, reps achieved and how much your reps slow down within a set; with *take it easy* you can make the next workout lighter and the deload week comes earlier. Plus: rep slowdown per set in the report, a warning when you lose weight faster than ~1% per week while losing muscle, and a note when cardio ended within 3 hours before a strength workout. Each with its sources in the app. Overview also shows muscle recovery: a percentage per muscle group from completed sets, with a chart. GymCoach Sync shows the same block. The weekly-plan figure stays the planned load.
 - **Optional AI coach** via the Claude API or a local language model (OpenAI-compatible). Suggestions are validated and only applied when you click them.
+- **Intake and the target line**: a past day compares what you ate with the real activity from Apple Health. Today keeps the 7-day average, raised when a workout is planned.
 
 **Looking back**
 - **Workout report** after every workout (in the app, as PDF and by email): comparison with the last 4 sessions, heart rate per set and over the whole workout with zones, time under tension and rest. Clicking a set shows Speediance power and range of motion per rep, left and right separately, with the fade in each. The recovery score still uses the time per rep.

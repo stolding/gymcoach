@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.45.0 — 26 november 2026
+- Op Overzicht staat een kaart voor deze week. Die zet de sets die je al deed naast wat er op dit uur al aan de beurt was, en zegt of je voorloopt, op schema zit of achterloopt. Eronder staat het plan van deze week naast vorige week: trainingen, sets, minuten en gepland volume.
+
 ## 2.44.0 — 26 november 2026
 - Als de AI-coach aan staat, loopt die het plan van de komende week na. Hij vergelijkt het met de laatste weken, wat je haalde, de trend en het herstel. Hij mag alleen een oefening ruilen uit de catalogus, of de pasvorm van de training voorstellen: balans, een dubbele oefening, de lengte, de warming-up en de cooldown. Gewicht en herhalingen blijven van de app. Je ziet het verschil en kiest zelf. Staat de coach uit, of het vinkje uit, dan wordt hij niet gevraagd.
 

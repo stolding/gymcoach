@@ -2339,6 +2339,64 @@ function renderMuscleRecovery() {
     document.addEventListener('pointerdown', renderMuscleRecovery.outside, true);
   }
 }
+const WS_LABEL = {
+  ahead: () => t('ws.ahead'),
+  on: () => t('ws.on'),
+  behind: () => t('ws.behind'),
+  done: () => t('ws.done'),
+  wait: () => t('ws.wait'),
+  empty: () => t('ws.empty'),
+};
+function wsDelta(now, prev) {
+  const d = (Number(now) || 0) - (Number(prev) || 0);
+  const cls = d > 0 ? 'up' : d < 0 ? 'down' : 'muted';
+  const sign = d > 0 ? '+' : '';
+  return `<b class="${cls}">${sign}${fmt(d)}</b>`;
+}
+function renderWeekStand() {
+  const el = $('#weekStand');
+  if (!el) return;
+  const s = state.overview?.weekStand;
+  if (!s || s.state === 'empty' || state.setup?.needed) {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+    return;
+  }
+  el.classList.remove('hidden');
+  const sets = s.sets || {};
+  const planned = Math.max(0, sets.planned || 0);
+  const done = Math.max(0, sets.done || 0);
+  const expected = Math.max(0, sets.expected || 0);
+  const pct = planned ? Math.max(0, Math.min(100, Math.round((done / planned) * 100))) : 0;
+  const mark = planned ? Math.max(0, Math.min(100, Math.round((expected / planned) * 100))) : 0;
+  const lead = s.state === 'done' ? t('ws.leadDone', { planned })
+    : s.state === 'wait' ? t('ws.leadWait', { planned })
+    : t('ws.lead', { done, planned, expected });
+  const prev = s.previous;
+  const cmp = prev ? `<div class="ws-cmp small">
+      <span>${t('ws.cmpSets', { now: fmt(s.planned.sets), prev: fmt(prev.sets) })} ${wsDelta(s.planned.sets, prev.sets)}</span>
+      <span>${t('ws.cmpSessions', { now: fmt(s.planned.sessions), prev: fmt(prev.sessions) })} ${wsDelta(s.planned.sessions, prev.sessions)}</span>
+      <span>${t('ws.cmpMinutes', { now: fmt(s.planned.minutes), prev: fmt(prev.minutes) })} ${wsDelta(s.planned.minutes, prev.minutes)}</span>
+      ${(s.planned.volume || prev.volume) ? `<span>${t('ws.cmpVolume', { now: fmt(s.planned.volume), prev: fmt(prev.volume) })} ${wsDelta(s.planned.volume, prev.volume)}</span>` : ''}
+    </div>` : `<div class="ws-cmp small muted">${t('ws.noPrev')}</div>`;
+  const label = (WS_LABEL[s.state] || WS_LABEL.wait)();
+  el.className = `card full ws-${s.state}`;
+  el.innerHTML = `<div class="ws">
+      <div>
+        <div class="eyebrow">${t('ws.title')}</div>
+        <div class="ws-status">${esc(label)}</div>
+        <p class="small" style="margin:.35rem 0 0">${esc(lead)}</p>
+        ${planned ? `<div class="ws-track" role="img" aria-label="${esc(label)}"><div class="ws-fill" style="width:${pct}%"></div><i class="ws-mark" style="left:${mark}%" title="${esc(t('ws.mark'))}"></i></div>
+          <div class="ws-scale"><span>${t('ws.scaleDone', { n: fmt(done) })}</span><span>${t('ws.scalePlanned', { n: fmt(planned) })}</span></div>` : ''}
+      </div>
+      <div class="ws-nums">
+        <div class="ws-num"><div class="eyebrow">${t('ws.sets')}</div><div class="mid">${fmt(done)}<small>/${fmt(planned)}</small></div></div>
+        <div class="ws-num"><div class="eyebrow">${t('ws.sessions')}</div><div class="mid">${fmt(s.sessions.done)}<small>/${fmt(s.sessions.planned)}</small></div></div>
+        <div class="ws-num"><div class="eyebrow">${t('ws.minutes')}</div><div class="mid">${fmt(s.minutes.done)}<small>/${fmt(s.minutes.planned)}</small></div></div>
+      </div>
+      ${cmp}
+    </div>`;
+}
 function renderHome() {
   const o = state.overview; if (!o) return;
   const now = new Date();
@@ -2350,6 +2408,7 @@ function renderHome() {
 
   const n = o.next;
   document.querySelector('.dash').classList.toggle('setup-mode', !!state.setup?.needed);
+  renderWeekStand();
   if (state.setup?.needed) { renderSetup(); return; }
   renderHealth();
   renderMuscleRecovery();

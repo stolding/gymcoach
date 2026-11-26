@@ -8,6 +8,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 ## 2.44.0 — 26 november 2026
 - Als de AI-coach aan staat, loopt die het plan van de komende week na. Hij vergelijkt het met de laatste weken, wat je haalde, de trend en het herstel. Hij mag alleen een oefening ruilen uit de catalogus, of de pasvorm van de training voorstellen: balans, een dubbele oefening, de lengte, de warming-up en de cooldown. Gewicht en herhalingen blijven van de app. Je ziet het verschil en kiest zelf. Staat de coach uit, of het vinkje uit, dan wordt hij niet gevraagd.
 
+## 2.43.4 — 26 november 2026
+- Spiervermoeidheid kleurt onder 20% groen, van 20% tot 75% van groen naar oranje, en van 75% tot 100% van oranje naar rood. Boven 100 punten blijft de kleur rood en het getal loopt door, in het lichaamsschema, de balk en het weekoverzicht.
+
 ## 2.43.3 — 26 november 2026
 - Tussen de streeflijn en de ruststofwisseling kleurt de bovenste helft groen, het kwart daaronder geel en het kwart het dichtst bij de BMR rood. De kleur vult de hele kolom. Onder de BMR blijft de dag leeg. Een overschot is rood alleen boven onderhoud.
 

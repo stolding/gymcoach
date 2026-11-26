@@ -119,26 +119,26 @@ export function level(v, max) {
   return r > 0.66 ? 3 : r > 0.33 ? 2 : 1;
 }
 
-// Zelfde grenzen als vóór 2.14.1 (commit 505e22b): vermoeidheid in punten. Tot 10 is de donkere tint, daarboven het oranje verloop.
-export function fatigueLevel(v) {
-  if (!(v > 10)) return 0;
-  if (v < 25) return 1;
-  if (v < 50) return 2;
-  return 3;
+// Vermoeidheid in punten: 0 is uitgerust, 100 is de volle belasting, daarboven loopt het door.
+export function fatiguePoints(recoveryPct) {
+  const n = Number(recoveryPct);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round(100 - n);
 }
-const FATIGUE_FILL = [
-  'color-mix(in srgb, var(--ink) 16%, var(--surface))',
-  'color-mix(in srgb, var(--accent) 38%, var(--surface))',
-  'color-mix(in srgb, var(--accent) 70%, var(--surface))',
-  'var(--accent)',
-];
 
-// Onder 50% hersteld (meer dan 50% vermoeid): het oude oranje verloop. Vanaf 50% loopt alleen die helft van oranje naar groen.
+// Onder 20 punten groen. Van 20 tot 75 van groen naar oranje, van 75 tot 100 van oranje naar rood. Daarboven rood.
 export function recoveryFill(pct) {
-  const n = Math.max(0, Math.min(100, Math.round(Number.isFinite(pct) ? pct : 0)));
-  if (n < 50) return FATIGUE_FILL[fatigueLevel(100 - n)];
-  const t = Math.round((n - 50) * 2);
-  return `color-mix(in srgb, var(--ok) ${t}%, var(--accent))`;
+  const f = fatiguePoints(Number.isFinite(Number(pct)) ? pct : 100);
+  if (f < 20) return 'var(--ok)';
+  if (f <= 75) {
+    const t = Math.round(((f - 20) / 55) * 100);
+    return `color-mix(in oklab, var(--accent) ${t}%, var(--ok))`;
+  }
+  if (f <= 100) {
+    const t = Math.round(((f - 75) / 25) * 100);
+    return `color-mix(in oklab, var(--warn) ${t}%, var(--accent))`;
+  }
+  return 'var(--warn)';
 }
 
 // Spierkaart als SVG (voor- en achteraanzicht). Standaard: geplande sets.
@@ -151,8 +151,7 @@ export function bodyMap(scores = {}, { height = 220, labels = true, title = 'Get
       const sel = !selected ? '' : (k === selected ? ' sel' : ' dim');
       if (!Object.prototype.hasOwnProperty.call(scores, k)) return `<path d="${d}" class="bm m0${sel}" data-m="${k}"/>`;
       const raw = Number(scores[k]);
-      const pct = Math.max(0, Math.min(100, Math.round(Number.isFinite(raw) ? raw : 0)));
-      if (pct < 50) return `<path d="${d}" class="bm m${fatigueLevel(100 - pct)}${sel}" data-m="${k}"/>`;
+      const pct = Number.isFinite(raw) ? raw : 0;
       return `<path d="${d}" class="bm rec${sel}" data-m="${k}" style="fill:${recoveryFill(pct)}"/>`;
     }
     const value = scores[k] || 0;

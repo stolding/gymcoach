@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.43.1 — 26 november 2026
+- De innamegrafiek kleurt ruimer. Onder de streeflijn blijft groen, ook bij een groter tekort. Geel pas als de inname minstens 10% van het onderhoud boven de streeflijn zit. Rood alleen boven onderhoud. Onder de ruststofwisseling blijft de dag leeg. De hover, ook op het kleine lijntje, toont hoe de streeflijn is opgebouwd, het doeltekort en het tekort van die dag.
+
 ## 2.43.0 — 26 november 2026
 - De grafiek Inname en de streeflijn, en het lijntje bij Doel op het overzicht, tonen ook onderhoud (wat het lichaam nodig heeft) en de ruststofwisseling (BMR, als je niets doet). Het verschil met de streeflijn blijft zichtbaar. De achtergrond kleurt het tekort: groen als het bij het doel past, geel als het iets te veel of te weinig is, rood als het ver uit de buurt ligt.
 

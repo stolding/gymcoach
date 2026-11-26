@@ -1,4 +1,5 @@
 import Foundation
+import WidgetKit
 
 enum PhonePhase { case login, ready }
 
@@ -477,8 +478,11 @@ enum PhoneClient {
         if http.statusCode == 401 { throw PhoneError.unauthorized }
         if http.statusCode == 404 { throw PhoneError.oldServer }
         guard http.statusCode == 200 else { throw PhoneError.server(http.statusCode, message(data) ?? "HTTP \(http.statusCode)") }
-        do { return try JSONDecoder().decode(PhoneSnapshot.self, from: data) }
-        catch { throw PhoneError.decode }
+        do {
+            let snap = try JSONDecoder().decode(PhoneSnapshot.self, from: data)
+            WidgetBridge.save(data)
+            return snap
+        } catch { throw PhoneError.decode }
     }
 
     private static func request(_ path: String, method: String = "GET", body: Data? = nil) throws -> URLRequest {
@@ -582,5 +586,29 @@ final class PhoneModel: ObservableObject {
         phase = .login
         error = ""
         try? FileManager.default.removeItem(at: cacheURL)
+        WidgetBridge.clear()
+    }
+}
+
+/// Het ruwe schermantwoord, voor de vergrendelscherm-widgets. Zelfde JSON als de app net ophaalde, inclusief weekStand als de server dat meestuurt.
+enum WidgetBridge {
+    static let group = "group.com.stolding.gymcoachsync"
+    static let filename = "phone-snapshot.json"
+
+    static func save(_ data: Data) {
+        guard let url = fileURL() else { return }
+        try? data.write(to: url, options: .atomic)
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    static func clear() {
+        guard let url = fileURL() else { return }
+        try? FileManager.default.removeItem(at: url)
+        WidgetCenter.shared.reloadAllTimelines()
+    }
+
+    private static func fileURL() -> URL? {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)?
+            .appendingPathComponent(filename)
     }
 }

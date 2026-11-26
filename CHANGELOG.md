@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.45.0 — 26 november 2026
+- GymCoach Sync 1.14.0 heeft vier widgets voor het vergrendelscherm: weekvoortgang (voor op schema, op schema of achter), de training van vandaag, de meest vermoeide spiergroep en het calorietekort. Ze lezen het scherm dat de app al heeft, inclusief weekStand als de server dat meestuurt.
+
 ## 2.44.1 — 26 november 2026
 - Het lichaamsschema op het weekplan toont de vermoeidheid: onder 20% groen, tot 75% van groen naar oranje, tot 100% van oranje naar rood. Boven 100 punten blijft rood en het getal loopt door. De set-aantallen blijven ernaast staan.
 

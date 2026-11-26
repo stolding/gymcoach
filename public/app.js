@@ -1,7 +1,7 @@
 // GymCoach — de app in de browser (één bestand, geen framework).
 // Tabbladen: Overzicht, Plan, Doel, Lichaam, Training, Terugkijken en Instellingen.
 // Alle gegevens komen van de eigen server via api(); grafieken zijn zelfgemaakte SVG's.
-import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure, recoveryFill } from './bodymap.js';
+import { bodyMap, MUSCLE_LABELS, figureFor, setDefaultFigure, recoveryFill, fatiguePoints } from './bodymap.js';
 import { TERMS_VERSION, termsHtml } from './terms.js';
 import { explain } from './explain.js';
 import { openEditor } from './editor.js';
@@ -788,10 +788,10 @@ function slotInColumn(dayBlock, fromSlot) {
   const half = Number(fromSlot) % 2 === 1 ? 1 : 0;
   return found[Math.min(half, found.length - 1)];
 }
-// Geleidelijk van oranje (0, vermoeid) naar groen (100, hersteld), zonder sprong op de helft.
-function recoveryBlend(pct) {
-  const n = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
-  return `color-mix(in oklab, var(--ok) ${n}%, var(--accent))`;
+// Herstelpercentage zoals het binnenkomt. Alleen de balkhoogte blijft binnen 0–100; het getal niet.
+function recoveryReading(pct) {
+  const n = Number(pct);
+  return Number.isFinite(n) ? Math.round(n) : 0;
 }
 const WB_GRAD = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><defs><linearGradient id="wbGrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--ok)"/></linearGradient></defs><rect x="1.5" y="1.5" width="13" height="13" rx="2" fill="url(#wbGrad)"/></svg>';
 const WB_STACK = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="9" width="13" height="5.5" rx="1.2" fill="var(--accent)"/><rect x="1.5" y="1.5" width="13" height="6.5" rx="1.2" fill="var(--ok)"/></svg>';
@@ -809,10 +809,13 @@ function balanceHtml(plan) {
         const hit = (row.hits || []).find((h) => h.block === block);
         const jump = hit ? ` data-jump="${esc(hit.key)}|${hit.i}"` : '';
         const dot = hit ? `<i class="wb-dot ${hit.role === 'prime' ? 'prime' : ''}"${pastWeek ? '' : ` draggable="true" data-drag="${esc(hit.key)}" title="${esc(t('app.dragWhen'))}"`}></i>` : '';
-        const fresh = Math.max(0, Math.min(100, Math.round(Number(pct) || 0)));
-        const inner = mix === 'stack' ? `<span class="wb-stack"><i class="wb-fresh" style="height:${fresh}%"></i><i class="wb-tired" style="height:${100 - fresh}%"></i></span>` : '';
-        const paint = mix === 'stack' ? '' : ` style="background:${recoveryBlend(fresh)}"`;
-        const tip = hit ? `${hit.name} · ${pct}%` : `${pct}%`;
+        const fresh = recoveryReading(pct);
+        const fatigue = fatiguePoints(fresh);
+        const barFresh = Math.max(0, Math.min(100, fresh));
+        const inner = mix === 'stack' ? `<span class="wb-stack"><i class="wb-fresh" style="height:${barFresh}%"></i><i class="wb-tired" style="height:${100 - barFresh}%;background:${recoveryFill(fresh)}"></i></span>` : '';
+        const paint = mix === 'stack' ? '' : ` style="background:${recoveryFill(fresh)}"`;
+        const label = fatigue > 100 ? t('rec.fatiguePct', { n: fatigue }) : `${fresh}%`;
+        const tip = hit ? `${hit.name} · ${label}` : label;
         const drop = ` data-drop-block="${block}"`;
         return `<span class="wb-seg ${mix}${hit ? ' has-hit' : ''}" title="${esc(tip)}"${paint}${jump}${drop}>${inner}${dot}</span>`;
       }).join('');
@@ -1060,7 +1063,7 @@ function sessionAfter(s, done) {
   const rows = Object.entries(s.muscles || {}).filter(([, v]) => v > 0).map(([k, load]) => {
     const now = known.has(k) ? known.get(k) : null;
     // al gedaan: die sets zitten al in de huidige stand; anders aftrekken van 100% als de spier nog geen historie heeft
-    const pct = done ? now : Math.round(Math.min(100, Math.max(0, (now == null ? 100 : now) - cost * load)));
+    const pct = done ? now : Math.round(Math.min(100, (now == null ? 100 : now) - cost * load));
     if (pct != null) scores[k] = pct;
     return { k, pct, load };
   });
@@ -1105,12 +1108,15 @@ function openSession(session) {
   if (planPick.muscle && !muscles.some(([k]) => k === planPick.muscle)) planPick.muscle = null;
   const pick = planPick.muscle;
   const fig = figureFor(state.settings || {});
-  // pct is herstel (100 = uitgerust). De balk toont vermoeidheid in oranje en de rest in groen.
+  // rest is herstel (100 = uitgerust). De balk toont vermoeidheid; boven 100 punten blijft het vak rood en het getal loopt door.
   const splitCell = (rest) => {
     if (rest == null) return '<div class="cell"><div class="ht split"></div><b>—</b></div>';
-    const fresh = Math.round(Math.max(0, Math.min(100, rest)));
-    const tired = 100 - fresh;
-    return `<div class="cell"><div class="ht split"><div class="hf tired" style="width:${tired}%"></div><div class="hf fresh" style="width:${fresh}%"></div></div><b>${esc(t('rec.pct', { n: tired }))}</b></div>`;
+    const fresh = recoveryReading(rest);
+    const fatigue = fatiguePoints(fresh);
+    const barFresh = Math.max(0, Math.min(100, fresh));
+    const barTired = 100 - barFresh;
+    const num = fatigue > 100 ? t('rec.fatiguePct', { n: fatigue }) : t('rec.pct', { n: fatigue });
+    return `<div class="cell"><div class="ht split"><div class="hf tired" style="width:${barTired}%;background:${recoveryFill(fresh)}"></div><div class="hf fresh" style="width:${barFresh}%"></div></div><b>${esc(num)}</b></div>`;
   };
   const figs = muscles.length ? `<div class="plan-board">
     <div class="plan-row figs">
@@ -2240,10 +2246,14 @@ function renderMuscleRecovery() {
   const placeTip = (clientX, clientY) => {
     const m = known.get(recTip);
     if (!m || !tip) return;
-    const pct = Math.max(0, Math.min(100, Math.round(Number(m.pct) || 0)));
+    const pct = recoveryReading(m.pct);
+    const fatigue = fatiguePoints(pct);
+    const over = fatigue > 100;
     const mix = recoveryFill(pct);
-    tip.setAttribute('aria-label', t('rec.tip', { name: nameOf(m), n: pct }));
-    tip.innerHTML = `<div class="rec-tip-name">${esc(nameOf(m))}</div><div class="rec-tip-label">${esc(t('rec.chart'))}</div><div class="rec-tip-row"><div class="ht"><div class="hf" style="width:${pct}%;background:${mix}"></div></div><b>${esc(t('rec.pct', { n: pct }))}</b></div>`;
+    const bar = over ? 100 : Math.max(0, Math.min(100, pct));
+    tip.setAttribute('aria-label', over ? t('rec.tipFatigue', { name: nameOf(m), n: fatigue }) : t('rec.tip', { name: nameOf(m), n: pct }));
+    const num = over ? t('rec.fatiguePct', { n: fatigue }) : t('rec.pct', { n: pct });
+    tip.innerHTML = `<div class="rec-tip-name">${esc(nameOf(m))}</div><div class="rec-tip-label">${esc(t(over ? 'ui.plan.fatigue' : 'rec.chart'))}</div><div class="rec-tip-row"><div class="ht"><div class="hf" style="width:${bar}%;background:${mix}"></div></div><b>${esc(num)}</b></div>`;
     tip.classList.remove('hidden');
     const card = el.getBoundingClientRect();
     const fig = el.querySelector('.rec-fig')?.getBoundingClientRect();

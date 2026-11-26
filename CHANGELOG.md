@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.0 — 26 november 2026
+- GymCoach Sync 1.14.0 heeft vier widgets voor het vergrendelscherm: weekvoortgang (voor op schema, op schema of achter), de training van vandaag, de meest vermoeide spiergroep en het calorietekort. Ze lezen het scherm dat de app al heeft. Het scherm stuurt nu ook weekStand mee, dezelfde stand als de kaart op Overzicht.
+
 ## 2.45.0 — 26 november 2026
 - Op Overzicht staat een kaart voor deze week. Die zet de sets die je al deed naast wat er op dit uur al aan de beurt was, en zegt of je voorloopt, op schema zit of achterloopt. Eronder staat het plan van deze week naast vorige week: trainingen, sets, minuten en gepland volume.
 

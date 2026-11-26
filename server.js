@@ -938,6 +938,7 @@ const routes = {
       version: VERSION, name: auth.publicUser(store.currentUser())?.name || '', today: goal.todayISO(),
       plan: rawPlan, settings: ctx.settings, workouts: ctx.workouts, sessions: ctx.sessions,
       history: ctx.history, bodyLog: ctx.bodyLog, daily, goalView: gv, activities,
+      prevPlan: engine.localizePlan(store.getArchivedPlan(engine.isoWeek(new Date(Date.now() - 7 * 864e5)))),
       recovery: signals.recovery({ daily, bodyLog: ctx.bodyLog, history: ctx.history }),
       health: hs,
       score: scoreView,

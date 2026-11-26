@@ -7,20 +7,25 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "1.13.12"
-    CURRENT_PROJECT_VERSION: "28"
+    MARKETING_VERSION: "1.14.0"
+    CURRENT_PROJECT_VERSION: "29"
 targets:
   GymCoachSync:
     type: application
     platform: iOS
     sources:
       - GymCoachSync
+    dependencies:
+      - target: GymCoachWidgets
+        embed: true
     entitlements:
       path: GymCoachSync/GymCoachSync.entitlements
       properties:
         com.apple.developer.healthkit: true
         com.apple.developer.healthkit.access: []
         com.apple.developer.healthkit.background-delivery: true
+        com.apple.security.application-groups:
+          - group.com.stolding.gymcoachsync
     info:
       path: GymCoachSync/Info.plist
       properties:
@@ -51,3 +56,29 @@ targets:
         SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: NO
+  GymCoachWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - GymCoachWidgets
+    entitlements:
+      path: GymCoachWidgets/GymCoachWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.stolding.gymcoachsync
+    info:
+      path: GymCoachWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: GymCoach
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.stolding.gymcoachsync.widgets
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: NO
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES

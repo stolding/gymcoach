@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.43.4 — 26 november 2026
+- Spiervermoeidheid kleurt onder 20% groen, van 20% tot 75% van groen naar oranje, en van 75% tot 100% van oranje naar rood. Boven 100 punten blijft de kleur rood en het getal loopt door, in het lichaamsschema, de balk en het weekoverzicht.
+
 ## 2.43.3 — 26 november 2026
 - Tussen de streeflijn en de ruststofwisseling kleurt de bovenste helft groen, het kwart daaronder geel en het kwart het dichtst bij de BMR rood. De kleur vult de hele kolom. Onder de BMR blijft de dag leeg. Een overschot is rood alleen boven onderhoud.
 

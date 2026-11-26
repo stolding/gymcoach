@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.45.0 — 26 november 2026
+- Op Overzicht staat een kaart voor deze week. Die zet de sets die je al deed naast wat er op dit uur al aan de beurt was, en zegt of je voorloopt, op schema zit of achterloopt. Eronder staat het plan van deze week naast vorige week: trainingen, sets, minuten en gepland volume.
+
 ## 2.44.2 — 26 november 2026
 - Op Inname en de streeflijn telt een voorbije dag de echte beweging uit Apple Health, niet het gemiddelde. De kleur vergelijkt de inname met dat onderhoud en die streeflijn. Vandaag blijft het gemiddelde van 7 dagen, en dat gaat omhoog als er die dag een training gepland is.
 

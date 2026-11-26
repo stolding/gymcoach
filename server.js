@@ -512,7 +512,10 @@ const routes = {
       accessories: engine.ACCESSORIES.map((a) => ({ key: a.key, label: a.label, count: ctx.library.filter(a.test).length })),
       library: await libraryStatus(),
       withings: await withings.status(),
-      overview: engine.overview({ workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, plan, settings: ctx.settings }),
+      overview: engine.overview({
+        workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, plan, settings: ctx.settings, sessions: ctx.sessions,
+        prevPlan: engine.localizePlan(store.getArchivedPlan(engine.isoWeek(new Date(Date.now() - 7 * 864e5)))),
+      }),
       muscleRecovery: muscleRec.report(ctx.history, goal.todayISO()),
       week: engine.weekNumber(ctx.sessions),
       signals: await userSignals(ctx),

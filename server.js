@@ -128,7 +128,46 @@ async function context() {
 // Oefeningen die de AI mag voorstellen: uit de catalogus, zonder vermeden oefeningen.
 function allowedExercises(library, settings) {
   const ids = new Set(Object.values(engine.PATTERNS).flatMap((p) => p.ids));
-  return engine.usableLibrary(library, settings).filter((e) => ids.has(Number(e.id)) && !settings.avoidIds.includes(Number(e.id))).map((e) => ({ id: e.id, name: e.name, muscle: e.muscle }));
+  const avoid = new Set(settings.avoidIds || []);
+  return engine.usableLibrary(library, settings).filter((e) => ids.has(Number(e.id)) && !avoid.has(Number(e.id))).map((e) => ({ id: e.id, name: e.name, muscle: e.muscle }));
+}
+
+function coachCatalog(library, settings) {
+  const avoid = new Set(settings?.avoidIds || []);
+  return engine.usableLibrary(library, settings).filter((e) => !avoid.has(Number(e.id)));
+}
+
+function warmChoicesFor(library, plan) {
+  const used = new Set();
+  for (const s of plan?.sessions || []) {
+    for (const x of [...(s.warmup?.cable || []), ...(s.warmup?.mobility || []), ...(s.cooldown || [])]) used.add(Number(x.id));
+  }
+  const pick = (tab, cable, n) => library
+    .filter((e) => e.tab === tab && /cable/i.test(e.name || '') === cable && !used.has(Number(e.id)))
+    .slice(0, n)
+    .map((e) => ({ id: Number(e.id), name: e.name }));
+  return { cable: pick('Warmup', true, 8), mobility: pick('Warmup', false, 8), cooldown: pick('Stretch', false, 8) };
+}
+
+function recentWeeksForCoach(ctx, plan) {
+  const cur = plan ? engine.planLabel(plan) : null;
+  const out = [];
+  for (const w of store.listArchivedWeeks()) {
+    if (out.length >= 4) break;
+    if (w.week === cur) continue;
+    const p = store.getArchivedPlan(w.week);
+    if (!p?.sessions) continue;
+    const r = engine.planWeekReport(p, ctx.workouts, ctx.sessions);
+    out.push({
+      week: r.week,
+      done: r.summary.done,
+      planned: r.summary.planned,
+      minutes: r.summary.minutes,
+      missed: r.sessions.flatMap((s) => s.exercises.filter((e) => e.status === 'missed').map((e) => e.title)).slice(0, 6),
+      short: r.sessions.flatMap((s) => s.exercises.filter((e) => e.status === 'less').map((e) => e.title)).slice(0, 6),
+    });
+  }
+  return out;
 }
 
 const mask = (v) => (v ? '••••' + v.slice(-4) : '');
@@ -723,13 +762,21 @@ const routes = {
     }
     return { ...res, plan: pushPlan, ...(dryRun && sorted ? { sorted: true, weekPlan: plan } : {}) };
   },
-  // AI-coach voor het hele plan, of met { session } alleen voor die ene training (bijv. een eigen training)
+  // AI-coach voor de komende week, of met { session } alleen voor die ene training. Geen oproep als de coach uit staat.
   'POST /api/coach': async (req) => {
     const b = await body(req).catch(() => ({}));
     const ctx = await context();
+    const provider = ctx.settings.ai?.provider;
+    if (!provider || provider === 'none') throw new Error(ctx.settings.ai?.apiKey ? tr('ai.deAiCoachStaat') : tr('ai.geenAiProviderIngesteld'));
     const plan = (await store.getPlan()) || (await generatePlan());
     const allowed = allowedExercises(ctx.library, ctx.settings);
-    const result = await ai.coach({ settings: ctx.settings, plan, history: ctx.history, bodyLog: ctx.bodyLog, weekly: engine.weeklyStats(ctx.workouts), allowed, activities: await store.getActivities(), onlySession: typeof b?.session === 'string' ? b.session : null, signals: await userSignals(ctx) });
+    const usable = coachCatalog(ctx.library, ctx.settings);
+    const result = await ai.coach({
+      settings: ctx.settings, plan, history: ctx.history, bodyLog: ctx.bodyLog, weekly: engine.weeklyStats(ctx.workouts), allowed,
+      catalog: usable.map((e) => ({ id: Number(e.id), name: e.name })),
+      activities: await store.getActivities(), onlySession: typeof b?.session === 'string' ? b.session : null, signals: await userSignals(ctx),
+      recentWeeks: recentWeeksForCoach(ctx, plan), warmChoices: warmChoicesFor(usable, plan),
+    });
     const meta = await store.getMeta();
     meta.coach = { ...result, at: new Date().toISOString() };
     await store.saveMeta(meta);
@@ -738,11 +785,16 @@ const routes = {
   'POST /api/coach/apply': async (req) => {
     const { adjustments } = await body(req);
     const plan = await store.getPlan();
+    const ctx = await context();
     const library = await getLibrary();
     const libById = new Map(library.map((e) => [Number(e.id), e]));
-    const allowed = new Set(allowedExercises(library, await store.getSettings()).map((a) => Number(a.id)));
-    const safe = ai.validateAdjustments(adjustments, plan, allowed, null, (await context()).history);
-    ai.applyAdjustments(plan, safe, libById);
+    const usable = coachCatalog(library, ctx.settings);
+    const allowed = new Set(allowedExercises(library, ctx.settings).map((a) => Number(a.id)));
+    const safe = ai.validateAdjustments(adjustments, plan, allowed, null, null, {
+      names: new Map(usable.map((e) => [Number(e.id), e.name])),
+      catalogIds: new Set(usable.map((e) => Number(e.id))),
+    });
+    ai.applyAdjustments(plan, safe, libById, { history: ctx.history });
     refreshMuscles(plan);
     await store.savePlan(plan);
     // het advies is afgehandeld: niet opnieuw als open voorstel tonen

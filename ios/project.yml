@@ -69,7 +69,7 @@ targets:
     info:
       path: GymCoachWidgets/Info.plist
       properties:
-        CFBundleDisplayName: GymCoach
+        CFBundleDisplayName: GymCoach Sync
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
@@ -82,3 +82,13 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES
+schemes:
+  GymCoachSync:
+    build:
+      targets:
+        GymCoachSync: all
+        GymCoachWidgets: all
+    run:
+      config: Debug
+    archive:
+      config: Release

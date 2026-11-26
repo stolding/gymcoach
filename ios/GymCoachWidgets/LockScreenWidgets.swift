@@ -196,30 +196,64 @@ private func deficitLine(_ snap: WidgetSnap?) -> DeficitLine {
     return DeficitLine(title: "Overschot", value: "\(-gap) kcal")
 }
 
+private let widgetFamilies: [WidgetFamily] = [
+    .systemSmall, .systemMedium, .systemLarge,
+    .accessoryCircular, .accessoryRectangular, .accessoryInline,
+]
+
+private extension View {
+    @ViewBuilder
+    func gymWidgetBackground(_ family: WidgetFamily) -> some View {
+        switch family {
+        case .accessoryInline, .accessoryCircular, .accessoryRectangular:
+            containerBackground(for: .widget) { AccessoryWidgetBackground() }
+        default:
+            containerBackground(.fill.tertiary, for: .widget)
+        }
+    }
+}
+
 private struct WeekWidgetView: View {
     @Environment(\.widgetFamily) private var family
     let snap: WidgetSnap?
 
     var body: some View {
         let line = weekLine(snap)
-        switch family {
-        case .accessoryInline:
-            Text("Week: \(line.status) \(line.detail)")
-        case .accessoryCircular:
-            Gauge(value: line.fraction) {
-                Text("Week")
-            } currentValueLabel: {
-                Text(line.short).minimumScaleFactor(0.5)
+        Group {
+            switch family {
+            case .accessoryInline:
+                Text("Week: \(line.status) \(line.detail)")
+            case .accessoryCircular:
+                Gauge(value: line.fraction) {
+                    Text("Week")
+                } currentValueLabel: {
+                    Text(line.short).minimumScaleFactor(0.5)
+                }
+                .gaugeStyle(.accessoryCircular)
+            case .accessoryRectangular:
+                CompactStack(kicker: "Week", title: line.status, detail: line.detail)
+            case .systemMedium:
+                HStack(alignment: .center, spacing: 12) {
+                    HomeStack(kicker: "Weekvoortgang", title: line.status, detail: line.detail)
+                    Gauge(value: line.fraction) {
+                        Text("Week")
+                    } currentValueLabel: {
+                        Text(line.short).minimumScaleFactor(0.6)
+                    }
+                    .gaugeStyle(.accessoryCircular)
+                    .frame(width: 72, height: 72)
+                }
+            case .systemLarge:
+                VStack(alignment: .leading, spacing: 10) {
+                    HomeStack(kicker: "Weekvoortgang", title: line.status, detail: line.detail, large: true)
+                    ProgressView(value: line.fraction)
+                        .tint(.accentColor)
+                }
+            default:
+                HomeStack(kicker: "Weekvoortgang", title: line.status, detail: line.detail)
             }
-            .gaugeStyle(.accessoryCircular)
-        default:
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Week").font(.caption2).widgetAccentable()
-                Text(line.status).font(.headline).minimumScaleFactor(0.7).lineLimit(1)
-                Text(line.detail).font(.caption).minimumScaleFactor(0.7)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .gymWidgetBackground(family)
     }
 }
 
@@ -229,22 +263,26 @@ private struct SessionWidgetView: View {
 
     var body: some View {
         let line = sessionLine(snap)
-        switch family {
-        case .accessoryInline:
-            Text("Vandaag: \(line.name)")
-        case .accessoryCircular:
-            VStack(spacing: 0) {
-                Text(line.detail).font(.caption2).minimumScaleFactor(0.6)
-                Text(initials(line.name)).font(.headline).minimumScaleFactor(0.5)
+        Group {
+            switch family {
+            case .accessoryInline:
+                Text("Vandaag: \(line.name)")
+            case .accessoryCircular:
+                VStack(spacing: 0) {
+                    Text(line.detail).font(.caption2).minimumScaleFactor(0.6)
+                    Text(initials(line.name)).font(.headline).minimumScaleFactor(0.5)
+                }
+            case .accessoryRectangular:
+                CompactStack(kicker: "Vandaag", title: line.name, detail: line.detail)
+            case .systemMedium:
+                HomeStack(kicker: "Training vandaag", title: line.name, detail: line.detail)
+            case .systemLarge:
+                HomeStack(kicker: "Training vandaag", title: line.name, detail: line.detail, large: true)
+            default:
+                HomeStack(kicker: "Training vandaag", title: line.name, detail: line.detail)
             }
-        default:
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Vandaag").font(.caption2).widgetAccentable()
-                Text(line.name).font(.headline).minimumScaleFactor(0.65).lineLimit(2)
-                Text(line.detail).font(.caption)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .gymWidgetBackground(family)
     }
 }
 
@@ -255,24 +293,36 @@ private struct FatigueWidgetView: View {
     var body: some View {
         let line = muscleLine(snap)
         let pct = line.fatigue.map { "\($0)%" } ?? "—"
-        switch family {
-        case .accessoryInline:
-            Text("Vermoeid: \(line.name) \(pct)")
-        case .accessoryCircular:
-            Gauge(value: Double(line.fatigue ?? 0) / 100) {
-                Text("Spier")
-            } currentValueLabel: {
-                Text(pct)
+        let fraction = Double(line.fatigue ?? 0) / 100
+        let detail = line.fatigue == nil ? "geen meting" : "\(pct) vermoeid"
+        Group {
+            switch family {
+            case .accessoryInline:
+                Text("Vermoeid: \(line.name) \(pct)")
+            case .accessoryCircular:
+                Gauge(value: fraction) {
+                    Text("Spier")
+                } currentValueLabel: {
+                    Text(pct)
+                }
+                .gaugeStyle(.accessoryCircular)
+            case .accessoryRectangular:
+                CompactStack(kicker: "Vermoeidheid", title: line.name, detail: detail)
+            case .systemMedium:
+                HStack(alignment: .center, spacing: 12) {
+                    HomeStack(kicker: "Spiervermoeidheid", title: line.name, detail: "Meest vermoeid")
+                    Text(pct).font(.largeTitle).minimumScaleFactor(0.5).lineLimit(1)
+                }
+            case .systemLarge:
+                VStack(alignment: .leading, spacing: 10) {
+                    HomeStack(kicker: "Spiervermoeidheid", title: line.name, detail: detail, large: true)
+                    ProgressView(value: fraction).tint(.accentColor)
+                }
+            default:
+                HomeStack(kicker: "Spiervermoeidheid", title: line.name, detail: detail)
             }
-            .gaugeStyle(.accessoryCircular)
-        default:
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Vermoeidheid").font(.caption2).widgetAccentable()
-                Text(line.name).font(.headline).minimumScaleFactor(0.65).lineLimit(1)
-                Text(line.fatigue == nil ? "geen meting" : "\(pct) vermoeid").font(.caption)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .gymWidgetBackground(family)
     }
 }
 
@@ -282,22 +332,70 @@ private struct DeficitWidgetView: View {
 
     var body: some View {
         let line = deficitLine(snap)
-        switch family {
-        case .accessoryInline:
-            Text("\(line.title) \(line.value)")
-        case .accessoryCircular:
-            VStack(spacing: 0) {
-                Text(line.title).font(.caption2)
-                Text(line.value.replacingOccurrences(of: " kcal", with: "")).font(.headline).minimumScaleFactor(0.5)
+        Group {
+            switch family {
+            case .accessoryInline:
+                Text("\(line.title) \(line.value)")
+            case .accessoryCircular:
+                VStack(spacing: 0) {
+                    Text(line.title).font(.caption2)
+                    Text(line.value.replacingOccurrences(of: " kcal", with: "")).font(.headline).minimumScaleFactor(0.5)
+                }
+            case .accessoryRectangular:
+                CompactStack(kicker: "Calorieën", title: line.title, detail: line.value)
+            case .systemMedium:
+                HStack(alignment: .center) {
+                    HomeStack(kicker: "Calorietekort", title: line.title, detail: "Vandaag")
+                    Text(line.value).font(.title).minimumScaleFactor(0.5).lineLimit(1)
+                }
+            case .systemLarge:
+                HomeStack(kicker: "Calorietekort", title: line.title, detail: line.value, large: true)
+            default:
+                HomeStack(kicker: "Calorietekort", title: line.title, detail: line.value)
             }
-        default:
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Calorieën").font(.caption2).widgetAccentable()
-                Text(line.title).font(.headline)
-                Text(line.value).font(.caption)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .gymWidgetBackground(family)
+    }
+}
+
+private struct CompactStack: View {
+    var kicker: String
+    var title: String
+    var detail: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(kicker).font(.caption2).widgetAccentable()
+            Text(title).font(.headline).minimumScaleFactor(0.65).lineLimit(2)
+            Text(detail).font(.caption).minimumScaleFactor(0.7).lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct HomeStack: View {
+    var kicker: String
+    var title: String
+    var detail: String
+    var large: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: large ? 8 : 4) {
+            Text(kicker)
+                .font(large ? .headline : .caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Text(title)
+                .font(large ? .largeTitle : .title2)
+                .fontWeight(.semibold)
+                .minimumScaleFactor(0.5)
+                .lineLimit(large ? 3 : 2)
+            Text(detail)
+                .font(large ? .title3 : .body)
+                .minimumScaleFactor(0.6)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
@@ -307,51 +405,47 @@ private func initials(_ name: String) -> String {
     return letters.isEmpty ? "·" : letters
 }
 
-private struct WeekProgressWidget: Widget {
+struct WeekProgressWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "weekProgress", provider: LockProvider()) { entry in
             WeekWidgetView(snap: entry.snap)
-                .containerBackground(for: .widget) { AccessoryWidgetBackground() }
         }
         .configurationDisplayName("Weekvoortgang")
         .description("Voor op schema, op schema of achter op schema.")
-        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies(widgetFamilies)
     }
 }
 
-private struct TodaySessionWidget: Widget {
+struct TodaySessionWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "todaySession", provider: LockProvider()) { entry in
             SessionWidgetView(snap: entry.snap)
-                .containerBackground(for: .widget) { AccessoryWidgetBackground() }
         }
         .configurationDisplayName("Training vandaag")
         .description("De volgende training uit het weekplan.")
-        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies(widgetFamilies)
     }
 }
 
-private struct MuscleFatigueWidget: Widget {
+struct MuscleFatigueWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "muscleFatigue", provider: LockProvider()) { entry in
             FatigueWidgetView(snap: entry.snap)
-                .containerBackground(for: .widget) { AccessoryWidgetBackground() }
         }
         .configurationDisplayName("Spiervermoeidheid")
         .description("De spiergroep die nu het meest vermoeid is.")
-        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies(widgetFamilies)
     }
 }
 
-private struct CalorieDeficitWidget: Widget {
+struct CalorieDeficitWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "calorieDeficit", provider: LockProvider()) { entry in
             DeficitWidgetView(snap: entry.snap)
-                .containerBackground(for: .widget) { AccessoryWidgetBackground() }
         }
         .configurationDisplayName("Calorietekort")
         .description("Hoeveel kcal je vandaag nog onder de streeflijn zit.")
-        .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies(widgetFamilies)
     }
 }
 

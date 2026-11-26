@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.2 — 26 november 2026
+- Versienummer opgehoogd zodat een nieuwe TestFlight-build in de wachtrij komt.
+
 ## 2.46.1 — 26 november 2026
 - De TestFlight-build zet de App Group op beide App ID's voordat het archief wordt gemaakt. Het eerste archief weigerde omdat het profiel die groep nog niet kende.
 

@@ -252,8 +252,8 @@ export default [
   },
   {
     id: 'ai', title: 'KI-coachen',
-    html: `<p>KI-coachen får innstillingene, alderen og kjønnet ditt, de siste treningsøktene, vekten og aktivitetene dine, og planen som reglene har laget. Den kan bytte øvelser (bare fra din egen katalog) og justere sett (2–5), repetisjoner (5–20) og vekt (høyst 15 % over forrige gang den øvelsen ble gjort). Hver endring blir kontrollert, og du velger hva du godtar.</p>
-    <p><b>Egne treningsøkter.</b> Coachen ser hvilke treningsøkter du har bygget, redigert eller låst selv, med strukturen deres (supersett, modi, pause, fast vekt). Der foreslår den bare endringer med en begrunnelse, og de forslagene er ikke avkrysset som standard. Hvis du godtar ett, blir strukturen stående: vekt og repetisjoner forskyves per sett, en fast vekt endres aldri. Med <i>KI-råd</i> på en treningsøkt ber du om råd bare for den treningsøkten.</p>
+    html: `<p>KI-coachen går gjennom planen for neste uke. Den sammenligner den med de siste ukene, det du fikk til, trenden og restitusjonen. Den kan bare bytte en øvelse fra katalogen din, eller foreslå passformen: balanse (en øvelse til en annen dag), en øvelse som går igjen, lengden, og oppvarming eller nedtrapping. Vekt og repetisjoner blir i appen. Du ser forskjellen og krysser av det du vil ta med. Er coachen av, eller avkrysningen ved et nytt forslag av, blir den ikke spurt.</p>
+    <p><b>Egne treningsøkter.</b> Coachen ser hvilke økter du har bygget, redigert eller låst selv. Der foreslår den bare et bytte, med en begrunnelse, og det er ikke avkrysset som standard. Den fjerner eller flytter ikke øvelser der. Med <i>KI-råd</i> på en økt ber du om råd bare for den økten.</p>
     <p><b>Helsestatus.</b> Under Oversikt lager den samme koblingen et sammendrag av målingene de siste 4 ukene: Withings, Apple Watch og treningsvolum. Oppdraget forutsetter en fastende morgenmåling, før dusjen, og en stående hvilepuls på vekten. Søvnlengde følger ikke med; GymCoach lagrer den ikke. Det er ingen diagnose, og planen endres ikke.</p>
     <p>Coachen svarer på språket ditt.</p>
     <p>Ved smerte eller plager: oppsøk lege eller fysioterapeut.</p>`,

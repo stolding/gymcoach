@@ -506,6 +506,8 @@ function renderPastWeek() {
 function renderPlan() {
   const plan = state.plan;
   const wrap = $('#sessions');
+  const coachOn = !!(state.settings?.ai?.provider && state.settings.ai.provider !== 'none');
+  $('#coachBtn')?.classList.toggle('hidden', !coachOn);
   if (!plan || state.setup?.needed) {
     $('#planTitle').textContent = t('ui.plan.weekplan');
     $('#planMeta').innerHTML = state.setup?.needed ? '' + t('app.nogGeenPlanDoorloop') + ' <a href="#" onclick="document.querySelector(\'.tab[data-tab=home]\').click();return false">' + t('ui.tabs.overzicht') + '</a>' + t('app.speedianceAccountJeVoorkeuren') + '' : t('app.nogGeenPlanKlik');
@@ -1641,7 +1643,7 @@ function openGenerate() {
       state.plan = (await api('POST', '/api/plan/generate', { focus, wish: f.wish.value.trim(), dayTypes: days, weekdays, slots, shorts: !!f.shorts?.checked })).plan;
       if (state.meta) state.meta.coach = null; renderCoach(null);
       renderPlan(); toast(focus.length ? t('app.planGemaaktMetFocus', { a: focus.map((x) => FOCUS_LABELS[x]).join(', ') }) : t('app.nieuwEvenwichtigPlanGemaakt'));
-      if (f.coach?.checked) $('#coachBtn').click();
+      if (aiOn && f.coach?.checked) $('#coachBtn').click();
     } catch (e) { toast(e.message, true); } finally { btn.disabled = false; }
   };
   dlg.showModal();
@@ -1653,6 +1655,7 @@ $('#genBtn').addEventListener('click', async () => {
 
 // Vraag de AI-coach om advies: voor het hele plan, of met { session } voor één training.
 function coachRequest(btn, payload = {}) {
+  if (!(state.settings?.ai?.provider && state.settings.ai.provider !== 'none')) return;
   return busy(btn, async () => {
     const p = $('#coachPanel');
     p.classList.remove('hidden'); p.innerHTML = '<span class="muted">' + t('app.coachDenktNa') + '</span>';
@@ -1679,12 +1682,20 @@ function renderCoach(c) {
   }
   p.classList.remove('coach-done');
   // voorstellen voor je eigen (bewerkte, vastgezette of zelf gemaakte) trainingen staan standaard uit: jij kiest
+  const adjLine = (a) => {
+    if (a.kind === 'swap' || (!a.kind && a.swapToId && !a.part)) return t('app.adj.diffSwap', { from: esc(a.title), to: esc(a.swapTitle || a.swapToId) });
+    if (a.kind === 'drop') return t('app.adj.diffDrop', { title: esc(a.title) });
+    if (a.kind === 'move') return t('app.adj.diffMove', { title: esc(a.title), to: esc(a.moveToName || a.moveTo) });
+    if (a.kind === 'warmup' || a.kind === 'cooldown' || a.part) return t('app.adj.diffWarm', { part: esc(t('app.adj.part.' + (a.part || 'cable'))), from: esc(a.title), to: esc(a.swapTitle || a.swapToId) });
+    return esc(a.title);
+  };
   p.innerHTML = `<h2>${t('app.aiCoach', { a: c.sessionName ? ` · ${esc(c.sessionName)}` : '' })} <span class="muted">(${esc(c.provider)} · ${esc(c.model)})</span></h2>
+    <p class="muted small">${t('app.coachReviewLead')}</p>
     <div class="advice">${esc(c.advice)}</div>
     ${c.adjustments?.some((a) => a.own) ? '<p class="muted small" style="margin:.5rem 0 0">' + t('app.voorstellenVoorJeEigen') + '</p>' : ''}
     ${c.adjustments?.length ? `<div style="margin-top:.75rem">${c.adjustments.map((a, i) => `
       <label class="adj"><input type="checkbox" data-i="${i}"${a.own ? '' : ' checked'}>
-        <span><b>${esc(a.sessionName || a.session)} · ${esc(a.title)}</b>${a.own ? ' <span class="badge custom">' + t('app.eigenOpbouw') + '</span>' : ''}: ${[a.swapToId && t('app.adj.swap'), a.sets && t('app.setsN', { n: a.sets }), a.reps && t('app.adj.reps', { n: a.reps }), a.weight && a.weight + ' kg'].filter(Boolean).join(', ')}<br><span class="muted">${esc(a.reason)}</span></span></label>`).join('')}
+        <span><b>${esc(a.sessionName || a.session)}</b>${a.own ? ' <span class="badge custom">' + t('app.eigenOpbouw') + '</span>' : ''}: ${adjLine(a)}<br><span class="muted">${esc(a.reason || '')}</span></span></label>`).join('')}
       <div class="row gap" style="margin-top:.6rem"><button class="btn accent" id="applyBtn">${t('app.geselecteerdeToepassen')}</button><button class="btn ghost" id="dismissBtn">${t('app.negeren')}</button></div></div>` : '<p class="muted">' + t('app.geenAanpassingenVoorgesteld') + '</p><button class="btn ghost small" id="dismissBtn">' + t('pk.close') + '</button>'}`;
   $('#applyBtn')?.addEventListener('click', (ev) => busy(ev.currentTarget, async () => {
     const chosen = [...p.querySelectorAll('input[type=checkbox]:checked')].map((x) => c.adjustments[+x.dataset.i]);

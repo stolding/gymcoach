@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.44.0 — 26 november 2026
+- Als de AI-coach aan staat, loopt die het plan van de komende week na. Hij vergelijkt het met de laatste weken, wat je haalde, de trend en het herstel. Hij mag alleen een oefening ruilen uit de catalogus, of de pasvorm van de training voorstellen: balans, een dubbele oefening, de lengte, de warming-up en de cooldown. Gewicht en herhalingen blijven van de app. Je ziet het verschil en kiest zelf. Staat de coach uit, of het vinkje uit, dan wordt hij niet gevraagd.
+
 ## 2.43.3 — 26 november 2026
 - Tussen de streeflijn en de ruststofwisseling kleurt de bovenste helft groen, het kwart daaronder geel en het kwart het dichtst bij de BMR rood. De kleur vult de hele kolom. Onder de BMR blijft de dag leeg. Een overschot is rood alleen boven onderhoud.
 

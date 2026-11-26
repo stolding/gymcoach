@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.43.0 — 26 november 2026
+- De grafiek Inname en de streeflijn, en het lijntje bij Doel op het overzicht, tonen ook onderhoud (wat het lichaam nodig heeft) en de ruststofwisseling (BMR, als je niets doet). Het verschil met de streeflijn blijft zichtbaar. De achtergrond kleurt het tekort: groen als het bij het doel past, geel als het iets te veel of te weinig is, rood als het ver uit de buurt ligt.
+
 ## 2.42.0 — 25 november 2026
 - Warming-up en cooldown bewerk je hetzelfde als de oefeningen: sets, rust, modus, superset, wisselen en verwijderen. Een oefening op tijd (Bird Dog, wandelen) houdt seconden; kilo geldt daar niet.
 

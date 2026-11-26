@@ -358,6 +358,8 @@ export default {
   'goal.legend.goal': 'Doellijn',
   'goal.legend.intake': 'Inname',
   'goal.legend.target': 'Streef',
+  'goal.legend.maintenance': 'Onderhoud',
+  'goal.legend.bmr': 'BMR',
   'goal.legend.e1rm': 'Geschat 1RM',
   'goal.table': 'Per dag',
   'goal.col.date': 'Datum',

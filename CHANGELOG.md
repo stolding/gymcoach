@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.46.7 — 26 november 2026
+- Het herstelraster toont de echte daling op een rustdag. De halfwaardetijd blijft 48 uur; die is aan het eind maar een paar punten, en die punten waren weg door afronden en één groene kleur onder 20.
+
 ## 2.46.6 — 26 november 2026
 - Bij Sets per spiergroep staan het aantal sets en het procent op één regel, direct achter de balk.
 

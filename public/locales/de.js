@@ -1961,7 +1961,7 @@ export default {
   "sig.cardioStats": {"one": "{n} von {total} Trainings begann innerhalb von 3 Stunden nach Gehen oder Radfahren.", "other": "{n} von {total} Trainings begannen innerhalb von 3 Stunden nach Gehen oder Radfahren."},
   "sig.cardioDone": "Geschaffte Wdh. an diesen Tagen: {a} %, an anderen Tagen {b} %.",
   "rec.title": "Muskelerholung",
-  "rec.note": "Ein Muskel ist nach einem Tag schon deutlich erholt: die Ermüdung halbiert sich jeden Tag.",
+  "rec.note": "Die Ermüdung halbiert sich jeden Tag und sinkt um mindestens 25 Punkte. Unter 25 Punkten ist sie am nächsten Tag weg.",
   "rec.legend": "Unter 20 % Ermüdung ist grün. Bis 75 % läuft die Farbe nach Orange, bis 100 % nach Rot. Darüber bleibt rot und die Zahl läuft weiter.",
   "rec.empty": "Noch kein abgeschlossenes Training mit Sätzen, also noch keine Muskelerholung.",
   "rec.tired": "Noch ermüdet",

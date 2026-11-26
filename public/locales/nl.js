@@ -1962,7 +1962,7 @@ export default {
   "sig.cardioStats": {"one": "{n} van {total} trainingen begon binnen 3 uur na wandelen of fietsen.", "other": "{n} van {total} trainingen begonnen binnen 3 uur na wandelen of fietsen."},
   "sig.cardioDone": "Gehaalde herhalingen op die dagen: {a}%, op andere dagen {b}%.",
   "rec.title": "Spierherstel",
-  "rec.note": "Een spier is na een dag al een stuk uitgerust: de vermoeidheid halveert elke dag.",
+  "rec.note": "De vermoeidheid halveert elke dag, en daalt minstens 25 punten. Onder 25 punten is hij de volgende dag weg.",
   "rec.legend": "Onder 20% vermoeidheid is groen. Tot 75% loopt de kleur naar oranje, tot 100% naar rood. Daarboven blijft rood en het getal loopt door.",
   "rec.empty": "Nog geen afgeronde training met sets, dus nog geen spierherstel.",
   "rec.tired": "Nog vermoeid",

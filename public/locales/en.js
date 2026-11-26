@@ -1961,7 +1961,7 @@ export default {
   "sig.cardioStats": {"one": "{n} of {total} workouts started within 3 hours of walking or cycling.", "other": "{n} of {total} workouts started within 3 hours of walking or cycling."},
   "sig.cardioDone": "Reps achieved on those days: {a}%, on other days {b}%.",
   "rec.title": "Muscle recovery",
-  "rec.note": "A muscle is well on its way after a day: the fatigue halves every day.",
+  "rec.note": "Fatigue halves every day, and drops at least 25 points. Under 25 points it is gone the next day.",
   "rec.legend": "Below 20% fatigue is green. Up to 75% the colour runs toward orange, up to 100% toward red. Above that it stays red and the number keeps going.",
   "rec.empty": "No completed workout with sets yet, so no muscle recovery yet.",
   "rec.tired": "Still tired",

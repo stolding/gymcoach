@@ -73,7 +73,7 @@ export default [
     <ol>
       <li><b>Greeting.</b> The date, your name and a tip, such as a record or how many workouts are still open this week.</li>
       <li><b>Recovery and score.</b> On the left, whether you are rested (resting heart rate, HRV, reps you completed). On the right, the health score from 0 to 10, higher is better, with the line across the weeks.</li>
-      <li><b>Muscle recovery.</b> The body figure and a line per muscle group. Below 20% fatigue is green, then the colour runs through orange to red. Above 100% it stays red. The buttons turn a muscle group on or off.</li>
+      <li><b>Muscle recovery.</b> The body figure and a line per muscle group. The colour starts green and runs through orange to red. Above 100% it stays red. The buttons turn a muscle group on or off.</li>
       <li><b>Next workout.</b> The next workout that is still open, with the estimated time.</li>
       <li><b>Week goal.</b> The ring counts the sessions in the plan, including a walk. At the weekly goal the circle is full. Do more and a brighter orange ring runs along the outer half, until the whole plan is done.</li>
       <li><b>Streak.</b> How many weeks in a row you hit the week goal.</li>

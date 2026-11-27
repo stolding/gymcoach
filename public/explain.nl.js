@@ -73,7 +73,7 @@ export default [
     <ol>
       <li><b>Begroeting.</b> Datum, je naam en een tip, bijvoorbeeld een record of hoeveel trainingen deze week nog openstaan.</li>
       <li><b>Herstel en score.</b> Links of je uitgerust bent (rusthartslag, HRV, gehaalde herhalingen). Rechts de gezondheidsscore van 0 tot 10, hoger is beter, met de lijn over de weken.</li>
-      <li><b>Spierherstel.</b> Het lichaamsschema en de lijnen per spiergroep. Onder 20% vermoeidheid is groen, daarna loopt de kleur via oranje naar rood. Boven 100% blijft rood. De knoppen zetten een spiergroep aan of uit.</li>
+      <li><b>Spierherstel.</b> Het lichaamsschema en de lijnen per spiergroep. De kleur begint groen en loopt via oranje naar rood. Boven 100% blijft rood. De knoppen zetten een spiergroep aan of uit.</li>
       <li><b>Volgende training.</b> De eerstvolgende training die nog openstaat, met de geschatte tijd.</li>
       <li><b>Weekdoel.</b> De ring telt de trainingen uit het plan, ook een wandeling. Bij het weekdoel is de cirkel vol. Doe je er meer, dan loopt een helderdere oranje ring over de buitenste helft, tot het hele plan vol is.</li>
       <li><b>Reeks.</b> Hoeveel weken achter elkaar je het weekdoel haalde.</li>

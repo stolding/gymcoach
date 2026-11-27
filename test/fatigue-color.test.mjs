@@ -11,8 +11,8 @@ test('fatigue points are 100 minus recovery and stay above 100', () => {
 });
 
 test('fatigue colour is green, then orange, then red, and solid red past 100', () => {
-  assert.equal(recoveryFill(81), 'var(--ok)');
-  assert.equal(recoveryFill(80), 'color-mix(in oklab, var(--accent) 0%, var(--ok))');
+  assert.equal(recoveryFill(100), 'var(--ok)');
+  assert.equal(recoveryFill(90), 'color-mix(in oklab, var(--accent) 13%, var(--ok))');
   assert.equal(recoveryFill(25), 'color-mix(in oklab, var(--accent) 100%, var(--ok))');
   assert.equal(recoveryFill(24), 'color-mix(in oklab, var(--warn) 4%, var(--accent))');
   assert.equal(recoveryFill(0), 'color-mix(in oklab, var(--warn) 100%, var(--accent))');
@@ -27,7 +27,7 @@ test('the week figure paints fatigue on the muscle path and keeps the number abo
   });
   assert.match(svg, /data-m="quads"[^>]*style="fill:var\(--warn\)"/);
   assert.match(svg, /<title>quads:140<\/title>/);
-  assert.match(svg, /data-m="pecs"[^>]*style="fill:color-mix\(in oklab, var\(--accent\) 0%, var\(--ok\)\)"/);
+  assert.match(svg, /data-m="pecs"[^>]*style="fill:color-mix\(in oklab, var\(--accent\) 27%, var\(--ok\)\)"/);
   assert.doesNotMatch(svg, /class="bm m3/);
 });
 

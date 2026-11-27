@@ -5,6 +5,13 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.47.6 — 27 november 2026
+- De bicepscurl van vrijdag 12–15 telt in dat blok, ook als het dagdeel al begonnen is: drie sets vol en de lat pulldown half, tot de sets gelogd zijn.
+
+## 2.47.5 — 27 november 2026
+- De vermoeidheid van een gedane training valt in het blok van de stip, ook als de sets een ander uur hebben.
+- Een meewerkende spier, zoals de biceps op vrijdag, telt half mee. De kleur begint bij de eerste punten, niet pas bij 20%.
+
 ## 2.47.4 — 27 november 2026
 - Het figuur en de witte lijn in het raster tonen hetzelfde getal. Een training die vandaag al gedaan is, telt niet nog een keer op het latere stipje.
 

@@ -126,12 +126,12 @@ export function fatiguePoints(recoveryPct) {
   return Math.round(100 - n);
 }
 
-// Onder 20 punten groen. Van 20 tot 75 van groen naar oranje, van 75 tot 100 van oranje naar rood. Daarboven rood.
+// 0 is groen. Tot 75 loopt de kleur naar oranje, tot 100 naar rood. Daarboven blijft rood.
 export function recoveryFill(pct) {
   const f = fatiguePoints(Number.isFinite(Number(pct)) ? pct : 100);
-  if (f < 20) return 'var(--ok)';
+  if (f <= 0) return 'var(--ok)';
   if (f <= 75) {
-    const t = Math.round(((f - 20) / 55) * 100);
+    const t = Math.round((f / 75) * 100);
     return `color-mix(in oklab, var(--accent) ${t}%, var(--ok))`;
   }
   if (f <= 100) {

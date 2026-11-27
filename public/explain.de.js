@@ -73,7 +73,7 @@ export default [
     <ol>
       <li><b>Begrüßung.</b> Datum, Name und ein Hinweis, zum Beispiel ein Rekord oder wie viele Trainings diese Woche noch offen sind.</li>
       <li><b>Erholung und Score.</b> Links, ob du erholt bist (Ruhepuls, HRV, geschaffte Wiederholungen). Rechts der Gesundheitsscore von 0 bis 10, höher ist besser, mit der Linie über die Wochen.</li>
-      <li><b>Muskelerholung.</b> Die Figur und eine Linie je Muskelgruppe. Unter 20 % Ermüdung ist grün, danach läuft die Farbe über Orange nach Rot. Über 100 % bleibt rot. Die Knöpfe schalten eine Muskelgruppe an oder aus.</li>
+      <li><b>Muskelerholung.</b> Die Figur und eine Linie je Muskelgruppe. Die Farbe beginnt grün und läuft über Orange nach Rot. Über 100 % bleibt rot. Die Knöpfe schalten eine Muskelgruppe an oder aus.</li>
       <li><b>Nächstes Training.</b> Das nächste Training, das noch offen ist, mit der geschätzten Zeit.</li>
       <li><b>Wochenziel.</b> Der Ring zählt die Einheiten aus dem Plan, auch einen Spaziergang. Beim Wochenziel ist der Kreis voll. Machst du mehr, läuft ein hellerer oranger Ring über die äußere Hälfte, bis der ganze Plan voll ist.</li>
       <li><b>Serie.</b> Wie viele Wochen hintereinander du das Wochenziel geschafft hast.</li>

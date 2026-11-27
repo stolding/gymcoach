@@ -73,7 +73,7 @@ export default [
     <ol>
       <li><b>Hilsen.</b> Dato, navnet ditt og et tips, for eksempel en rekord eller hvor mange treninger som fortsatt er åpne denne uken.</li>
       <li><b>Restitusjon og poeng.</b> Til venstre om du er uthvilt (hvilepuls, HRV, fullførte repetisjoner). Til høyre helsepoengene fra 0 til 10, høyere er bedre, med linjen over ukene.</li>
-      <li><b>Muskelrestitusjon.</b> Figuren og en linje per muskelgruppe. Under 20 % utmattelse er grønt, deretter går fargen via oransje mot rødt. Over 100 % forblir rødt. Knappene slår en muskelgruppe av eller på.</li>
+      <li><b>Muskelrestitusjon.</b> Figuren og en linje per muskelgruppe. Fargen starter grønn og går via oransje mot rødt. Over 100 % forblir rødt. Knappene slår en muskelgruppe av eller på.</li>
       <li><b>Neste trening.</b> Den neste treningen som fortsatt er åpen, med beregnet tid.</li>
       <li><b>Ukemål.</b> Ringen teller øktene i planen, også en gåtur. Ved ukemålet er sirkelen full. Gjør du mer, går en lysere oransje ring langs den ytre halvdelen, til hele planen er full.</li>
       <li><b>Rekke.</b> Hvor mange uker på rad du nådde ukemålet.</li>

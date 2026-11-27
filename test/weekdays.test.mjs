@@ -91,6 +91,23 @@ test('a finished workout without a clock lands in the same block as its dot', ()
   assert.ok(here < after, `training ${here} after ${after}`);
 });
 
+test('sets logged in the neighbouring block count on the training dot', () => {
+  const now = Date.parse('2026-11-27T15:21:00');
+  const sessions = [{
+    key: 'A', name: 'Trek', weekday: 3, slot: 1,
+    exercises: [{ id: 9, pattern: 'squat', sets: [{ reps: 8, weight: 40 }, { reps: 8, weight: 40 }, { reps: 8, weight: 40 }] }],
+  }];
+  const history = {
+    9: { id: 9, muscle: 'quads', log: [{ date: '2026-11-26T13:00:00', sets: [
+      { reps: 8, weight: 40 }, { reps: 8, weight: 40 }, { reps: 8, weight: 40 },
+    ] }] },
+  };
+  const row = refreshGrid({ sessions }, { history, now }).balance.rows.find((r) => r.key === 'quads');
+  const hit = row.hits.find((h) => h.role === 'prime');
+  assert.ok(row.blocks[hit.block] < row.blocks[hit.block - 1], `${row.blocks[hit.block]} vs ${row.blocks[hit.block - 1]}`);
+  assert.ok(row.blocks[hit.block] < row.blocks[hit.block + 1], `${row.blocks[hit.block]} vs ${row.blocks[hit.block + 1]}`);
+});
+
 test('a workout already logged today is not added again at a later plan slot', () => {
   const now = Date.parse('2026-11-27T15:00:00');
   const sessions = [{
@@ -106,7 +123,24 @@ test('a workout already logged today is not added again at a later plan slot', (
   assert.ok(row.blocks[19] > row.blocks[18], `${row.blocks[19]} should be fresher than ${row.blocks[18]}`);
 });
 
-test('the clock matches finished sets and a future assist adds no half load', () => {
+test('friday biceps counts the curl in full and the pulldown in half once that hour has started', () => {
+  const now = Date.parse('2026-11-27T16:00:00');
+  const sessions = [{
+    key: 'B', name: 'Full Body B', weekday: 4, slot: 2,
+    exercises: [
+      { id: 199, pattern: 'curl', sets: [{ reps: 15, weight: 5.5 }, { reps: 15, weight: 5.5 }, { reps: 15, weight: 5.5 }] },
+      { id: 434, pattern: 'vpull', sets: [{ reps: 10, weight: 15 }, { reps: 10, weight: 15 }] },
+    ],
+  }];
+  const row = refreshGrid({ sessions }, { history: {}, now }).balance.rows.find((r) => r.key === 'biceps');
+  const hit = row.hits.find((h) => h.block === 18);
+  assert.equal(hit.role, 'prime');
+  assert.equal(row.blocks[17], 100);
+  assert.ok(row.blocks[18] < 65, String(row.blocks[18]));
+  assert.ok(row.blocks[18] > 50, String(row.blocks[18]));
+});
+
+test('the clock matches finished sets and a future assist adds its half load', () => {
   const now = Date.parse('2026-11-18T14:00:00');
   const history = {
     7: { id: 7, muscle: 'biceps', log: [{ date: '2026-11-17T18:00:00', sets: [
@@ -126,7 +160,8 @@ test('the clock matches finished sets and a future assist adds no half load', ()
   const friday = 19;
   assert.equal(biceps.blocks[nowBlock], recoveryAt(events, 'biceps', now, 1));
   assert.ok(biceps.blocks[nowBlock] < 100);
-  assert.equal(biceps.blocks[friday], recoveryAt(events, 'biceps', Date.parse('2026-11-20T23:59:59.999'), 1));
+  const fridayEnd = Date.parse('2026-11-20T23:59:59.999');
+  assert.ok(biceps.blocks[friday] < recoveryAt(events, 'biceps', fridayEnd, 1));
   assert.ok(lats.blocks[friday] < 100);
   assert.equal(lats.blocks[nowBlock], 100);
 });

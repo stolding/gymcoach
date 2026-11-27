@@ -830,7 +830,7 @@ function recoveryReading(pct) {
   const n = Number(pct);
   return Number.isFinite(n) ? Math.round(n * 10) / 10 : 0;
 }
-// Zelfde kleur als het figuur. Onder 20 punten is dat één groen, zonder de halve restjes apart te kleuren.
+// Zelfde kleur als het figuur. Elke vermoeidheid kleurt mee, ook een meewerkende spier.
 function weekGridFill(pct) {
   return recoveryFill(pct);
 }

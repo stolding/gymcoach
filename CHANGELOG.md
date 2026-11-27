@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.47.4 — 27 november 2026
+- Het figuur en de witte lijn in het raster tonen hetzelfde getal. Een training die vandaag al gedaan is, telt niet nog een keer op het latere stipje.
+
 ## 2.47.3 — 27 november 2026
 - Een gedane training zonder kloktijd telt in het blok van de stip, niet in het blok erna.
 

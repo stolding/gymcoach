@@ -726,6 +726,13 @@ let selMuscle = null;
 // Herstelpercentages voor het weekfiguur. Onbekend is uitgerust (100). Vermoeidheid mag boven 100.
 function weekRecoveryScores(plan) {
   const known = new Map((state.muscleRecovery?.muscles || []).map((m) => [m.key, Number(m.pct)]));
+  const block = nowGridBlock(plan);
+  if (block != null) {
+    for (const row of plan.balance.rows) {
+      const n = Number(row.blocks[block]);
+      if (Number.isFinite(n)) known.set(row.key, n);
+    }
+  }
   const scores = {};
   for (const k of new Set([...Object.keys(plan.muscles || {}), ...known.keys()])) {
     const n = known.get(k);
@@ -733,9 +740,21 @@ function weekRecoveryScores(plan) {
   }
   return scores;
 }
+function nowGridBlock(plan) {
+  const rows = plan?.balance?.rows;
+  if (!rows?.[0]?.blocks?.length) return null;
+  const hours = Number(plan.balance.blockHours) || 6;
+  const per = Math.max(1, Math.round(24 / hours));
+  const now = new Date();
+  const day = (now.getDay() + 6) % 7;
+  const h = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+  const block = day * per + Math.min(per - 1, Math.floor(h / hours));
+  return block < rows[0].blocks.length ? block : null;
+}
 function fatigueLabel(pct) {
-  const f = fatiguePoints(pct);
-  return f > 100 ? t('rec.fatiguePct', { n: f }) : t('rec.pct', { n: f });
+  const fresh = recoveryReading(pct);
+  const f = Math.round((100 - fresh) * 10) / 10;
+  return t('rec.fatiguePct', { n: fmtNum(f, { maximumFractionDigits: 1 }) });
 }
 // Spierkaart en sets per spiergroep van het weekplan (klikbaar per spiergroep).
 function renderWeekMap() {

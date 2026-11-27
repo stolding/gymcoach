@@ -91,6 +91,21 @@ test('a finished workout without a clock lands in the same block as its dot', ()
   assert.ok(here < after, `training ${here} after ${after}`);
 });
 
+test('a workout already logged today is not added again at a later plan slot', () => {
+  const now = Date.parse('2026-11-27T15:00:00');
+  const sessions = [{
+    key: 'A', name: 'A', weekday: 4, slot: 4,
+    exercises: [{ id: 9, pattern: 'squat', sets: [{ reps: 8, weight: 40 }, { reps: 8, weight: 40 }] }],
+  }];
+  const history = {
+    9: { id: 9, muscle: 'quads', log: [{ date: '2026-11-27T10:00:00', sets: [
+      { reps: 8, weight: 40 }, { reps: 8, weight: 40 },
+    ] }] },
+  };
+  const row = refreshGrid({ sessions }, { history, now }).balance.rows.find((r) => r.key === 'quads');
+  assert.ok(row.blocks[19] > row.blocks[18], `${row.blocks[19]} should be fresher than ${row.blocks[18]}`);
+});
+
 test('the clock matches finished sets and a future assist adds no half load', () => {
   const now = Date.parse('2026-11-18T14:00:00');
   const history = {

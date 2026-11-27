@@ -71,6 +71,26 @@ test('a heavier set done today leaves less recovery than the planned weight', ()
   assert.ok(quad(done, end) < quad(planned, end));
 });
 
+test('a finished workout without a clock lands in the same block as its dot', () => {
+  const now = Date.parse('2026-11-27T15:21:00');
+  const sessions = [{
+    key: 'A', name: 'Trek', weekday: 3, slot: 0,
+    exercises: [{ id: 9, pattern: 'squat', sets: [{ reps: 8, weight: 40 }, { reps: 8, weight: 40 }, { reps: 8, weight: 40 }] }],
+  }];
+  const history = {
+    9: { id: 9, muscle: 'quads', log: [{ date: '2026-11-26', sets: [
+      { reps: 8, weight: 40 }, { reps: 8, weight: 40 }, { reps: 8, weight: 40 },
+    ] }] },
+  };
+  const row = refreshGrid({ sessions }, { history, now }).balance.rows.find((r) => r.key === 'quads');
+  const hit = row.hits.find((h) => h.role === 'prime');
+  const before = row.blocks[hit.block - 1];
+  const here = row.blocks[hit.block];
+  const after = row.blocks[hit.block + 1];
+  assert.ok(here < before, `training ${here} before ${before}`);
+  assert.ok(here < after, `training ${here} after ${after}`);
+});
+
 test('the clock matches finished sets and a future assist adds no half load', () => {
   const now = Date.parse('2026-11-18T14:00:00');
   const history = {

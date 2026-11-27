@@ -516,7 +516,7 @@ const routes = {
         workouts: ctx.workouts, history: ctx.history, bodyLog: ctx.bodyLog, plan, settings: ctx.settings, sessions: ctx.sessions,
         prevPlan: engine.localizePlan(store.getArchivedPlan(engine.isoWeek(new Date(Date.now() - 7 * 864e5)))),
       }),
-      muscleRecovery: muscleRec.report(ctx.history, goal.todayISO()),
+      muscleRecovery: muscleRec.report(ctx.history, goal.todayISO(), Date.now(), plan?.sessions),
       week: engine.weekNumber(ctx.sessions),
       signals: await userSignals(ctx),
       healthScore: await scores.present(180),

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.47.3 — 27 november 2026
+- Een gedane training zonder kloktijd telt in het blok van de stip, niet in het blok erna.
+
 ## 2.47.2 — 27 november 2026
 - Een blok van 6 uur is een kwart dag. De vermoeidheid halveert in 24 uur, dus na vier blokken is de helft er nog.
 

@@ -811,15 +811,9 @@ function recoveryReading(pct) {
   const n = Number(pct);
   return Number.isFinite(n) ? Math.round(n * 10) / 10 : 0;
 }
-// Onder 20 punten blijft groen, maar niet één vlakke kleur: ook een kleine restlast moet per dag zichtbaar dalen.
+// Zelfde kleur als het figuur. Onder 20 punten is dat één groen, zonder de halve restjes apart te kleuren.
 function weekGridFill(pct) {
-  const n = Number(pct);
-  const f = Number.isFinite(n) ? Math.max(0, 100 - n) : 0;
-  if (f < 20) {
-    const t = Math.round(40 + (f / 20) * 60);
-    return `color-mix(in oklab, var(--ok) ${t}%, var(--bg))`;
-  }
-  return recoveryFill(n);
+  return recoveryFill(pct);
 }
 const WB_GRAD = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><defs><linearGradient id="wbGrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--ok)"/></linearGradient></defs><rect x="1.5" y="1.5" width="13" height="13" rx="2" fill="url(#wbGrad)"/></svg>';
 const WB_STACK = '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="9" width="13" height="5.5" rx="1.2" fill="var(--accent)"/><rect x="1.5" y="1.5" width="13" height="6.5" rx="1.2" fill="var(--ok)"/></svg>';

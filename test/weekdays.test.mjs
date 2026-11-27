@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { refreshGrid } from '../lib/weekbalance.js';
+import { historyEvents, recoveryAt } from '../lib/muscleRecovery.js';
 import { alignPlanDays, assignFreeWeekday, defaultWeekdays, moveTrainingDay, orderTrainingDays, preferNamedOutdoor, sessionAtHours, sessionOffsetHours } from '../lib/weekdays.js';
 
 function plan(items) {
@@ -37,8 +38,13 @@ test('a plan without weekdays still spreads the week over six days', () => {
 });
 
 test('one day between workouts leaves less recovery than six days', () => {
-  const close = refreshGrid(plan([0, 1]), { history: {}, now: Date.parse('2026-11-16T12:00:00') });
-  const far = refreshGrid(plan([0, 6]), { history: {}, now: Date.parse('2026-11-16T12:00:00') });
+  const sets = Array.from({ length: 6 }, () => ({ reps: 8, weight: 40 }));
+  const closePlan = plan([0, 1]);
+  const farPlan = plan([0, 6]);
+  closePlan.sessions[0].exercises[0].sets = sets;
+  farPlan.sessions[0].exercises[0].sets = sets.map((s) => ({ ...s }));
+  const close = refreshGrid(closePlan, { history: {}, now: Date.parse('2026-11-16T12:00:00') });
+  const far = refreshGrid(farPlan, { history: {}, now: Date.parse('2026-11-16T12:00:00') });
   assert.equal(close.balance.rows[0].blocks.length, 28);
   assert.equal(quad(close, 2), 100);
   assert.ok(quad(close, 3) < 90);
@@ -63,6 +69,31 @@ test('a heavier set done today leaves less recovery than the planned weight', ()
   const done = refreshGrid({ sessions: sessions.map((s) => ({ ...s, exercises: s.exercises.map((e) => ({ ...e })) })) }, { history, now });
   const end = 3;
   assert.ok(quad(done, end) < quad(planned, end));
+});
+
+test('the clock matches finished sets and a future assist adds no half load', () => {
+  const now = Date.parse('2026-11-18T14:00:00');
+  const history = {
+    7: { id: 7, muscle: 'biceps', log: [{ date: '2026-11-17T18:00:00', sets: [
+      { reps: 10, weight: 20 }, { reps: 10, weight: 20 }, { reps: 10, weight: 20 },
+    ] }] },
+  };
+  const pull = (n) => Array.from({ length: n }, () => ({ reps: 8, weight: 40 }));
+  const sessions = [
+    { key: 'A', name: 'A', weekday: 1, slot: 4, exercises: [{ id: 99, pattern: 'hpull', sets: pull(4) }] },
+    { key: 'B', name: 'B', weekday: 4, slot: 4, exercises: [{ id: 100, pattern: 'hpull', sets: pull(2) }] },
+  ];
+  const grid = refreshGrid({ sessions }, { history, now });
+  const events = historyEvents(history, undefined, now);
+  const biceps = grid.balance.rows.find((r) => r.key === 'biceps');
+  const lats = grid.balance.rows.find((r) => r.key === 'lats');
+  const nowBlock = 10;
+  const friday = 19;
+  assert.equal(biceps.blocks[nowBlock], recoveryAt(events, 'biceps', now, 1));
+  assert.ok(biceps.blocks[nowBlock] < 100);
+  assert.equal(biceps.blocks[friday], recoveryAt(events, 'biceps', Date.parse('2026-11-20T23:59:59.999'), 1));
+  assert.ok(lats.blocks[friday] < 100);
+  assert.equal(lats.blocks[nowBlock], 100);
 });
 
 test('an earlier hour the next day leaves less recovery', () => {

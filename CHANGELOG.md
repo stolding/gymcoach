@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.47.1 — 27 november 2026
+- Het figuur en het raster op de witte lijn gebruiken dezelfde vermoeidheid van de gedane sets. Een training die nog komt telt alleen de hoofdspier; de halve last van een meewerkende spier telt niet mee. Onder 20% is het raster hetzelfde groen als het figuur.
+
 ## 2.47.0 — 26 november 2026
 - Vermoeidheid halveert nog elke 24 uur, en daalt minstens 25 punten per dag. Onder 25 punten is de last de volgende dag 0. Hetzelfde geldt voor het raster, het figuur en de widgets. 90 punten is na een dag 45, 40 punten wordt 15, 20 punten wordt 0.
 

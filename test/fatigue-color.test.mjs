@@ -31,13 +31,16 @@ test('the week figure paints fatigue on the muscle path and keeps the number abo
   assert.doesNotMatch(svg, /class="bm m3/);
 });
 
-test('a rest day drops at least 25 fatigue points, and clears anything under 25', () => {
+test('a rest day halves fatigue, and six hours is only a quarter of that day', () => {
   const at = Date.parse('2026-11-26T12:00:00Z');
-  const day = 24 * 3600000;
-  const left = (stimulus) => 100 - recoveryAt([{ muscle: 'quads', at, stimulus }], 'quads', at + day);
-  assert.equal(left(90), 45);
-  assert.equal(left(40), 15);
-  assert.equal(left(20), 0);
+  const h = 3600000;
+  const left = (stimulus, hours) => 100 - recoveryAt([{ muscle: 'quads', at, stimulus }], 'quads', at + hours * h, 1);
+  assert.equal(left(90, 24), 45);
+  assert.equal(left(40, 24), 20);
+  assert.equal(left(20, 24), 10);
+  const block = left(40, 6);
+  assert.ok(block > 33 && block < 34, block);
+  assert.ok(block > left(40, 24));
 });
 
 test('recovery from sets is not floored at 0 when fatigue passes 100', () => {

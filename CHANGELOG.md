@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.47.2 — 27 november 2026
+- Een blok van 6 uur is een kwart dag. De vermoeidheid halveert in 24 uur, dus na vier blokken is de helft er nog.
+
 ## 2.47.1 — 27 november 2026
 - Het figuur en het raster op de witte lijn gebruiken dezelfde vermoeidheid van de gedane sets. Een training die nog komt telt alleen de hoofdspier; de halve last van een meewerkende spier telt niet mee. Onder 20% is het raster hetzelfde groen als het figuur.
 

@@ -1961,7 +1961,7 @@ export default {
   "sig.cardioStats": {"one": "{n} av {total} økter startet innen 3 timer etter gange eller sykling.", "other": "{n} av {total} økter startet innen 3 timer etter gange eller sykling."},
   "sig.cardioDone": "Repetisjoner klart de dagene: {a} %, andre dager {b} %.",
   "rec.title": "Muskelrestitusjon",
-  "rec.note": "Trettheten halveres hver dag, og synker minst 25 poeng. Under 25 poeng er den borte neste dag.",
+  "rec.note": "Trettheten halveres hver 24. time. Fire blokker på 6 timer er én dag; halvparten er igjen.",
   "rec.legend": "Under 20 % utmattelse er grønt. Til 75 % går fargen mot oransje, til 100 % mot rødt. Over det forblir rødt og tallet fortsetter.",
   "rec.empty": "Ingen fullført økt med sett ennå, så ingen muskelrestitusjon ennå.",
   "rec.tired": "Fortsatt sliten",

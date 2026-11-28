@@ -1359,7 +1359,7 @@ struct ProgressViewScreen: View {
 struct BodyView: View {
     @EnvironmentObject var phone: PhoneModel
     @State private var metric = "fat"
-    @State private var range = "all"
+    @State private var range = PhonePeriod.remembered(user: PhoneModel.shared.username)
     @State private var showMarks = true
     @State private var showTrend = true
 
@@ -1386,6 +1386,16 @@ struct BodyView: View {
             .navigationTitle("Lichaam")
             .refreshable { await phone.refresh() }
         }
+        .onAppear { restorePeriod() }
+        .onChange(of: phone.username) { _, _ in restorePeriod() }
+        .onChange(of: range) { _, next in
+            PhonePeriod.remember(next, user: phone.username)
+        }
+    }
+
+    private func restorePeriod() {
+        let saved = PhonePeriod.remembered(user: phone.username)
+        if range != saved { range = saved }
     }
 
     @ViewBuilder private func composition(_ comp: PhoneComposition) -> some View {
@@ -1525,6 +1535,35 @@ struct BodyView: View {
     private func stepLine(_ s: PhoneSteps) -> String {
         guard let today = s.today else { return "Nog geen stappen · doel \(phoneInt(s.goal))" }
         return "\(phoneInt(today)) / \(phoneInt(s.goal))"
+    }
+}
+
+// Laatste periode van de lichaamsgrafiek (3 mnd, jaar of alles), per gebruiker op dit toestel.
+private enum PhonePeriod {
+    static let allowed = ["3m", "1y", "all"]
+
+    static func remembered(user username: String) -> String {
+        let key = storageKey(username)
+        guard !key.isEmpty, let stored = UserDefaults.standard.string(forKey: key), allowed.contains(stored) else { return "all" }
+        return stored
+    }
+
+    static func remember(_ value: String, user username: String) {
+        let key = storageKey(username)
+        guard !key.isEmpty, allowed.contains(value) else { return }
+        UserDefaults.standard.set(value, forKey: key)
+    }
+
+    // Zelfde gebruikers-id als op de server, zodat Ada en ada één keuze delen.
+    private static func storageKey(_ username: String) -> String {
+        let raw = username.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        var id = ""
+        for scalar in raw.unicodeScalars {
+            let ok = (scalar >= "a" && scalar <= "z") || (scalar >= "0" && scalar <= "9") || scalar == "_" || scalar == "-"
+            id.append(ok ? Character(scalar) : "-")
+            if id.count == 40 { break }
+        }
+        return id.isEmpty ? "" : "gc-period:\(id):bodyComp"
     }
 }
 

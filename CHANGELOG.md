@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.47.9 — 28 november 2026
+- GymCoach Sync 1.14.2 onthoudt de periode bij de lichaamsgrafiek (3 maanden, jaar of alles), per gebruiker op het toestel. Na opnieuw openen of opnieuw inloggen staat dezelfde keuze weer.
+
 ## 2.47.8 — 28 november 2026
 - De periode bij Terugkijken, de lichaamssamenstelling en de segmenten blijft staan, per gebruiker en per scherm. Na herladen of opnieuw inloggen staat dezelfde keuze weer.
 

@@ -105,6 +105,28 @@ test('before the first session nothing is due', () => {
   assert.equal(stand.previous, null);
 });
 
+test('week minutes add the gym sessions and leave the walk out', () => {
+  const now = at(2026, 11, 25, 12);
+  const label = isoWeek(now);
+  const cur = plan(at(2026, 11, 23, 8), [
+    { key: 'A', name: 'Full Body A', weekday: 0, slot: 2, estMinutes: 30, exercises: [ex('Squat', 2)] },
+    { key: 'B', name: 'Full Body B', weekday: 2, slot: 2, estMinutes: 32, exercises: [ex('Row', 2)] },
+    { key: 'OUT', name: 'Wandelen', outdoor: true, type: 'buiten', weekday: 5, estMinutes: 45, exercises: [] },
+  ]);
+  const hit = workout('2026-11-23', 'Full Body A', label, 2);
+  const stand = weekStand({
+    plan: cur,
+    workouts: [hit.w],
+    sessions: { [hit.w.training_id]: hit.detail },
+    now,
+  });
+  assert.equal(stand.sessions.planned, 2);
+  assert.equal(stand.planned.sessions, 3);
+  assert.equal(stand.minutes.planned, 62);
+  assert.equal(stand.planned.minutes, 62);
+  assert.equal(stand.minutes.done, 40);
+});
+
 test('without a plan the card stays empty', () => {
   assert.equal(weekStand({ now: at(2026, 11, 25) }).state, 'empty');
 });

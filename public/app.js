@@ -10,6 +10,7 @@ import { isTimedItem, warmRows } from './warmedit.js';
 import { askConfirm, askText } from './dialogs.js';
 import { langPicker, storedLang, storeLang } from './langpick.js';
 import { weekRingCircles } from './weekring.js';
+import { rememberPeriod, rememberedPeriod, keepOnLogout } from './periodpref.js';
 
 // taal vóór het inloggen: de keuze op het inlogscherm, anders die van de browser; na het laden die van de gebruiker (zie load)
 setLang(resolveLang(storedLang(), navigator.languages || [navigator.language]));
@@ -2617,18 +2618,33 @@ function periodStart(kind) {
   else return null;
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
-try { const v = localStorage.getItem('gc-stat-range'); if (v) statDays = v; } catch {}
+function periodOf(screen) {
+  try { return rememberedPeriod(localStorage, state?.me?.id, screen); }
+  catch { return rememberedPeriod({ getItem: () => null, setItem() {} }, '', screen); }
+}
+function savePeriod(screen, value) {
+  try { rememberPeriod(localStorage, state?.me?.id, screen, value); } catch {}
+}
+// Zet de bewaarde periode terug op elk scherm, zodra bekend is wie er ingelogd is.
+function applySavedPeriods() {
+  statDays = periodOf('stats');
+  const sel = $('#statRange');
+  if (sel) {
+    sel.value = String(statDays);
+    if (!sel.value) { statDays = '84'; sel.value = '84'; }
+  }
+  bodyCompRange = periodOf('bodyComp');
+  bodySegRange = periodOf('bodySeg');
+}
 // Haalt de statistieken voor de gekozen periode op.
 async function loadStats() {
   const from = periodStart(statDays);
   const q = from ? `from=${from}` : `days=${statDays}`;
   try { stats = await api('GET', '/api/stats?' + q); renderStats(); } catch (e) { toast(e.message, true); }
 }
-$('#statRange').value = String(statDays);
-if (!$('#statRange').value) { statDays = '84'; $('#statRange').value = '84'; }
 $('#statRange').addEventListener('change', (ev) => {
   statDays = ev.target.value;
-  try { localStorage.setItem('gc-stat-range', statDays); } catch {}
+  savePeriod('stats', statDays);
   loadStats();
   loadAnalysis();
 });
@@ -3333,21 +3349,27 @@ try { compTrain = localStorage.getItem('gc-comp-train') !== 'off'; } catch {}
 // kalenderperiodes (vanaf maandag / de 1e / 1 januari) en terugkijkperiodes (t/m de laatste meting)
 const BODY_RANGES = tmap([['wk', '§app.bodyranges.wk', 'week'], ['mo', '§app.bodyranges.mo', 'month'], ['ytd', '§app.bodyranges.ytd', 'year'],
   ['1m', '§app.bodyranges.1m', 30], ['3m', '§app.bodyranges.3m', 91], ['6m', '§app.bodyranges.6m', 182], ['1y', '§app.bodyranges.1y', 365], ['all', '§app.bodyranges.all', null]]);
-let bodyRange = 'all';
-try { bodyRange = localStorage.getItem('gc-body-range') || 'all'; } catch {}
-const rangeStart = (lastDate) => {
-  const r = BODY_RANGES.find(([k]) => k === bodyRange);
+let bodyCompRange = 'all';
+let bodySegRange = 'all';
+const rangeStart = (lastDate, rangeKey) => {
+  const r = BODY_RANGES.find(([k]) => k === rangeKey);
   if (typeof r?.[2] === 'string') return periodStart(r[2]); // kalenderperiode, niet t.o.v. de laatste meting
   return r?.[2] && lastDate ? daysBefore(lastDate, r[2]) : '';
 };
-const rangeChips = (id) => `<select id="${id}" class="period-sel" aria-label="${t('ui.stats.periode')}" title="${t('app.kalenderperiodesTellenVanafMaandag')}">
-  <optgroup label="${t('ui.stats.kalender')}">${BODY_RANGES.filter((r) => typeof r[2] === 'string').map(([k, l]) => `<option value="${k}" ${k === bodyRange ? 'selected' : ''}>${l}</option>`).join('')}</optgroup>
-  <optgroup label="${t('ui.stats.terugkijken')}">${BODY_RANGES.filter((r) => typeof r[2] !== 'string').map(([k, l]) => `<option value="${k}" ${k === bodyRange ? 'selected' : ''}>${l}</option>`).join('')}</optgroup></select>`;
-// Koppelt de periodekeuze van een kaart in Lichaam (en onthoudt de keuze).
-function bindRange(card, id) {
-  card.querySelector('#' + id).addEventListener('change', (ev) => {
-    bodyRange = ev.target.value; compZoom = null; try { localStorage.setItem('gc-body-range', bodyRange); } catch {}
-    renderComposition();
+const rangeChips = (id, rangeKey) => `<select id="${id}" class="period-sel" aria-label="${t('ui.stats.periode')}" title="${t('app.kalenderperiodesTellenVanafMaandag')}">
+  <optgroup label="${t('ui.stats.kalender')}">${BODY_RANGES.filter((r) => typeof r[2] === 'string').map(([k, l]) => `<option value="${k}" ${k === rangeKey ? 'selected' : ''}>${l}</option>`).join('')}</optgroup>
+  <optgroup label="${t('ui.stats.terugkijken')}">${BODY_RANGES.filter((r) => typeof r[2] !== 'string').map(([k, l]) => `<option value="${k}" ${k === rangeKey ? 'selected' : ''}>${l}</option>`).join('')}</optgroup></select>`;
+// Koppelt de periodekeuze van één kaart in Lichaam (samenstelling en segmenten apart).
+function bindRange(card, id, screen) {
+  const el = card.querySelector('#' + id);
+  if (!el) return;
+  el.addEventListener('change', (ev) => {
+    const v = ev.target.value;
+    if (screen === 'bodySeg') bodySegRange = v;
+    else bodyCompRange = v;
+    savePeriod(screen, v);
+    if (screen === 'bodyComp') { compZoom = null; renderComposition(); }
+    else renderSegments();
   });
 }
 try { compTrend = localStorage.getItem('gc-comp-trend') !== 'off'; } catch {}
@@ -3435,7 +3457,7 @@ function renderComposition() {
   }).join('');
   const [, mLabel, mUnit, mGood] = COMP.find(([k]) => k === compMetric);
   const ptsAll = log.filter((b) => b[compMetric] != null).map((b) => ({ x: b.date, y: b[compMetric] }));
-  const from = rangeStart(ptsAll[ptsAll.length - 1]?.x);
+  const from = rangeStart(ptsAll[ptsAll.length - 1]?.x, bodyCompRange);
   let shown = from ? ptsAll.filter((q) => q.x >= from) : ptsAll;
   if (compZoom) {
     const zoomed = shown.filter((q) => q.x >= compZoom.from && q.x <= compZoom.to);
@@ -3453,7 +3475,7 @@ function renderComposition() {
   }
   card.innerHTML = `<div class="row between wrap gap"><h2>${t('app.lichaamssamenstelling')}</h2><span class="muted">${t('app.laatsteMeting', { a: esc(lastWith(log, 'kg')?.date || '') })}</span></div>
     <div class="ctiles">${tiles}</div>
-    <div class="row between wrap gap" style="margin-top:1rem"><div class="eyebrow" style="margin:0">${t('app.overTijd', { mLabel, a: mUnit ? ` (${mUnit})` : '' })}</div><div class="row gap wrap"><span class="small">${trendTxt}</span>${rangeChips('compRange')}${compZoom ? `<button type="button" class="chip on" id="zoomReset" title="${t('app.zoomReset')}">${esc(zoomWhen(compZoom.from))} – ${esc(zoomWhen(compZoom.to))}</button>` : ''}<button class="chip ${compTrain ? 'on' : ''}" id="trainToggle" aria-pressed="${compTrain}" title="${t('app.toonDeDagenWaarop')}"><span class="dot tm"></span> ${t('app.activiteiten')}</button><button class="chip ${compTrend ? 'on' : ''}" id="trendToggle" aria-pressed="${compTrend}" title="${t('app.trendWhole')}"><span class="dot b"></span> ${t('app.trendlijn')}</button></div></div>
+    <div class="row between wrap gap" style="margin-top:1rem"><div class="eyebrow" style="margin:0">${t('app.overTijd', { mLabel, a: mUnit ? ` (${mUnit})` : '' })}</div><div class="row gap wrap"><span class="small">${trendTxt}</span>${rangeChips('compRange', bodyCompRange)}${compZoom ? `<button type="button" class="chip on" id="zoomReset" title="${t('app.zoomReset')}">${esc(zoomWhen(compZoom.from))} – ${esc(zoomWhen(compZoom.to))}</button>` : ''}<button class="chip ${compTrain ? 'on' : ''}" id="trainToggle" aria-pressed="${compTrain}" title="${t('app.toonDeDagenWaarop')}"><span class="dot tm"></span> ${t('app.activiteiten')}</button><button class="chip ${compTrend ? 'on' : ''}" id="trendToggle" aria-pressed="${compTrend}" title="${t('app.trendWhole')}"><span class="dot b"></span> ${t('app.trendlijn')}</button></div></div>
     <div id="chartComp" class="chart tall" title="${esc(t('app.zoomHint'))}"></div>`;
   const series = [{ cls: 'la', label: mLabel, unit: mUnit, points: shown }];
   if (compTrend && shown.length > 2) series.push({ cls: 'lb', label: t('app.trendlijn'), unit: mUnit, points: smoothTrend(shown) });
@@ -3489,7 +3511,7 @@ function renderComposition() {
   });
   $('#trainToggle').addEventListener('click', () => { compTrain = !compTrain; try { localStorage.setItem('gc-comp-train', compTrain ? 'on' : 'off'); } catch {} renderComposition(); });
   $('#zoomReset')?.addEventListener('click', () => { compZoom = null; renderComposition(); });
-  bindRange(card, 'compRange');
+  bindRange(card, 'compRange', 'bodyComp');
   $('#trendToggle').addEventListener('click', () => { compTrend = !compTrend; try { localStorage.setItem('gc-comp-trend', compTrend ? 'on' : 'off'); } catch {} renderComposition(); });
   card.querySelectorAll('.ctile').forEach((el) => {
     el.addEventListener('click', () => { compMetric = el.dataset.k; renderComposition(); });
@@ -3573,7 +3595,7 @@ function renderSegments() {
       <div class="small muted">L ${L ?? '—'} · R ${R ?? '—'} ${esc(SEG_METRICS[segMetric][1])}${d ? ` · <span class="${d < 0 ? 'up' : 'down'}">${t(d < 0 ? 'app.inBalansMeer' : 'app.inBalansMinder')}</span> ${t('app.dan', { a: esc(old.date.slice(5)) })}` : ''}</div></div>`;
   }).join('')}</div>` : '';
   const [mLabel, mUnit] = SEG_METRICS[segMetric];
-  const segFrom = rangeStart(last.date);
+  const segFrom = rangeStart(last.date, bodySegRange);
   const chartLog = segFrom ? log.filter((b) => b.date >= segFrom) : log;
   card.innerHTML = `<div class="row between wrap gap"><h2>${t('app.perSegment')}</h2><span class="muted">${esc(last.date)}${old !== last ? t('app.verschilTOV', { a: esc(old.date) }) : ''}</span></div>
     ${guessed ? '<p class="small muted" style="margin-top:-.3rem">' + t('app.namenMetZijnEen') + '</p>' : ''}
@@ -3593,7 +3615,7 @@ function renderSegments() {
       <div class="eyebrow" style="margin:0">${mLabel} ${segMode === 'bal' ? t('app.verschilLinksRechts0', { balUnit }) : t('app.perSegment2', { a: segMode === 'delta' ? t('app.veranderingSinds', { a: esc(chartLog[0]?.date || '—'), b: segMetric === 'pct' ? '%-punt' : mUnit }) : t('app.absoluut2', { mUnit }) })}</div>
       <div class="row gap wrap">
         <div class="chips small" id="segSwitch">${Object.entries(SEG_METRICS).map(([k, [l]]) => `<button data-m="${k}" class="${k === segMetric ? 'on' : ''}">${l}</button>`).join('')}</div>
-        ${rangeChips('segRange')}
+        ${rangeChips('segRange', bodySegRange)}
         <button class="chip ${segTrend ? 'on' : ''}" id="segTrendToggle" aria-pressed="${segTrend}" title="${t('app.trendWhole')}"><span class="dot b"></span> ${t('app.trendlijn')}</button>
         <div class="chips small" id="segMode"><button data-v="delta" class="${segMode === 'delta' ? 'on' : ''}">${t('app.verandering')}</button><button data-v="abs" class="${segMode === 'abs' ? 'on' : ''}">${t('app.absoluut')}</button>${pairs.length ? `<button data-v="bal" class="${segMode === 'bal' ? 'on' : ''}">${t('app.balansLR')}</button>` : ''}</div>
       </div>
@@ -3602,7 +3624,7 @@ function renderSegments() {
     ${segMode === 'bal' ? `<div class="seg-toggles bal-toggles">${pairs.map((pr) => `<button class="seg-tg ${balHidden.has(pr.label) ? 'off' : ''}" data-b="${esc(pr.label)}" aria-pressed="${!balHidden.has(pr.label)}"><span class="segdot" style="background:${pr.color}"></span>${esc(pr.label)}</button>`).join('')}</div>` : ''}
     <div class="seg-toggles${segMode === 'bal' ? ' hidden' : ''}">${positions.map((p, i) => `<button class="seg-tg ${segHidden.has(p) ? 'off' : ''}" data-p="${p}" aria-pressed="${!segHidden.has(p)}"><span class="segdot" style="background:${SEG_COLORS[i % SEG_COLORS.length]}"></span>${esc(showName(p))}</button>`).join('')}
       <button class="seg-tg all" data-p="all">${segHidden.size ? t('app.allesTonen') : t('app.allesVerbergen')}</button></div>`;
-  bindRange(card, 'segRange');
+  bindRange(card, 'segRange', 'bodySeg');
   const visible = positions.map((p, i) => [p, i]).filter(([p]) => !segHidden.has(p));
   if (segMode === 'bal' && !pairs.length) segMode = 'delta';
   if (!chartLog.length) $('#chartSeg').innerHTML = '<div class="empty">' + t('app.geenMetingenInDeze') + '</div>';
@@ -4412,7 +4434,7 @@ $('#userBtn').addEventListener('click', () => {
   f.querySelector('[data-x=logout]').addEventListener('click', async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     // volledig opnieuw laden: geen gegevens van deze gebruiker in formulieren of geheugen laten staan
-    try { for (const k of Object.keys(localStorage)) if (k.startsWith('gc-') && k !== 'gc-theme' && k !== 'gc-lang') localStorage.removeItem(k); } catch {}
+    try { for (const k of Object.keys(localStorage)) if (k.startsWith('gc-') && !keepOnLogout(k)) localStorage.removeItem(k); } catch {}
     location.replace('/');
   });
   dlg.showModal();
@@ -4480,6 +4502,7 @@ $('#syncBtn').addEventListener('click', (ev) => busy(ev.currentTarget, async () 
 async function load() {
   const [st, gv] = await Promise.all([api('GET', '/api/state'), api('GET', '/api/goal').catch(() => null)]);
   state = st;
+  applySavedPeriods();
   if (gv) goalView = gv;
   // taal: eigen keuze, anders die van de browser; daarna alle vaste teksten in de pagina vullen
   setLang(resolveLang(state.settings?.lang || storedLang(), navigator.languages || [navigator.language]));

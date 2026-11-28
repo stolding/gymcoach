@@ -592,31 +592,23 @@ struct DashboardView: View {
     private func weekRing(_ week: PhoneWeek) -> some View {
         let target = max(week.target, 0)
         let done = max(week.done, 0)
-        let planned = week.planned > 0 ? week.planned : target
-        let goal = target > 0 ? min(1, CGFloat(done) / CGFloat(target)) : 0
-        let extraN = max(0, done - target)
-        let room = max(0, planned - target)
-        let extraF: CGFloat = extraN == 0 ? 0 : room > 0 ? min(1, CGFloat(extraN) / CGFloat(room)) : (target > 0 ? min(1, CGFloat(extraN) / CGFloat(target)) : 0)
-        let over = extraF > 0
-        let bright = Color(red: 1, green: 0.70, blue: 0.35)
+        let laps = Self.weekLaps(done: done, target: target)
+        let layout = Self.weekRingLayout(laps.count)
+        let shown = Array(laps.suffix(layout.count))
         let track = Color.white.opacity(0.12)
         return VStack(spacing: 6) {
             ZStack {
-                Circle().stroke(track, lineWidth: over ? 4 : 8)
-                    .frame(width: over ? 72 : 76, height: over ? 72 : 76)
-                Circle()
-                    .trim(from: 0, to: goal)
-                    .stroke(orange, style: StrokeStyle(lineWidth: over ? 4 : 8, lineCap: .round))
-                    .frame(width: over ? 72 : 76, height: over ? 72 : 76)
-                    .rotationEffect(.degrees(-90))
-                if over {
-                    Circle().stroke(track, lineWidth: 4)
-                        .frame(width: 80, height: 80)
-                    Circle()
-                        .trim(from: 0, to: extraF)
-                        .stroke(bright, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                        .frame(width: 80, height: 80)
-                        .rotationEffect(.degrees(-90))
+                ForEach(Array(shown.enumerated()), id: \.offset) { i, lap in
+                    let geo = layout[i]
+                    let d = geo.r * 2
+                    ZStack {
+                        Circle().stroke(track, lineWidth: geo.sw)
+                        Circle()
+                            .trim(from: 0, to: lap.frac)
+                            .stroke(Self.weekRingColor(lap.lap), style: StrokeStyle(lineWidth: geo.sw, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                    }
+                    .frame(width: d, height: d)
                 }
                 Text("\(done)/\(target)").font(.headline.monospacedDigit())
             }
@@ -625,6 +617,56 @@ struct DashboardView: View {
             Text("deze week").font(.caption2).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private struct WeekLap {
+        var frac: CGFloat
+        var lap: Int
+    }
+
+    private struct RingGeo {
+        var r: CGFloat
+        var sw: CGFloat
+    }
+
+    // Zelfde telling als public/weekring.js: elke volledige ronde een ring, de rest op de volgende.
+    private static func weekLaps(done: Int, target: Int) -> [WeekLap] {
+        if target <= 0 || done <= 0 { return [WeekLap(frac: 0, lap: 0)] }
+        let full = done / target
+        let rem = CGFloat(done % target) / CGFloat(target)
+        if rem == 0 { return (0..<full).map { WeekLap(frac: 1, lap: $0) } }
+        return (0..<full).map { WeekLap(frac: 1, lap: $0) } + [WeekLap(frac: rem, lap: full)]
+    }
+
+    // Past in het vak van 88. Eén ring blijft de oude cirkel. Meer ringen stapelen naar binnen.
+    private static func weekRingLayout(_ count: Int) -> [RingGeo] {
+        let n = max(1, count)
+        if n == 1 { return [RingGeo(r: 38, sw: 8)] }
+        let outer: CGFloat = 42
+        let inner: CGFloat = 20
+        let gap0: CGFloat = 2.2
+        let minSw: CGFloat = 3.2
+        let band = outer - inner
+        var shown = n
+        var sw = (band - gap0 * CGFloat(shown - 1)) / CGFloat(shown)
+        var gap = gap0
+        if sw < minSw {
+            sw = minSw
+            shown = min(n, max(2, Int((band + gap0) / (minSw + gap0))))
+            gap = (band - sw * CGFloat(shown)) / CGFloat(shown - 1)
+        }
+        var rings: [RingGeo] = []
+        var edge = outer
+        for _ in 0..<shown {
+            rings.append(RingGeo(r: edge - sw / 2, sw: sw))
+            edge -= sw + gap
+        }
+        return rings
+    }
+
+    private static func weekRingColor(_ lap: Int) -> Color {
+        let mix = min(0.6, Double(max(0, lap)) * 0.2)
+        return Color(red: 1, green: 0.48 + (1 - 0.48) * mix, blue: 0.18 + (1 - 0.18) * mix)
     }
 
     private func statGrid(_ snap: PhoneSnapshot) -> some View {

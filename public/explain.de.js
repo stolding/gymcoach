@@ -75,7 +75,7 @@ export default [
       <li><b>Erholung und Score.</b> Links, ob du erholt bist (Ruhepuls, HRV, geschaffte Wiederholungen). Rechts der Gesundheitsscore von 0 bis 10, höher ist besser, mit der Linie über die Wochen.</li>
       <li><b>Muskelerholung.</b> Die Figur und eine Linie je Muskelgruppe. Die Farbe beginnt grün und läuft über Orange nach Rot. Über 100 % bleibt rot. Die Knöpfe schalten eine Muskelgruppe an oder aus.</li>
       <li><b>Nächstes Training.</b> Das nächste Training, das noch offen ist, mit der geschätzten Zeit.</li>
-      <li><b>Wochenziel.</b> Der Ring zählt die Einheiten aus dem Plan, auch einen Spaziergang. Beim Wochenziel ist der Kreis voll. Machst du mehr, läuft ein hellerer oranger Ring über die äußere Hälfte, bis der ganze Plan voll ist.</li>
+      <li><b>Wochenziel.</b> Der Ring zählt die Einheiten aus dem Plan, auch einen Spaziergang. Beim Wochenziel ist der Kreis voll. Jede weitere Runde ist ein eigener Ring, etwas heller als der vorige.</li>
       <li><b>Serie.</b> Wie viele Wochen hintereinander du das Wochenziel geschafft hast.</li>
       <li><b>Volumen.</b> Kilogramm diese Woche, verglichen mit der vorigen.</li>
       <li><b>Minuten.</b> Trainingszeit und kcal diese Woche.</li>

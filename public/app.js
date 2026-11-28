@@ -9,6 +9,7 @@ import { t, t as tx, tmap, localeOf, has, setLang, resolveLang, applyI18n, LANGS
 import { isTimedItem, warmRows } from './warmedit.js';
 import { askConfirm, askText } from './dialogs.js';
 import { langPicker, storedLang, storeLang } from './langpick.js';
+import { weekRingCircles } from './weekring.js';
 
 // taal vóór het inloggen: de keuze op het inlogscherm, anders die van de browser; na het laden die van de gebruiker (zie load)
 setLang(resolveLang(storedLang(), navigator.languages || [navigator.language]));
@@ -567,9 +568,9 @@ function renderPlan() {
 function planRingCount() {
   const plan = state.plan;
   const gym = state.overview?.week?.done || 0;
-  if (!plan?.sessions?.length) return { done: gym, planned: 0 };
+  if (!plan?.sessions?.length) return { done: gym };
   const done = plan.sessions.filter((x) => (x.outdoor || x.type === 'buiten') ? outdoorActs(x).length > 0 : doneOf(x)).length;
-  return { done, planned: plan.sessions.length };
+  return { done };
 }
 // training uit het plan die deze week al gedaan is
 const normName = (x) => String(x || '').toLowerCase().replace(/[（(].*?[)）]/g, '').replace(/[^a-z0-9]+/g, '');
@@ -1974,31 +1975,16 @@ function bindIntakeSpark(host, rows) {
   svg.addEventListener('mouseleave', hide);
   svg.addEventListener('touchstart', show, { passive: true });
 }
-// Voortgangsring (SVG), bijv. trainingen deze week.
-function ring(done, target, planned) {
-  const R = 52, sw = 11;
-  const goalF = Math.min(1, target ? done / target : 0);
-  const extraN = Math.max(0, done - (target || 0));
-  const room = Math.max(0, (planned || 0) - (target || 0));
-  const extraF = extraN <= 0 ? 0 : room > 0 ? Math.min(1, extraN / room) : (target ? Math.min(1, extraN / target) : 0);
-  const label = extraN > 0 ? t('app.ringExtra', { done, target, extra: extraN }) : t('app.ringLabel', { done, target });
-  const num = `<text x="65" y="63" text-anchor="middle" class="ring-num">${done}<tspan class="ring-of">/${target}</tspan></text>
+// Voortgangsring (SVG). Elke volledige ronde van het weekdoel is een eigen ring.
+function ring(done, target) {
+  const dNum = Math.max(0, Number(done) || 0);
+  const tNum = Math.max(0, Number(target) || 0);
+  const extraN = Math.max(0, dNum - tNum);
+  const label = extraN > 0 ? t('app.ringExtra', { done: dNum, target: tNum, extra: extraN }) : t('app.ringLabel', { done: dNum, target: tNum });
+  const num = `<text x="65" y="63" text-anchor="middle" class="ring-num">${dNum}<tspan class="ring-of">/${tNum}</tspan></text>
     <text x="65" y="84" text-anchor="middle" class="ring-lbl">${t('app.dezeWeek')}</text>`;
-  if (!(extraF > 0)) {
-    const C = 2 * Math.PI * R;
-    return `<svg viewBox="0 0 130 130" class="ring" role="img" aria-label="${esc(label)}">
-      <circle cx="65" cy="65" r="${R}" class="ring-bg"/>
-      <circle cx="65" cy="65" r="${R}" class="ring-fg" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - goalF)}" transform="rotate(-90 65 65)"/>
-      ${num}</svg>`;
-  }
-  const half = sw / 2, rIn = R - half / 2, rOut = R + half / 2;
-  const cIn = 2 * Math.PI * rIn, cOut = 2 * Math.PI * rOut;
   return `<svg viewBox="0 0 130 130" class="ring" role="img" aria-label="${esc(label)}">
-    <circle cx="65" cy="65" r="${rIn}" class="ring-bg ring-half"/>
-    <circle cx="65" cy="65" r="${rOut}" class="ring-bg ring-half"/>
-    <circle cx="65" cy="65" r="${rIn}" class="ring-fg ring-half" stroke-dasharray="${cIn}" stroke-dashoffset="0" transform="rotate(-90 65 65)"/>
-    <circle cx="65" cy="65" r="${rOut}" class="ring-extra ring-half" stroke-dasharray="${cOut}" stroke-dashoffset="${cOut * (1 - extraF)}" transform="rotate(-90 65 65)"/>
-    ${num}</svg>`;
+    ${weekRingCircles(dNum, tNum)}${num}</svg>`;
 }
 const fmt = (n) => Number(n || 0).toLocaleString(localeOf());
 // Verschil met vorige week als gekleurd percentage.
@@ -2477,7 +2463,7 @@ function renderHome() {
   $('#heroGen')?.addEventListener('click', () => $('#genBtn').click());
 
   const ringDone = planRingCount();
-  $('#weekRing').innerHTML = `<div class="eyebrow">${t('app.weekdoel')}</div>${ring(ringDone.done, o.week.target, ringDone.planned)}`;
+  $('#weekRing').innerHTML = `<div class="eyebrow">${t('app.weekdoel')}</div>${ring(ringDone.done, o.week.target)}`;
   $('#tStreak').innerHTML = `<div class="eyebrow">${t('app.streak')}</div><div class="big">${o.streak}<small> ${o.streak === 1 ? t('app.week') : t('app.weken')}</small></div><div class="muted">${t('app.opRijJeWeekdoel')}</div>`;
   $('#tVolume').innerHTML = `<div class="eyebrow">${t('app.volumeDezeWeek')}</div><div class="big">${fmt(o.week.volume)}<small> kg</small></div><div class="small">${delta(o.week.volume, o.week.prevVolume)}</div>`;
   $('#tMinutes').innerHTML = `<div class="eyebrow">${t('app.trainingstijd')}</div><div class="big">${o.week.minutes}<small> min</small></div><div class="muted">${t('app.kcalDezeWeek', { a: fmt(o.week.calories) })}</div>`;

@@ -5,6 +5,9 @@ Versienummers volgen MAJOR.MINOR.PATCH:
 - **MINOR** (middelste cijfer): een kleine nieuwe functie
 - **MAJOR** (eerste cijfer): een grote wijziging
 
+## 2.47.7 — 28 november 2026
+- Elke volledige ronde van het weekdoel is een eigen ring. Vijf van drie is een volle ring en een tweede op twee derde; zeven van drie is twee volle ringen en een derde op een derde. Elke volgende ring is iets helderder. GymCoach Sync 1.14.1 tekent dezelfde ringen.
+
 ## 2.47.6 — 27 november 2026
 - De bicepscurl van vrijdag 12–15 telt in dat blok, ook als het dagdeel al begonnen is: drie sets vol en de lat pulldown half, tot de sets gelogd zijn.
 
